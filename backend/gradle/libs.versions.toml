@@ -48,7 +48,7 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-
 lombok = { module = "org.projectlombok:lombok", version = "1.18.44" }
 
 # Testing
-classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.179" }
+classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.184" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "6.0.3" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
