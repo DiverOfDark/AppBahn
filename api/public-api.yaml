@@ -2157,7 +2157,11 @@ paths:
     get:
       tags: [admin]
       operationId: getPlatformConfig
-      summary: Get platform configuration
+      summary: Get public platform configuration
+      description: |
+        Returns public platform configuration including branding.
+        No authentication required — used by the login page.
+      security: []
       responses:
         "200":
           description: Platform configuration
@@ -2165,10 +2169,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlatformConfig'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "403":
-          $ref: '#/components/responses/Forbidden'
     put:
       tags: [admin]
       operationId: setPlatformConfig
@@ -3640,6 +3640,23 @@ components:
           $ref: '#/components/schemas/RegistryConfig'
         branding:
           type: object
+          properties:
+            instanceName:
+              type: string
+              description: Display name shown on login page
+              example: "ACME Corp Platform"
+            tagline:
+              type: string
+              description: Subtitle shown on login page
+              example: "Deploy and manage your applications"
+            logoUrl:
+              type: string
+              description: URL to company logo
+              example: "https://acme.org/logo.svg"
+            loginButtonText:
+              type: string
+              description: Text for the login button
+              example: "Log in with SSO"
         auth:
           type: object
         defaultQuota:

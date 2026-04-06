@@ -82,9 +82,9 @@ onMounted(async () => {
       </button>
 
       <nav class="login-links">
-        <a href="/docs" target="_blank">Documentation</a>
+        <a href="https://appbahn.eu/docs" target="_blank">Documentation</a>
         <span class="login-links-separator">&middot;</span>
-        <a href="/docs/api" target="_blank">API Reference</a>
+        <a href="https://appbahn.eu/docs/api-reference" target="_blank">API Reference</a>
       </nav>
     </main>
   </div>

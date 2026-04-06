@@ -18,3 +18,10 @@ scalar:
   pageTitle: AppBahn API Reference
   theme: default
   layout: modern
+
+platform:
+  branding:
+    instance-name: AppBahn
+    tagline: Deploy and manage your applications
+    logo-url: ""
+    login-button-text: Log in with SSO

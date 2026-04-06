@@ -39,20 +39,3 @@ func OutputFormat() string {
 	return outputFormat
 }
 
-// GetServerURL returns the effective server URL, checking the environment
-// variable first, then falling back to the stored config.
-func GetServerURL() string {
-	if v := os.Getenv("APPBAHN_SERVER"); v != "" {
-		return v
-	}
-	return ""
-}
-
-// GetToken returns the effective token, checking the environment variable
-// first, then falling back to the stored config.
-func GetToken() string {
-	if v := os.Getenv("APPBAHN_TOKEN"); v != "" {
-		return v
-	}
-	return ""
-}
