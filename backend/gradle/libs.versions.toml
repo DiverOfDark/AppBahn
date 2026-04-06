@@ -2,7 +2,7 @@
 spring-boot = "4.0.0"
 spring-dependency-management = "1.1.7"
 openapi-generator = "7.21.0"
-springdoc = "2.8.6"
+springdoc = "3.0.2"
 fabric8 = "7.6.1"
 josdk-spring-boot = "6.4.0"
 flyway = "12.3.0"
