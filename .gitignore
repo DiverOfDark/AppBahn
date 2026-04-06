@@ -7,5 +7,15 @@ backend/.gradle/
 *.jar
 !backend/gradle/wrapper/gradle-wrapper.jar
 
+# Node.js
+node_modules/
+web/dist/
+website/dist/
+docs/dist/
+*.tsbuildinfo
+
+# CLI
+cli/dist/
+
 # Helm values with secrets
 helm/values-production.yaml

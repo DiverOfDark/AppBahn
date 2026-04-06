@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+/* ── Bauhaus Design Tokens ─────────────────────────────────────────────── */
+
+/* Fonts loaded from CDN — Geist Sans, Inter, JetBrains Mono */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@theme {
+  /* Background layers — dark (default) */
+  --color-bg-base: oklch(13% 0.01 260);
+  --color-bg-surface: oklch(17% 0.008 260);
+  --color-bg-raised: oklch(22% 0.008 80);
+  --color-bg-overlay: oklch(25% 0.01 260);
+
+  /* Accent (signal amber) */
+  --color-accent: oklch(80% 0.16 80);
+  --color-accent-hover: oklch(85% 0.18 80);
+  --color-accent-muted: oklch(45% 0.08 80);
+
+  /* Status */
+  --color-status-ready: oklch(70% 0.14 145);
+  --color-status-degraded: oklch(75% 0.14 80);
+  --color-status-error: oklch(65% 0.18 25);
+  --color-status-pending: oklch(65% 0.10 260);
+  --color-status-stopped: oklch(50% 0.01 260);
+  --color-status-building: oklch(70% 0.12 260);
+
+  /* Text */
+  --color-text-primary: oklch(93% 0.005 80);
+  --color-text-secondary: oklch(65% 0.01 260);
+  --color-text-tertiary: oklch(50% 0.01 260);
+
+  /* Borders */
+  --color-border: oklch(25% 0.005 260);
+  --color-border-strong: oklch(35% 0.005 260);
+
+  /* Typography */
+  --font-heading: 'Geist Sans', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Border radius — max 4px for buttons, 2px for inputs */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+/* ── Light mode ────────────────────────────────────────────────────────── */
+
+.light {
+  --color-bg-base: oklch(97% 0.005 80);
+  --color-bg-surface: oklch(95% 0.005 80);
+  --color-bg-raised: oklch(92% 0.008 80);
+  --color-bg-overlay: oklch(100% 0 0);
+
+  --color-text-primary: oklch(20% 0.01 260);
+  --color-text-secondary: oklch(40% 0.01 260);
+  --color-text-tertiary: oklch(55% 0.01 260);
+
+  --color-border: oklch(85% 0.005 80);
+  --color-border-strong: oklch(75% 0.008 80);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}

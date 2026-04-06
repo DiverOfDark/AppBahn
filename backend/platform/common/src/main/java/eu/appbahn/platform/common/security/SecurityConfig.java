@@ -23,6 +23,10 @@ public class SecurityConfig {
                 .requestMatchers("/docs/api/**", "/scalar/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/v1/openapi/**").permitAll()
                 .requestMatchers("/api/v1/webhooks/**").permitAll()
+                // SPA and static assets
+                .requestMatchers("/", "/index.html", "/console/**", "/login", "/auth/complete").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/assets/**", "/favicon.ico").permitAll()
                 // All other endpoints require authentication — OIDC configured in Sprint 3
                 // For now, permit all until OIDC is wired up
                 .anyRequest().permitAll()

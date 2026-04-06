@@ -1,0 +1,71 @@
+version: 2
+
+project_name: appbahn
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: appbahn
+    main: .
+    binary: appbahn
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-dev"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  - repository:
+      owner: diverofdark
+      name: homebrew-tap
+    homepage: "https://appbahn.eu"
+    description: "AppBahn CLI — manage your PaaS from the terminal"
+    license: "ELv2"
+    install: |
+      bin.install "appbahn"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/diverofdark/appbahn/cli:{{ .Version }}"
+      - "ghcr.io/diverofdark/appbahn/cli:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+
+release:
+  github:
+    owner: diverofdark
+    name: appbahn
+  draft: false
+  prerelease: auto

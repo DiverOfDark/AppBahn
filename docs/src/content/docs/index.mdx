@@ -1,0 +1,34 @@
+---
+title: AppBahn Documentation
+description: Enterprise PaaS on your own Kubernetes infrastructure.
+template: splash
+hero:
+  tagline: Enterprise PaaS on your own Kubernetes infrastructure. Deploy, manage, and observe your applications — all from one platform.
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/diverofdark/appbahn
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Explore
+
+<CardGrid stagger>
+	<Card title="Getting Started" icon="rocket">
+		Set up AppBahn on your Kubernetes cluster and deploy your first application.
+		[Read the guide](/getting-started/)
+	</Card>
+	<Card title="Concepts" icon="open-book">
+		Understand Workspaces, Projects, Environments, and Resources.
+		[Learn more](/concepts/)
+	</Card>
+	<Card title="API Reference" icon="setting">
+		Auto-generated REST API documentation from the OpenAPI spec.
+		[View API docs](/api-reference/)
+	</Card>
+</CardGrid>

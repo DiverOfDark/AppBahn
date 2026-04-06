@@ -64,7 +64,7 @@ Each sprint is a **vertical slice** across all layers (API, operator, web consol
 
 ## Current Sprint
 
-Sprint 1 — see `spec/sprints/sprint-01.md`
+Sprint 2 — see `spec/sprints/sprint-02.md`
 
 ## Conventions
 
