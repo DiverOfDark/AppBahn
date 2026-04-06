@@ -1,0 +1,61 @@
+[versions]
+spring-boot = "4.0.0"
+spring-dependency-management = "1.1.7"
+openapi-generator = "7.21.0"
+springdoc = "2.8.6"
+fabric8 = "7.6.1"
+josdk-spring-boot = "6.4.0"
+flyway = "12.3.0"
+postgresql = "42.7.5"
+testcontainers = "1.21.4"
+uuid-creator = "6.1.1"
+
+[libraries]
+# Spring Boot starters
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+# Database
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+
+# Kubernetes / Operator
+fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
+fabric8-crd-generator-apt = { module = "io.fabric8:crd-generator-apt", version.ref = "fabric8" }
+josdk-spring-boot-starter = { module = "io.javaoperatorsdk:operator-framework-spring-boot-starter", version.ref = "josdk-spring-boot" }
+
+# API docs
+springdoc-openapi-starter = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
+scalar-spring = { module = "com.scalar.maven:scalar-webmvc", version = "0.6.20" }
+
+# OpenAPI generated code dependencies
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version = "2.2.46" }
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version = "0.2.10" }
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version = "3.1.1" }
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version = "3.0.0" }
+
+# UUID v7
+uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-creator" }
+
+# Lombok
+lombok = { module = "org.projectlombok:lombok", version = "1.18.44" }
+
+# Testing
+classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.179" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "6.0.3" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }

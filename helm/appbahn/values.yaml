@@ -1,0 +1,112 @@
+platform:
+  image:
+    repository: ghcr.io/appbahn/appbahn-platform
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  domain:
+    base: "appbahn.example.com"
+    apps: "appbahn.example.com"
+  auth:
+    issuerUrl: ""
+    clientId: ""
+    clientSecret: ""
+    audience: ""
+    groupClaim: "groups"
+    platformAdminGroups: []
+  secretStore:
+    name: ""
+    kind: "ClusterSecretStore"
+  registry:
+    url: ""
+    credentialRef: ""
+    repositoryPrefix: "appbahn"
+  database:
+    url: "jdbc:postgresql://postgres:5432/appbahn"
+    credentialRef: ""
+    username: "appbahn"
+    password: "appbahn"
+  ingress:
+    className: ""
+    namespace: ""
+    podLabels: {}
+    annotations: {}
+    tls: true
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 1Gi
+  branding:
+    instanceName: "AppBahn"
+    tagline: "Deploy and manage your applications"
+    logoUrl: ""
+    loginButtonText: "Log in with SSO"
+
+operator:
+  image:
+    repository: ghcr.io/appbahn/appbahn-operator
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  platformApi:
+    endpoint: ""
+    authSecret: "appbahn-operator-token"
+  cache:
+    refreshInterval: "5m"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+serviceMonitor:
+  enabled: false
+
+builtinResourceTypes:
+  - name: postgresql
+    displayName: PostgreSQL
+    description: "Managed PostgreSQL database (CloudNativePG)"
+    icon: database
+    discoveryCrd: clusters.postgresql.cnpg.io
+    stoppable: true
+    stopBehavior: scale-to-zero
+  - name: s3-bucket
+    displayName: S3 Bucket
+    description: "S3-compatible object storage (Rook Ceph)"
+    icon: hard-drive
+    discoveryCrd: objectbucketclaims.objectbucket.io
+    stoppable: false
+    stopBehavior: not-supported
+  - name: valkey
+    displayName: Valkey
+    description: "Managed Valkey in-memory store"
+    icon: zap
+    discoveryCrd: valkeys.valkey.io
+    stoppable: true
+    stopBehavior: scale-to-zero
+  - name: mongodb
+    displayName: MongoDB
+    description: "Managed MongoDB database"
+    icon: database
+    discoveryCrd: mongodbcommunity.mongodbcommunity.mongodb.com
+    stoppable: true
+    stopBehavior: scale-to-zero
+  - name: kafka
+    displayName: Kafka
+    description: "Managed Apache Kafka cluster (Strimzi)"
+    icon: radio
+    discoveryCrd: kafkas.kafka.strimzi.io
+    stoppable: true
+    stopBehavior: scale-to-zero
+  - name: nats
+    displayName: NATS
+    description: "Managed NATS messaging"
+    icon: send
+    discoveryCrd: natsclusters.nats.io
+    stoppable: true
+    stopBehavior: scale-to-zero

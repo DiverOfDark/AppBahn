@@ -1,0 +1,8 @@
+package eu.appbahn.platform.resource.controller;
+
+import eu.appbahn.platform.api.ResourceTypesApi;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ResourceTypesController implements ResourceTypesApi {
+}

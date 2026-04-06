@@ -1,1 +1,11 @@
 .idea
+.gradle
+backend/build/
+backend/**/build/
+backend/.gradle/
+*.class
+*.jar
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# Helm values with secrets
+helm/values-production.yaml

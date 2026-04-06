@@ -1,0 +1,75 @@
+plugins {
+    java
+    alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.spring.boot) apply false
+    alias(libs.plugins.spring.dependency.management)
+}
+
+// API specs live in the top-level /api directory
+val specFile = rootProject.layout.projectDirectory.file("../api/public-api.yaml")
+val generatedDir = layout.buildDirectory.dir("generated/spring")
+
+openApiGenerate {
+    generatorName.set("spring")
+    inputSpec.set(specFile.asFile.absolutePath)
+    outputDir.set(generatedDir.map { it.asFile.absolutePath })
+    apiPackage.set("eu.appbahn.platform.api")
+    modelPackage.set("eu.appbahn.platform.api.model")
+    invokerPackage.set("eu.appbahn.platform.api")
+    configOptions.set(mapOf(
+        "interfaceOnly" to "true",
+        "useSpringBoot3" to "true",
+        "useTags" to "true",
+        "skipDefaultInterface" to "false",
+        "openApiNullable" to "true",
+        "additionalModelTypeAnnotations" to "",
+        "documentationProvider" to "none",
+        "serializationLibrary" to "jackson",
+        "dateLibrary" to "java8",
+        "generateBuilders" to "true",
+    ))
+}
+
+// Internal API (operator ↔ platform)
+val internalSpecFile = rootProject.layout.projectDirectory.file("../api/internal-api.yaml")
+val internalGeneratedDir = layout.buildDirectory.dir("generated/spring-internal")
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateInternal") {
+    generatorName.set("spring")
+    inputSpec.set(internalSpecFile.asFile.absolutePath)
+    outputDir.set(internalGeneratedDir.map { it.asFile.absolutePath })
+    apiPackage.set("eu.appbahn.platform.api.internal")
+    modelPackage.set("eu.appbahn.platform.api.internal.model")
+    invokerPackage.set("eu.appbahn.platform.api.internal")
+    configOptions.set(mapOf(
+        "interfaceOnly" to "true",
+        "useSpringBoot3" to "true",
+        "useTags" to "true",
+        "skipDefaultInterface" to "false",
+        "openApiNullable" to "true",
+        "documentationProvider" to "none",
+        "serializationLibrary" to "jackson",
+        "dateLibrary" to "java8",
+    ))
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir(generatedDir.map { it.dir("src/main/java") })
+            srcDir(internalGeneratedDir.map { it.dir("src/main/java") })
+        }
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn("openApiGenerate", "openApiGenerateInternal")
+}
+
+dependencies {
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.swagger.annotations)
+    implementation(libs.jackson.databind.nullable)
+    implementation(libs.jakarta.validation.api)
+    implementation(libs.jakarta.annotation.api)
+}

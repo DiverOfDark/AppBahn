@@ -1,0 +1,25 @@
+{{- range .Values.builtinResourceTypes }}
+---
+apiVersion: appbahn.eu/v1
+kind: ResourceTypeDefinition
+metadata:
+  name: {{ .name }}
+  labels:
+    {{- include "appbahn.labels" $ | nindent 4 }}
+    appbahn.eu/builtin: "true"
+spec:
+  displayName: {{ .displayName | quote }}
+  description: {{ .description | quote }}
+  icon: {{ .icon | quote }}
+  configSchema: {}
+  secretOutput: []
+  connectionDisplay: []
+  discovery:
+    crd: {{ .discoveryCrd | quote }}
+  lifecycle:
+    stoppable: {{ .stoppable }}
+    stopBehavior: {{ .stopBehavior | quote }}
+  quotaDimensions: {}
+  adminConfigSchema: {}
+  reconciliation: {}
+{{- end }}
