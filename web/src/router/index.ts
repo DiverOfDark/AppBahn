@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -60,6 +61,16 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const publicRoutes = ['login', 'auth-complete']
+  if (!publicRoutes.includes(to.name as string)) {
+    const { checkAuth } = useAuth()
+    if (!checkAuth()) {
+      return { name: 'login' }
+    }
+  }
 })
 
 export default router

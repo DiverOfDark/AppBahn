@@ -1,10 +1,17 @@
 import createClient from 'openapi-fetch'
 import type { paths } from './schema'
 
-let accessToken: string | null = null
+const TOKEN_KEY = 'appbahn_token'
+
+let accessToken: string | null = sessionStorage.getItem(TOKEN_KEY)
 
 export function setAccessToken(token: string | null) {
   accessToken = token
+  if (token) {
+    sessionStorage.setItem(TOKEN_KEY, token)
+  } else {
+    sessionStorage.removeItem(TOKEN_KEY)
+  }
 }
 
 export function getAccessToken(): string | null {

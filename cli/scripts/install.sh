@@ -3,7 +3,7 @@
 # Usage:  curl -fsSL https://appbahn.eu/install.sh | bash
 set -euo pipefail
 
-REPO="appbahn/appbahn"
+REPO="diverofdark/appbahn"
 INSTALL_DIR="/usr/local/bin"
 BINARY="appbahn"
 
