@@ -1,0 +1,41 @@
+/*
+ * AppBahn Docs — Bauhaus-inspired design tokens
+ * Uses OKLCh color space for perceptually uniform colors.
+ * Dark mode is the primary theme.
+ */
+
+:root {
+	/* Bauhaus primary: signal amber */
+	--sl-color-accent-low: oklch(0.25 0.08 80);
+	--sl-color-accent: oklch(0.55 0.2 80);
+	--sl-color-accent-high: oklch(0.85 0.1 80);
+
+	--sl-color-white: oklch(0.97 0 0);
+	--sl-color-gray-1: oklch(0.92 0 0);
+	--sl-color-gray-2: oklch(0.82 0 0);
+	--sl-color-gray-3: oklch(0.62 0 0);
+	--sl-color-gray-4: oklch(0.35 0 0);
+	--sl-color-gray-5: oklch(0.25 0 0);
+	--sl-color-gray-6: oklch(0.18 0 0);
+	--sl-color-black: oklch(0.12 0 0);
+
+	/* Typography: clean, geometric sans-serif */
+	--sl-font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+}
+
+/* Dark mode overrides (Starlight dark theme) */
+:root[data-theme='dark'] {
+	--sl-color-accent-low: oklch(0.22 0.08 80);
+	--sl-color-accent: oklch(0.6 0.22 80);
+	--sl-color-accent-high: oklch(0.88 0.08 80);
+
+	--sl-color-white: oklch(0.97 0 0);
+	--sl-color-gray-1: oklch(0.88 0 0);
+	--sl-color-gray-2: oklch(0.72 0 0);
+	--sl-color-gray-3: oklch(0.52 0 0);
+	--sl-color-gray-4: oklch(0.3 0 0);
+	--sl-color-gray-5: oklch(0.2 0 0);
+	--sl-color-gray-6: oklch(0.14 0 0);
+	--sl-color-black: oklch(0.1 0 0);
+}
