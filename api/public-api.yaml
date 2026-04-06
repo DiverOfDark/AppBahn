@@ -1,0 +1,3599 @@
+openapi: "3.1.0"
+info:
+  title: AppBahn Platform API
+  description: Enterprise PaaS on your own Kubernetes infrastructure.
+  version: 1.0.0
+  license:
+    name: ELv2
+    url: https://www.elastic.co/licensing/elastic-license
+
+servers:
+  - url: /api/v1
+    description: Platform API
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: workspaces
+    description: Workspace management
+  - name: projects
+    description: Project management
+  - name: environments
+    description: Environment management
+  - name: resources
+    description: Resource management
+  - name: resource-types
+    description: Resource type catalog
+  - name: git
+    description: Git repository operations
+  - name: webhooks
+    description: Webhook receiver
+  - name: admin
+    description: Platform administration
+paths:
+  # ── Workspaces ──────────────────────────────────────────────────────────────
+  /workspaces:
+    get:
+      tags: [workspaces]
+      operationId: listWorkspaces
+      summary: List workspaces
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged list of workspaces
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedWorkspaceResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [workspaces]
+      operationId: createWorkspace
+      summary: Create workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkspaceRequest'
+      responses:
+        "201":
+          description: Workspace created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /workspaces/{slug}:
+    get:
+      tags: [workspaces]
+      operationId: getWorkspace
+      summary: Get workspace details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [workspaces]
+      operationId: updateWorkspace
+      summary: Update workspace
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkspaceRequest'
+      responses:
+        "200":
+          description: Workspace updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [workspaces]
+      operationId: deleteWorkspace
+      summary: Delete workspace
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Workspace deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /workspaces/{slug}/registry:
+    put:
+      tags: [workspaces]
+      operationId: setWorkspaceRegistry
+      summary: Set workspace registry configuration
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryConfig'
+      responses:
+        "200":
+          description: Registry configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/security:
+    get:
+      tags: [workspaces]
+      operationId: getWorkspaceSecurity
+      summary: Get workspace security settings
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Security settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecuritySettings'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [workspaces]
+      operationId: setWorkspaceSecurity
+      summary: Set workspace security settings
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecuritySettings'
+      responses:
+        "200":
+          description: Security settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecuritySettings'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/members:
+    get:
+      tags: [workspaces]
+      operationId: listWorkspaceMembers
+      summary: List workspace members
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of workspace members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceMember'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [workspaces]
+      operationId: addWorkspaceMember
+      summary: Add workspace member
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberRequest'
+      responses:
+        "201":
+          description: Member added or invitation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddMemberResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /workspaces/{slug}/members/{userId}:
+    patch:
+      tags: [workspaces]
+      operationId: updateWorkspaceMember
+      summary: Update workspace member role
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRequest'
+      responses:
+        "200":
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMember'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [workspaces]
+      operationId: removeWorkspaceMember
+      summary: Remove workspace member
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Member removed
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/group-mappings:
+    get:
+      tags: [workspaces]
+      operationId: listGroupMappings
+      summary: List OIDC group mappings
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of group mappings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OidcGroupMapping'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [workspaces]
+      operationId: createGroupMapping
+      summary: Create OIDC group mapping
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupMappingRequest'
+      responses:
+        "201":
+          description: Group mapping created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcGroupMapping'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /workspaces/{slug}/group-mappings/{mappingId}:
+    patch:
+      tags: [workspaces]
+      operationId: updateGroupMapping
+      summary: Update OIDC group mapping
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: mappingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupMappingRequest'
+      responses:
+        "200":
+          description: Group mapping updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcGroupMapping'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [workspaces]
+      operationId: deleteGroupMapping
+      summary: Delete OIDC group mapping
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: mappingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Group mapping deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/notification-webhooks:
+    get:
+      tags: [workspaces]
+      operationId: listNotificationWebhooks
+      summary: List notification webhooks
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of notification webhooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationWebhook'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [workspaces]
+      operationId: createNotificationWebhook
+      summary: Create notification webhook
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotificationWebhookRequest'
+      responses:
+        "201":
+          description: Notification webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationWebhook'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/notification-webhooks/{hookId}:
+    patch:
+      tags: [workspaces]
+      operationId: updateNotificationWebhook
+      summary: Update notification webhook
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: hookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationWebhookRequest'
+      responses:
+        "200":
+          description: Notification webhook updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationWebhook'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [workspaces]
+      operationId: deleteNotificationWebhook
+      summary: Delete notification webhook
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: hookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Notification webhook deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/notification-webhooks/{hookId}/deliveries:
+    get:
+      tags: [workspaces]
+      operationId: listWebhookDeliveries
+      summary: List webhook deliveries
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: hookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of webhook deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookDelivery'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/audit-log:
+    get:
+      tags: [workspaces]
+      operationId: getWorkspaceAuditLog
+      summary: Query workspace audit log
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: targetType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAuditLogResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /workspaces/{slug}/quota:
+    get:
+      tags: [workspaces]
+      operationId: getWorkspaceQuota
+      summary: Get workspace quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Workspace quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [workspaces]
+      operationId: setWorkspaceQuota
+      summary: Set workspace quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quota'
+      responses:
+        "200":
+          description: Quota updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── Projects ────────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      tags: [projects]
+      operationId: listProjects
+      summary: List projects
+      parameters:
+        - name: workspaceSlug
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged list of projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedProjectResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [projects]
+      operationId: createProject
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        "201":
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /projects/{slug}:
+    get:
+      tags: [projects]
+      operationId: getProject
+      summary: Get project details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [projects]
+      operationId: updateProject
+      summary: Update project
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        "200":
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [projects]
+      operationId: deleteProject
+      summary: Delete project
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Project deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /projects/{slug}/registry:
+    put:
+      tags: [projects]
+      operationId: setProjectRegistry
+      summary: Set project registry configuration
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryConfig'
+      responses:
+        "200":
+          description: Registry configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{slug}/quota:
+    get:
+      tags: [projects]
+      operationId: getProjectQuota
+      summary: Get project quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Project quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [projects]
+      operationId: setProjectQuota
+      summary: Set project quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quota'
+      responses:
+        "200":
+          description: Quota updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── Environments ────────────────────────────────────────────────────────────
+  /environments:
+    get:
+      tags: [environments]
+      operationId: listEnvironments
+      summary: List environments
+      parameters:
+        - name: projectSlug
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged list of environments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedEnvironmentResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [environments]
+      operationId: createEnvironment
+      summary: Create environment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnvironmentRequest'
+      responses:
+        "201":
+          description: Environment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /environments/{slug}:
+    get:
+      tags: [environments]
+      operationId: getEnvironment
+      summary: Get environment details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Environment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [environments]
+      operationId: updateEnvironment
+      summary: Update environment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEnvironmentRequest'
+      responses:
+        "200":
+          description: Environment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [environments]
+      operationId: deleteEnvironment
+      summary: Delete environment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Environment deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/registry:
+    put:
+      tags: [environments]
+      operationId: setEnvironmentRegistry
+      summary: Set environment registry configuration
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryConfig'
+      responses:
+        "200":
+          description: Registry configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/approval-gates:
+    put:
+      tags: [environments]
+      operationId: setApprovalGates
+      summary: Set deployment approval gates
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalGatesConfig'
+      responses:
+        "200":
+          description: Approval gates updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/target-cluster:
+    put:
+      tags: [environments]
+      operationId: setTargetCluster
+      summary: Set target cluster for environment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetTargetClusterRequest'
+      responses:
+        "200":
+          description: Target cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/tokens:
+    get:
+      tags: [environments]
+      operationId: listEnvironmentTokens
+      summary: List environment tokens
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of environment tokens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvironmentToken'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [environments]
+      operationId: createEnvironmentToken
+      summary: Create environment token
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnvironmentTokenRequest'
+      responses:
+        "201":
+          description: Environment token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEnvironmentTokenResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/tokens/{tokenId}:
+    delete:
+      tags: [environments]
+      operationId: deleteEnvironmentToken
+      summary: Delete environment token
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Token deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/quota:
+    get:
+      tags: [environments]
+      operationId: getEnvironmentQuota
+      summary: Get environment quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Environment quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [environments]
+      operationId: setEnvironmentQuota
+      summary: Set environment quota
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quota'
+      responses:
+        "200":
+          description: Quota updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quota'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── Resources ───────────────────────────────────────────────────────────────
+  /resources:
+    get:
+      tags: [resources]
+      operationId: listResources
+      summary: List resources
+      parameters:
+        - name: environmentSlug
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged list of resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourceResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [resources]
+      operationId: createResource
+      summary: Create resource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+      responses:
+        "202":
+          description: Resource creation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceCreatedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /resources/{slug}:
+    get:
+      tags: [resources]
+      operationId: getResource
+      summary: Get resource details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [resources]
+      operationId: updateResource
+      summary: Update resource (JSON merge patch)
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateResourceRequest'
+      responses:
+        "200":
+          description: Resource updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [resources]
+      operationId: deleteResource
+      summary: Delete resource
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Resource deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/logs:
+    get:
+      tags: [resources]
+      operationId: getResourceLogs
+      summary: Get resource logs
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: deploymentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: lines
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Log output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/metrics/cpu:
+    get:
+      tags: [resources]
+      operationId: getResourceCpuMetrics
+      summary: Get CPU metrics
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - $ref: '#/components/parameters/MetricsStart'
+        - $ref: '#/components/parameters/MetricsEnd'
+        - $ref: '#/components/parameters/MetricsStep'
+        - $ref: '#/components/parameters/MetricsPod'
+      responses:
+        "200":
+          description: CPU metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/metrics/ram:
+    get:
+      tags: [resources]
+      operationId: getResourceRamMetrics
+      summary: Get RAM metrics
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - $ref: '#/components/parameters/MetricsStart'
+        - $ref: '#/components/parameters/MetricsEnd'
+        - $ref: '#/components/parameters/MetricsStep'
+        - $ref: '#/components/parameters/MetricsPod'
+      responses:
+        "200":
+          description: RAM metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/metrics/network/inbound:
+    get:
+      tags: [resources]
+      operationId: getResourceNetworkInbound
+      summary: Get network inbound metrics
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - $ref: '#/components/parameters/MetricsStart'
+        - $ref: '#/components/parameters/MetricsEnd'
+        - $ref: '#/components/parameters/MetricsStep'
+        - $ref: '#/components/parameters/MetricsPod'
+      responses:
+        "200":
+          description: Network inbound metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/metrics/network/outbound:
+    get:
+      tags: [resources]
+      operationId: getResourceNetworkOutbound
+      summary: Get network outbound metrics
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - $ref: '#/components/parameters/MetricsStart'
+        - $ref: '#/components/parameters/MetricsEnd'
+        - $ref: '#/components/parameters/MetricsStep'
+        - $ref: '#/components/parameters/MetricsPod'
+      responses:
+        "200":
+          description: Network outbound metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/deployments:
+    post:
+      tags: [resources]
+      operationId: triggerDeployment
+      summary: Trigger a new deployment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDeploymentRequest'
+      responses:
+        "201":
+          description: Deployment triggered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    get:
+      tags: [resources]
+      operationId: listDeployments
+      summary: List deployments
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paged list of deployments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDeploymentResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/deployments/{deploymentId}:
+    get:
+      tags: [resources]
+      operationId: getDeployment
+      summary: Get deployment details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deployment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/deployments/{deploymentId}/approve:
+    post:
+      tags: [resources]
+      operationId: approveDeployment
+      summary: Approve a deployment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deployment approved
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /resources/{slug}/deployments/{deploymentId}/reject:
+    post:
+      tags: [resources]
+      operationId: rejectDeployment
+      summary: Reject a deployment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deployment rejected
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /resources/{slug}/deployments/{deploymentId}/approvals:
+    get:
+      tags: [resources]
+      operationId: getDeploymentApprovals
+      summary: Get deployment approval status
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deployment approvals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentApproval'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/connection:
+    get:
+      tags: [resources]
+      operationId: getResourceConnection
+      summary: Get resource connection details
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Connection details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/webhook:
+    get:
+      tags: [resources]
+      operationId: getResourceWebhook
+      summary: Get resource webhook configuration
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Webhook configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookConfig'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/webhook/rotate:
+    post:
+      tags: [resources]
+      operationId: rotateWebhookSecret
+      summary: Rotate webhook secret
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: Webhook secret rotated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookConfig'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/stop:
+    post:
+      tags: [resources]
+      operationId: stopResource
+      summary: Stop resource
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Resource stopped
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/start:
+    post:
+      tags: [resources]
+      operationId: startResource
+      summary: Start resource
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Resource started
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/restart:
+    post:
+      tags: [resources]
+      operationId: restartResource
+      summary: Restart resource
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Resource restarted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/build-cache:
+    delete:
+      tags: [resources]
+      operationId: clearBuildCache
+      summary: Clear build cache
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "204":
+          description: Build cache cleared
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/rollback:
+    post:
+      tags: [resources]
+      operationId: rollbackResource
+      summary: Rollback resource to a previous deployment
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackRequest'
+      responses:
+        "201":
+          description: Rollback deployment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/expose:
+    post:
+      tags: [resources]
+      operationId: createExposure
+      summary: Create ephemeral port exposure
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExposureRequest'
+      responses:
+        "201":
+          description: Exposure created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceExposure'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/exposures:
+    get:
+      tags: [resources]
+      operationId: listExposures
+      summary: List active ephemeral port exposures
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of exposures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceExposure'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/exposures/{port}:
+    delete:
+      tags: [resources]
+      operationId: deleteExposure
+      summary: Remove ephemeral exposure
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: port
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Exposure removed
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/domains:
+    post:
+      tags: [resources]
+      operationId: addDomain
+      summary: Add custom domain
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddDomainRequest'
+      responses:
+        "201":
+          description: Domain added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainEntry'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [resources]
+      operationId: listDomains
+      summary: List custom domains
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+      responses:
+        "200":
+          description: List of domains
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DomainEntry'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /resources/{slug}/domains/{domain}:
+    delete:
+      tags: [resources]
+      operationId: removeDomain
+      summary: Remove custom domain
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Domain removed
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── Resource Types ──────────────────────────────────────────────────────────
+  /resource-types:
+    get:
+      tags: [resource-types]
+      operationId: listResourceTypes
+      summary: List available resource types per cluster
+      parameters:
+        - name: cluster
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of resource types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceTypeInfo'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── Git ─────────────────────────────────────────────────────────────────────
+  /git/repos:
+    post:
+      tags: [git]
+      operationId: listGitRepos
+      summary: List git repositories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitAuthRequest'
+      responses:
+        "200":
+          description: List of repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GitRepo'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /git/validate:
+    post:
+      tags: [git]
+      operationId: validateGitRepo
+      summary: Validate git repository access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateGitRepoRequest'
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitValidationResult'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /git/detect-build:
+    post:
+      tags: [git]
+      operationId: startBuildDetection
+      summary: Start async build config detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetectBuildRequest'
+      responses:
+        "202":
+          description: Build detection job started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildDetectionJobCreated'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /git/detect-build/{jobId}:
+    get:
+      tags: [git]
+      operationId: getBuildDetectionStatus
+      summary: Get build detection job status
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Build detection job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildDetectionJob'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── Webhooks ────────────────────────────────────────────────────────────────
+  /webhooks/{resourceSlug}:
+    post:
+      tags: [webhooks]
+      operationId: triggerWebhook
+      summary: Trigger deployment via webhook
+      security:
+        - webhookSecret: []
+      parameters:
+        - name: resourceSlug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookTriggerResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── Admin ───────────────────────────────────────────────────────────────────
+  /admin/config:
+    get:
+      tags: [admin]
+      operationId: getPlatformConfig
+      summary: Get platform configuration
+      responses:
+        "200":
+          description: Platform configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformConfig'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags: [admin]
+      operationId: setPlatformConfig
+      summary: Set platform configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlatformConfig'
+      responses:
+        "200":
+          description: Platform configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformConfig'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/users:
+    get:
+      tags: [admin]
+      operationId: listUsers
+      summary: List users
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: email
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged list of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/audit-log:
+    get:
+      tags: [admin]
+      operationId: getPlatformAuditLog
+      summary: Query platform-wide audit log
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: targetType
+          in: query
+          schema:
+            type: string
+        - name: workspaceSlug
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paged audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAuditLogResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/clusters:
+    get:
+      tags: [admin]
+      operationId: listClusters
+      summary: List registered clusters
+      responses:
+        "200":
+          description: List of clusters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cluster'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [admin]
+      operationId: registerCluster
+      summary: Register a new cluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClusterRequest'
+      responses:
+        "201":
+          description: Cluster registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cluster'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "409":
+          $ref: '#/components/responses/Conflict'
+
+  /admin/clusters/{name}:
+    patch:
+      tags: [admin]
+      operationId: updateCluster
+      summary: Update cluster
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClusterRequest'
+      responses:
+        "200":
+          description: Cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cluster'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [admin]
+      operationId: deleteCluster
+      summary: Delete cluster
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Cluster deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /admin/network-policies:
+    get:
+      tags: [admin]
+      operationId: listNetworkPolicies
+      summary: List network policies
+      responses:
+        "200":
+          description: List of network policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetworkPolicy'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [admin]
+      operationId: createNetworkPolicy
+      summary: Create network policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNetworkPolicyRequest'
+      responses:
+        "201":
+          description: Network policy created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkPolicy'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/network-policies/{id}:
+    patch:
+      tags: [admin]
+      operationId: updateNetworkPolicy
+      summary: Update network policy
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNetworkPolicyRequest'
+      responses:
+        "200":
+          description: Network policy updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkPolicy'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [admin]
+      operationId: deleteNetworkPolicy
+      summary: Delete network policy
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Network policy deleted
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /admin/resource-types:
+    get:
+      tags: [admin]
+      operationId: listResourceTypeDefinitions
+      summary: List resource type definitions
+      responses:
+        "200":
+          description: List of resource type definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResourceTypeDefinition'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/resource-types/{type}:
+    get:
+      tags: [admin]
+      operationId: getResourceTypeDefinition
+      summary: Get resource type definition
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resource type definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceTypeDefinition'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /admin/resource-types/{type}/admin:
+    patch:
+      tags: [admin]
+      operationId: updateResourceTypeAdminConfig
+      summary: Update resource type admin configuration
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Resource type definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceTypeDefinition'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    webhookSecret:
+      type: apiKey
+      in: header
+      name: X-Webhook-Secret
+
+  parameters:
+    SlugPath:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    MetricsStart:
+      name: start
+      in: query
+      description: Start time (ISO 8601 or relative e.g. -1h, -24h, -7d)
+      schema:
+        type: string
+    MetricsEnd:
+      name: end
+      in: query
+      description: End time (ISO 8601 or 'now')
+      schema:
+        type: string
+    MetricsStep:
+      name: step
+      in: query
+      description: Resolution in seconds
+      schema:
+        type: integer
+    MetricsPod:
+      name: pod
+      in: query
+      description: Filter by pod name
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # ── Error ─────────────────────────────────────────────────────────────────
+    ErrorResponse:
+      type: object
+      required: [status, error, message]
+      properties:
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+
+    # ── Workspace ─────────────────────────────────────────────────────────────
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        quota:
+          $ref: '#/components/schemas/Quota'
+        registry:
+          $ref: '#/components/schemas/RegistryConfig'
+        runtimeClassName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWorkspaceRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    UpdateWorkspaceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+
+    PagedWorkspaceResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workspace'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    # ── Project ───────────────────────────────────────────────────────────────
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        workspaceSlug:
+          type: string
+        quota:
+          $ref: '#/components/schemas/Quota'
+        registry:
+          $ref: '#/components/schemas/RegistryConfig'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateProjectRequest:
+      type: object
+      required: [name, workspaceSlug]
+      properties:
+        name:
+          type: string
+        workspaceSlug:
+          type: string
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+
+    PagedProjectResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    # ── Environment ───────────────────────────────────────────────────────────
+    Environment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        projectSlug:
+          type: string
+        targetCluster:
+          type: string
+        approvalGates:
+          $ref: '#/components/schemas/ApprovalGatesConfig'
+        quota:
+          $ref: '#/components/schemas/Quota'
+        registry:
+          $ref: '#/components/schemas/RegistryConfig'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateEnvironmentRequest:
+      type: object
+      required: [name, projectSlug]
+      properties:
+        name:
+          type: string
+        projectSlug:
+          type: string
+        description:
+          type: string
+
+    UpdateEnvironmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    PagedEnvironmentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Environment'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    ApprovalGatesConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        requiredApprovals:
+          type: integer
+
+    SetTargetClusterRequest:
+      type: object
+      required: [clusterName]
+      properties:
+        clusterName:
+          type: string
+
+    # ── Environment Token ─────────────────────────────────────────────────────
+    EnvironmentToken:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          type: string
+          enum: [EDITOR, VIEWER]
+        expiresAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateEnvironmentTokenRequest:
+      type: object
+      required: [name, role]
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [EDITOR, VIEWER]
+        expiresInDays:
+          type: integer
+
+    CreateEnvironmentTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+    # ── Resource ──────────────────────────────────────────────────────────────
+    Resource:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        environmentSlug:
+          type: string
+        config:
+          type: object
+        links:
+          type: array
+          items:
+            type: object
+        status:
+          type: string
+          enum: [PENDING, READY, RESTARTING, DEGRADED, ERROR, STOPPED]
+        statusDetail:
+          type: object
+        lastSyncedAt:
+          type: string
+          format: date-time
+
+    CreateResourceRequest:
+      type: object
+      required: [name, type, environmentSlug, config]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        environmentSlug:
+          type: string
+        config:
+          type: object
+        links:
+          type: array
+          items:
+            type: object
+
+    UpdateResourceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        config:
+          type: object
+        links:
+          type: array
+          items:
+            type: object
+        confirmDestructive:
+          type: boolean
+
+    ResourceCreatedResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        environmentSlug:
+          type: string
+
+    PagedResourceResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    # ── Deployment ────────────────────────────────────────────────────────────
+    Deployment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        resourceSlug:
+          type: string
+        environmentSlug:
+          type: string
+        sourceRef:
+          type: string
+        imageRef:
+          type: string
+        triggeredBy:
+          type: string
+          enum: [manual, polling, webhook, auto-promotion, rollback]
+        status:
+          type: string
+          enum: [QUEUED, AWAITING_APPROVAL, BUILDING, COPYING_IMAGE, DEPLOYING, SUCCEEDED, FAILED, REJECTED]
+        isPrimary:
+          type: boolean
+        sourceDeploymentId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    TriggerDeploymentRequest:
+      type: object
+      properties:
+        sourceRef:
+          type: string
+
+    RollbackRequest:
+      type: object
+      required: [deploymentId]
+      properties:
+        deploymentId:
+          type: string
+          format: uuid
+
+    PagedDeploymentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deployment'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    DeploymentApproval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deploymentId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        decision:
+          type: string
+          enum: [APPROVED, REJECTED]
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── User ──────────────────────────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        oidcSubjectId:
+          type: string
+
+    PagedUserResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    # ── Workspace Member ──────────────────────────────────────────────────────
+    WorkspaceMember:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    AddMemberRequest:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    AddMemberResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, pending]
+
+    UpdateMemberRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    # ── OIDC Group Mapping ────────────────────────────────────────────────────
+    OidcGroupMapping:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        oidcGroup:
+          type: string
+        workspaceId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    CreateGroupMappingRequest:
+      type: object
+      required: [oidcGroup, role]
+      properties:
+        oidcGroup:
+          type: string
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    UpdateGroupMappingRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [OWNER, ADMIN, EDITOR, VIEWER]
+
+    # ── Notification Webhook ──────────────────────────────────────────────────
+    NotificationWebhook:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+        createdBy:
+          type: string
+          format: uuid
+
+    CreateNotificationWebhookRequest:
+      type: object
+      required: [name, url, events]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+
+    UpdateNotificationWebhookRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+
+    WebhookDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        webhookId:
+          type: string
+          format: uuid
+        event:
+          type: string
+        status:
+          type: string
+        responseCode:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Registry ──────────────────────────────────────────────────────────────
+    RegistryConfig:
+      type: object
+      properties:
+        url:
+          type: string
+        credentialRef:
+          type: string
+
+    # ── Quota ─────────────────────────────────────────────────────────────────
+    Quota:
+      type: object
+      properties:
+        maxCpuCores:
+          type: number
+          format: double
+        maxMemoryMb:
+          type: integer
+        maxStorageGb:
+          type: integer
+        maxResources:
+          type: integer
+        maxDeploymentResources:
+          type: integer
+        maxDatabaseResources:
+          type: integer
+
+    # ── Security ──────────────────────────────────────────────────────────────
+    SecuritySettings:
+      type: object
+      properties:
+        allowedIpRanges:
+          type: array
+          items:
+            type: string
+        requireMfa:
+          type: boolean
+        sessionTimeoutMinutes:
+          type: integer
+
+    # ── Cluster ───────────────────────────────────────────────────────────────
+    Cluster:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        kubeconfigSecret:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateClusterRequest:
+      type: object
+      required: [name, kubeconfigSecret]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        kubeconfigSecret:
+          type: string
+
+    UpdateClusterRequest:
+      type: object
+      properties:
+        description:
+          type: string
+
+    # ── Network Policy ────────────────────────────────────────────────────────
+    NetworkPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        workspaceId:
+          type: string
+          format: uuid
+        policy:
+          type: object
+
+    CreateNetworkPolicyRequest:
+      type: object
+      required: [name, policy]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        workspaceId:
+          type: string
+          format: uuid
+        policy:
+          type: object
+
+    UpdateNetworkPolicyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        policy:
+          type: object
+
+    # ── Resource Type ─────────────────────────────────────────────────────────
+    ResourceTypeDefinition:
+      type: object
+      properties:
+        type:
+          type: string
+        definition:
+          type: object
+        adminConfig:
+          type: object
+        lastSyncedAt:
+          type: string
+          format: date-time
+
+    ResourceTypeInfo:
+      type: object
+      properties:
+        type:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [deployment, database, storage, messaging]
+        configSchema:
+          type: object
+        available:
+          type: boolean
+
+    # ── Audit Log ─────────────────────────────────────────────────────────────
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        actorId:
+          type: string
+          format: uuid
+        actorEmail:
+          type: string
+        actorSource:
+          type: string
+        action:
+          type: string
+        targetType:
+          type: string
+        targetId:
+          type: string
+        context:
+          type: object
+        diff:
+          type: object
+        requestId:
+          type: string
+
+    PagedAuditLogResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogEntry'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    # ── Build Detection ───────────────────────────────────────────────────────
+    BuildDetectionJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [RUNNING, SUCCEEDED, FAILED]
+        step:
+          type: string
+        message:
+          type: string
+        universalBuild:
+          type: array
+          items:
+            type: object
+        error:
+          type: string
+
+    DetectBuildRequest:
+      type: object
+      required: [url, branch]
+      properties:
+        url:
+          type: string
+        branch:
+          type: string
+        path:
+          type: string
+        auth:
+          $ref: '#/components/schemas/GitAuth'
+
+    BuildDetectionJobCreated:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+
+    # ── Git ───────────────────────────────────────────────────────────────────
+    GitAuthRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        auth:
+          $ref: '#/components/schemas/GitAuth'
+
+    GitAuth:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [none, basic, ssh]
+        username:
+          type: string
+        password:
+          type: string
+        privateKey:
+          type: string
+
+    GitRepo:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        defaultBranch:
+          type: string
+
+    ValidateGitRepoRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        branch:
+          type: string
+        auth:
+          $ref: '#/components/schemas/GitAuth'
+
+    GitValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        message:
+          type: string
+        branches:
+          type: array
+          items:
+            type: string
+
+    # ── Webhook ───────────────────────────────────────────────────────────────
+    WebhookConfig:
+      type: object
+      properties:
+        url:
+          type: string
+        secretMasked:
+          type: string
+
+    WebhookTriggerResponse:
+      type: object
+      properties:
+        changed:
+          type: boolean
+        deploymentId:
+          type: string
+          format: uuid
+
+    # ── Metrics ───────────────────────────────────────────────────────────────
+    MetricsResponse:
+      type: object
+      properties:
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricsSeries'
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        step:
+          type: integer
+
+    MetricsSeries:
+      type: object
+      properties:
+        pod:
+          type: string
+        values:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+
+    # ── Logs ──────────────────────────────────────────────────────────────────
+    LogResponse:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogLine'
+
+    LogLine:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+        pod:
+          type: string
+        container:
+          type: string
+
+    # ── Connection ────────────────────────────────────────────────────────────
+    ConnectionResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectionEntry'
+
+    ConnectionEntry:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        secret:
+          type: boolean
+
+    # ── Exposure ──────────────────────────────────────────────────────────────
+    ResourceExposure:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        resourceSlug:
+          type: string
+        port:
+          type: integer
+        externalPort:
+          type: integer
+        expiresAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+
+    CreateExposureRequest:
+      type: object
+      required: [port, ttlMinutes]
+      properties:
+        port:
+          type: integer
+        ttlMinutes:
+          type: integer
+
+    # ── Domain ────────────────────────────────────────────────────────────────
+    DomainEntry:
+      type: object
+      properties:
+        domain:
+          type: string
+        port:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, ERROR]
+
+    AddDomainRequest:
+      type: object
+      required: [domain, port]
+      properties:
+        domain:
+          type: string
+        port:
+          type: integer
+
+    # ── Platform Config ───────────────────────────────────────────────────────
+    PlatformConfig:
+      type: object
+      properties:
+        domain:
+          type: string
+        registry:
+          $ref: '#/components/schemas/RegistryConfig'
+        branding:
+          type: object
+        auth:
+          type: object
+        defaultQuota:
+          $ref: '#/components/schemas/Quota'
+        buildConfig:
+          type: object
+
