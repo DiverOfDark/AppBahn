@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "appbahn.fullname" . }}-operator
+  labels:
+    {{- include "appbahn.operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.operator.replicas }}
+  selector:
+    matchLabels:
+      {{- include "appbahn.operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "appbahn.operator.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "appbahn.fullname" . }}-operator
+      containers:
+        - name: operator
+          image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
+          imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: webhook
+              containerPort: 8443
+              protocol: TCP
+          volumeMounts:
+            - name: webhook-tls
+              mountPath: /etc/webhook/tls
+              readOnly: true
+          env:
+            - name: APPBAHN_PLATFORM_API_ENDPOINT
+              value: {{ .Values.operator.platformApi.endpoint | quote }}
+            - name: APPBAHN_OPERATOR_AUTH_SECRET
+              value: {{ .Values.operator.platformApi.authSecret | quote }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.operator.resources | nindent 12 }}
+      volumes:
+        - name: webhook-tls
+          secret:
+            secretName: {{ include "appbahn.fullname" . }}-webhook-tls

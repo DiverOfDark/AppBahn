@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "appbahn.fullname" . }}-platform
+  labels:
+    {{- include "appbahn.platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.platform.replicas }}
+  selector:
+    matchLabels:
+      {{- include "appbahn.platform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "appbahn.platform.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "appbahn.fullname" . }}-platform
+      containers:
+        - name: platform
+          image: "{{ .Values.platform.image.repository }}:{{ .Values.platform.image.tag }}"
+          imagePullPolicy: {{ .Values.platform.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.platform.database.url | quote }}
+            - name: DATABASE_USERNAME
+              value: {{ .Values.platform.database.username | quote }}
+            - name: DATABASE_PASSWORD
+              value: {{ .Values.platform.database.password | quote }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.platform.resources | nindent 12 }}

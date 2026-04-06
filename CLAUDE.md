@@ -1,6 +1,6 @@
 # AppBahn
 
-Enterprise PaaS — Vercel/Railway experience on your own Kubernetes infrastructure.
+Enterprise PaaS on your own Kubernetes infrastructure.
 
 ## Tech Stack
 
@@ -19,7 +19,7 @@ Enterprise PaaS — Vercel/Railway experience on your own Kubernetes infrastruct
 backend/
   shared/              — CRD models, slug utils, shared types (used by both platform + operator)
   platform/
-    api-spec/          — OpenAPI spec (api.yaml) + code generation (Spring stubs + TS client)
+    api-spec/          — OpenAPI code generation (Spring server stubs from api/ specs)
     app/               — Spring Boot entry point, wires all modules
     workspace/         — Workspace/Project/Environment CRUD, quotas
     resource/          — Resources, deployments, links, license enforcement
@@ -32,6 +32,7 @@ web/                   — Vue.js 3 SPA (served by backend)
 cli/                   — CLI tool
 website/               — Public marketing site (Astro SSG, appbahn.eu)
 docs/                  — User documentation
+api/                   — OpenAPI specs (public-api.yaml + internal-api.yaml)
 helm/                  — Helm chart
 crds/                  — CRD definitions
 e2e/                   — Playwright E2E tests
@@ -43,7 +44,7 @@ spec/                  — Specification (private, never published)
 
 ## Key Design Decisions
 
-- **API-first**: OpenAPI spec (`api.yaml`) is the single source of truth → generates Spring server stubs + TypeScript client
+- **API-first**: OpenAPI specs (`api/public-api.yaml` + `api/internal-api.yaml`) are the source of truth → Gradle generates Spring server stubs, npm generates TypeScript client
 - **Two deployables**: Platform API + Operator (same Gradle project, separate JARs, communicate over HTTPS)
 - **Resources are Kubernetes CRDs** (source of truth in etcd), cached to PostgreSQL `resource_cache` for reads
 - **Standard MVC per module**: Controller (generated interface impl) → Service → Repository → PostgreSQL

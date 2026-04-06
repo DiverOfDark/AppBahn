@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: appbahn-platform
+
+springdoc:
+  api-docs:
+    path: /api/v1/openapi
+  swagger-ui:
+    enabled: false
+
+scalar:
+  enabled: true
+  path: /docs/api
+  url: /api/v1/openapi
+  pageTitle: AppBahn API Reference
+  theme: default
+  layout: modern
