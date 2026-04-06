@@ -1,0 +1,404 @@
+---
+const features = [
+  {
+    title: 'Git Push to Deploy',
+    description: 'Push your code, we handle the rest. Build detection, container images, zero-config deployments.',
+  },
+  {
+    title: 'Managed Databases',
+    description: 'PostgreSQL, Valkey, MongoDB, Kafka, NATS — provisioned and linked as managed services.',
+  },
+  {
+    title: 'Auto-TLS',
+    description: 'Automatic TLS certificates for every exposed service. Wildcard domains and custom domains supported.',
+  },
+  {
+    title: 'Observability',
+    description: 'Logs, metrics, and alerts wired in from day one. Pluggable provider backends.',
+  },
+  {
+    title: 'Multi-environment',
+    description: 'Staging, production, feature branches — each with isolated Kubernetes namespaces and resource quotas.',
+  },
+  {
+    title: 'Kubernetes-native',
+    description: 'Resources are CRDs. The operator manages reconciliation. Works with your existing cluster tooling.',
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>AppBahn -- Enterprise PaaS on your own Kubernetes infrastructure</title>
+    <meta name="description" content="Deploy from Git to production on your own Kubernetes clusters. AppBahn is the enterprise platform-as-a-service that runs where your data lives." />
+    <style>
+      /* --------------------------------------------------------
+         Reset
+         -------------------------------------------------------- */
+      *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* --------------------------------------------------------
+         Fonts
+         -------------------------------------------------------- */
+      @font-face {
+        font-family: 'Geist Sans';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Geist Sans';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Geist Sans';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Inter';
+        src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* --------------------------------------------------------
+         Design tokens
+         -------------------------------------------------------- */
+      :root {
+        --bg-base: oklch(13% 0.01 260);
+        --bg-raised: oklch(22% 0.008 80);
+        --bg-surface: oklch(17% 0.008 260);
+        --accent: oklch(80% 0.16 80);
+        --accent-hover: oklch(85% 0.18 80);
+        --text-primary: oklch(93% 0.005 80);
+        --text-secondary: oklch(65% 0.01 260);
+        --text-tertiary: oklch(50% 0.01 260);
+        --border: oklch(25% 0.005 260);
+        --border-strong: oklch(35% 0.005 260);
+
+        --font-heading: 'Geist Sans', system-ui, -apple-system, sans-serif;
+        --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+        --radius: 4px;
+        --grid: 8px;
+        --max-width: 1120px;
+      }
+
+      /* --------------------------------------------------------
+         Base
+         -------------------------------------------------------- */
+      html {
+        background: var(--bg-base);
+        color: var(--text-primary);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+      a:hover {
+        color: var(--text-primary);
+      }
+
+      /* --------------------------------------------------------
+         Layout
+         -------------------------------------------------------- */
+      .container {
+        width: 100%;
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 0 calc(var(--grid) * 3);
+      }
+
+      /* --------------------------------------------------------
+         Navigation
+         -------------------------------------------------------- */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-base);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: calc(var(--grid) * 8);
+      }
+
+      .wordmark {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: calc(var(--grid) * 4);
+        list-style: none;
+      }
+
+      .nav-links a {
+        font-size: 14px;
+        font-family: var(--font-body);
+        letter-spacing: 0.01em;
+      }
+
+      /* --------------------------------------------------------
+         Hero
+         -------------------------------------------------------- */
+      .hero {
+        padding: calc(var(--grid) * 12) 0 calc(var(--grid) * 10);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-content {
+        max-width: 720px;
+      }
+
+      .hero h1 {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: clamp(32px, 5vw, 48px);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+        margin-bottom: calc(var(--grid) * 3);
+      }
+
+      .hero p {
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        max-width: 560px;
+        margin-bottom: calc(var(--grid) * 5);
+      }
+
+      .cta {
+        display: inline-block;
+        font-family: var(--font-heading);
+        font-weight: 500;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+        padding: calc(var(--grid) * 1.5) calc(var(--grid) * 3);
+        background: var(--accent);
+        color: var(--bg-base);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius);
+        transition: background 0.15s ease, border-color 0.15s ease;
+        cursor: pointer;
+      }
+      .cta:hover {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+        color: var(--bg-base);
+      }
+
+      /* --------------------------------------------------------
+         Features
+         -------------------------------------------------------- */
+      .features {
+        padding: calc(var(--grid) * 10) 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .features-label {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        margin-bottom: calc(var(--grid) * 5);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .feature-card {
+        background: var(--bg-raised);
+        padding: calc(var(--grid) * 4);
+      }
+
+      .feature-card h3 {
+        font-family: var(--font-heading);
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+        margin-bottom: calc(var(--grid) * 1);
+      }
+
+      .feature-card p {
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-secondary);
+      }
+
+      /* --------------------------------------------------------
+         Footer
+         -------------------------------------------------------- */
+      footer {
+        margin-top: auto;
+        border-top: 1px solid var(--border);
+        padding: calc(var(--grid) * 5) 0;
+      }
+
+      .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .footer-copy {
+        font-size: 13px;
+        color: var(--text-tertiary);
+      }
+
+      .footer-europe {
+        font-size: 13px;
+        color: var(--text-tertiary);
+      }
+
+      .footer-links {
+        display: flex;
+        gap: calc(var(--grid) * 4);
+        list-style: none;
+      }
+
+      .footer-links a {
+        font-size: 13px;
+        color: var(--text-tertiary);
+      }
+      .footer-links a:hover {
+        color: var(--text-secondary);
+      }
+
+      /* --------------------------------------------------------
+         Responsive
+         -------------------------------------------------------- */
+      @media (max-width: 768px) {
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding: calc(var(--grid) * 8) 0 calc(var(--grid) * 6);
+        }
+
+        .footer-inner {
+          flex-direction: column;
+          gap: calc(var(--grid) * 2);
+          text-align: center;
+        }
+      }
+
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .features-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav>
+      <div class="container nav-inner">
+        <span class="wordmark">AppBahn</span>
+        <ul class="nav-links">
+          <li><a href="/docs">Docs</a></li>
+          <li><a href="https://github.com/diverofdark/appbahn">GitHub</a></li>
+          <li><a href="/login">Login</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <main>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <h1>Deploy on your infrastructure. Not someone else's.</h1>
+            <p>Vercel/Railway developer experience. Your Kubernetes cluster. Your data. Your rules.</p>
+            <a class="cta" href="/docs">Get Started</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="features">
+        <div class="container">
+          <p class="features-label">Capabilities</p>
+          <div class="features-grid">
+            {features.map((feature) => (
+              <article class="feature-card">
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container footer-inner">
+        <span class="footer-copy">&copy; {new Date().getFullYear()} AppBahn. Licensed under ELv2.</span>
+        <span class="footer-europe">Built in Europe</span>
+        <ul class="footer-links">
+          <li><a href="/docs">Docs</a></li>
+          <li><a href="https://github.com/diverofdark/appbahn">GitHub</a></li>
+          <li><a href="/license">License</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>

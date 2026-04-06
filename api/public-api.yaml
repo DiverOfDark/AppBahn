@@ -32,6 +32,56 @@ tags:
   - name: admin
     description: Platform administration
 paths:
+  # ── Auth ─────────────────────────────────────────────────────────────────────
+  /auth/login:
+    get:
+      tags: [auth]
+      operationId: authLogin
+      summary: Initiate OIDC login
+      description: |
+        Generates PKCE code verifier/challenge and state, then redirects
+        the browser to the OIDC provider's authorization endpoint.
+        No authentication required.
+      security: []
+      responses:
+        "302":
+          description: Redirect to OIDC authorization endpoint
+          headers:
+            Location:
+              schema:
+                type: string
+
+  /auth/callback:
+    get:
+      tags: [auth]
+      operationId: authCallback
+      summary: OIDC callback
+      description: |
+        Receives the authorization code from the OIDC provider, exchanges
+        it for tokens server-side, then redirects the browser to
+        /auth/complete?token={access_token} for the SPA to pick up.
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to SPA with token
+          headers:
+            Location:
+              schema:
+                type: string
+        "400":
+          $ref: '#/components/responses/BadRequest'
+
   # ── Workspaces ──────────────────────────────────────────────────────────────
   /workspaces:
     get:
