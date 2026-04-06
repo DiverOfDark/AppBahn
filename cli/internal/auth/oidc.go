@@ -106,7 +106,7 @@ func Login(ctx context.Context, serverURL string) (*LoginResult, error) {
 	// --- Open browser ---
 	fmt.Printf("Opening browser to authenticate...\n")
 	fmt.Printf("If the browser does not open, visit:\n  %s\n\n", authURL)
-	openBrowser(authURL)
+	OpenBrowserFunc(authURL)
 
 	// --- Wait for callback ---
 	var cbResult callbackResult
@@ -155,8 +155,12 @@ func randomString(n int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(buf), nil
 }
 
-// openBrowser opens the given URL in the default browser.
-func openBrowser(url string) {
+// OpenBrowserFunc is the function used to open a URL in the browser.
+// Tests can replace this to intercept the auth URL.
+var OpenBrowserFunc = openBrowserDefault
+
+// openBrowserDefault opens the given URL in the default browser.
+func openBrowserDefault(url string) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "darwin":
