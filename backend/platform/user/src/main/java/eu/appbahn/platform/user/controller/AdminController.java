@@ -5,9 +5,11 @@ import eu.appbahn.platform.api.model.PlatformConfig;
 import eu.appbahn.platform.api.model.PlatformConfigBranding;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1")
 public class AdminController implements AdminApi {
 
     @Value("${platform.branding.instance-name:AppBahn}")

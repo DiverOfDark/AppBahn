@@ -24,12 +24,27 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            # Database
             - name: DATABASE_URL
               value: {{ .Values.platform.database.url | quote }}
             - name: DATABASE_USERNAME
               value: {{ .Values.platform.database.username | quote }}
             - name: DATABASE_PASSWORD
               value: {{ .Values.platform.database.password | quote }}
+            # OIDC
+            - name: OIDC_ISSUER_URI
+              value: {{ .Values.platform.auth.issuerUrl | quote }}
+            - name: OIDC_CLIENT_ID
+              value: {{ .Values.platform.auth.clientId | quote }}
+            - name: OIDC_CLIENT_SECRET
+              value: {{ .Values.platform.auth.clientSecret | quote }}
+            - name: OIDC_AUDIENCE
+              value: {{ .Values.platform.auth.audience | default "appbahn" | quote }}
+            # Platform config
+            - name: NAMESPACE_PREFIX
+              value: {{ .Values.platform.namespacePrefix | default "abp" | quote }}
+            - name: PLATFORM_ADMIN_GROUPS
+              value: {{ join "," .Values.platform.auth.platformAdminGroups | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health

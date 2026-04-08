@@ -7,6 +7,7 @@ platform:
   domain:
     base: "appbahn.example.com"
     apps: "appbahn.example.com"
+  namespacePrefix: "abp"
   auth:
     issuerUrl: ""
     clientId: ""
@@ -53,7 +54,10 @@ operator:
   replicas: 1
   platformApi:
     endpoint: ""
-    authSecret: "appbahn-operator-token"
+  auth:
+    clientId: "appbahn-operator"
+    clientSecret: ""
+    tokenEndpoint: ""
   cache:
     refreshInterval: "5m"
   resources:

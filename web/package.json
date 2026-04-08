@@ -15,7 +15,8 @@
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
@@ -46,6 +47,7 @@
     "vite": "^8.0.3",
     "vite-plugin-vue-devtools": "^8.1.1",
     "vitest": "^4.1.2",
+    "@playwright/test": "^1.52.0",
     "vue-tsc": "^3.2.6"
   },
   "engines": {

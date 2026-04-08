@@ -5,6 +5,24 @@ spring:
   application:
     name: appbahn-operator
 
+platform:
+  api:
+    base-url: ${PLATFORM_API_URL:http://localhost:8080}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          appbahn:
+            client-id: ${OIDC_CLIENT_ID:appbahn-operator}
+            client-secret: ${OIDC_CLIENT_SECRET:}
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          appbahn:
+            token-uri: ${OIDC_TOKEN_ENDPOINT:}
+
 management:
   endpoints:
     web:

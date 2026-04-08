@@ -31,10 +31,14 @@ spec:
               mountPath: /etc/webhook/tls
               readOnly: true
           env:
-            - name: APPBAHN_PLATFORM_API_ENDPOINT
-              value: {{ .Values.operator.platformApi.endpoint | quote }}
-            - name: APPBAHN_OPERATOR_AUTH_SECRET
-              value: {{ .Values.operator.platformApi.authSecret | quote }}
+            - name: PLATFORM_API_URL
+              value: {{ .Values.operator.platformApi.endpoint | default (printf "http://%s-platform:8080" (include "appbahn.fullname" .)) | quote }}
+            - name: OIDC_CLIENT_ID
+              value: {{ .Values.operator.auth.clientId | default "appbahn-operator" | quote }}
+            - name: OIDC_CLIENT_SECRET
+              value: {{ .Values.operator.auth.clientSecret | quote }}
+            - name: OIDC_TOKEN_ENDPOINT
+              value: {{ .Values.operator.auth.tokenEndpoint | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health
