@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -29,12 +31,15 @@ public class EnvironmentEntity extends BaseEntity {
     @Column(name = "target_cluster", nullable = false)
     private String targetCluster = "local";
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String quota;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String registry;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "approval_gates", columnDefinition = "jsonb")
     private String approvalGates;
 }

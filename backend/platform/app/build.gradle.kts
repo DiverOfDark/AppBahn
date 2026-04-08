@@ -24,7 +24,11 @@ dependencies {
     runtimeOnly(libs.postgresql)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.oauth2.resource.server)
+    testImplementation(libs.spring.boot.starter.oauth2.client)
+    testImplementation(libs.spring.boot.starter.data.jpa)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit.jupiter)
     testImplementation(libs.classgraph)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }

@@ -1,19 +1,34 @@
 package eu.appbahn.platform.common.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            BiFunction<Jwt, List<String>, AuthContext> authContextResolver,
+            Function<String, Optional<Authentication>> environmentTokenAuthenticator,
+            @Qualifier("oidcHttpSecurityCustomizer") Optional<Customizer<HttpSecurity>> oidcCustomizer
+    ) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -28,10 +43,30 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/admin/config").permitAll()
                 .requestMatchers("/assets/**", "/favicon.ico").permitAll()
-                // All other endpoints require authentication — OIDC configured in Sprint 3
-                // For now, permit all until OIDC is wired up
-                .anyRequest().permitAll()
+                // OAuth2 login endpoints handled by Spring
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                // All other endpoints require authentication
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .jwtAuthenticationConverter(new AppBahnJwtAuthenticationConverter(authContextResolver))
+                )
+            )
+            .addFilterBefore(
+                new EnvironmentTokenFilter(environmentTokenAuthenticator),
+                BearerTokenAuthenticationFilter.class
             );
+
+        // OAuth2 Login (OIDC authorization code + PKCE)
+        oidcCustomizer.ifPresent(customizer -> {
+            try {
+                customizer.customize(http);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to configure OAuth2 login", e);
+            }
+        });
+
         return http.build();
     }
 }

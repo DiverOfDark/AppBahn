@@ -36,12 +36,12 @@ const router = createRouter({
         {
           path: ':wsSlug/:projSlug',
           name: 'project',
-          component: () => import('@/views/console/PlaceholderView.vue'),
+          component: () => import('@/views/console/ProjectView.vue'),
         },
         {
           path: ':wsSlug/:projSlug/:envSlug',
           name: 'environment',
-          component: () => import('@/views/console/PlaceholderView.vue'),
+          component: () => import('@/views/console/EnvironmentView.vue'),
         },
         {
           path: ':wsSlug/:projSlug/:envSlug/create',

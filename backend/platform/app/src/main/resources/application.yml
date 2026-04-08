@@ -4,6 +4,23 @@ server:
 spring:
   application:
     name: appbahn-platform
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI}
+          audiences: ${OIDC_AUDIENCE:appbahn}
+      client:
+        registration:
+          appbahn:
+            client-id: ${OIDC_CLIENT_ID:}
+            client-secret: ${OIDC_CLIENT_SECRET:}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/appbahn"
+        provider:
+          appbahn:
+            issuer-uri: ${OIDC_ISSUER_URI}
 
 springdoc:
   api-docs:
@@ -20,6 +37,10 @@ scalar:
   layout: modern
 
 platform:
+  namespace-prefix: ${NAMESPACE_PREFIX:abp}
+  admin-groups: ${PLATFORM_ADMIN_GROUPS:}
+  kubernetes:
+    enabled: ${KUBERNETES_ENABLED:true}
   branding:
     instance-name: AppBahn
     tagline: Deploy and manage your applications
