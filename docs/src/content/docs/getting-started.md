@@ -168,3 +168,36 @@ appbahn workspace list
 appbahn project list --workspace <workspace-slug>
 appbahn env list --project <project-slug>
 ```
+
+### Invite a member
+
+Add a team member to your workspace by email. If they haven't logged in yet, a pending invitation is created and auto-converts on their first OIDC login:
+
+```bash
+appbahn member add --workspace <workspace-slug> --email alice@acme.org --role EDITOR
+appbahn member list --workspace <workspace-slug>
+```
+
+You can also manage members from the workspace **Settings** page in the console.
+
+### Set quotas
+
+Configure resource quotas for your workspace from the console (Settings → Quotas) or via the API:
+
+```bash
+curl -X PATCH https://<your-cluster>/api/v1/workspaces/<slug>/quota \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"maxCpuCores": 8, "maxMemoryMb": 16384, "maxResources": 50}'
+```
+
+### Create an environment token
+
+Create a deploy token for CI/CD pipelines:
+
+```bash
+appbahn token create --env <env-slug> --name "github-actions" --role EDITOR --expires-in-days 90
+# Save the token — it's only shown once!
+
+appbahn token list --env <env-slug>
+```

@@ -16,7 +16,19 @@ Every workspace has members with one of four roles:
 - **Editor** — can manage resources within existing projects and environments.
 - **Viewer** — read-only access to everything in the workspace.
 
-OIDC group mappings can be configured to auto-assign roles when users log in through your identity provider.
+### Adding members
+
+Members can be added by email. If the user already exists in the system, they are added immediately (status: **active**). If the user hasn't logged in yet, a **pending invitation** is created. Pending invitations are automatically converted to active memberships when the user first logs in via OIDC with a matching email.
+
+Pending invitations expire and are cleaned up after 90 days.
+
+### OIDC group mappings
+
+OIDC group mappings auto-assign roles when users log in through your identity provider. Mappings are resolved **per request** from the JWT `groups` claim. If a user has both a direct membership and group mapping, the **highest** role wins.
+
+### Role overrides
+
+Workspace roles apply everywhere by default. You can **elevate** (never restrict) a member's role at the project or environment level. The effective role at any level is: `max(workspace_role, project_override, environment_override)`.
 
 Deleting a workspace is blocked (HTTP 409) if it still contains projects. Remove all projects first.
 
@@ -37,6 +49,21 @@ Deleting an environment **cascades** — the corresponding Kubernetes namespace 
 ## Resources
 
 A **Resource** is a deployable unit — a container, database, or other service — that runs inside an environment. Resources are defined as Kubernetes Custom Resources (CRDs) and managed by the AppBahn Operator. Full CRUD on resources requires the **Editor** role or higher.
+
+## Environment tokens
+
+**Environment tokens** provide API access scoped to a single environment, intended for CI/CD pipelines. Tokens have the format `abp_` followed by 40 random alphanumeric characters.
+
+- Tokens are scoped to one environment with a role of **Editor** or **Viewer**.
+- A maximum lifetime is enforced (configurable via `platform.tokens.max-lifetime-days`, default: 365 days). Non-expiring tokens are not supported.
+- The raw token value is only shown **once** at creation time — store it securely.
+- Tokens are validated before OIDC JWTs (the `abp_` prefix triggers token-based auth).
+
+## Audit log
+
+Every mutation in AppBahn is recorded in an append-only audit log. Entries include the actor, action, target, and a diff of changes. The audit log can be queried per workspace or platform-wide (admin only).
+
+Retention is configurable via `platform.audit.retention-days` (default: 365 days). A scheduled cleanup job removes entries older than the retention period.
 
 ## Slugs
 

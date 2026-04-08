@@ -46,6 +46,21 @@ type ProjectsAPI interface {
 	DeleteProjectExecute(r ApiDeleteProjectRequest) (*http.Response, error)
 
 	/*
+		DeleteProjectMemberRole Remove project-level role override
+
+		Reverts the member to their workspace-level role for this project.
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiDeleteProjectMemberRoleRequest
+	*/
+	DeleteProjectMemberRole(ctx context.Context, slug string, userId string) ApiDeleteProjectMemberRoleRequest
+
+	// DeleteProjectMemberRoleExecute executes the request
+	DeleteProjectMemberRoleExecute(r ApiDeleteProjectMemberRoleRequest) (*http.Response, error)
+
+	/*
 		GetProject Get project details
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -82,6 +97,23 @@ type ProjectsAPI interface {
 	// ListProjectsExecute executes the request
 	//  @return PagedProjectResponse
 	ListProjectsExecute(r ApiListProjectsRequest) (*PagedProjectResponse, *http.Response, error)
+
+	/*
+			SetProjectMemberRole Set project-level role override
+
+			Elevate a workspace member's role at the project level.
+		The override role must be higher than the workspace role (can only elevate, never restrict).
+
+
+			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+			@param slug
+			@param userId
+			@return ApiSetProjectMemberRoleRequest
+	*/
+	SetProjectMemberRole(ctx context.Context, slug string, userId string) ApiSetProjectMemberRoleRequest
+
+	// SetProjectMemberRoleExecute executes the request
+	SetProjectMemberRoleExecute(r ApiSetProjectMemberRoleRequest) (*http.Response, error)
 
 	/*
 		SetProjectQuota Set project quota
@@ -407,6 +439,134 @@ func (a *ProjectsAPIService) DeleteProjectExecute(r ApiDeleteProjectRequest) (*h
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
+type ApiDeleteProjectMemberRoleRequest struct {
+	ctx        context.Context
+	ApiService ProjectsAPI
+	slug       string
+	userId     string
+}
+
+func (r ApiDeleteProjectMemberRoleRequest) Execute() (*http.Response, error) {
+	return r.ApiService.DeleteProjectMemberRoleExecute(r)
+}
+
+/*
+DeleteProjectMemberRole Remove project-level role override
+
+Reverts the member to their workspace-level role for this project.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiDeleteProjectMemberRoleRequest
+*/
+func (a *ProjectsAPIService) DeleteProjectMemberRole(ctx context.Context, slug string, userId string) ApiDeleteProjectMemberRoleRequest {
+	return ApiDeleteProjectMemberRoleRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
+	}
+}
+
+// Execute executes the request
+func (a *ProjectsAPIService) DeleteProjectMemberRoleExecute(r ApiDeleteProjectMemberRoleRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectsAPIService.DeleteProjectMemberRole")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/projects/{slug}/members/{userId}/role"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"userId"+"}", url.PathEscape(parameterValueToString(r.userId, "userId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
 			var v ErrorResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
@@ -841,6 +1001,157 @@ func (a *ProjectsAPIService) ListProjectsExecute(r ApiListProjectsRequest) (*Pag
 	}
 
 	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiSetProjectMemberRoleRequest struct {
+	ctx                 context.Context
+	ApiService          ProjectsAPI
+	slug                string
+	userId              string
+	updateMemberRequest *UpdateMemberRequest
+}
+
+func (r ApiSetProjectMemberRoleRequest) UpdateMemberRequest(updateMemberRequest UpdateMemberRequest) ApiSetProjectMemberRoleRequest {
+	r.updateMemberRequest = &updateMemberRequest
+	return r
+}
+
+func (r ApiSetProjectMemberRoleRequest) Execute() (*http.Response, error) {
+	return r.ApiService.SetProjectMemberRoleExecute(r)
+}
+
+/*
+SetProjectMemberRole Set project-level role override
+
+Elevate a workspace member's role at the project level.
+The override role must be higher than the workspace role (can only elevate, never restrict).
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiSetProjectMemberRoleRequest
+*/
+func (a *ProjectsAPIService) SetProjectMemberRole(ctx context.Context, slug string, userId string) ApiSetProjectMemberRoleRequest {
+	return ApiSetProjectMemberRoleRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
+	}
+}
+
+// Execute executes the request
+func (a *ProjectsAPIService) SetProjectMemberRoleExecute(r ApiSetProjectMemberRoleRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodPut
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectsAPIService.SetProjectMemberRole")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/projects/{slug}/members/{userId}/role"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"userId"+"}", url.PathEscape(parameterValueToString(r.userId, "userId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.updateMemberRequest == nil {
+		return nil, reportError("updateMemberRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateMemberRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
 }
 
 type ApiSetProjectQuotaRequest struct {

@@ -59,6 +59,21 @@ type EnvironmentsAPI interface {
 	DeleteEnvironmentExecute(r ApiDeleteEnvironmentRequest) (*http.Response, error)
 
 	/*
+		DeleteEnvironmentMemberRole Remove environment-level role override
+
+		Reverts the member to their inherited project-level role for this environment.
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiDeleteEnvironmentMemberRoleRequest
+	*/
+	DeleteEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiDeleteEnvironmentMemberRoleRequest
+
+	// DeleteEnvironmentMemberRoleExecute executes the request
+	DeleteEnvironmentMemberRoleExecute(r ApiDeleteEnvironmentMemberRoleRequest) (*http.Response, error)
+
+	/*
 		DeleteEnvironmentToken Delete environment token
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -134,6 +149,23 @@ type EnvironmentsAPI interface {
 	// SetApprovalGatesExecute executes the request
 	//  @return Environment
 	SetApprovalGatesExecute(r ApiSetApprovalGatesRequest) (*Environment, *http.Response, error)
+
+	/*
+			SetEnvironmentMemberRole Set environment-level role override
+
+			Elevate a member's role at the environment level.
+		The override role must be higher than the inherited project role (can only elevate, never restrict).
+
+
+			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+			@param slug
+			@param userId
+			@return ApiSetEnvironmentMemberRoleRequest
+	*/
+	SetEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiSetEnvironmentMemberRoleRequest
+
+	// SetEnvironmentMemberRoleExecute executes the request
+	SetEnvironmentMemberRoleExecute(r ApiSetEnvironmentMemberRoleRequest) (*http.Response, error)
 
 	/*
 		SetEnvironmentQuota Set environment quota
@@ -550,6 +582,134 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 
 	localVarPath := localBasePath + "/environments/{slug}"
 	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
+type ApiDeleteEnvironmentMemberRoleRequest struct {
+	ctx        context.Context
+	ApiService EnvironmentsAPI
+	slug       string
+	userId     string
+}
+
+func (r ApiDeleteEnvironmentMemberRoleRequest) Execute() (*http.Response, error) {
+	return r.ApiService.DeleteEnvironmentMemberRoleExecute(r)
+}
+
+/*
+DeleteEnvironmentMemberRole Remove environment-level role override
+
+Reverts the member to their inherited project-level role for this environment.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiDeleteEnvironmentMemberRoleRequest
+*/
+func (a *EnvironmentsAPIService) DeleteEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiDeleteEnvironmentMemberRoleRequest {
+	return ApiDeleteEnvironmentMemberRoleRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
+	}
+}
+
+// Execute executes the request
+func (a *EnvironmentsAPIService) DeleteEnvironmentMemberRoleExecute(r ApiDeleteEnvironmentMemberRoleRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.DeleteEnvironmentMemberRole")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/environments/{slug}/members/{userId}/role"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"userId"+"}", url.PathEscape(parameterValueToString(r.userId, "userId")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -1467,6 +1627,157 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 	}
 
 	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiSetEnvironmentMemberRoleRequest struct {
+	ctx                 context.Context
+	ApiService          EnvironmentsAPI
+	slug                string
+	userId              string
+	updateMemberRequest *UpdateMemberRequest
+}
+
+func (r ApiSetEnvironmentMemberRoleRequest) UpdateMemberRequest(updateMemberRequest UpdateMemberRequest) ApiSetEnvironmentMemberRoleRequest {
+	r.updateMemberRequest = &updateMemberRequest
+	return r
+}
+
+func (r ApiSetEnvironmentMemberRoleRequest) Execute() (*http.Response, error) {
+	return r.ApiService.SetEnvironmentMemberRoleExecute(r)
+}
+
+/*
+SetEnvironmentMemberRole Set environment-level role override
+
+Elevate a member's role at the environment level.
+The override role must be higher than the inherited project role (can only elevate, never restrict).
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiSetEnvironmentMemberRoleRequest
+*/
+func (a *EnvironmentsAPIService) SetEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiSetEnvironmentMemberRoleRequest {
+	return ApiSetEnvironmentMemberRoleRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
+	}
+}
+
+// Execute executes the request
+func (a *EnvironmentsAPIService) SetEnvironmentMemberRoleExecute(r ApiSetEnvironmentMemberRoleRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodPut
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.SetEnvironmentMemberRole")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/environments/{slug}/members/{userId}/role"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"userId"+"}", url.PathEscape(parameterValueToString(r.userId, "userId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.updateMemberRequest == nil {
+		return nil, reportError("updateMemberRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateMemberRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
 }
 
 type ApiSetEnvironmentQuotaRequest struct {

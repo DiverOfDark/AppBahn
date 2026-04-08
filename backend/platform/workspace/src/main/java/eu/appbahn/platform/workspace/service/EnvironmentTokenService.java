@@ -5,7 +5,10 @@ import eu.appbahn.platform.api.model.CreateEnvironmentTokenResponse;
 import eu.appbahn.platform.api.model.EnvironmentToken;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
+import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
+import eu.appbahn.platform.user.entity.UserEntity;
+import eu.appbahn.platform.user.repository.UserRepository;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.EnvironmentTokenEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,18 +41,24 @@ public class EnvironmentTokenService {
     private final EnvironmentRepository environmentRepository;
     private final EnvironmentTokenRepository tokenRepository;
     private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
     private final PermissionService permissionService;
     private final AuditLogService auditLogService;
+
+    @Value("${platform.tokens.max-lifetime-days:365}")
+    private int maxLifetimeDays;
 
     public EnvironmentTokenService(
             EnvironmentRepository environmentRepository,
             EnvironmentTokenRepository tokenRepository,
             ProjectRepository projectRepository,
+            UserRepository userRepository,
             PermissionService permissionService,
             AuditLogService auditLogService) {
         this.environmentRepository = environmentRepository;
         this.tokenRepository = tokenRepository;
         this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
         this.permissionService = permissionService;
         this.auditLogService = auditLogService;
     }
@@ -56,9 +66,18 @@ public class EnvironmentTokenService {
     public List<EnvironmentToken> listTokens(String slug, AuthContext ctx) {
         var env = findEnvironment(slug);
         requireWorkspaceAdmin(env, ctx);
-        return tokenRepository.findByEnvironmentId(env.getId()).stream()
-                .map(this::toApi)
-                .collect(Collectors.toList());
+
+        var tokens = tokenRepository.findByEnvironmentId(env.getId());
+        // Batch-fetch creator users to avoid N+1
+        var creatorIds = tokens.stream()
+                .map(EnvironmentTokenEntity::getCreatedBy)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+        var usersById =
+                userRepository.findAllById(creatorIds).stream().collect(Collectors.toMap(u -> u.getId(), u -> u));
+
+        return tokens.stream().map(t -> toApi(t, usersById)).collect(Collectors.toList());
     }
 
     @Transactional
@@ -76,9 +95,13 @@ public class EnvironmentTokenService {
         entity.setRole(req.getRole().getValue());
         entity.setCreatedBy(ctx.userId());
 
-        if (req.getExpiresInDays() != null && req.getExpiresInDays() > 0) {
-            entity.setExpiresAt(Instant.now().plus(req.getExpiresInDays(), ChronoUnit.DAYS));
+        if (req.getExpiresInDays() == null || req.getExpiresInDays() < 1) {
+            throw new ValidationException("expiresInDays is required and must be >= 1");
         }
+        if (req.getExpiresInDays() > maxLifetimeDays) {
+            throw new ValidationException("Token lifetime exceeds maximum allowed: " + maxLifetimeDays + " days");
+        }
+        entity.setExpiresAt(Instant.now().plus(req.getExpiresInDays(), ChronoUnit.DAYS));
 
         tokenRepository.save(entity);
 
@@ -95,9 +118,8 @@ public class EnvironmentTokenService {
         resp.setId(entity.getId());
         resp.setName(entity.getName());
         resp.setToken(rawToken); // Only returned once
-        if (entity.getExpiresAt() != null) {
-            resp.setExpiresAt(entity.getExpiresAt().atOffset(ZoneOffset.UTC));
-        }
+        resp.setRole(CreateEnvironmentTokenResponse.RoleEnum.fromValue(entity.getRole()));
+        resp.setExpiresAt(entity.getExpiresAt().atOffset(ZoneOffset.UTC));
         return resp;
     }
 
@@ -119,7 +141,7 @@ public class EnvironmentTokenService {
                 null);
     }
 
-    private EnvironmentToken toApi(EnvironmentTokenEntity entity) {
+    private EnvironmentToken toApi(EnvironmentTokenEntity entity, Map<UUID, UserEntity> usersById) {
         var dto = new EnvironmentToken();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
@@ -130,7 +152,12 @@ public class EnvironmentTokenService {
         if (entity.getLastUsedAt() != null) {
             dto.setLastUsedAt(entity.getLastUsedAt().atOffset(ZoneOffset.UTC));
         }
-        dto.setCreatedBy(entity.getCreatedBy());
+        if (entity.getCreatedBy() != null) {
+            var user = usersById.get(entity.getCreatedBy());
+            if (user != null) {
+                dto.setCreatedBy(user.getEmail());
+            }
+        }
         dto.setCreatedAt(entity.getCreatedAt().atOffset(ZoneOffset.UTC));
         return dto;
     }

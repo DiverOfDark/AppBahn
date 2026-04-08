@@ -33,6 +33,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());

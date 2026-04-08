@@ -658,6 +658,21 @@ paths:
           in: query
           schema:
             type: string
+        - name: actorId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
       responses:
         "200":
           description: Paged audit log entries
@@ -920,6 +935,64 @@ paths:
                 $ref: '#/components/schemas/Quota'
         "400":
           $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{slug}/members/{userId}/role:
+    put:
+      tags: [projects]
+      operationId: setProjectMemberRole
+      summary: Set project-level role override
+      description: |
+        Elevate a workspace member's role at the project level.
+        The override role must be higher than the workspace role (can only elevate, never restrict).
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRequest'
+      responses:
+        "200":
+          description: Role override set
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [projects]
+      operationId: deleteProjectMemberRole
+      summary: Remove project-level role override
+      description: Reverts the member to their workspace-level role for this project.
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Role override removed
         "401":
           $ref: '#/components/responses/Unauthorized'
         "403":
@@ -1191,6 +1264,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
 
   /environments/{slug}/tokens/{tokenId}:
     delete:
@@ -1256,6 +1331,64 @@ paths:
                 $ref: '#/components/schemas/Quota'
         "400":
           $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /environments/{slug}/members/{userId}/role:
+    put:
+      tags: [environments]
+      operationId: setEnvironmentMemberRole
+      summary: Set environment-level role override
+      description: |
+        Elevate a member's role at the environment level.
+        The override role must be higher than the inherited project role (can only elevate, never restrict).
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRequest'
+      responses:
+        "200":
+          description: Role override set
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [environments]
+      operationId: deleteEnvironmentMemberRole
+      summary: Remove environment-level role override
+      description: Reverts the member to their inherited project-level role for this environment.
+      parameters:
+        - $ref: '#/components/parameters/SlugPath'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Role override removed
         "401":
           $ref: '#/components/responses/Unauthorized'
         "403":
@@ -2249,6 +2382,21 @@ paths:
           in: query
           schema:
             type: string
+        - name: actorId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
         - name: workspaceSlug
           in: query
           schema:
@@ -2843,14 +2991,14 @@ components:
           format: date-time
         createdBy:
           type: string
-          format: uuid
+          description: Email of the user who created the token
         createdAt:
           type: string
           format: date-time
 
     CreateEnvironmentTokenRequest:
       type: object
-      required: [name, role]
+      required: [name, role, expiresInDays]
       properties:
         name:
           type: string
@@ -2870,6 +3018,9 @@ components:
           type: string
         token:
           type: string
+        role:
+          type: string
+          enum: [EDITOR, VIEWER]
         expiresAt:
           type: string
           format: date-time
@@ -3078,6 +3229,9 @@ components:
         role:
           type: string
           enum: [OWNER, ADMIN, EDITOR, VIEWER]
+        status:
+          type: string
+          enum: [active, pending]
 
     AddMemberRequest:
       type: object
@@ -3235,14 +3389,9 @@ components:
     SecuritySettings:
       type: object
       properties:
-        allowedIpRanges:
-          type: array
-          items:
-            type: string
-        requireMfa:
-          type: boolean
-        sessionTimeoutMinutes:
-          type: integer
+        runtimeClassName:
+          type: string
+          description: Kubernetes RuntimeClass name for pod isolation (e.g. "gvisor", "kata"). Null means default (runc).
 
     # ── Cluster ───────────────────────────────────────────────────────────────
     Cluster:

@@ -352,6 +352,31 @@ export interface paths {
     patch: operations['setProjectQuota']
     trace?: never
   }
+  '/projects/{slug}/members/{userId}/role': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Set project-level role override
+     * @description Elevate a workspace member's role at the project level.
+     *     The override role must be higher than the workspace role (can only elevate, never restrict).
+     */
+    put: operations['setProjectMemberRole']
+    post?: never
+    /**
+     * Remove project-level role override
+     * @description Reverts the member to their workspace-level role for this project.
+     */
+    delete: operations['deleteProjectMemberRole']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/environments': {
     parameters: {
       query?: never
@@ -491,6 +516,31 @@ export interface paths {
     head?: never
     /** Set environment quota */
     patch: operations['setEnvironmentQuota']
+    trace?: never
+  }
+  '/environments/{slug}/members/{userId}/role': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Set environment-level role override
+     * @description Elevate a member's role at the environment level.
+     *     The override role must be higher than the inherited project role (can only elevate, never restrict).
+     */
+    put: operations['setEnvironmentMemberRole']
+    post?: never
+    /**
+     * Remove environment-level role override
+     * @description Reverts the member to their inherited project-level role for this environment.
+     */
+    delete: operations['deleteEnvironmentMemberRole']
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   '/resources': {
@@ -1032,7 +1082,11 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** Get platform configuration */
+    /**
+     * Get public platform configuration
+     * @description Returns public platform configuration including branding.
+     *     No authentication required — used by the login page.
+     */
     get: operations['getPlatformConfig']
     /** Set platform configuration */
     put: operations['setPlatformConfig']
@@ -1315,7 +1369,7 @@ export interface components {
       expiresAt?: string
       /** Format: date-time */
       lastUsedAt?: string
-      /** Format: uuid */
+      /** @description Email of the user who created the token */
       createdBy?: string
       /** Format: date-time */
       createdAt?: string
@@ -1331,6 +1385,8 @@ export interface components {
       id?: string
       name?: string
       token?: string
+      /** @enum {string} */
+      role?: 'EDITOR' | 'VIEWER'
       /** Format: date-time */
       expiresAt?: string
     }
@@ -1444,6 +1500,8 @@ export interface components {
       email?: string
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** @enum {string} */
+      status?: 'active' | 'pending'
     }
     AddMemberRequest: {
       email: string
@@ -1522,9 +1580,8 @@ export interface components {
       maxDatabaseResources?: number
     }
     SecuritySettings: {
-      allowedIpRanges?: string[]
-      requireMfa?: boolean
-      sessionTimeoutMinutes?: number
+      /** @description Kubernetes RuntimeClass name for pod isolation (e.g. "gvisor", "kata"). Null means default (runc). */
+      runtimeClassName?: string
     }
     Cluster: {
       name?: string
@@ -1715,7 +1772,28 @@ export interface components {
     PlatformConfig: {
       domain?: string
       registry?: components['schemas']['RegistryConfig']
-      branding?: Record<string, never>
+      branding?: {
+        /**
+         * @description Display name shown on login page
+         * @example ACME Corp Platform
+         */
+        instanceName?: string
+        /**
+         * @description Subtitle shown on login page
+         * @example Deploy and manage your applications
+         */
+        tagline?: string
+        /**
+         * @description URL to company logo
+         * @example https://acme.org/logo.svg
+         */
+        logoUrl?: string
+        /**
+         * @description Text for the login button
+         * @example Log in with SSO
+         */
+        loginButtonText?: string
+      }
       auth?: Record<string, never>
       defaultQuota?: components['schemas']['Quota']
       buildConfig?: Record<string, never>
@@ -2419,6 +2497,9 @@ export interface operations {
         size?: number
         action?: string
         targetType?: string
+        actorId?: string
+        from?: string
+        to?: string
       }
       header?: never
       path: {
@@ -2717,6 +2798,60 @@ export interface operations {
       404: components['responses']['NotFound']
     }
   }
+  setProjectMemberRole: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: components['parameters']['SlugPath']
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateMemberRequest']
+      }
+    }
+    responses: {
+      /** @description Role override set */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      400: components['responses']['BadRequest']
+      401: components['responses']['Unauthorized']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+      422: components['responses']['UnprocessableEntity']
+    }
+  }
+  deleteProjectMemberRole: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: components['parameters']['SlugPath']
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Role override removed */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      401: components['responses']['Unauthorized']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+    }
+  }
   listEnvironments: {
     parameters: {
       query: {
@@ -2994,6 +3129,7 @@ export interface operations {
       401: components['responses']['Unauthorized']
       403: components['responses']['Forbidden']
       404: components['responses']['NotFound']
+      422: components['responses']['UnprocessableEntity']
     }
   }
   deleteEnvironmentToken: {
@@ -3070,6 +3206,60 @@ export interface operations {
         }
       }
       400: components['responses']['BadRequest']
+      401: components['responses']['Unauthorized']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+    }
+  }
+  setEnvironmentMemberRole: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: components['parameters']['SlugPath']
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateMemberRequest']
+      }
+    }
+    responses: {
+      /** @description Role override set */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      400: components['responses']['BadRequest']
+      401: components['responses']['Unauthorized']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+      422: components['responses']['UnprocessableEntity']
+    }
+  }
+  deleteEnvironmentMemberRole: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: components['parameters']['SlugPath']
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Role override removed */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
       401: components['responses']['Unauthorized']
       403: components['responses']['Forbidden']
       404: components['responses']['NotFound']
@@ -4067,8 +4257,6 @@ export interface operations {
           'application/json': components['schemas']['PlatformConfig']
         }
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
     }
   }
   setPlatformConfig: {
@@ -4131,6 +4319,9 @@ export interface operations {
         size?: number
         action?: string
         targetType?: string
+        actorId?: string
+        from?: string
+        to?: string
         workspaceSlug?: string
       }
       header?: never

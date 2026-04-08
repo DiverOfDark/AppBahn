@@ -1,8 +1,10 @@
 package eu.appbahn.platform.user.service;
 
 import eu.appbahn.platform.user.entity.UserEntity;
+import eu.appbahn.platform.user.event.UserCreatedEvent;
 import eu.appbahn.platform.user.repository.UserRepository;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -23,7 +27,9 @@ public class UserService {
             var user = new UserEntity();
             user.setOidcSubjectId(subject);
             user.setEmail(jwt.getClaimAsString("email"));
-            return userRepository.save(user);
+            var saved = userRepository.save(user);
+            eventPublisher.publishEvent(new UserCreatedEvent(saved.getId(), saved.getEmail()));
+            return saved;
         });
     }
 
