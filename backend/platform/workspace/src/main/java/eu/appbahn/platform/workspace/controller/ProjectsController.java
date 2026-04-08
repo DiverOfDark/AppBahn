@@ -30,7 +30,8 @@ public class ProjectsController implements ProjectsApi {
     }
 
     @Override
-    public ResponseEntity<PagedProjectResponse> listProjects(String workspaceSlug, Integer page, Integer size, String sort) {
+    public ResponseEntity<PagedProjectResponse> listProjects(
+            String workspaceSlug, Integer page, Integer size, String sort) {
         var result = projectService.list(workspaceSlug, page, size, sort, AuthContextHolder.get());
         return ResponseEntity.ok(result);
     }

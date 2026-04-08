@@ -19,15 +19,14 @@ import (
 	"strings"
 )
 
-
 type WebhooksAPI interface {
 
 	/*
-	TriggerWebhook Trigger deployment via webhook
+		TriggerWebhook Trigger deployment via webhook
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param resourceSlug
-	@return ApiTriggerWebhookRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param resourceSlug
+		@return ApiTriggerWebhookRequest
 	*/
 	TriggerWebhook(ctx context.Context, resourceSlug string) ApiTriggerWebhookRequest
 
@@ -40,8 +39,8 @@ type WebhooksAPI interface {
 type WebhooksAPIService service
 
 type ApiTriggerWebhookRequest struct {
-	ctx context.Context
-	ApiService WebhooksAPI
+	ctx          context.Context
+	ApiService   WebhooksAPI
 	resourceSlug string
 }
 
@@ -52,26 +51,27 @@ func (r ApiTriggerWebhookRequest) Execute() (*WebhookTriggerResponse, *http.Resp
 /*
 TriggerWebhook Trigger deployment via webhook
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param resourceSlug
- @return ApiTriggerWebhookRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param resourceSlug
+	@return ApiTriggerWebhookRequest
 */
 func (a *WebhooksAPIService) TriggerWebhook(ctx context.Context, resourceSlug string) ApiTriggerWebhookRequest {
 	return ApiTriggerWebhookRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		resourceSlug: resourceSlug,
 	}
 }
 
 // Execute executes the request
-//  @return WebhookTriggerResponse
+//
+//	@return WebhookTriggerResponse
 func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (*WebhookTriggerResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebhookTriggerResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebhookTriggerResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WebhooksAPIService.TriggerWebhook")
@@ -146,8 +146,8 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -157,8 +157,8 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 429 {
@@ -168,8 +168,8 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

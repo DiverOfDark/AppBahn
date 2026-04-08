@@ -19,14 +19,13 @@ import (
 	"strings"
 )
 
-
 type EnvironmentsAPI interface {
 
 	/*
-	CreateEnvironment Create environment
+		CreateEnvironment Create environment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCreateEnvironmentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateEnvironmentRequest
 	*/
 	CreateEnvironment(ctx context.Context) ApiCreateEnvironmentRequest
 
@@ -35,11 +34,11 @@ type EnvironmentsAPI interface {
 	CreateEnvironmentExecute(r ApiCreateEnvironmentRequest) (*Environment, *http.Response, error)
 
 	/*
-	CreateEnvironmentToken Create environment token
+		CreateEnvironmentToken Create environment token
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiCreateEnvironmentTokenRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateEnvironmentTokenRequest
 	*/
 	CreateEnvironmentToken(ctx context.Context, slug string) ApiCreateEnvironmentTokenRequest
 
@@ -48,11 +47,11 @@ type EnvironmentsAPI interface {
 	CreateEnvironmentTokenExecute(r ApiCreateEnvironmentTokenRequest) (*CreateEnvironmentTokenResponse, *http.Response, error)
 
 	/*
-	DeleteEnvironment Delete environment
+		DeleteEnvironment Delete environment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiDeleteEnvironmentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiDeleteEnvironmentRequest
 	*/
 	DeleteEnvironment(ctx context.Context, slug string) ApiDeleteEnvironmentRequest
 
@@ -60,12 +59,12 @@ type EnvironmentsAPI interface {
 	DeleteEnvironmentExecute(r ApiDeleteEnvironmentRequest) (*http.Response, error)
 
 	/*
-	DeleteEnvironmentToken Delete environment token
+		DeleteEnvironmentToken Delete environment token
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param tokenId
-	@return ApiDeleteEnvironmentTokenRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param tokenId
+		@return ApiDeleteEnvironmentTokenRequest
 	*/
 	DeleteEnvironmentToken(ctx context.Context, slug string, tokenId string) ApiDeleteEnvironmentTokenRequest
 
@@ -73,11 +72,11 @@ type EnvironmentsAPI interface {
 	DeleteEnvironmentTokenExecute(r ApiDeleteEnvironmentTokenRequest) (*http.Response, error)
 
 	/*
-	GetEnvironment Get environment details
+		GetEnvironment Get environment details
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetEnvironmentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetEnvironmentRequest
 	*/
 	GetEnvironment(ctx context.Context, slug string) ApiGetEnvironmentRequest
 
@@ -86,11 +85,11 @@ type EnvironmentsAPI interface {
 	GetEnvironmentExecute(r ApiGetEnvironmentRequest) (*Environment, *http.Response, error)
 
 	/*
-	GetEnvironmentQuota Get environment quota
+		GetEnvironmentQuota Get environment quota
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetEnvironmentQuotaRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetEnvironmentQuotaRequest
 	*/
 	GetEnvironmentQuota(ctx context.Context, slug string) ApiGetEnvironmentQuotaRequest
 
@@ -99,11 +98,11 @@ type EnvironmentsAPI interface {
 	GetEnvironmentQuotaExecute(r ApiGetEnvironmentQuotaRequest) (*Quota, *http.Response, error)
 
 	/*
-	ListEnvironmentTokens List environment tokens
+		ListEnvironmentTokens List environment tokens
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListEnvironmentTokensRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListEnvironmentTokensRequest
 	*/
 	ListEnvironmentTokens(ctx context.Context, slug string) ApiListEnvironmentTokensRequest
 
@@ -112,10 +111,10 @@ type EnvironmentsAPI interface {
 	ListEnvironmentTokensExecute(r ApiListEnvironmentTokensRequest) ([]EnvironmentToken, *http.Response, error)
 
 	/*
-	ListEnvironments List environments
+		ListEnvironments List environments
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListEnvironmentsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListEnvironmentsRequest
 	*/
 	ListEnvironments(ctx context.Context) ApiListEnvironmentsRequest
 
@@ -124,11 +123,11 @@ type EnvironmentsAPI interface {
 	ListEnvironmentsExecute(r ApiListEnvironmentsRequest) (*PagedEnvironmentResponse, *http.Response, error)
 
 	/*
-	SetApprovalGates Set deployment approval gates
+		SetApprovalGates Set deployment approval gates
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetApprovalGatesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetApprovalGatesRequest
 	*/
 	SetApprovalGates(ctx context.Context, slug string) ApiSetApprovalGatesRequest
 
@@ -137,11 +136,11 @@ type EnvironmentsAPI interface {
 	SetApprovalGatesExecute(r ApiSetApprovalGatesRequest) (*Environment, *http.Response, error)
 
 	/*
-	SetEnvironmentQuota Set environment quota
+		SetEnvironmentQuota Set environment quota
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetEnvironmentQuotaRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetEnvironmentQuotaRequest
 	*/
 	SetEnvironmentQuota(ctx context.Context, slug string) ApiSetEnvironmentQuotaRequest
 
@@ -150,11 +149,11 @@ type EnvironmentsAPI interface {
 	SetEnvironmentQuotaExecute(r ApiSetEnvironmentQuotaRequest) (*Quota, *http.Response, error)
 
 	/*
-	SetEnvironmentRegistry Set environment registry configuration
+		SetEnvironmentRegistry Set environment registry configuration
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetEnvironmentRegistryRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetEnvironmentRegistryRequest
 	*/
 	SetEnvironmentRegistry(ctx context.Context, slug string) ApiSetEnvironmentRegistryRequest
 
@@ -163,11 +162,11 @@ type EnvironmentsAPI interface {
 	SetEnvironmentRegistryExecute(r ApiSetEnvironmentRegistryRequest) (*Environment, *http.Response, error)
 
 	/*
-	SetTargetCluster Set target cluster for environment
+		SetTargetCluster Set target cluster for environment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetTargetClusterRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetTargetClusterRequest
 	*/
 	SetTargetCluster(ctx context.Context, slug string) ApiSetTargetClusterRequest
 
@@ -176,11 +175,11 @@ type EnvironmentsAPI interface {
 	SetTargetClusterExecute(r ApiSetTargetClusterRequest) (*Environment, *http.Response, error)
 
 	/*
-	UpdateEnvironment Update environment
+		UpdateEnvironment Update environment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiUpdateEnvironmentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiUpdateEnvironmentRequest
 	*/
 	UpdateEnvironment(ctx context.Context, slug string) ApiUpdateEnvironmentRequest
 
@@ -193,8 +192,8 @@ type EnvironmentsAPI interface {
 type EnvironmentsAPIService service
 
 type ApiCreateEnvironmentRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
+	ctx                      context.Context
+	ApiService               EnvironmentsAPI
 	createEnvironmentRequest *CreateEnvironmentRequest
 }
 
@@ -210,24 +209,25 @@ func (r ApiCreateEnvironmentRequest) Execute() (*Environment, *http.Response, er
 /*
 CreateEnvironment Create environment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateEnvironmentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateEnvironmentRequest
 */
 func (a *EnvironmentsAPIService) CreateEnvironment(ctx context.Context) ApiCreateEnvironmentRequest {
 	return ApiCreateEnvironmentRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironmentRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.CreateEnvironment")
@@ -292,8 +292,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -303,8 +303,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -314,8 +314,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -325,8 +325,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -336,8 +336,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -355,9 +355,9 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 }
 
 type ApiCreateEnvironmentTokenRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
-	slug string
+	ctx                           context.Context
+	ApiService                    EnvironmentsAPI
+	slug                          string
 	createEnvironmentTokenRequest *CreateEnvironmentTokenRequest
 }
 
@@ -373,26 +373,27 @@ func (r ApiCreateEnvironmentTokenRequest) Execute() (*CreateEnvironmentTokenResp
 /*
 CreateEnvironmentToken Create environment token
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiCreateEnvironmentTokenRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiCreateEnvironmentTokenRequest
 */
 func (a *EnvironmentsAPIService) CreateEnvironmentToken(ctx context.Context, slug string) ApiCreateEnvironmentTokenRequest {
 	return ApiCreateEnvironmentTokenRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return CreateEnvironmentTokenResponse
+//
+//	@return CreateEnvironmentTokenResponse
 func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnvironmentTokenRequest) (*CreateEnvironmentTokenResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *CreateEnvironmentTokenResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CreateEnvironmentTokenResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.CreateEnvironmentToken")
@@ -458,8 +459,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -469,8 +470,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -480,8 +481,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -491,8 +492,8 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -510,9 +511,9 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 }
 
 type ApiDeleteEnvironmentRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
+	slug       string
 }
 
 func (r ApiDeleteEnvironmentRequest) Execute() (*http.Response, error) {
@@ -522,24 +523,24 @@ func (r ApiDeleteEnvironmentRequest) Execute() (*http.Response, error) {
 /*
 DeleteEnvironment Delete environment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiDeleteEnvironmentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiDeleteEnvironmentRequest
 */
 func (a *EnvironmentsAPIService) DeleteEnvironment(ctx context.Context, slug string) ApiDeleteEnvironmentRequest {
 	return ApiDeleteEnvironmentRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironmentRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.DeleteEnvironment")
@@ -600,8 +601,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -611,8 +612,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -622,8 +623,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -632,10 +633,10 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 }
 
 type ApiDeleteEnvironmentTokenRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
-	tokenId string
+	slug       string
+	tokenId    string
 }
 
 func (r ApiDeleteEnvironmentTokenRequest) Execute() (*http.Response, error) {
@@ -645,26 +646,26 @@ func (r ApiDeleteEnvironmentTokenRequest) Execute() (*http.Response, error) {
 /*
 DeleteEnvironmentToken Delete environment token
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param tokenId
- @return ApiDeleteEnvironmentTokenRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param tokenId
+	@return ApiDeleteEnvironmentTokenRequest
 */
 func (a *EnvironmentsAPIService) DeleteEnvironmentToken(ctx context.Context, slug string, tokenId string) ApiDeleteEnvironmentTokenRequest {
 	return ApiDeleteEnvironmentTokenRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		tokenId: tokenId,
+		ctx:        ctx,
+		slug:       slug,
+		tokenId:    tokenId,
 	}
 }
 
 // Execute executes the request
 func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnvironmentTokenRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.DeleteEnvironmentToken")
@@ -726,8 +727,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -737,8 +738,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -748,8 +749,8 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -758,9 +759,9 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 }
 
 type ApiGetEnvironmentRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetEnvironmentRequest) Execute() (*Environment, *http.Response, error) {
@@ -770,26 +771,27 @@ func (r ApiGetEnvironmentRequest) Execute() (*Environment, *http.Response, error
 /*
 GetEnvironment Get environment details
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetEnvironmentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetEnvironmentRequest
 */
 func (a *EnvironmentsAPIService) GetEnvironment(ctx context.Context, slug string) ApiGetEnvironmentRequest {
 	return ApiGetEnvironmentRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.GetEnvironment")
@@ -850,8 +852,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -861,8 +863,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -872,8 +874,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -891,9 +893,9 @@ func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentReques
 }
 
 type ApiGetEnvironmentQuotaRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetEnvironmentQuotaRequest) Execute() (*Quota, *http.Response, error) {
@@ -903,26 +905,27 @@ func (r ApiGetEnvironmentQuotaRequest) Execute() (*Quota, *http.Response, error)
 /*
 GetEnvironmentQuota Get environment quota
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetEnvironmentQuotaRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetEnvironmentQuotaRequest
 */
 func (a *EnvironmentsAPIService) GetEnvironmentQuota(ctx context.Context, slug string) ApiGetEnvironmentQuotaRequest {
 	return ApiGetEnvironmentQuotaRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Quota
+//
+//	@return Quota
 func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQuotaRequest) (*Quota, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Quota
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Quota
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.GetEnvironmentQuota")
@@ -983,8 +986,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -994,8 +997,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1005,8 +1008,8 @@ func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1024,9 +1027,9 @@ func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQ
 }
 
 type ApiListEnvironmentTokensRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListEnvironmentTokensRequest) Execute() ([]EnvironmentToken, *http.Response, error) {
@@ -1036,26 +1039,27 @@ func (r ApiListEnvironmentTokensRequest) Execute() ([]EnvironmentToken, *http.Re
 /*
 ListEnvironmentTokens List environment tokens
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListEnvironmentTokensRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListEnvironmentTokensRequest
 */
 func (a *EnvironmentsAPIService) ListEnvironmentTokens(ctx context.Context, slug string) ApiListEnvironmentTokensRequest {
 	return ApiListEnvironmentTokensRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []EnvironmentToken
+//
+//	@return []EnvironmentToken
 func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironmentTokensRequest) ([]EnvironmentToken, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []EnvironmentToken
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []EnvironmentToken
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.ListEnvironmentTokens")
@@ -1116,8 +1120,8 @@ func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1127,8 +1131,8 @@ func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1138,8 +1142,8 @@ func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1157,12 +1161,12 @@ func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironme
 }
 
 type ApiListEnvironmentsRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
+	ctx         context.Context
+	ApiService  EnvironmentsAPI
 	projectSlug *string
-	page *int32
-	size *int32
-	sort *string
+	page        *int32
+	size        *int32
+	sort        *string
 }
 
 func (r ApiListEnvironmentsRequest) ProjectSlug(projectSlug string) ApiListEnvironmentsRequest {
@@ -1192,24 +1196,25 @@ func (r ApiListEnvironmentsRequest) Execute() (*PagedEnvironmentResponse, *http.
 /*
 ListEnvironments List environments
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListEnvironmentsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListEnvironmentsRequest
 */
 func (a *EnvironmentsAPIService) ListEnvironments(ctx context.Context) ApiListEnvironmentsRequest {
 	return ApiListEnvironmentsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PagedEnvironmentResponse
+//
+//	@return PagedEnvironmentResponse
 func (a *EnvironmentsAPIService) ListEnvironmentsExecute(r ApiListEnvironmentsRequest) (*PagedEnvironmentResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedEnvironmentResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedEnvironmentResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.ListEnvironments")
@@ -1290,8 +1295,8 @@ func (a *EnvironmentsAPIService) ListEnvironmentsExecute(r ApiListEnvironmentsRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1309,9 +1314,9 @@ func (a *EnvironmentsAPIService) ListEnvironmentsExecute(r ApiListEnvironmentsRe
 }
 
 type ApiSetApprovalGatesRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
-	slug string
+	ctx                 context.Context
+	ApiService          EnvironmentsAPI
+	slug                string
 	approvalGatesConfig *ApprovalGatesConfig
 }
 
@@ -1327,26 +1332,27 @@ func (r ApiSetApprovalGatesRequest) Execute() (*Environment, *http.Response, err
 /*
 SetApprovalGates Set deployment approval gates
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetApprovalGatesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetApprovalGatesRequest
 */
 func (a *EnvironmentsAPIService) SetApprovalGates(ctx context.Context, slug string) ApiSetApprovalGatesRequest {
 	return ApiSetApprovalGatesRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.SetApprovalGates")
@@ -1412,8 +1418,8 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1423,8 +1429,8 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1434,8 +1440,8 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1445,8 +1451,8 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1464,10 +1470,10 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 }
 
 type ApiSetEnvironmentQuotaRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService EnvironmentsAPI
-	slug string
-	quota *Quota
+	slug       string
+	quota      *Quota
 }
 
 func (r ApiSetEnvironmentQuotaRequest) Quota(quota Quota) ApiSetEnvironmentQuotaRequest {
@@ -1482,26 +1488,27 @@ func (r ApiSetEnvironmentQuotaRequest) Execute() (*Quota, *http.Response, error)
 /*
 SetEnvironmentQuota Set environment quota
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetEnvironmentQuotaRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetEnvironmentQuotaRequest
 */
 func (a *EnvironmentsAPIService) SetEnvironmentQuota(ctx context.Context, slug string) ApiSetEnvironmentQuotaRequest {
 	return ApiSetEnvironmentQuotaRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Quota
+//
+//	@return Quota
 func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQuotaRequest) (*Quota, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Quota
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Quota
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.SetEnvironmentQuota")
@@ -1567,8 +1574,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1578,8 +1585,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1589,8 +1596,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1600,8 +1607,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1619,9 +1626,9 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 }
 
 type ApiSetEnvironmentRegistryRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
-	slug string
+	ctx            context.Context
+	ApiService     EnvironmentsAPI
+	slug           string
 	registryConfig *RegistryConfig
 }
 
@@ -1637,26 +1644,27 @@ func (r ApiSetEnvironmentRegistryRequest) Execute() (*Environment, *http.Respons
 /*
 SetEnvironmentRegistry Set environment registry configuration
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetEnvironmentRegistryRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetEnvironmentRegistryRequest
 */
 func (a *EnvironmentsAPIService) SetEnvironmentRegistry(ctx context.Context, slug string) ApiSetEnvironmentRegistryRequest {
 	return ApiSetEnvironmentRegistryRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironmentRegistryRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.SetEnvironmentRegistry")
@@ -1722,8 +1730,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1733,8 +1741,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1744,8 +1752,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1755,8 +1763,8 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1774,9 +1782,9 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 }
 
 type ApiSetTargetClusterRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
-	slug string
+	ctx                     context.Context
+	ApiService              EnvironmentsAPI
+	slug                    string
 	setTargetClusterRequest *SetTargetClusterRequest
 }
 
@@ -1792,26 +1800,27 @@ func (r ApiSetTargetClusterRequest) Execute() (*Environment, *http.Response, err
 /*
 SetTargetCluster Set target cluster for environment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetTargetClusterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetTargetClusterRequest
 */
 func (a *EnvironmentsAPIService) SetTargetCluster(ctx context.Context, slug string) ApiSetTargetClusterRequest {
 	return ApiSetTargetClusterRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.SetTargetCluster")
@@ -1877,8 +1886,8 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1888,8 +1897,8 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1899,8 +1908,8 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1910,8 +1919,8 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1929,9 +1938,9 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 }
 
 type ApiUpdateEnvironmentRequest struct {
-	ctx context.Context
-	ApiService EnvironmentsAPI
-	slug string
+	ctx                      context.Context
+	ApiService               EnvironmentsAPI
+	slug                     string
 	updateEnvironmentRequest *UpdateEnvironmentRequest
 }
 
@@ -1947,26 +1956,27 @@ func (r ApiUpdateEnvironmentRequest) Execute() (*Environment, *http.Response, er
 /*
 UpdateEnvironment Update environment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiUpdateEnvironmentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiUpdateEnvironmentRequest
 */
 func (a *EnvironmentsAPIService) UpdateEnvironment(ctx context.Context, slug string) ApiUpdateEnvironmentRequest {
 	return ApiUpdateEnvironmentRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Environment
+//
+//	@return Environment
 func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironmentRequest) (*Environment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Environment
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Environment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "EnvironmentsAPIService.UpdateEnvironment")
@@ -2032,8 +2042,8 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2043,8 +2053,8 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2054,8 +2064,8 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2065,8 +2075,8 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -2076,8 +2086,8 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

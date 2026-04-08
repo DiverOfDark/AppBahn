@@ -19,7 +19,7 @@ var _ MappedNullable = &ResourceCreatedResponse{}
 
 // ResourceCreatedResponse struct for ResourceCreatedResponse
 type ResourceCreatedResponse struct {
-	Slug *string `json:"slug,omitempty"`
+	Slug            *string `json:"slug,omitempty"`
 	EnvironmentSlug *string `json:"environmentSlug,omitempty"`
 }
 
@@ -105,7 +105,7 @@ func (o *ResourceCreatedResponse) SetEnvironmentSlug(v string) {
 }
 
 func (o ResourceCreatedResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableResourceCreatedResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

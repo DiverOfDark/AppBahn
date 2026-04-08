@@ -19,15 +19,14 @@ import (
 	"strings"
 )
 
-
 type WorkspacesAPI interface {
 
 	/*
-	AddWorkspaceMember Add workspace member
+		AddWorkspaceMember Add workspace member
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiAddWorkspaceMemberRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiAddWorkspaceMemberRequest
 	*/
 	AddWorkspaceMember(ctx context.Context, slug string) ApiAddWorkspaceMemberRequest
 
@@ -36,11 +35,11 @@ type WorkspacesAPI interface {
 	AddWorkspaceMemberExecute(r ApiAddWorkspaceMemberRequest) (*AddMemberResponse, *http.Response, error)
 
 	/*
-	CreateGroupMapping Create OIDC group mapping
+		CreateGroupMapping Create OIDC group mapping
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiCreateGroupMappingRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateGroupMappingRequest
 	*/
 	CreateGroupMapping(ctx context.Context, slug string) ApiCreateGroupMappingRequest
 
@@ -49,11 +48,11 @@ type WorkspacesAPI interface {
 	CreateGroupMappingExecute(r ApiCreateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error)
 
 	/*
-	CreateNotificationWebhook Create notification webhook
+		CreateNotificationWebhook Create notification webhook
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiCreateNotificationWebhookRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateNotificationWebhookRequest
 	*/
 	CreateNotificationWebhook(ctx context.Context, slug string) ApiCreateNotificationWebhookRequest
 
@@ -62,10 +61,10 @@ type WorkspacesAPI interface {
 	CreateNotificationWebhookExecute(r ApiCreateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error)
 
 	/*
-	CreateWorkspace Create workspace
+		CreateWorkspace Create workspace
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCreateWorkspaceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateWorkspaceRequest
 	*/
 	CreateWorkspace(ctx context.Context) ApiCreateWorkspaceRequest
 
@@ -74,12 +73,12 @@ type WorkspacesAPI interface {
 	CreateWorkspaceExecute(r ApiCreateWorkspaceRequest) (*Workspace, *http.Response, error)
 
 	/*
-	DeleteGroupMapping Delete OIDC group mapping
+		DeleteGroupMapping Delete OIDC group mapping
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param mappingId
-	@return ApiDeleteGroupMappingRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param mappingId
+		@return ApiDeleteGroupMappingRequest
 	*/
 	DeleteGroupMapping(ctx context.Context, slug string, mappingId string) ApiDeleteGroupMappingRequest
 
@@ -87,12 +86,12 @@ type WorkspacesAPI interface {
 	DeleteGroupMappingExecute(r ApiDeleteGroupMappingRequest) (*http.Response, error)
 
 	/*
-	DeleteNotificationWebhook Delete notification webhook
+		DeleteNotificationWebhook Delete notification webhook
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param hookId
-	@return ApiDeleteNotificationWebhookRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiDeleteNotificationWebhookRequest
 	*/
 	DeleteNotificationWebhook(ctx context.Context, slug string, hookId string) ApiDeleteNotificationWebhookRequest
 
@@ -100,11 +99,11 @@ type WorkspacesAPI interface {
 	DeleteNotificationWebhookExecute(r ApiDeleteNotificationWebhookRequest) (*http.Response, error)
 
 	/*
-	DeleteWorkspace Delete workspace
+		DeleteWorkspace Delete workspace
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiDeleteWorkspaceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiDeleteWorkspaceRequest
 	*/
 	DeleteWorkspace(ctx context.Context, slug string) ApiDeleteWorkspaceRequest
 
@@ -112,11 +111,11 @@ type WorkspacesAPI interface {
 	DeleteWorkspaceExecute(r ApiDeleteWorkspaceRequest) (*http.Response, error)
 
 	/*
-	GetWorkspace Get workspace details
+		GetWorkspace Get workspace details
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetWorkspaceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceRequest
 	*/
 	GetWorkspace(ctx context.Context, slug string) ApiGetWorkspaceRequest
 
@@ -125,11 +124,11 @@ type WorkspacesAPI interface {
 	GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*Workspace, *http.Response, error)
 
 	/*
-	GetWorkspaceAuditLog Query workspace audit log
+		GetWorkspaceAuditLog Query workspace audit log
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetWorkspaceAuditLogRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceAuditLogRequest
 	*/
 	GetWorkspaceAuditLog(ctx context.Context, slug string) ApiGetWorkspaceAuditLogRequest
 
@@ -138,11 +137,11 @@ type WorkspacesAPI interface {
 	GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error)
 
 	/*
-	GetWorkspaceQuota Get workspace quota
+		GetWorkspaceQuota Get workspace quota
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetWorkspaceQuotaRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceQuotaRequest
 	*/
 	GetWorkspaceQuota(ctx context.Context, slug string) ApiGetWorkspaceQuotaRequest
 
@@ -151,11 +150,11 @@ type WorkspacesAPI interface {
 	GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRequest) (*Quota, *http.Response, error)
 
 	/*
-	GetWorkspaceSecurity Get workspace security settings
+		GetWorkspaceSecurity Get workspace security settings
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetWorkspaceSecurityRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceSecurityRequest
 	*/
 	GetWorkspaceSecurity(ctx context.Context, slug string) ApiGetWorkspaceSecurityRequest
 
@@ -164,11 +163,11 @@ type WorkspacesAPI interface {
 	GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error)
 
 	/*
-	ListGroupMappings List OIDC group mappings
+		ListGroupMappings List OIDC group mappings
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListGroupMappingsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListGroupMappingsRequest
 	*/
 	ListGroupMappings(ctx context.Context, slug string) ApiListGroupMappingsRequest
 
@@ -177,11 +176,11 @@ type WorkspacesAPI interface {
 	ListGroupMappingsExecute(r ApiListGroupMappingsRequest) ([]OidcGroupMapping, *http.Response, error)
 
 	/*
-	ListNotificationWebhooks List notification webhooks
+		ListNotificationWebhooks List notification webhooks
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListNotificationWebhooksRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListNotificationWebhooksRequest
 	*/
 	ListNotificationWebhooks(ctx context.Context, slug string) ApiListNotificationWebhooksRequest
 
@@ -190,12 +189,12 @@ type WorkspacesAPI interface {
 	ListNotificationWebhooksExecute(r ApiListNotificationWebhooksRequest) ([]NotificationWebhook, *http.Response, error)
 
 	/*
-	ListWebhookDeliveries List webhook deliveries
+		ListWebhookDeliveries List webhook deliveries
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param hookId
-	@return ApiListWebhookDeliveriesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiListWebhookDeliveriesRequest
 	*/
 	ListWebhookDeliveries(ctx context.Context, slug string, hookId string) ApiListWebhookDeliveriesRequest
 
@@ -204,11 +203,11 @@ type WorkspacesAPI interface {
 	ListWebhookDeliveriesExecute(r ApiListWebhookDeliveriesRequest) ([]WebhookDelivery, *http.Response, error)
 
 	/*
-	ListWorkspaceMembers List workspace members
+		ListWorkspaceMembers List workspace members
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListWorkspaceMembersRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListWorkspaceMembersRequest
 	*/
 	ListWorkspaceMembers(ctx context.Context, slug string) ApiListWorkspaceMembersRequest
 
@@ -217,10 +216,10 @@ type WorkspacesAPI interface {
 	ListWorkspaceMembersExecute(r ApiListWorkspaceMembersRequest) ([]WorkspaceMember, *http.Response, error)
 
 	/*
-	ListWorkspaces List workspaces
+		ListWorkspaces List workspaces
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListWorkspacesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListWorkspacesRequest
 	*/
 	ListWorkspaces(ctx context.Context) ApiListWorkspacesRequest
 
@@ -229,12 +228,12 @@ type WorkspacesAPI interface {
 	ListWorkspacesExecute(r ApiListWorkspacesRequest) (*PagedWorkspaceResponse, *http.Response, error)
 
 	/*
-	RemoveWorkspaceMember Remove workspace member
+		RemoveWorkspaceMember Remove workspace member
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param userId
-	@return ApiRemoveWorkspaceMemberRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiRemoveWorkspaceMemberRequest
 	*/
 	RemoveWorkspaceMember(ctx context.Context, slug string, userId string) ApiRemoveWorkspaceMemberRequest
 
@@ -242,11 +241,11 @@ type WorkspacesAPI interface {
 	RemoveWorkspaceMemberExecute(r ApiRemoveWorkspaceMemberRequest) (*http.Response, error)
 
 	/*
-	SetWorkspaceQuota Set workspace quota
+		SetWorkspaceQuota Set workspace quota
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetWorkspaceQuotaRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceQuotaRequest
 	*/
 	SetWorkspaceQuota(ctx context.Context, slug string) ApiSetWorkspaceQuotaRequest
 
@@ -255,11 +254,11 @@ type WorkspacesAPI interface {
 	SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRequest) (*Quota, *http.Response, error)
 
 	/*
-	SetWorkspaceRegistry Set workspace registry configuration
+		SetWorkspaceRegistry Set workspace registry configuration
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetWorkspaceRegistryRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceRegistryRequest
 	*/
 	SetWorkspaceRegistry(ctx context.Context, slug string) ApiSetWorkspaceRegistryRequest
 
@@ -268,11 +267,11 @@ type WorkspacesAPI interface {
 	SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegistryRequest) (*Workspace, *http.Response, error)
 
 	/*
-	SetWorkspaceSecurity Set workspace security settings
+		SetWorkspaceSecurity Set workspace security settings
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiSetWorkspaceSecurityRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceSecurityRequest
 	*/
 	SetWorkspaceSecurity(ctx context.Context, slug string) ApiSetWorkspaceSecurityRequest
 
@@ -281,12 +280,12 @@ type WorkspacesAPI interface {
 	SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error)
 
 	/*
-	UpdateGroupMapping Update OIDC group mapping
+		UpdateGroupMapping Update OIDC group mapping
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param mappingId
-	@return ApiUpdateGroupMappingRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param mappingId
+		@return ApiUpdateGroupMappingRequest
 	*/
 	UpdateGroupMapping(ctx context.Context, slug string, mappingId string) ApiUpdateGroupMappingRequest
 
@@ -295,12 +294,12 @@ type WorkspacesAPI interface {
 	UpdateGroupMappingExecute(r ApiUpdateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error)
 
 	/*
-	UpdateNotificationWebhook Update notification webhook
+		UpdateNotificationWebhook Update notification webhook
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param hookId
-	@return ApiUpdateNotificationWebhookRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiUpdateNotificationWebhookRequest
 	*/
 	UpdateNotificationWebhook(ctx context.Context, slug string, hookId string) ApiUpdateNotificationWebhookRequest
 
@@ -309,11 +308,11 @@ type WorkspacesAPI interface {
 	UpdateNotificationWebhookExecute(r ApiUpdateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error)
 
 	/*
-	UpdateWorkspace Update workspace
+		UpdateWorkspace Update workspace
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiUpdateWorkspaceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiUpdateWorkspaceRequest
 	*/
 	UpdateWorkspace(ctx context.Context, slug string) ApiUpdateWorkspaceRequest
 
@@ -322,12 +321,12 @@ type WorkspacesAPI interface {
 	UpdateWorkspaceExecute(r ApiUpdateWorkspaceRequest) (*Workspace, *http.Response, error)
 
 	/*
-	UpdateWorkspaceMember Update workspace member role
+		UpdateWorkspaceMember Update workspace member role
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param userId
-	@return ApiUpdateWorkspaceMemberRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiUpdateWorkspaceMemberRequest
 	*/
 	UpdateWorkspaceMember(ctx context.Context, slug string, userId string) ApiUpdateWorkspaceMemberRequest
 
@@ -340,9 +339,9 @@ type WorkspacesAPI interface {
 type WorkspacesAPIService service
 
 type ApiAddWorkspaceMemberRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx              context.Context
+	ApiService       WorkspacesAPI
+	slug             string
 	addMemberRequest *AddMemberRequest
 }
 
@@ -358,26 +357,27 @@ func (r ApiAddWorkspaceMemberRequest) Execute() (*AddMemberResponse, *http.Respo
 /*
 AddWorkspaceMember Add workspace member
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiAddWorkspaceMemberRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiAddWorkspaceMemberRequest
 */
 func (a *WorkspacesAPIService) AddWorkspaceMember(ctx context.Context, slug string) ApiAddWorkspaceMemberRequest {
 	return ApiAddWorkspaceMemberRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return AddMemberResponse
+//
+//	@return AddMemberResponse
 func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMemberRequest) (*AddMemberResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *AddMemberResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *AddMemberResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.AddWorkspaceMember")
@@ -443,8 +443,8 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -454,8 +454,8 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -465,8 +465,8 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -476,8 +476,8 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -487,8 +487,8 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -506,9 +506,9 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 }
 
 type ApiCreateGroupMappingRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx                       context.Context
+	ApiService                WorkspacesAPI
+	slug                      string
 	createGroupMappingRequest *CreateGroupMappingRequest
 }
 
@@ -524,26 +524,27 @@ func (r ApiCreateGroupMappingRequest) Execute() (*OidcGroupMapping, *http.Respon
 /*
 CreateGroupMapping Create OIDC group mapping
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiCreateGroupMappingRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiCreateGroupMappingRequest
 */
 func (a *WorkspacesAPIService) CreateGroupMapping(ctx context.Context, slug string) ApiCreateGroupMappingRequest {
 	return ApiCreateGroupMappingRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return OidcGroupMapping
+//
+//	@return OidcGroupMapping
 func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *OidcGroupMapping
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *OidcGroupMapping
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.CreateGroupMapping")
@@ -609,8 +610,8 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -620,8 +621,8 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -631,8 +632,8 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -642,8 +643,8 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -653,8 +654,8 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -672,9 +673,9 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 }
 
 type ApiCreateNotificationWebhookRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx                              context.Context
+	ApiService                       WorkspacesAPI
+	slug                             string
 	createNotificationWebhookRequest *CreateNotificationWebhookRequest
 }
 
@@ -690,26 +691,27 @@ func (r ApiCreateNotificationWebhookRequest) Execute() (*NotificationWebhook, *h
 /*
 CreateNotificationWebhook Create notification webhook
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiCreateNotificationWebhookRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiCreateNotificationWebhookRequest
 */
 func (a *WorkspacesAPIService) CreateNotificationWebhook(ctx context.Context, slug string) ApiCreateNotificationWebhookRequest {
 	return ApiCreateNotificationWebhookRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return NotificationWebhook
+//
+//	@return NotificationWebhook
 func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *NotificationWebhook
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *NotificationWebhook
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.CreateNotificationWebhook")
@@ -775,8 +777,8 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -786,8 +788,8 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -797,8 +799,8 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -808,8 +810,8 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -827,8 +829,8 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 }
 
 type ApiCreateWorkspaceRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
+	ctx                    context.Context
+	ApiService             WorkspacesAPI
 	createWorkspaceRequest *CreateWorkspaceRequest
 }
 
@@ -844,24 +846,25 @@ func (r ApiCreateWorkspaceRequest) Execute() (*Workspace, *http.Response, error)
 /*
 CreateWorkspace Create workspace
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateWorkspaceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateWorkspaceRequest
 */
 func (a *WorkspacesAPIService) CreateWorkspace(ctx context.Context) ApiCreateWorkspaceRequest {
 	return ApiCreateWorkspaceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Workspace
+//
+//	@return Workspace
 func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceRequest) (*Workspace, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Workspace
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Workspace
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.CreateWorkspace")
@@ -926,8 +929,8 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -937,8 +940,8 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -948,8 +951,8 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -959,8 +962,8 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -978,10 +981,10 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 }
 
 type ApiDeleteGroupMappingRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	mappingId string
+	slug       string
+	mappingId  string
 }
 
 func (r ApiDeleteGroupMappingRequest) Execute() (*http.Response, error) {
@@ -991,26 +994,26 @@ func (r ApiDeleteGroupMappingRequest) Execute() (*http.Response, error) {
 /*
 DeleteGroupMapping Delete OIDC group mapping
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param mappingId
- @return ApiDeleteGroupMappingRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param mappingId
+	@return ApiDeleteGroupMappingRequest
 */
 func (a *WorkspacesAPIService) DeleteGroupMapping(ctx context.Context, slug string, mappingId string) ApiDeleteGroupMappingRequest {
 	return ApiDeleteGroupMappingRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		mappingId: mappingId,
+		ctx:        ctx,
+		slug:       slug,
+		mappingId:  mappingId,
 	}
 }
 
 // Execute executes the request
 func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMappingRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.DeleteGroupMapping")
@@ -1072,8 +1075,8 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1083,8 +1086,8 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1094,8 +1097,8 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1104,10 +1107,10 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 }
 
 type ApiDeleteNotificationWebhookRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	hookId string
+	slug       string
+	hookId     string
 }
 
 func (r ApiDeleteNotificationWebhookRequest) Execute() (*http.Response, error) {
@@ -1117,26 +1120,26 @@ func (r ApiDeleteNotificationWebhookRequest) Execute() (*http.Response, error) {
 /*
 DeleteNotificationWebhook Delete notification webhook
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param hookId
- @return ApiDeleteNotificationWebhookRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param hookId
+	@return ApiDeleteNotificationWebhookRequest
 */
 func (a *WorkspacesAPIService) DeleteNotificationWebhook(ctx context.Context, slug string, hookId string) ApiDeleteNotificationWebhookRequest {
 	return ApiDeleteNotificationWebhookRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		hookId: hookId,
+		ctx:        ctx,
+		slug:       slug,
+		hookId:     hookId,
 	}
 }
 
 // Execute executes the request
 func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotificationWebhookRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.DeleteNotificationWebhook")
@@ -1198,8 +1201,8 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1209,8 +1212,8 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1220,8 +1223,8 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1230,9 +1233,9 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 }
 
 type ApiDeleteWorkspaceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiDeleteWorkspaceRequest) Execute() (*http.Response, error) {
@@ -1242,24 +1245,24 @@ func (r ApiDeleteWorkspaceRequest) Execute() (*http.Response, error) {
 /*
 DeleteWorkspace Delete workspace
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiDeleteWorkspaceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiDeleteWorkspaceRequest
 */
 func (a *WorkspacesAPIService) DeleteWorkspace(ctx context.Context, slug string) ApiDeleteWorkspaceRequest {
 	return ApiDeleteWorkspaceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.DeleteWorkspace")
@@ -1320,8 +1323,8 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1331,8 +1334,8 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1342,8 +1345,8 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -1353,8 +1356,8 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1363,9 +1366,9 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 }
 
 type ApiGetWorkspaceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetWorkspaceRequest) Execute() (*Workspace, *http.Response, error) {
@@ -1375,26 +1378,27 @@ func (r ApiGetWorkspaceRequest) Execute() (*Workspace, *http.Response, error) {
 /*
 GetWorkspace Get workspace details
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetWorkspaceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetWorkspaceRequest
 */
 func (a *WorkspacesAPIService) GetWorkspace(ctx context.Context, slug string) ApiGetWorkspaceRequest {
 	return ApiGetWorkspaceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Workspace
+//
+//	@return Workspace
 func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*Workspace, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Workspace
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Workspace
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.GetWorkspace")
@@ -1455,8 +1459,8 @@ func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1466,8 +1470,8 @@ func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1477,8 +1481,8 @@ func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1496,12 +1500,12 @@ func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*W
 }
 
 type ApiGetWorkspaceAuditLogRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	page *int32
-	size *int32
-	action *string
+	slug       string
+	page       *int32
+	size       *int32
+	action     *string
 	targetType *string
 }
 
@@ -1532,26 +1536,27 @@ func (r ApiGetWorkspaceAuditLogRequest) Execute() (*PagedAuditLogResponse, *http
 /*
 GetWorkspaceAuditLog Query workspace audit log
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetWorkspaceAuditLogRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetWorkspaceAuditLogRequest
 */
 func (a *WorkspacesAPIService) GetWorkspaceAuditLog(ctx context.Context, slug string) ApiGetWorkspaceAuditLogRequest {
 	return ApiGetWorkspaceAuditLogRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return PagedAuditLogResponse
+//
+//	@return PagedAuditLogResponse
 func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedAuditLogResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedAuditLogResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.GetWorkspaceAuditLog")
@@ -1632,8 +1637,8 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1643,8 +1648,8 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1654,8 +1659,8 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1673,9 +1678,9 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 }
 
 type ApiGetWorkspaceQuotaRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetWorkspaceQuotaRequest) Execute() (*Quota, *http.Response, error) {
@@ -1685,26 +1690,27 @@ func (r ApiGetWorkspaceQuotaRequest) Execute() (*Quota, *http.Response, error) {
 /*
 GetWorkspaceQuota Get workspace quota
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetWorkspaceQuotaRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetWorkspaceQuotaRequest
 */
 func (a *WorkspacesAPIService) GetWorkspaceQuota(ctx context.Context, slug string) ApiGetWorkspaceQuotaRequest {
 	return ApiGetWorkspaceQuotaRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Quota
+//
+//	@return Quota
 func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRequest) (*Quota, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Quota
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Quota
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.GetWorkspaceQuota")
@@ -1765,8 +1771,8 @@ func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1776,8 +1782,8 @@ func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1787,8 +1793,8 @@ func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1806,9 +1812,9 @@ func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRe
 }
 
 type ApiGetWorkspaceSecurityRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetWorkspaceSecurityRequest) Execute() (*SecuritySettings, *http.Response, error) {
@@ -1818,26 +1824,27 @@ func (r ApiGetWorkspaceSecurityRequest) Execute() (*SecuritySettings, *http.Resp
 /*
 GetWorkspaceSecurity Get workspace security settings
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetWorkspaceSecurityRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetWorkspaceSecurityRequest
 */
 func (a *WorkspacesAPIService) GetWorkspaceSecurity(ctx context.Context, slug string) ApiGetWorkspaceSecurityRequest {
 	return ApiGetWorkspaceSecurityRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return SecuritySettings
+//
+//	@return SecuritySettings
 func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *SecuritySettings
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *SecuritySettings
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.GetWorkspaceSecurity")
@@ -1898,8 +1905,8 @@ func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1909,8 +1916,8 @@ func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1920,8 +1927,8 @@ func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1939,9 +1946,9 @@ func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecu
 }
 
 type ApiListGroupMappingsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListGroupMappingsRequest) Execute() ([]OidcGroupMapping, *http.Response, error) {
@@ -1951,26 +1958,27 @@ func (r ApiListGroupMappingsRequest) Execute() ([]OidcGroupMapping, *http.Respon
 /*
 ListGroupMappings List OIDC group mappings
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListGroupMappingsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListGroupMappingsRequest
 */
 func (a *WorkspacesAPIService) ListGroupMappings(ctx context.Context, slug string) ApiListGroupMappingsRequest {
 	return ApiListGroupMappingsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []OidcGroupMapping
+//
+//	@return []OidcGroupMapping
 func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRequest) ([]OidcGroupMapping, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []OidcGroupMapping
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []OidcGroupMapping
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListGroupMappings")
@@ -2031,8 +2039,8 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2042,8 +2050,8 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2053,8 +2061,8 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2072,9 +2080,9 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 }
 
 type ApiListNotificationWebhooksRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListNotificationWebhooksRequest) Execute() ([]NotificationWebhook, *http.Response, error) {
@@ -2084,26 +2092,27 @@ func (r ApiListNotificationWebhooksRequest) Execute() ([]NotificationWebhook, *h
 /*
 ListNotificationWebhooks List notification webhooks
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListNotificationWebhooksRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListNotificationWebhooksRequest
 */
 func (a *WorkspacesAPIService) ListNotificationWebhooks(ctx context.Context, slug string) ApiListNotificationWebhooksRequest {
 	return ApiListNotificationWebhooksRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []NotificationWebhook
+//
+//	@return []NotificationWebhook
 func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotificationWebhooksRequest) ([]NotificationWebhook, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []NotificationWebhook
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []NotificationWebhook
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListNotificationWebhooks")
@@ -2164,8 +2173,8 @@ func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotifica
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2175,8 +2184,8 @@ func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotifica
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2186,8 +2195,8 @@ func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotifica
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2205,10 +2214,10 @@ func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotifica
 }
 
 type ApiListWebhookDeliveriesRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	hookId string
+	slug       string
+	hookId     string
 }
 
 func (r ApiListWebhookDeliveriesRequest) Execute() ([]WebhookDelivery, *http.Response, error) {
@@ -2218,28 +2227,29 @@ func (r ApiListWebhookDeliveriesRequest) Execute() ([]WebhookDelivery, *http.Res
 /*
 ListWebhookDeliveries List webhook deliveries
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param hookId
- @return ApiListWebhookDeliveriesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param hookId
+	@return ApiListWebhookDeliveriesRequest
 */
 func (a *WorkspacesAPIService) ListWebhookDeliveries(ctx context.Context, slug string, hookId string) ApiListWebhookDeliveriesRequest {
 	return ApiListWebhookDeliveriesRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		hookId: hookId,
+		ctx:        ctx,
+		slug:       slug,
+		hookId:     hookId,
 	}
 }
 
 // Execute executes the request
-//  @return []WebhookDelivery
+//
+//	@return []WebhookDelivery
 func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeliveriesRequest) ([]WebhookDelivery, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []WebhookDelivery
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []WebhookDelivery
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListWebhookDeliveries")
@@ -2301,8 +2311,8 @@ func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeli
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2312,8 +2322,8 @@ func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeli
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2323,8 +2333,8 @@ func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeli
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2342,9 +2352,9 @@ func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeli
 }
 
 type ApiListWorkspaceMembersRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListWorkspaceMembersRequest) Execute() ([]WorkspaceMember, *http.Response, error) {
@@ -2354,26 +2364,27 @@ func (r ApiListWorkspaceMembersRequest) Execute() ([]WorkspaceMember, *http.Resp
 /*
 ListWorkspaceMembers List workspace members
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListWorkspaceMembersRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListWorkspaceMembersRequest
 */
 func (a *WorkspacesAPIService) ListWorkspaceMembers(ctx context.Context, slug string) ApiListWorkspaceMembersRequest {
 	return ApiListWorkspaceMembersRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []WorkspaceMember
+//
+//	@return []WorkspaceMember
 func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMembersRequest) ([]WorkspaceMember, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []WorkspaceMember
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []WorkspaceMember
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListWorkspaceMembers")
@@ -2434,8 +2445,8 @@ func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMem
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2445,8 +2456,8 @@ func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMem
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2456,8 +2467,8 @@ func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMem
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2475,11 +2486,11 @@ func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMem
 }
 
 type ApiListWorkspacesRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	page *int32
-	size *int32
-	sort *string
+	page       *int32
+	size       *int32
+	sort       *string
 }
 
 func (r ApiListWorkspacesRequest) Page(page int32) ApiListWorkspacesRequest {
@@ -2504,24 +2515,25 @@ func (r ApiListWorkspacesRequest) Execute() (*PagedWorkspaceResponse, *http.Resp
 /*
 ListWorkspaces List workspaces
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListWorkspacesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListWorkspacesRequest
 */
 func (a *WorkspacesAPIService) ListWorkspaces(ctx context.Context) ApiListWorkspacesRequest {
 	return ApiListWorkspacesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PagedWorkspaceResponse
+//
+//	@return PagedWorkspaceResponse
 func (a *WorkspacesAPIService) ListWorkspacesExecute(r ApiListWorkspacesRequest) (*PagedWorkspaceResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedWorkspaceResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedWorkspaceResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListWorkspaces")
@@ -2598,8 +2610,8 @@ func (a *WorkspacesAPIService) ListWorkspacesExecute(r ApiListWorkspacesRequest)
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2617,10 +2629,10 @@ func (a *WorkspacesAPIService) ListWorkspacesExecute(r ApiListWorkspacesRequest)
 }
 
 type ApiRemoveWorkspaceMemberRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	userId string
+	slug       string
+	userId     string
 }
 
 func (r ApiRemoveWorkspaceMemberRequest) Execute() (*http.Response, error) {
@@ -2630,26 +2642,26 @@ func (r ApiRemoveWorkspaceMemberRequest) Execute() (*http.Response, error) {
 /*
 RemoveWorkspaceMember Remove workspace member
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param userId
- @return ApiRemoveWorkspaceMemberRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiRemoveWorkspaceMemberRequest
 */
 func (a *WorkspacesAPIService) RemoveWorkspaceMember(ctx context.Context, slug string, userId string) ApiRemoveWorkspaceMemberRequest {
 	return ApiRemoveWorkspaceMemberRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		userId: userId,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
 	}
 }
 
 // Execute executes the request
 func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspaceMemberRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.RemoveWorkspaceMember")
@@ -2711,8 +2723,8 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2722,8 +2734,8 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2733,8 +2745,8 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -2743,10 +2755,10 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 }
 
 type ApiSetWorkspaceQuotaRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService WorkspacesAPI
-	slug string
-	quota *Quota
+	slug       string
+	quota      *Quota
 }
 
 func (r ApiSetWorkspaceQuotaRequest) Quota(quota Quota) ApiSetWorkspaceQuotaRequest {
@@ -2761,26 +2773,27 @@ func (r ApiSetWorkspaceQuotaRequest) Execute() (*Quota, *http.Response, error) {
 /*
 SetWorkspaceQuota Set workspace quota
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetWorkspaceQuotaRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetWorkspaceQuotaRequest
 */
 func (a *WorkspacesAPIService) SetWorkspaceQuota(ctx context.Context, slug string) ApiSetWorkspaceQuotaRequest {
 	return ApiSetWorkspaceQuotaRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Quota
+//
+//	@return Quota
 func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRequest) (*Quota, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Quota
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Quota
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.SetWorkspaceQuota")
@@ -2846,8 +2859,8 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2857,8 +2870,8 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2868,8 +2881,8 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2879,8 +2892,8 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2898,9 +2911,9 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 }
 
 type ApiSetWorkspaceRegistryRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
 	registryConfig *RegistryConfig
 }
 
@@ -2916,26 +2929,27 @@ func (r ApiSetWorkspaceRegistryRequest) Execute() (*Workspace, *http.Response, e
 /*
 SetWorkspaceRegistry Set workspace registry configuration
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetWorkspaceRegistryRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetWorkspaceRegistryRequest
 */
 func (a *WorkspacesAPIService) SetWorkspaceRegistry(ctx context.Context, slug string) ApiSetWorkspaceRegistryRequest {
 	return ApiSetWorkspaceRegistryRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Workspace
+//
+//	@return Workspace
 func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegistryRequest) (*Workspace, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Workspace
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Workspace
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.SetWorkspaceRegistry")
@@ -3001,8 +3015,8 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3012,8 +3026,8 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3023,8 +3037,8 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3034,8 +3048,8 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3053,9 +3067,9 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 }
 
 type ApiSetWorkspaceSecurityRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx              context.Context
+	ApiService       WorkspacesAPI
+	slug             string
 	securitySettings *SecuritySettings
 }
 
@@ -3071,26 +3085,27 @@ func (r ApiSetWorkspaceSecurityRequest) Execute() (*SecuritySettings, *http.Resp
 /*
 SetWorkspaceSecurity Set workspace security settings
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiSetWorkspaceSecurityRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiSetWorkspaceSecurityRequest
 */
 func (a *WorkspacesAPIService) SetWorkspaceSecurity(ctx context.Context, slug string) ApiSetWorkspaceSecurityRequest {
 	return ApiSetWorkspaceSecurityRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return SecuritySettings
+//
+//	@return SecuritySettings
 func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *SecuritySettings
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *SecuritySettings
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.SetWorkspaceSecurity")
@@ -3156,8 +3171,8 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3167,8 +3182,8 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3178,8 +3193,8 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3189,8 +3204,8 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3208,10 +3223,10 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 }
 
 type ApiUpdateGroupMappingRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
-	mappingId string
+	ctx                       context.Context
+	ApiService                WorkspacesAPI
+	slug                      string
+	mappingId                 string
 	updateGroupMappingRequest *UpdateGroupMappingRequest
 }
 
@@ -3227,28 +3242,29 @@ func (r ApiUpdateGroupMappingRequest) Execute() (*OidcGroupMapping, *http.Respon
 /*
 UpdateGroupMapping Update OIDC group mapping
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param mappingId
- @return ApiUpdateGroupMappingRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param mappingId
+	@return ApiUpdateGroupMappingRequest
 */
 func (a *WorkspacesAPIService) UpdateGroupMapping(ctx context.Context, slug string, mappingId string) ApiUpdateGroupMappingRequest {
 	return ApiUpdateGroupMappingRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		mappingId: mappingId,
+		ctx:        ctx,
+		slug:       slug,
+		mappingId:  mappingId,
 	}
 }
 
 // Execute executes the request
-//  @return OidcGroupMapping
+//
+//	@return OidcGroupMapping
 func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *OidcGroupMapping
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *OidcGroupMapping
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.UpdateGroupMapping")
@@ -3315,8 +3331,8 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3326,8 +3342,8 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3337,8 +3353,8 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3348,8 +3364,8 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3367,10 +3383,10 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 }
 
 type ApiUpdateNotificationWebhookRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
-	hookId string
+	ctx                              context.Context
+	ApiService                       WorkspacesAPI
+	slug                             string
+	hookId                           string
 	updateNotificationWebhookRequest *UpdateNotificationWebhookRequest
 }
 
@@ -3386,28 +3402,29 @@ func (r ApiUpdateNotificationWebhookRequest) Execute() (*NotificationWebhook, *h
 /*
 UpdateNotificationWebhook Update notification webhook
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param hookId
- @return ApiUpdateNotificationWebhookRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param hookId
+	@return ApiUpdateNotificationWebhookRequest
 */
 func (a *WorkspacesAPIService) UpdateNotificationWebhook(ctx context.Context, slug string, hookId string) ApiUpdateNotificationWebhookRequest {
 	return ApiUpdateNotificationWebhookRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		hookId: hookId,
+		ctx:        ctx,
+		slug:       slug,
+		hookId:     hookId,
 	}
 }
 
 // Execute executes the request
-//  @return NotificationWebhook
+//
+//	@return NotificationWebhook
 func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *NotificationWebhook
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *NotificationWebhook
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.UpdateNotificationWebhook")
@@ -3474,8 +3491,8 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3485,8 +3502,8 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3496,8 +3513,8 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3507,8 +3524,8 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3526,9 +3543,9 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 }
 
 type ApiUpdateWorkspaceRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
+	ctx                    context.Context
+	ApiService             WorkspacesAPI
+	slug                   string
 	updateWorkspaceRequest *UpdateWorkspaceRequest
 }
 
@@ -3544,26 +3561,27 @@ func (r ApiUpdateWorkspaceRequest) Execute() (*Workspace, *http.Response, error)
 /*
 UpdateWorkspace Update workspace
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiUpdateWorkspaceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiUpdateWorkspaceRequest
 */
 func (a *WorkspacesAPIService) UpdateWorkspace(ctx context.Context, slug string) ApiUpdateWorkspaceRequest {
 	return ApiUpdateWorkspaceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Workspace
+//
+//	@return Workspace
 func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceRequest) (*Workspace, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Workspace
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Workspace
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.UpdateWorkspace")
@@ -3629,8 +3647,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3640,8 +3658,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3651,8 +3669,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3662,8 +3680,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -3673,8 +3691,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3692,10 +3710,10 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 }
 
 type ApiUpdateWorkspaceMemberRequest struct {
-	ctx context.Context
-	ApiService WorkspacesAPI
-	slug string
-	userId string
+	ctx                 context.Context
+	ApiService          WorkspacesAPI
+	slug                string
+	userId              string
 	updateMemberRequest *UpdateMemberRequest
 }
 
@@ -3711,28 +3729,29 @@ func (r ApiUpdateWorkspaceMemberRequest) Execute() (*WorkspaceMember, *http.Resp
 /*
 UpdateWorkspaceMember Update workspace member role
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param userId
- @return ApiUpdateWorkspaceMemberRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param userId
+	@return ApiUpdateWorkspaceMemberRequest
 */
 func (a *WorkspacesAPIService) UpdateWorkspaceMember(ctx context.Context, slug string, userId string) ApiUpdateWorkspaceMemberRequest {
 	return ApiUpdateWorkspaceMemberRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		userId: userId,
+		ctx:        ctx,
+		slug:       slug,
+		userId:     userId,
 	}
 }
 
 // Execute executes the request
-//  @return WorkspaceMember
+//
+//	@return WorkspaceMember
 func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspaceMemberRequest) (*WorkspaceMember, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WorkspaceMember
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WorkspaceMember
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.UpdateWorkspaceMember")
@@ -3799,8 +3818,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspace
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -3810,8 +3829,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspace
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3821,8 +3840,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspace
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3832,8 +3851,8 @@ func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspace
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

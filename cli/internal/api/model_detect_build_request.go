@@ -11,8 +11,8 @@ API version: 1.0.0
 package api
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -21,10 +21,10 @@ var _ MappedNullable = &DetectBuildRequest{}
 
 // DetectBuildRequest struct for DetectBuildRequest
 type DetectBuildRequest struct {
-	Url string `json:"url"`
-	Branch string `json:"branch"`
-	Path *string `json:"path,omitempty"`
-	Auth *GitAuth `json:"auth,omitempty"`
+	Url    string   `json:"url"`
+	Branch string   `json:"branch"`
+	Path   *string  `json:"path,omitempty"`
+	Auth   *GitAuth `json:"auth,omitempty"`
 }
 
 type _DetectBuildRequest DetectBuildRequest
@@ -161,7 +161,7 @@ func (o *DetectBuildRequest) SetAuth(v GitAuth) {
 }
 
 func (o DetectBuildRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -195,10 +195,10 @@ func (o *DetectBuildRequest) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -254,5 +254,3 @@ func (v *NullableDetectBuildRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

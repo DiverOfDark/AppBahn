@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import eu.appbahn.shared.model.ConditionReason;
 import eu.appbahn.shared.model.ConditionStatus;
 import eu.appbahn.shared.model.ConditionType;
-import lombok.Data;
-
 import java.time.Instant;
+import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

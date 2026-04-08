@@ -19,10 +19,10 @@ var _ MappedNullable = &UpdateResourceRequest{}
 
 // UpdateResourceRequest struct for UpdateResourceRequest
 type UpdateResourceRequest struct {
-	Name *string `json:"name,omitempty"`
-	Config map[string]interface{} `json:"config,omitempty"`
-	Links []map[string]interface{} `json:"links,omitempty"`
-	ConfirmDestructive *bool `json:"confirmDestructive,omitempty"`
+	Name               *string                  `json:"name,omitempty"`
+	Config             map[string]interface{}   `json:"config,omitempty"`
+	Links              []map[string]interface{} `json:"links,omitempty"`
+	ConfirmDestructive *bool                    `json:"confirmDestructive,omitempty"`
 }
 
 // NewUpdateResourceRequest instantiates a new UpdateResourceRequest object
@@ -171,7 +171,7 @@ func (o *UpdateResourceRequest) SetConfirmDestructive(v bool) {
 }
 
 func (o UpdateResourceRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -230,5 +230,3 @@ func (v *NullableUpdateResourceRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

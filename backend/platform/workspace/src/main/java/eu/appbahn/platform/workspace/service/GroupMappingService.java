@@ -11,13 +11,12 @@ import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
 import eu.appbahn.platform.workspace.repository.OidcGroupMappingRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GroupMappingService {
@@ -31,8 +30,7 @@ public class GroupMappingService {
             WorkspaceRepository workspaceRepository,
             OidcGroupMappingRepository mappingRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.workspaceRepository = workspaceRepository;
         this.mappingRepository = mappingRepository;
         this.permissionService = permissionService;
@@ -58,7 +56,12 @@ public class GroupMappingService {
         entity.setRole(req.getRole().getValue());
         mappingRepository.save(entity);
 
-        auditLogService.log(ctx, "group_mapping.created", "workspace", ws.getSlug(), ws.getId(),
+        auditLogService.log(
+                ctx,
+                "group_mapping.created",
+                "workspace",
+                ws.getSlug(),
+                ws.getId(),
                 Map.of("oidcGroup", req.getOidcGroup(), "role", req.getRole().getValue()));
 
         return toApi(entity);
@@ -69,7 +72,8 @@ public class GroupMappingService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        var entity = mappingRepository.findById(mappingId)
+        var entity = mappingRepository
+                .findById(mappingId)
                 .orElseThrow(() -> new NotFoundException("Group mapping not found"));
 
         if (req.getRole() != null) {
@@ -77,7 +81,12 @@ public class GroupMappingService {
         }
         mappingRepository.save(entity);
 
-        auditLogService.log(ctx, "group_mapping.updated", "workspace", ws.getSlug(), ws.getId(),
+        auditLogService.log(
+                ctx,
+                "group_mapping.updated",
+                "workspace",
+                ws.getSlug(),
+                ws.getId(),
                 Map.of("mappingId", mappingId.toString()));
 
         return toApi(entity);
@@ -88,7 +97,8 @@ public class GroupMappingService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        var entity = mappingRepository.findById(mappingId)
+        var entity = mappingRepository
+                .findById(mappingId)
                 .orElseThrow(() -> new NotFoundException("Group mapping not found"));
         mappingRepository.delete(entity);
 
@@ -105,7 +115,8 @@ public class GroupMappingService {
     }
 
     private WorkspaceEntity findWorkspace(String slug) {
-        return workspaceRepository.findBySlug(slug)
+        return workspaceRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
     }
 }

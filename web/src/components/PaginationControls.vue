@@ -11,16 +11,10 @@ defineEmits<{
 
 <template>
   <div v-if="totalPages > 1" class="pagination">
-    <button
-      class="pagination-btn"
-      :disabled="page <= 0"
-      @click="$emit('update:page', page - 1)"
-    >
+    <button class="pagination-btn" :disabled="page <= 0" @click="$emit('update:page', page - 1)">
       &larr; Previous
     </button>
-    <span class="pagination-info">
-      Page {{ page + 1 }} of {{ totalPages }}
-    </span>
+    <span class="pagination-info"> Page {{ page + 1 }} of {{ totalPages }} </span>
     <button
       class="pagination-btn"
       :disabled="page >= totalPages - 1"
@@ -50,7 +44,9 @@ defineEmits<{
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .pagination-btn:hover:not(:disabled) {

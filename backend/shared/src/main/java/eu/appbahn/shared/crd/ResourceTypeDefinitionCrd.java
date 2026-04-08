@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("appbahn.eu")
 @Version("v1")
 @Kind("ResourceTypeDefinition")
-public class ResourceTypeDefinitionCrd extends CustomResource<ResourceTypeDefinitionSpec, ResourceTypeDefinitionStatus> {
+public class ResourceTypeDefinitionCrd
+        extends CustomResource<ResourceTypeDefinitionSpec, ResourceTypeDefinitionStatus> {
     // Cluster-scoped (does not implement Namespaced)
 }

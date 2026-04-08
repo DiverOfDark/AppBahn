@@ -10,9 +10,8 @@ import eu.appbahn.platform.workspace.repository.ProjectMemberOverrideRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
 import eu.appbahn.shared.model.MemberRole;
-import org.springframework.stereotype.Service;
-
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PermissionService {
@@ -30,8 +29,7 @@ public class PermissionService {
             ProjectRepository projectRepository,
             EnvironmentRepository environmentRepository,
             ProjectMemberOverrideRepository projectOverrideRepository,
-            EnvironmentMemberOverrideRepository envOverrideRepository
-    ) {
+            EnvironmentMemberOverrideRepository envOverrideRepository) {
         this.memberRepository = memberRepository;
         this.groupMappingRepository = groupMappingRepository;
         this.projectRepository = projectRepository;

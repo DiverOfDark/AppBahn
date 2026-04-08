@@ -20,13 +20,13 @@ var _ MappedNullable = &EnvironmentToken{}
 
 // EnvironmentToken struct for EnvironmentToken
 type EnvironmentToken struct {
-	Id *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Role *string `json:"role,omitempty"`
-	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+	Id         *string    `json:"id,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	Role       *string    `json:"role,omitempty"`
+	ExpiresAt  *time.Time `json:"expiresAt,omitempty"`
 	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
-	CreatedBy *string `json:"createdBy,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	CreatedBy  *string    `json:"createdBy,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 }
 
 // NewEnvironmentToken instantiates a new EnvironmentToken object
@@ -271,7 +271,7 @@ func (o *EnvironmentToken) SetCreatedAt(v time.Time) {
 }
 
 func (o EnvironmentToken) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -339,5 +339,3 @@ func (v *NullableEnvironmentToken) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

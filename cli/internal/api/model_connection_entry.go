@@ -19,9 +19,9 @@ var _ MappedNullable = &ConnectionEntry{}
 
 // ConnectionEntry struct for ConnectionEntry
 type ConnectionEntry struct {
-	Key *string `json:"key,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Secret *bool `json:"secret,omitempty"`
+	Key    *string `json:"key,omitempty"`
+	Value  *string `json:"value,omitempty"`
+	Secret *bool   `json:"secret,omitempty"`
 }
 
 // NewConnectionEntry instantiates a new ConnectionEntry object
@@ -138,7 +138,7 @@ func (o *ConnectionEntry) SetSecret(v bool) {
 }
 
 func (o ConnectionEntry) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableConnectionEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

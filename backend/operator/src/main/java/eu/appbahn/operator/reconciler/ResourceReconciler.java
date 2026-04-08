@@ -15,7 +15,8 @@ public class ResourceReconciler implements Reconciler<ResourceCrd> {
 
     @Override
     public UpdateControl<ResourceCrd> reconcile(ResourceCrd resource, Context<ResourceCrd> context) {
-        log.info("Reconciling Resource: {} in namespace {}",
+        log.info(
+                "Reconciling Resource: {} in namespace {}",
                 resource.getMetadata().getName(),
                 resource.getMetadata().getNamespace());
         return UpdateControl.noUpdate();

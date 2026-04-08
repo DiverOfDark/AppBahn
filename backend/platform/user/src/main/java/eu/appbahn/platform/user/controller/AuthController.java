@@ -1,12 +1,11 @@
 package eu.appbahn.platform.user.controller;
 
 import eu.appbahn.platform.api.AuthApi;
+import java.net.URI;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.net.URI;
 
 /**
  * Thin controller that maps the generated API paths to Spring Security's

@@ -4,12 +4,11 @@ import eu.appbahn.platform.common.security.AppBahnAuthenticationToken;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.workspace.entity.EnvironmentTokenEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentTokenRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EnvironmentTokenAuthService {
@@ -42,12 +41,7 @@ public class EnvironmentTokenAuthService {
         tokenRepository.save(token);
 
         // Token-based auth: userId and email are null per spec (actor_source="token")
-        var ctx = new AuthContext(
-                null,
-                null,
-                List.of(),
-                false
-        );
+        var ctx = new AuthContext(null, null, List.of(), false);
         return Optional.of(new AppBahnAuthenticationToken(ctx));
     }
 }

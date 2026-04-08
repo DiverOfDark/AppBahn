@@ -20,17 +20,17 @@ var _ MappedNullable = &AuditLogEntry{}
 
 // AuditLogEntry struct for AuditLogEntry
 type AuditLogEntry struct {
-	Id *string `json:"id,omitempty"`
-	Timestamp *time.Time `json:"timestamp,omitempty"`
-	ActorId *string `json:"actorId,omitempty"`
-	ActorEmail *string `json:"actorEmail,omitempty"`
-	ActorSource *string `json:"actorSource,omitempty"`
-	Action *string `json:"action,omitempty"`
-	TargetType *string `json:"targetType,omitempty"`
-	TargetId *string `json:"targetId,omitempty"`
-	Context map[string]interface{} `json:"context,omitempty"`
-	Diff map[string]interface{} `json:"diff,omitempty"`
-	RequestId *string `json:"requestId,omitempty"`
+	Id          *string                `json:"id,omitempty"`
+	Timestamp   *time.Time             `json:"timestamp,omitempty"`
+	ActorId     *string                `json:"actorId,omitempty"`
+	ActorEmail  *string                `json:"actorEmail,omitempty"`
+	ActorSource *string                `json:"actorSource,omitempty"`
+	Action      *string                `json:"action,omitempty"`
+	TargetType  *string                `json:"targetType,omitempty"`
+	TargetId    *string                `json:"targetId,omitempty"`
+	Context     map[string]interface{} `json:"context,omitempty"`
+	Diff        map[string]interface{} `json:"diff,omitempty"`
+	RequestId   *string                `json:"requestId,omitempty"`
 }
 
 // NewAuditLogEntry instantiates a new AuditLogEntry object
@@ -403,7 +403,7 @@ func (o *AuditLogEntry) SetRequestId(v string) {
 }
 
 func (o AuditLogEntry) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -483,5 +483,3 @@ func (v *NullableAuditLogEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -11,8 +11,8 @@ API version: 1.0.0
 package api
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -21,11 +21,11 @@ var _ MappedNullable = &CreateResourceRequest{}
 
 // CreateResourceRequest struct for CreateResourceRequest
 type CreateResourceRequest struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	EnvironmentSlug string `json:"environmentSlug"`
-	Config map[string]interface{} `json:"config"`
-	Links []map[string]interface{} `json:"links,omitempty"`
+	Name            string                   `json:"name"`
+	Type            string                   `json:"type"`
+	EnvironmentSlug string                   `json:"environmentSlug"`
+	Config          map[string]interface{}   `json:"config"`
+	Links           []map[string]interface{} `json:"links,omitempty"`
 }
 
 type _CreateResourceRequest CreateResourceRequest
@@ -180,7 +180,7 @@ func (o *CreateResourceRequest) SetLinks(v []map[string]interface{}) {
 }
 
 func (o CreateResourceRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -215,10 +215,10 @@ func (o *CreateResourceRequest) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -274,5 +274,3 @@ func (v *NullableCreateResourceRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

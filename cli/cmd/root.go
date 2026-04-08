@@ -38,4 +38,3 @@ func Execute() error {
 func OutputFormat() string {
 	return outputFormat
 }
-

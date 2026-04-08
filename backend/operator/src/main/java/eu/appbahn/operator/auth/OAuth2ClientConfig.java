@@ -18,8 +18,7 @@ public class OAuth2ClientConfig {
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientService authorizedClientService
-    ) {
+            OAuth2AuthorizedClientService authorizedClientService) {
         var clientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
                 .clientCredentials()
                 .build();
@@ -32,18 +31,17 @@ public class OAuth2ClientConfig {
     @Bean
     public ResourceSyncApi resourceSyncApi(
             OAuth2AuthorizedClientManager clientManager,
-            @Value("${platform.api.base-url:http://localhost:8080}") String baseUrl
-    ) {
+            @Value("${platform.api.base-url:http://localhost:8080}") String baseUrl) {
         var apiClient = new ApiClient();
         apiClient.updateBaseUri(baseUrl + "/api/v1/internal");
         apiClient.setRequestInterceptor(builder -> {
-            var request = OAuth2AuthorizeRequest
-                    .withClientRegistrationId("appbahn")
+            var request = OAuth2AuthorizeRequest.withClientRegistrationId("appbahn")
                     .principal("operator")
                     .build();
             var authorized = clientManager.authorize(request);
             if (authorized != null && authorized.getAccessToken() != null) {
-                builder.header("Authorization", "Bearer " + authorized.getAccessToken().getTokenValue());
+                builder.header(
+                        "Authorization", "Bearer " + authorized.getAccessToken().getTokenValue());
             }
         });
         return new ResourceSyncApi(apiClient);

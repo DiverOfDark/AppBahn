@@ -19,12 +19,12 @@ var _ MappedNullable = &BuildDetectionJob{}
 
 // BuildDetectionJob struct for BuildDetectionJob
 type BuildDetectionJob struct {
-	JobId *string `json:"jobId,omitempty"`
-	Status *string `json:"status,omitempty"`
-	Step *string `json:"step,omitempty"`
-	Message *string `json:"message,omitempty"`
+	JobId          *string                  `json:"jobId,omitempty"`
+	Status         *string                  `json:"status,omitempty"`
+	Step           *string                  `json:"step,omitempty"`
+	Message        *string                  `json:"message,omitempty"`
 	UniversalBuild []map[string]interface{} `json:"universalBuild,omitempty"`
-	Error *string `json:"error,omitempty"`
+	Error          *string                  `json:"error,omitempty"`
 }
 
 // NewBuildDetectionJob instantiates a new BuildDetectionJob object
@@ -237,7 +237,7 @@ func (o *BuildDetectionJob) SetError(v string) {
 }
 
 func (o BuildDetectionJob) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableBuildDetectionJob) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

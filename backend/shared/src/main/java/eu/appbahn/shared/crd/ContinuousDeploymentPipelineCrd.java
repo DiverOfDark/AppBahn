@@ -9,5 +9,6 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("appbahn.eu")
 @Version("v1")
 @Kind("ContinuousDeploymentPipeline")
-public class ContinuousDeploymentPipelineCrd extends CustomResource<ContinuousDeploymentPipelineSpec, ContinuousDeploymentPipelineStatus> implements Namespaced {
-}
+public class ContinuousDeploymentPipelineCrd
+        extends CustomResource<ContinuousDeploymentPipelineSpec, ContinuousDeploymentPipelineStatus>
+        implements Namespaced {}

@@ -2,6 +2,7 @@
 spring-boot = "4.0.5"
 spring-dependency-management = "1.1.7"
 openapi-generator = "7.21.0"
+spotless = "8.4.0"
 springdoc = "3.0.2"
 fabric8 = "7.6.1"
 josdk-spring-boot = "6.4.0"
@@ -60,3 +61,4 @@ testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", ve
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

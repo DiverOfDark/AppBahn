@@ -19,15 +19,14 @@ import (
 	"strings"
 )
 
-
 type GitAPI interface {
 
 	/*
-	GetBuildDetectionStatus Get build detection job status
+		GetBuildDetectionStatus Get build detection job status
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param jobId
-	@return ApiGetBuildDetectionStatusRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param jobId
+		@return ApiGetBuildDetectionStatusRequest
 	*/
 	GetBuildDetectionStatus(ctx context.Context, jobId string) ApiGetBuildDetectionStatusRequest
 
@@ -36,10 +35,10 @@ type GitAPI interface {
 	GetBuildDetectionStatusExecute(r ApiGetBuildDetectionStatusRequest) (*BuildDetectionJob, *http.Response, error)
 
 	/*
-	ListGitRepos List git repositories
+		ListGitRepos List git repositories
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListGitReposRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListGitReposRequest
 	*/
 	ListGitRepos(ctx context.Context) ApiListGitReposRequest
 
@@ -48,10 +47,10 @@ type GitAPI interface {
 	ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo, *http.Response, error)
 
 	/*
-	StartBuildDetection Start async build config detection
+		StartBuildDetection Start async build config detection
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiStartBuildDetectionRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiStartBuildDetectionRequest
 	*/
 	StartBuildDetection(ctx context.Context) ApiStartBuildDetectionRequest
 
@@ -60,10 +59,10 @@ type GitAPI interface {
 	StartBuildDetectionExecute(r ApiStartBuildDetectionRequest) (*BuildDetectionJobCreated, *http.Response, error)
 
 	/*
-	ValidateGitRepo Validate git repository access
+		ValidateGitRepo Validate git repository access
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiValidateGitRepoRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiValidateGitRepoRequest
 	*/
 	ValidateGitRepo(ctx context.Context) ApiValidateGitRepoRequest
 
@@ -76,9 +75,9 @@ type GitAPI interface {
 type GitAPIService service
 
 type ApiGetBuildDetectionStatusRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService GitAPI
-	jobId string
+	jobId      string
 }
 
 func (r ApiGetBuildDetectionStatusRequest) Execute() (*BuildDetectionJob, *http.Response, error) {
@@ -88,26 +87,27 @@ func (r ApiGetBuildDetectionStatusRequest) Execute() (*BuildDetectionJob, *http.
 /*
 GetBuildDetectionStatus Get build detection job status
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param jobId
- @return ApiGetBuildDetectionStatusRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param jobId
+	@return ApiGetBuildDetectionStatusRequest
 */
 func (a *GitAPIService) GetBuildDetectionStatus(ctx context.Context, jobId string) ApiGetBuildDetectionStatusRequest {
 	return ApiGetBuildDetectionStatusRequest{
 		ApiService: a,
-		ctx: ctx,
-		jobId: jobId,
+		ctx:        ctx,
+		jobId:      jobId,
 	}
 }
 
 // Execute executes the request
-//  @return BuildDetectionJob
+//
+//	@return BuildDetectionJob
 func (a *GitAPIService) GetBuildDetectionStatusExecute(r ApiGetBuildDetectionStatusRequest) (*BuildDetectionJob, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *BuildDetectionJob
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *BuildDetectionJob
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitAPIService.GetBuildDetectionStatus")
@@ -168,8 +168,8 @@ func (a *GitAPIService) GetBuildDetectionStatusExecute(r ApiGetBuildDetectionSta
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -179,8 +179,8 @@ func (a *GitAPIService) GetBuildDetectionStatusExecute(r ApiGetBuildDetectionSta
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -198,8 +198,8 @@ func (a *GitAPIService) GetBuildDetectionStatusExecute(r ApiGetBuildDetectionSta
 }
 
 type ApiListGitReposRequest struct {
-	ctx context.Context
-	ApiService GitAPI
+	ctx            context.Context
+	ApiService     GitAPI
 	gitAuthRequest *GitAuthRequest
 }
 
@@ -215,24 +215,25 @@ func (r ApiListGitReposRequest) Execute() ([]GitRepo, *http.Response, error) {
 /*
 ListGitRepos List git repositories
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListGitReposRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListGitReposRequest
 */
 func (a *GitAPIService) ListGitRepos(ctx context.Context) ApiListGitReposRequest {
 	return ApiListGitReposRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []GitRepo
+//
+//	@return []GitRepo
 func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []GitRepo
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []GitRepo
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitAPIService.ListGitRepos")
@@ -297,8 +298,8 @@ func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -308,8 +309,8 @@ func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -327,8 +328,8 @@ func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo
 }
 
 type ApiStartBuildDetectionRequest struct {
-	ctx context.Context
-	ApiService GitAPI
+	ctx                context.Context
+	ApiService         GitAPI
 	detectBuildRequest *DetectBuildRequest
 }
 
@@ -344,24 +345,25 @@ func (r ApiStartBuildDetectionRequest) Execute() (*BuildDetectionJobCreated, *ht
 /*
 StartBuildDetection Start async build config detection
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiStartBuildDetectionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiStartBuildDetectionRequest
 */
 func (a *GitAPIService) StartBuildDetection(ctx context.Context) ApiStartBuildDetectionRequest {
 	return ApiStartBuildDetectionRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return BuildDetectionJobCreated
+//
+//	@return BuildDetectionJobCreated
 func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionRequest) (*BuildDetectionJobCreated, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *BuildDetectionJobCreated
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *BuildDetectionJobCreated
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitAPIService.StartBuildDetection")
@@ -426,8 +428,8 @@ func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -437,8 +439,8 @@ func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -456,8 +458,8 @@ func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionReque
 }
 
 type ApiValidateGitRepoRequest struct {
-	ctx context.Context
-	ApiService GitAPI
+	ctx                    context.Context
+	ApiService             GitAPI
 	validateGitRepoRequest *ValidateGitRepoRequest
 }
 
@@ -473,24 +475,25 @@ func (r ApiValidateGitRepoRequest) Execute() (*GitValidationResult, *http.Respon
 /*
 ValidateGitRepo Validate git repository access
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiValidateGitRepoRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiValidateGitRepoRequest
 */
 func (a *GitAPIService) ValidateGitRepo(ctx context.Context) ApiValidateGitRepoRequest {
 	return ApiValidateGitRepoRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return GitValidationResult
+//
+//	@return GitValidationResult
 func (a *GitAPIService) ValidateGitRepoExecute(r ApiValidateGitRepoRequest) (*GitValidationResult, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *GitValidationResult
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GitValidationResult
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GitAPIService.ValidateGitRepo")
@@ -555,8 +558,8 @@ func (a *GitAPIService) ValidateGitRepoExecute(r ApiValidateGitRepoRequest) (*Gi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -566,8 +569,8 @@ func (a *GitAPIService) ValidateGitRepoExecute(r ApiValidateGitRepoRequest) (*Gi
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

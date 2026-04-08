@@ -70,7 +70,9 @@ onMounted(async () => {
               font-family="var(--font-heading)"
               font-weight="700"
               font-size="18"
-            >A</text>
+            >
+              A
+            </text>
           </svg>
         </div>
         <h1 class="login-title">{{ branding.instanceName }}</h1>
@@ -115,7 +117,9 @@ onMounted(async () => {
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .theme-toggle:hover {

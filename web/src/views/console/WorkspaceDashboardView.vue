@@ -74,13 +74,16 @@ function onPageChange(p: number) {
   fetchData()
 }
 
-watch(() => route.params.wsSlug, (slug) => {
-  if (slug && typeof slug === 'string') {
-    wsSlug.value = slug
-    page.value = 0
-    fetchData()
-  }
-})
+watch(
+  () => route.params.wsSlug,
+  (slug) => {
+    if (slug && typeof slug === 'string') {
+      wsSlug.value = slug
+      page.value = 0
+      fetchData()
+    }
+  },
+)
 
 onMounted(fetchData)
 </script>
@@ -89,9 +92,7 @@ onMounted(fetchData)
   <div>
     <PageHeader :title="workspace?.name ?? 'Workspace'">
       <template #actions>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Project
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Project</button>
       </template>
     </PageHeader>
 
@@ -119,9 +120,7 @@ onMounted(fetchData)
       message="No projects in this workspace yet. Create one to get started."
     >
       <template #action>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Project
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Project</button>
       </template>
     </EmptyState>
 
@@ -138,11 +137,7 @@ onMounted(fetchData)
         />
       </div>
 
-      <PaginationControls
-        :page="page"
-        :total-pages="totalPages"
-        @update:page="onPageChange"
-      />
+      <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
     </template>
 
     <!-- Create dialog -->

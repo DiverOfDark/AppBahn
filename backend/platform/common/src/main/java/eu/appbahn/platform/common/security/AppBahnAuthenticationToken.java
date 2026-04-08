@@ -1,8 +1,7 @@
 package eu.appbahn.platform.common.security;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
-
 import java.util.List;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 
 public class AppBahnAuthenticationToken extends AbstractAuthenticationToken {
 

@@ -1,10 +1,14 @@
 package eu.appbahn.platform.user.config;
 
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +18,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Configures Spring's OAuth2 Login for the OIDC authorization code + PKCE flow.
@@ -42,10 +41,8 @@ public class OidcLoginConfig {
     public Customizer<HttpSecurity> oidcHttpSecurityCustomizer() {
         return http -> {
             try {
-                http.oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authz -> authz
-                                .authorizationRequestRepository(new CookieAuthorizationRequestRepository())
-                        )
+                http.oauth2Login(oauth2 -> oauth2.authorizationEndpoint(authz ->
+                                authz.authorizationRequestRepository(new CookieAuthorizationRequestRepository()))
                         .successHandler((request, response, authentication) -> {
                             if (authentication instanceof OAuth2AuthenticationToken oauthToken
                                     && oauthToken.getPrincipal() instanceof OidcUser oidcUser) {
@@ -54,8 +51,7 @@ public class OidcLoginConfig {
                             } else {
                                 response.sendRedirect("/auth/complete");
                             }
-                        })
-                );
+                        }));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to configure OAuth2 login", e);
             }
@@ -80,8 +76,10 @@ public class OidcLoginConfig {
         }
 
         @Override
-        public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest,
-                                              HttpServletRequest request, HttpServletResponse response) {
+        public void saveAuthorizationRequest(
+                OAuth2AuthorizationRequest authorizationRequest,
+                HttpServletRequest request,
+                HttpServletResponse response) {
             if (authorizationRequest == null) {
                 removeCookie(response);
                 return;
@@ -162,8 +160,7 @@ public class OidcLoginConfig {
         }
 
         private static String encode(String value) {
-            return Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString(value.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(value.getBytes(StandardCharsets.UTF_8));
         }
 
         private static String decode(String value) {

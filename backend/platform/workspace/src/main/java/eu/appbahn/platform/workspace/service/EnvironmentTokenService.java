@@ -8,19 +8,14 @@ import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.EnvironmentTokenEntity;
-import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentTokenRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.model.MemberRole;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -28,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EnvironmentTokenService {
@@ -48,8 +45,7 @@ public class EnvironmentTokenService {
             EnvironmentTokenRepository tokenRepository,
             ProjectRepository projectRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.environmentRepository = environmentRepository;
         this.tokenRepository = tokenRepository;
         this.projectRepository = projectRepository;
@@ -87,7 +83,11 @@ public class EnvironmentTokenService {
         tokenRepository.save(entity);
 
         var project = projectRepository.findById(env.getProjectId()).orElse(null);
-        auditLogService.log(ctx, "environment_token.created", "environment", env.getSlug(),
+        auditLogService.log(
+                ctx,
+                "environment_token.created",
+                "environment",
+                env.getSlug(),
                 project != null ? project.getWorkspaceId() : null,
                 Map.of("tokenName", req.getName()));
 
@@ -106,13 +106,17 @@ public class EnvironmentTokenService {
         var env = findEnvironment(slug);
         requireWorkspaceAdmin(env, ctx);
 
-        var entity = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new NotFoundException("Token not found"));
+        var entity = tokenRepository.findById(tokenId).orElseThrow(() -> new NotFoundException("Token not found"));
         tokenRepository.delete(entity);
 
         var project = projectRepository.findById(env.getProjectId()).orElse(null);
-        auditLogService.log(ctx, "environment_token.deleted", "environment", env.getSlug(),
-                project != null ? project.getWorkspaceId() : null, null);
+        auditLogService.log(
+                ctx,
+                "environment_token.deleted",
+                "environment",
+                env.getSlug(),
+                project != null ? project.getWorkspaceId() : null,
+                null);
     }
 
     private EnvironmentToken toApi(EnvironmentTokenEntity entity) {
@@ -132,13 +136,15 @@ public class EnvironmentTokenService {
     }
 
     private void requireWorkspaceAdmin(EnvironmentEntity env, AuthContext ctx) {
-        var project = projectRepository.findById(env.getProjectId())
+        var project = projectRepository
+                .findById(env.getProjectId())
                 .orElseThrow(() -> new NotFoundException("Project not found"));
         permissionService.requireWorkspaceRole(ctx, project.getWorkspaceId(), MemberRole.ADMIN);
     }
 
     private EnvironmentEntity findEnvironment(String slug) {
-        return environmentRepository.findBySlug(slug)
+        return environmentRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
     }
 

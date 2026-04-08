@@ -19,12 +19,12 @@ var _ MappedNullable = &Quota{}
 
 // Quota struct for Quota
 type Quota struct {
-	MaxCpuCores *float64 `json:"maxCpuCores,omitempty"`
-	MaxMemoryMb *int32 `json:"maxMemoryMb,omitempty"`
-	MaxStorageGb *int32 `json:"maxStorageGb,omitempty"`
-	MaxResources *int32 `json:"maxResources,omitempty"`
-	MaxDeploymentResources *int32 `json:"maxDeploymentResources,omitempty"`
-	MaxDatabaseResources *int32 `json:"maxDatabaseResources,omitempty"`
+	MaxCpuCores            *float64 `json:"maxCpuCores,omitempty"`
+	MaxMemoryMb            *int32   `json:"maxMemoryMb,omitempty"`
+	MaxStorageGb           *int32   `json:"maxStorageGb,omitempty"`
+	MaxResources           *int32   `json:"maxResources,omitempty"`
+	MaxDeploymentResources *int32   `json:"maxDeploymentResources,omitempty"`
+	MaxDatabaseResources   *int32   `json:"maxDatabaseResources,omitempty"`
 }
 
 // NewQuota instantiates a new Quota object
@@ -237,7 +237,7 @@ func (o *Quota) SetMaxDatabaseResources(v int32) {
 }
 
 func (o Quota) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableQuota) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

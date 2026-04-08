@@ -21,9 +21,9 @@ var _ MappedNullable = &LogLine{}
 // LogLine struct for LogLine
 type LogLine struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Pod *string `json:"pod,omitempty"`
-	Container *string `json:"container,omitempty"`
+	Message   *string    `json:"message,omitempty"`
+	Pod       *string    `json:"pod,omitempty"`
+	Container *string    `json:"container,omitempty"`
 }
 
 // NewLogLine instantiates a new LogLine object
@@ -172,7 +172,7 @@ func (o *LogLine) SetContainer(v string) {
 }
 
 func (o LogLine) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -231,5 +231,3 @@ func (v *NullableLogLine) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

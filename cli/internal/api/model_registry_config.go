@@ -19,7 +19,7 @@ var _ MappedNullable = &RegistryConfig{}
 
 // RegistryConfig struct for RegistryConfig
 type RegistryConfig struct {
-	Url *string `json:"url,omitempty"`
+	Url           *string `json:"url,omitempty"`
 	CredentialRef *string `json:"credentialRef,omitempty"`
 }
 
@@ -105,7 +105,7 @@ func (o *RegistryConfig) SetCredentialRef(v string) {
 }
 
 func (o RegistryConfig) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableRegistryConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

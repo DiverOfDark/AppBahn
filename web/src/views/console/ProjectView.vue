@@ -84,14 +84,17 @@ function formatDate(iso?: string): string {
   })
 }
 
-watch(() => [route.params.wsSlug, route.params.projSlug], ([ws, proj]) => {
-  if (ws && proj && typeof ws === 'string' && typeof proj === 'string') {
-    wsSlug.value = ws
-    projSlug.value = proj
-    page.value = 0
-    fetchData()
-  }
-})
+watch(
+  () => [route.params.wsSlug, route.params.projSlug],
+  ([ws, proj]) => {
+    if (ws && proj && typeof ws === 'string' && typeof proj === 'string') {
+      wsSlug.value = ws
+      projSlug.value = proj
+      page.value = 0
+      fetchData()
+    }
+  },
+)
 
 onMounted(fetchData)
 </script>
@@ -100,9 +103,7 @@ onMounted(fetchData)
   <div>
     <PageHeader :title="project?.name ?? 'Project'">
       <template #actions>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Environment
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Environment</button>
       </template>
     </PageHeader>
 
@@ -132,9 +133,7 @@ onMounted(fetchData)
       message="No environments in this project yet. Create one to get started."
     >
       <template #action>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Environment
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Environment</button>
       </template>
     </EmptyState>
 
@@ -162,11 +161,7 @@ onMounted(fetchData)
         </template>
       </DataTable>
 
-      <PaginationControls
-        :page="page"
-        :total-pages="totalPages"
-        @update:page="onPageChange"
-      />
+      <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
     </template>
 
     <!-- Create dialog -->

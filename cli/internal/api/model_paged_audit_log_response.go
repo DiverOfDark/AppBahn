@@ -19,11 +19,11 @@ var _ MappedNullable = &PagedAuditLogResponse{}
 
 // PagedAuditLogResponse struct for PagedAuditLogResponse
 type PagedAuditLogResponse struct {
-	Content []AuditLogEntry `json:"content,omitempty"`
-	Page *int32 `json:"page,omitempty"`
-	Size *int32 `json:"size,omitempty"`
-	TotalElements *int64 `json:"totalElements,omitempty"`
-	TotalPages *int32 `json:"totalPages,omitempty"`
+	Content       []AuditLogEntry `json:"content,omitempty"`
+	Page          *int32          `json:"page,omitempty"`
+	Size          *int32          `json:"size,omitempty"`
+	TotalElements *int64          `json:"totalElements,omitempty"`
+	TotalPages    *int32          `json:"totalPages,omitempty"`
 }
 
 // NewPagedAuditLogResponse instantiates a new PagedAuditLogResponse object
@@ -204,7 +204,7 @@ func (o *PagedAuditLogResponse) SetTotalPages(v int32) {
 }
 
 func (o PagedAuditLogResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -266,5 +266,3 @@ func (v *NullablePagedAuditLogResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

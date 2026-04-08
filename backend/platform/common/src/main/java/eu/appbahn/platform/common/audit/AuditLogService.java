@@ -4,17 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.shared.util.UuidV7;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class AuditLogService {
@@ -29,8 +28,13 @@ public class AuditLogService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void log(AuthContext actor, String action, String targetType, String targetSlug,
-                    UUID workspaceId, Map<String, Object> diff) {
+    public void log(
+            AuthContext actor,
+            String action,
+            String targetType,
+            String targetSlug,
+            UUID workspaceId,
+            Map<String, Object> diff) {
         var entry = new AuditLogEntity();
         entry.setId(UuidV7.generate());
         entry.setTimestamp(Instant.now());

@@ -20,15 +20,14 @@ import (
 	"time"
 )
 
-
 type ResourcesAPI interface {
 
 	/*
-	AddDomain Add custom domain
+		AddDomain Add custom domain
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiAddDomainRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiAddDomainRequest
 	*/
 	AddDomain(ctx context.Context, slug string) ApiAddDomainRequest
 
@@ -37,12 +36,12 @@ type ResourcesAPI interface {
 	AddDomainExecute(r ApiAddDomainRequest) (*DomainEntry, *http.Response, error)
 
 	/*
-	ApproveDeployment Approve a deployment
+		ApproveDeployment Approve a deployment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param deploymentId
-	@return ApiApproveDeploymentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiApproveDeploymentRequest
 	*/
 	ApproveDeployment(ctx context.Context, slug string, deploymentId string) ApiApproveDeploymentRequest
 
@@ -50,11 +49,11 @@ type ResourcesAPI interface {
 	ApproveDeploymentExecute(r ApiApproveDeploymentRequest) (*http.Response, error)
 
 	/*
-	ClearBuildCache Clear build cache
+		ClearBuildCache Clear build cache
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiClearBuildCacheRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiClearBuildCacheRequest
 	*/
 	ClearBuildCache(ctx context.Context, slug string) ApiClearBuildCacheRequest
 
@@ -62,11 +61,11 @@ type ResourcesAPI interface {
 	ClearBuildCacheExecute(r ApiClearBuildCacheRequest) (*http.Response, error)
 
 	/*
-	CreateExposure Create ephemeral port exposure
+		CreateExposure Create ephemeral port exposure
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiCreateExposureRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateExposureRequest
 	*/
 	CreateExposure(ctx context.Context, slug string) ApiCreateExposureRequest
 
@@ -75,10 +74,10 @@ type ResourcesAPI interface {
 	CreateExposureExecute(r ApiCreateExposureRequest) (*ResourceExposure, *http.Response, error)
 
 	/*
-	CreateResource Create resource
+		CreateResource Create resource
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCreateResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateResourceRequest
 	*/
 	CreateResource(ctx context.Context) ApiCreateResourceRequest
 
@@ -87,12 +86,12 @@ type ResourcesAPI interface {
 	CreateResourceExecute(r ApiCreateResourceRequest) (*ResourceCreatedResponse, *http.Response, error)
 
 	/*
-	DeleteExposure Remove ephemeral exposure
+		DeleteExposure Remove ephemeral exposure
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param port
-	@return ApiDeleteExposureRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param port
+		@return ApiDeleteExposureRequest
 	*/
 	DeleteExposure(ctx context.Context, slug string, port int32) ApiDeleteExposureRequest
 
@@ -100,11 +99,11 @@ type ResourcesAPI interface {
 	DeleteExposureExecute(r ApiDeleteExposureRequest) (*http.Response, error)
 
 	/*
-	DeleteResource Delete resource
+		DeleteResource Delete resource
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiDeleteResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiDeleteResourceRequest
 	*/
 	DeleteResource(ctx context.Context, slug string) ApiDeleteResourceRequest
 
@@ -112,12 +111,12 @@ type ResourcesAPI interface {
 	DeleteResourceExecute(r ApiDeleteResourceRequest) (*http.Response, error)
 
 	/*
-	GetDeployment Get deployment details
+		GetDeployment Get deployment details
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param deploymentId
-	@return ApiGetDeploymentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiGetDeploymentRequest
 	*/
 	GetDeployment(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentRequest
 
@@ -126,12 +125,12 @@ type ResourcesAPI interface {
 	GetDeploymentExecute(r ApiGetDeploymentRequest) (*Deployment, *http.Response, error)
 
 	/*
-	GetDeploymentApprovals Get deployment approval status
+		GetDeploymentApprovals Get deployment approval status
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param deploymentId
-	@return ApiGetDeploymentApprovalsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiGetDeploymentApprovalsRequest
 	*/
 	GetDeploymentApprovals(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentApprovalsRequest
 
@@ -140,11 +139,11 @@ type ResourcesAPI interface {
 	GetDeploymentApprovalsExecute(r ApiGetDeploymentApprovalsRequest) ([]DeploymentApproval, *http.Response, error)
 
 	/*
-	GetResource Get resource details
+		GetResource Get resource details
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceRequest
 	*/
 	GetResource(ctx context.Context, slug string) ApiGetResourceRequest
 
@@ -153,11 +152,11 @@ type ResourcesAPI interface {
 	GetResourceExecute(r ApiGetResourceRequest) (*Resource, *http.Response, error)
 
 	/*
-	GetResourceConnection Get resource connection details
+		GetResourceConnection Get resource connection details
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceConnectionRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceConnectionRequest
 	*/
 	GetResourceConnection(ctx context.Context, slug string) ApiGetResourceConnectionRequest
 
@@ -166,11 +165,11 @@ type ResourcesAPI interface {
 	GetResourceConnectionExecute(r ApiGetResourceConnectionRequest) (*ConnectionResponse, *http.Response, error)
 
 	/*
-	GetResourceCpuMetrics Get CPU metrics
+		GetResourceCpuMetrics Get CPU metrics
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceCpuMetricsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceCpuMetricsRequest
 	*/
 	GetResourceCpuMetrics(ctx context.Context, slug string) ApiGetResourceCpuMetricsRequest
 
@@ -179,11 +178,11 @@ type ResourcesAPI interface {
 	GetResourceCpuMetricsExecute(r ApiGetResourceCpuMetricsRequest) (*MetricsResponse, *http.Response, error)
 
 	/*
-	GetResourceLogs Get resource logs
+		GetResourceLogs Get resource logs
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceLogsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceLogsRequest
 	*/
 	GetResourceLogs(ctx context.Context, slug string) ApiGetResourceLogsRequest
 
@@ -192,11 +191,11 @@ type ResourcesAPI interface {
 	GetResourceLogsExecute(r ApiGetResourceLogsRequest) (*LogResponse, *http.Response, error)
 
 	/*
-	GetResourceNetworkInbound Get network inbound metrics
+		GetResourceNetworkInbound Get network inbound metrics
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceNetworkInboundRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceNetworkInboundRequest
 	*/
 	GetResourceNetworkInbound(ctx context.Context, slug string) ApiGetResourceNetworkInboundRequest
 
@@ -205,11 +204,11 @@ type ResourcesAPI interface {
 	GetResourceNetworkInboundExecute(r ApiGetResourceNetworkInboundRequest) (*MetricsResponse, *http.Response, error)
 
 	/*
-	GetResourceNetworkOutbound Get network outbound metrics
+		GetResourceNetworkOutbound Get network outbound metrics
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceNetworkOutboundRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceNetworkOutboundRequest
 	*/
 	GetResourceNetworkOutbound(ctx context.Context, slug string) ApiGetResourceNetworkOutboundRequest
 
@@ -218,11 +217,11 @@ type ResourcesAPI interface {
 	GetResourceNetworkOutboundExecute(r ApiGetResourceNetworkOutboundRequest) (*MetricsResponse, *http.Response, error)
 
 	/*
-	GetResourceRamMetrics Get RAM metrics
+		GetResourceRamMetrics Get RAM metrics
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceRamMetricsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceRamMetricsRequest
 	*/
 	GetResourceRamMetrics(ctx context.Context, slug string) ApiGetResourceRamMetricsRequest
 
@@ -231,11 +230,11 @@ type ResourcesAPI interface {
 	GetResourceRamMetricsExecute(r ApiGetResourceRamMetricsRequest) (*MetricsResponse, *http.Response, error)
 
 	/*
-	GetResourceWebhook Get resource webhook configuration
+		GetResourceWebhook Get resource webhook configuration
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiGetResourceWebhookRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceWebhookRequest
 	*/
 	GetResourceWebhook(ctx context.Context, slug string) ApiGetResourceWebhookRequest
 
@@ -244,11 +243,11 @@ type ResourcesAPI interface {
 	GetResourceWebhookExecute(r ApiGetResourceWebhookRequest) (*WebhookConfig, *http.Response, error)
 
 	/*
-	ListDeployments List deployments
+		ListDeployments List deployments
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListDeploymentsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListDeploymentsRequest
 	*/
 	ListDeployments(ctx context.Context, slug string) ApiListDeploymentsRequest
 
@@ -257,11 +256,11 @@ type ResourcesAPI interface {
 	ListDeploymentsExecute(r ApiListDeploymentsRequest) (*PagedDeploymentResponse, *http.Response, error)
 
 	/*
-	ListDomains List custom domains
+		ListDomains List custom domains
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListDomainsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListDomainsRequest
 	*/
 	ListDomains(ctx context.Context, slug string) ApiListDomainsRequest
 
@@ -270,11 +269,11 @@ type ResourcesAPI interface {
 	ListDomainsExecute(r ApiListDomainsRequest) ([]DomainEntry, *http.Response, error)
 
 	/*
-	ListExposures List active ephemeral port exposures
+		ListExposures List active ephemeral port exposures
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiListExposuresRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListExposuresRequest
 	*/
 	ListExposures(ctx context.Context, slug string) ApiListExposuresRequest
 
@@ -283,10 +282,10 @@ type ResourcesAPI interface {
 	ListExposuresExecute(r ApiListExposuresRequest) ([]ResourceExposure, *http.Response, error)
 
 	/*
-	ListResources List resources
+		ListResources List resources
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListResourcesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListResourcesRequest
 	*/
 	ListResources(ctx context.Context) ApiListResourcesRequest
 
@@ -295,12 +294,12 @@ type ResourcesAPI interface {
 	ListResourcesExecute(r ApiListResourcesRequest) (*PagedResourceResponse, *http.Response, error)
 
 	/*
-	RejectDeployment Reject a deployment
+		RejectDeployment Reject a deployment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param deploymentId
-	@return ApiRejectDeploymentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiRejectDeploymentRequest
 	*/
 	RejectDeployment(ctx context.Context, slug string, deploymentId string) ApiRejectDeploymentRequest
 
@@ -308,12 +307,12 @@ type ResourcesAPI interface {
 	RejectDeploymentExecute(r ApiRejectDeploymentRequest) (*http.Response, error)
 
 	/*
-	RemoveDomain Remove custom domain
+		RemoveDomain Remove custom domain
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@param domain
-	@return ApiRemoveDomainRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param domain
+		@return ApiRemoveDomainRequest
 	*/
 	RemoveDomain(ctx context.Context, slug string, domain string) ApiRemoveDomainRequest
 
@@ -321,11 +320,11 @@ type ResourcesAPI interface {
 	RemoveDomainExecute(r ApiRemoveDomainRequest) (*http.Response, error)
 
 	/*
-	RestartResource Restart resource
+		RestartResource Restart resource
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiRestartResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiRestartResourceRequest
 	*/
 	RestartResource(ctx context.Context, slug string) ApiRestartResourceRequest
 
@@ -333,11 +332,11 @@ type ResourcesAPI interface {
 	RestartResourceExecute(r ApiRestartResourceRequest) (*http.Response, error)
 
 	/*
-	RollbackResource Rollback resource to a previous deployment
+		RollbackResource Rollback resource to a previous deployment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiRollbackResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiRollbackResourceRequest
 	*/
 	RollbackResource(ctx context.Context, slug string) ApiRollbackResourceRequest
 
@@ -346,11 +345,11 @@ type ResourcesAPI interface {
 	RollbackResourceExecute(r ApiRollbackResourceRequest) (*Deployment, *http.Response, error)
 
 	/*
-	RotateWebhookSecret Rotate webhook secret
+		RotateWebhookSecret Rotate webhook secret
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiRotateWebhookSecretRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiRotateWebhookSecretRequest
 	*/
 	RotateWebhookSecret(ctx context.Context, slug string) ApiRotateWebhookSecretRequest
 
@@ -359,11 +358,11 @@ type ResourcesAPI interface {
 	RotateWebhookSecretExecute(r ApiRotateWebhookSecretRequest) (*WebhookConfig, *http.Response, error)
 
 	/*
-	StartResource Start resource
+		StartResource Start resource
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiStartResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiStartResourceRequest
 	*/
 	StartResource(ctx context.Context, slug string) ApiStartResourceRequest
 
@@ -371,11 +370,11 @@ type ResourcesAPI interface {
 	StartResourceExecute(r ApiStartResourceRequest) (*http.Response, error)
 
 	/*
-	StopResource Stop resource
+		StopResource Stop resource
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiStopResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiStopResourceRequest
 	*/
 	StopResource(ctx context.Context, slug string) ApiStopResourceRequest
 
@@ -383,11 +382,11 @@ type ResourcesAPI interface {
 	StopResourceExecute(r ApiStopResourceRequest) (*http.Response, error)
 
 	/*
-	TriggerDeployment Trigger a new deployment
+		TriggerDeployment Trigger a new deployment
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiTriggerDeploymentRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiTriggerDeploymentRequest
 	*/
 	TriggerDeployment(ctx context.Context, slug string) ApiTriggerDeploymentRequest
 
@@ -396,11 +395,11 @@ type ResourcesAPI interface {
 	TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*Deployment, *http.Response, error)
 
 	/*
-	UpdateResource Update resource (JSON merge patch)
+		UpdateResource Update resource (JSON merge patch)
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiUpdateResourceRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiUpdateResourceRequest
 	*/
 	UpdateResource(ctx context.Context, slug string) ApiUpdateResourceRequest
 
@@ -413,9 +412,9 @@ type ResourcesAPI interface {
 type ResourcesAPIService service
 
 type ApiAddDomainRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx              context.Context
+	ApiService       ResourcesAPI
+	slug             string
 	addDomainRequest *AddDomainRequest
 }
 
@@ -431,26 +430,27 @@ func (r ApiAddDomainRequest) Execute() (*DomainEntry, *http.Response, error) {
 /*
 AddDomain Add custom domain
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiAddDomainRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiAddDomainRequest
 */
 func (a *ResourcesAPIService) AddDomain(ctx context.Context, slug string) ApiAddDomainRequest {
 	return ApiAddDomainRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return DomainEntry
+//
+//	@return DomainEntry
 func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEntry, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *DomainEntry
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DomainEntry
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.AddDomain")
@@ -516,8 +516,8 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -527,8 +527,8 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -538,8 +538,8 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -549,8 +549,8 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -560,8 +560,8 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -579,9 +579,9 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 }
 
 type ApiApproveDeploymentRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx          context.Context
+	ApiService   ResourcesAPI
+	slug         string
 	deploymentId string
 }
 
@@ -592,16 +592,16 @@ func (r ApiApproveDeploymentRequest) Execute() (*http.Response, error) {
 /*
 ApproveDeployment Approve a deployment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param deploymentId
- @return ApiApproveDeploymentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiApproveDeploymentRequest
 */
 func (a *ResourcesAPIService) ApproveDeployment(ctx context.Context, slug string, deploymentId string) ApiApproveDeploymentRequest {
 	return ApiApproveDeploymentRequest{
-		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
 		deploymentId: deploymentId,
 	}
 }
@@ -609,9 +609,9 @@ func (a *ResourcesAPIService) ApproveDeployment(ctx context.Context, slug string
 // Execute executes the request
 func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ApproveDeployment")
@@ -673,8 +673,8 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -684,8 +684,8 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -695,8 +695,8 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -706,8 +706,8 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -716,9 +716,9 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 }
 
 type ApiClearBuildCacheRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiClearBuildCacheRequest) Execute() (*http.Response, error) {
@@ -728,24 +728,24 @@ func (r ApiClearBuildCacheRequest) Execute() (*http.Response, error) {
 /*
 ClearBuildCache Clear build cache
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiClearBuildCacheRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiClearBuildCacheRequest
 */
 func (a *ResourcesAPIService) ClearBuildCache(ctx context.Context, slug string) ApiClearBuildCacheRequest {
 	return ApiClearBuildCacheRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ClearBuildCache")
@@ -806,8 +806,8 @@ func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -817,8 +817,8 @@ func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -828,8 +828,8 @@ func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -838,9 +838,9 @@ func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest
 }
 
 type ApiCreateExposureRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx                   context.Context
+	ApiService            ResourcesAPI
+	slug                  string
 	createExposureRequest *CreateExposureRequest
 }
 
@@ -856,26 +856,27 @@ func (r ApiCreateExposureRequest) Execute() (*ResourceExposure, *http.Response, 
 /*
 CreateExposure Create ephemeral port exposure
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiCreateExposureRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiCreateExposureRequest
 */
 func (a *ResourcesAPIService) CreateExposure(ctx context.Context, slug string) ApiCreateExposureRequest {
 	return ApiCreateExposureRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return ResourceExposure
+//
+//	@return ResourceExposure
 func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) (*ResourceExposure, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ResourceExposure
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResourceExposure
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.CreateExposure")
@@ -941,8 +942,8 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -952,8 +953,8 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -963,8 +964,8 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -974,8 +975,8 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -993,8 +994,8 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 }
 
 type ApiCreateResourceRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
+	ctx                   context.Context
+	ApiService            ResourcesAPI
 	createResourceRequest *CreateResourceRequest
 }
 
@@ -1010,24 +1011,25 @@ func (r ApiCreateResourceRequest) Execute() (*ResourceCreatedResponse, *http.Res
 /*
 CreateResource Create resource
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateResourceRequest
 */
 func (a *ResourcesAPIService) CreateResource(ctx context.Context) ApiCreateResourceRequest {
 	return ApiCreateResourceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return ResourceCreatedResponse
+//
+//	@return ResourceCreatedResponse
 func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) (*ResourceCreatedResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ResourceCreatedResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResourceCreatedResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.CreateResource")
@@ -1092,8 +1094,8 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1103,8 +1105,8 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1114,8 +1116,8 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -1125,8 +1127,8 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -1136,8 +1138,8 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1155,10 +1157,10 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 }
 
 type ApiDeleteExposureRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	port int32
+	slug       string
+	port       int32
 }
 
 func (r ApiDeleteExposureRequest) Execute() (*http.Response, error) {
@@ -1168,26 +1170,26 @@ func (r ApiDeleteExposureRequest) Execute() (*http.Response, error) {
 /*
 DeleteExposure Remove ephemeral exposure
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param port
- @return ApiDeleteExposureRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param port
+	@return ApiDeleteExposureRequest
 */
 func (a *ResourcesAPIService) DeleteExposure(ctx context.Context, slug string, port int32) ApiDeleteExposureRequest {
 	return ApiDeleteExposureRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		port: port,
+		ctx:        ctx,
+		slug:       slug,
+		port:       port,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.DeleteExposure")
@@ -1249,8 +1251,8 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1260,8 +1262,8 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1271,8 +1273,8 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1281,9 +1283,9 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 }
 
 type ApiDeleteResourceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiDeleteResourceRequest) Execute() (*http.Response, error) {
@@ -1293,24 +1295,24 @@ func (r ApiDeleteResourceRequest) Execute() (*http.Response, error) {
 /*
 DeleteResource Delete resource
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiDeleteResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiDeleteResourceRequest
 */
 func (a *ResourcesAPIService) DeleteResource(ctx context.Context, slug string) ApiDeleteResourceRequest {
 	return ApiDeleteResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.DeleteResource")
@@ -1371,8 +1373,8 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1382,8 +1384,8 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1393,8 +1395,8 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1403,9 +1405,9 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 }
 
 type ApiGetDeploymentRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx          context.Context
+	ApiService   ResourcesAPI
+	slug         string
 	deploymentId string
 }
 
@@ -1416,28 +1418,29 @@ func (r ApiGetDeploymentRequest) Execute() (*Deployment, *http.Response, error) 
 /*
 GetDeployment Get deployment details
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param deploymentId
- @return ApiGetDeploymentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiGetDeploymentRequest
 */
 func (a *ResourcesAPIService) GetDeployment(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentRequest {
 	return ApiGetDeploymentRequest{
-		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
 		deploymentId: deploymentId,
 	}
 }
 
 // Execute executes the request
-//  @return Deployment
+//
+//	@return Deployment
 func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*Deployment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Deployment
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Deployment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetDeployment")
@@ -1499,8 +1502,8 @@ func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1510,8 +1513,8 @@ func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1521,8 +1524,8 @@ func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1540,9 +1543,9 @@ func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*
 }
 
 type ApiGetDeploymentApprovalsRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx          context.Context
+	ApiService   ResourcesAPI
+	slug         string
 	deploymentId string
 }
 
@@ -1553,28 +1556,29 @@ func (r ApiGetDeploymentApprovalsRequest) Execute() ([]DeploymentApproval, *http
 /*
 GetDeploymentApprovals Get deployment approval status
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param deploymentId
- @return ApiGetDeploymentApprovalsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiGetDeploymentApprovalsRequest
 */
 func (a *ResourcesAPIService) GetDeploymentApprovals(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentApprovalsRequest {
 	return ApiGetDeploymentApprovalsRequest{
-		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
 		deploymentId: deploymentId,
 	}
 }
 
 // Execute executes the request
-//  @return []DeploymentApproval
+//
+//	@return []DeploymentApproval
 func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentApprovalsRequest) ([]DeploymentApproval, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []DeploymentApproval
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []DeploymentApproval
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetDeploymentApprovals")
@@ -1636,8 +1640,8 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1647,8 +1651,8 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1658,8 +1662,8 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1677,9 +1681,9 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 }
 
 type ApiGetResourceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetResourceRequest) Execute() (*Resource, *http.Response, error) {
@@ -1689,26 +1693,27 @@ func (r ApiGetResourceRequest) Execute() (*Resource, *http.Response, error) {
 /*
 GetResource Get resource details
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceRequest
 */
 func (a *ResourcesAPIService) GetResource(ctx context.Context, slug string) ApiGetResourceRequest {
 	return ApiGetResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Resource
+//
+//	@return Resource
 func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Resource, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Resource
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Resource
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResource")
@@ -1769,8 +1774,8 @@ func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Reso
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1780,8 +1785,8 @@ func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Reso
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1791,8 +1796,8 @@ func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Reso
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1810,9 +1815,9 @@ func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Reso
 }
 
 type ApiGetResourceConnectionRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetResourceConnectionRequest) Execute() (*ConnectionResponse, *http.Response, error) {
@@ -1822,26 +1827,27 @@ func (r ApiGetResourceConnectionRequest) Execute() (*ConnectionResponse, *http.R
 /*
 GetResourceConnection Get resource connection details
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceConnectionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceConnectionRequest
 */
 func (a *ResourcesAPIService) GetResourceConnection(ctx context.Context, slug string) ApiGetResourceConnectionRequest {
 	return ApiGetResourceConnectionRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return ConnectionResponse
+//
+//	@return ConnectionResponse
 func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConnectionRequest) (*ConnectionResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ConnectionResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ConnectionResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceConnection")
@@ -1902,8 +1908,8 @@ func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConne
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1913,8 +1919,8 @@ func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConne
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1924,8 +1930,8 @@ func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConne
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1943,13 +1949,13 @@ func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConne
 }
 
 type ApiGetResourceCpuMetricsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	start *string
-	end *string
-	step *int32
-	pod *string
+	slug       string
+	start      *string
+	end        *string
+	step       *int32
+	pod        *string
 }
 
 // Start time (ISO 8601 or relative e.g. -1h, -24h, -7d)
@@ -1983,26 +1989,27 @@ func (r ApiGetResourceCpuMetricsRequest) Execute() (*MetricsResponse, *http.Resp
 /*
 GetResourceCpuMetrics Get CPU metrics
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceCpuMetricsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceCpuMetricsRequest
 */
 func (a *ResourcesAPIService) GetResourceCpuMetrics(ctx context.Context, slug string) ApiGetResourceCpuMetricsRequest {
 	return ApiGetResourceCpuMetricsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return MetricsResponse
+//
+//	@return MetricsResponse
 func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMetricsRequest) (*MetricsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *MetricsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *MetricsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceCpuMetrics")
@@ -2075,8 +2082,8 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2086,8 +2093,8 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2097,8 +2104,8 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2116,12 +2123,12 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 }
 
 type ApiGetResourceLogsRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx          context.Context
+	ApiService   ResourcesAPI
+	slug         string
 	deploymentId *string
-	lines *int32
-	since *time.Time
+	lines        *int32
+	since        *time.Time
 }
 
 func (r ApiGetResourceLogsRequest) DeploymentId(deploymentId string) ApiGetResourceLogsRequest {
@@ -2146,26 +2153,27 @@ func (r ApiGetResourceLogsRequest) Execute() (*LogResponse, *http.Response, erro
 /*
 GetResourceLogs Get resource logs
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceLogsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceLogsRequest
 */
 func (a *ResourcesAPIService) GetResourceLogs(ctx context.Context, slug string) ApiGetResourceLogsRequest {
 	return ApiGetResourceLogsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return LogResponse
+//
+//	@return LogResponse
 func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest) (*LogResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *LogResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *LogResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceLogs")
@@ -2239,8 +2247,8 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2250,8 +2258,8 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2261,8 +2269,8 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2280,13 +2288,13 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 }
 
 type ApiGetResourceNetworkInboundRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	start *string
-	end *string
-	step *int32
-	pod *string
+	slug       string
+	start      *string
+	end        *string
+	step       *int32
+	pod        *string
 }
 
 // Start time (ISO 8601 or relative e.g. -1h, -24h, -7d)
@@ -2320,26 +2328,27 @@ func (r ApiGetResourceNetworkInboundRequest) Execute() (*MetricsResponse, *http.
 /*
 GetResourceNetworkInbound Get network inbound metrics
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceNetworkInboundRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceNetworkInboundRequest
 */
 func (a *ResourcesAPIService) GetResourceNetworkInbound(ctx context.Context, slug string) ApiGetResourceNetworkInboundRequest {
 	return ApiGetResourceNetworkInboundRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return MetricsResponse
+//
+//	@return MetricsResponse
 func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceNetworkInboundRequest) (*MetricsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *MetricsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *MetricsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceNetworkInbound")
@@ -2412,8 +2421,8 @@ func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceN
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2423,8 +2432,8 @@ func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceN
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2434,8 +2443,8 @@ func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceN
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2453,13 +2462,13 @@ func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceN
 }
 
 type ApiGetResourceNetworkOutboundRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	start *string
-	end *string
-	step *int32
-	pod *string
+	slug       string
+	start      *string
+	end        *string
+	step       *int32
+	pod        *string
 }
 
 // Start time (ISO 8601 or relative e.g. -1h, -24h, -7d)
@@ -2493,26 +2502,27 @@ func (r ApiGetResourceNetworkOutboundRequest) Execute() (*MetricsResponse, *http
 /*
 GetResourceNetworkOutbound Get network outbound metrics
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceNetworkOutboundRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceNetworkOutboundRequest
 */
 func (a *ResourcesAPIService) GetResourceNetworkOutbound(ctx context.Context, slug string) ApiGetResourceNetworkOutboundRequest {
 	return ApiGetResourceNetworkOutboundRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return MetricsResponse
+//
+//	@return MetricsResponse
 func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResourceNetworkOutboundRequest) (*MetricsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *MetricsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *MetricsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceNetworkOutbound")
@@ -2585,8 +2595,8 @@ func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResource
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2596,8 +2606,8 @@ func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResource
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2607,8 +2617,8 @@ func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResource
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2626,13 +2636,13 @@ func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResource
 }
 
 type ApiGetResourceRamMetricsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	start *string
-	end *string
-	step *int32
-	pod *string
+	slug       string
+	start      *string
+	end        *string
+	step       *int32
+	pod        *string
 }
 
 // Start time (ISO 8601 or relative e.g. -1h, -24h, -7d)
@@ -2666,26 +2676,27 @@ func (r ApiGetResourceRamMetricsRequest) Execute() (*MetricsResponse, *http.Resp
 /*
 GetResourceRamMetrics Get RAM metrics
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceRamMetricsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceRamMetricsRequest
 */
 func (a *ResourcesAPIService) GetResourceRamMetrics(ctx context.Context, slug string) ApiGetResourceRamMetricsRequest {
 	return ApiGetResourceRamMetricsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return MetricsResponse
+//
+//	@return MetricsResponse
 func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMetricsRequest) (*MetricsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *MetricsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *MetricsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceRamMetrics")
@@ -2758,8 +2769,8 @@ func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2769,8 +2780,8 @@ func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2780,8 +2791,8 @@ func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2799,9 +2810,9 @@ func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMe
 }
 
 type ApiGetResourceWebhookRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiGetResourceWebhookRequest) Execute() (*WebhookConfig, *http.Response, error) {
@@ -2811,26 +2822,27 @@ func (r ApiGetResourceWebhookRequest) Execute() (*WebhookConfig, *http.Response,
 /*
 GetResourceWebhook Get resource webhook configuration
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiGetResourceWebhookRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceWebhookRequest
 */
 func (a *ResourcesAPIService) GetResourceWebhook(ctx context.Context, slug string) ApiGetResourceWebhookRequest {
 	return ApiGetResourceWebhookRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return WebhookConfig
+//
+//	@return WebhookConfig
 func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookRequest) (*WebhookConfig, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebhookConfig
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebhookConfig
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceWebhook")
@@ -2891,8 +2903,8 @@ func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookR
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2902,8 +2914,8 @@ func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookR
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2913,8 +2925,8 @@ func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookR
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2932,11 +2944,11 @@ func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookR
 }
 
 type ApiListDeploymentsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	page *int32
-	size *int32
+	slug       string
+	page       *int32
+	size       *int32
 }
 
 func (r ApiListDeploymentsRequest) Page(page int32) ApiListDeploymentsRequest {
@@ -2956,26 +2968,27 @@ func (r ApiListDeploymentsRequest) Execute() (*PagedDeploymentResponse, *http.Re
 /*
 ListDeployments List deployments
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListDeploymentsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListDeploymentsRequest
 */
 func (a *ResourcesAPIService) ListDeployments(ctx context.Context, slug string) ApiListDeploymentsRequest {
 	return ApiListDeploymentsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return PagedDeploymentResponse
+//
+//	@return PagedDeploymentResponse
 func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest) (*PagedDeploymentResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedDeploymentResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedDeploymentResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ListDeployments")
@@ -3050,8 +3063,8 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3061,8 +3074,8 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3072,8 +3085,8 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3091,9 +3104,9 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 }
 
 type ApiListDomainsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListDomainsRequest) Execute() ([]DomainEntry, *http.Response, error) {
@@ -3103,26 +3116,27 @@ func (r ApiListDomainsRequest) Execute() ([]DomainEntry, *http.Response, error) 
 /*
 ListDomains List custom domains
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListDomainsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListDomainsRequest
 */
 func (a *ResourcesAPIService) ListDomains(ctx context.Context, slug string) ApiListDomainsRequest {
 	return ApiListDomainsRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []DomainEntry
+//
+//	@return []DomainEntry
 func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]DomainEntry, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []DomainEntry
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []DomainEntry
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ListDomains")
@@ -3183,8 +3197,8 @@ func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]Dom
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3194,8 +3208,8 @@ func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]Dom
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3205,8 +3219,8 @@ func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]Dom
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3224,9 +3238,9 @@ func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]Dom
 }
 
 type ApiListExposuresRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiListExposuresRequest) Execute() ([]ResourceExposure, *http.Response, error) {
@@ -3236,26 +3250,27 @@ func (r ApiListExposuresRequest) Execute() ([]ResourceExposure, *http.Response, 
 /*
 ListExposures List active ephemeral port exposures
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiListExposuresRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListExposuresRequest
 */
 func (a *ResourcesAPIService) ListExposures(ctx context.Context, slug string) ApiListExposuresRequest {
 	return ApiListExposuresRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return []ResourceExposure
+//
+//	@return []ResourceExposure
 func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([]ResourceExposure, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []ResourceExposure
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []ResourceExposure
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ListExposures")
@@ -3316,8 +3331,8 @@ func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3327,8 +3342,8 @@ func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3338,8 +3353,8 @@ func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3357,12 +3372,12 @@ func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([
 }
 
 type ApiListResourcesRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
+	ctx             context.Context
+	ApiService      ResourcesAPI
 	environmentSlug *string
-	page *int32
-	size *int32
-	sort *string
+	page            *int32
+	size            *int32
+	sort            *string
 }
 
 func (r ApiListResourcesRequest) EnvironmentSlug(environmentSlug string) ApiListResourcesRequest {
@@ -3392,24 +3407,25 @@ func (r ApiListResourcesRequest) Execute() (*PagedResourceResponse, *http.Respon
 /*
 ListResources List resources
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListResourcesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListResourcesRequest
 */
 func (a *ResourcesAPIService) ListResources(ctx context.Context) ApiListResourcesRequest {
 	return ApiListResourcesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PagedResourceResponse
+//
+//	@return PagedResourceResponse
 func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*PagedResourceResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedResourceResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedResourceResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ListResources")
@@ -3490,8 +3506,8 @@ func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -3509,9 +3525,9 @@ func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*
 }
 
 type ApiRejectDeploymentRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx          context.Context
+	ApiService   ResourcesAPI
+	slug         string
 	deploymentId string
 }
 
@@ -3522,16 +3538,16 @@ func (r ApiRejectDeploymentRequest) Execute() (*http.Response, error) {
 /*
 RejectDeployment Reject a deployment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param deploymentId
- @return ApiRejectDeploymentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiRejectDeploymentRequest
 */
 func (a *ResourcesAPIService) RejectDeployment(ctx context.Context, slug string, deploymentId string) ApiRejectDeploymentRequest {
 	return ApiRejectDeploymentRequest{
-		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
 		deploymentId: deploymentId,
 	}
 }
@@ -3539,9 +3555,9 @@ func (a *ResourcesAPIService) RejectDeployment(ctx context.Context, slug string,
 // Execute executes the request
 func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RejectDeployment")
@@ -3603,8 +3619,8 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3614,8 +3630,8 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3625,8 +3641,8 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -3636,8 +3652,8 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -3646,10 +3662,10 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 }
 
 type ApiRemoveDomainRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
-	domain string
+	slug       string
+	domain     string
 }
 
 func (r ApiRemoveDomainRequest) Execute() (*http.Response, error) {
@@ -3659,26 +3675,26 @@ func (r ApiRemoveDomainRequest) Execute() (*http.Response, error) {
 /*
 RemoveDomain Remove custom domain
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @param domain
- @return ApiRemoveDomainRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param domain
+	@return ApiRemoveDomainRequest
 */
 func (a *ResourcesAPIService) RemoveDomain(ctx context.Context, slug string, domain string) ApiRemoveDomainRequest {
 	return ApiRemoveDomainRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
-		domain: domain,
+		ctx:        ctx,
+		slug:       slug,
+		domain:     domain,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RemoveDomain")
@@ -3740,8 +3756,8 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3751,8 +3767,8 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3762,8 +3778,8 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -3772,9 +3788,9 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 }
 
 type ApiRestartResourceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiRestartResourceRequest) Execute() (*http.Response, error) {
@@ -3784,24 +3800,24 @@ func (r ApiRestartResourceRequest) Execute() (*http.Response, error) {
 /*
 RestartResource Restart resource
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiRestartResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiRestartResourceRequest
 */
 func (a *ResourcesAPIService) RestartResource(ctx context.Context, slug string) ApiRestartResourceRequest {
 	return ApiRestartResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RestartResource")
@@ -3862,8 +3878,8 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -3873,8 +3889,8 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -3884,8 +3900,8 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -3894,9 +3910,9 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 }
 
 type ApiRollbackResourceRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx             context.Context
+	ApiService      ResourcesAPI
+	slug            string
 	rollbackRequest *RollbackRequest
 }
 
@@ -3912,26 +3928,27 @@ func (r ApiRollbackResourceRequest) Execute() (*Deployment, *http.Response, erro
 /*
 RollbackResource Rollback resource to a previous deployment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiRollbackResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiRollbackResourceRequest
 */
 func (a *ResourcesAPIService) RollbackResource(ctx context.Context, slug string) ApiRollbackResourceRequest {
 	return ApiRollbackResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Deployment
+//
+//	@return Deployment
 func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceRequest) (*Deployment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Deployment
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Deployment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RollbackResource")
@@ -3997,8 +4014,8 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -4008,8 +4025,8 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4019,8 +4036,8 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4030,8 +4047,8 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -4049,9 +4066,9 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 }
 
 type ApiRotateWebhookSecretRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiRotateWebhookSecretRequest) Execute() (*WebhookConfig, *http.Response, error) {
@@ -4061,26 +4078,27 @@ func (r ApiRotateWebhookSecretRequest) Execute() (*WebhookConfig, *http.Response
 /*
 RotateWebhookSecret Rotate webhook secret
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiRotateWebhookSecretRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiRotateWebhookSecretRequest
 */
 func (a *ResourcesAPIService) RotateWebhookSecret(ctx context.Context, slug string) ApiRotateWebhookSecretRequest {
 	return ApiRotateWebhookSecretRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return WebhookConfig
+//
+//	@return WebhookConfig
 func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecretRequest) (*WebhookConfig, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebhookConfig
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebhookConfig
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RotateWebhookSecret")
@@ -4141,8 +4159,8 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4152,8 +4170,8 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4163,8 +4181,8 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -4182,9 +4200,9 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 }
 
 type ApiStartResourceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiStartResourceRequest) Execute() (*http.Response, error) {
@@ -4194,24 +4212,24 @@ func (r ApiStartResourceRequest) Execute() (*http.Response, error) {
 /*
 StartResource Start resource
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiStartResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiStartResourceRequest
 */
 func (a *ResourcesAPIService) StartResource(ctx context.Context, slug string) ApiStartResourceRequest {
 	return ApiStartResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.StartResource")
@@ -4272,8 +4290,8 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4283,8 +4301,8 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4294,8 +4312,8 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -4304,9 +4322,9 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 }
 
 type ApiStopResourceRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourcesAPI
-	slug string
+	slug       string
 }
 
 func (r ApiStopResourceRequest) Execute() (*http.Response, error) {
@@ -4316,24 +4334,24 @@ func (r ApiStopResourceRequest) Execute() (*http.Response, error) {
 /*
 StopResource Stop resource
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiStopResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiStopResourceRequest
 */
 func (a *ResourcesAPIService) StopResource(ctx context.Context, slug string) ApiStopResourceRequest {
 	return ApiStopResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.StopResource")
@@ -4394,8 +4412,8 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4405,8 +4423,8 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4416,8 +4434,8 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -4426,9 +4444,9 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 }
 
 type ApiTriggerDeploymentRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx                      context.Context
+	ApiService               ResourcesAPI
+	slug                     string
 	triggerDeploymentRequest *TriggerDeploymentRequest
 }
 
@@ -4444,26 +4462,27 @@ func (r ApiTriggerDeploymentRequest) Execute() (*Deployment, *http.Response, err
 /*
 TriggerDeployment Trigger a new deployment
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiTriggerDeploymentRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiTriggerDeploymentRequest
 */
 func (a *ResourcesAPIService) TriggerDeployment(ctx context.Context, slug string) ApiTriggerDeploymentRequest {
 	return ApiTriggerDeploymentRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Deployment
+//
+//	@return Deployment
 func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*Deployment, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Deployment
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Deployment
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.TriggerDeployment")
@@ -4529,8 +4548,8 @@ func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -4540,8 +4559,8 @@ func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4551,8 +4570,8 @@ func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4562,8 +4581,8 @@ func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -4581,9 +4600,9 @@ func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentReq
 }
 
 type ApiUpdateResourceRequest struct {
-	ctx context.Context
-	ApiService ResourcesAPI
-	slug string
+	ctx                   context.Context
+	ApiService            ResourcesAPI
+	slug                  string
 	updateResourceRequest *UpdateResourceRequest
 }
 
@@ -4599,26 +4618,27 @@ func (r ApiUpdateResourceRequest) Execute() (*Resource, *http.Response, error) {
 /*
 UpdateResource Update resource (JSON merge patch)
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param slug
- @return ApiUpdateResourceRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiUpdateResourceRequest
 */
 func (a *ResourcesAPIService) UpdateResource(ctx context.Context, slug string) ApiUpdateResourceRequest {
 	return ApiUpdateResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		slug: slug,
+		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
-//  @return Resource
+//
+//	@return Resource
 func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) (*Resource, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Resource
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Resource
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.UpdateResource")
@@ -4684,8 +4704,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -4695,8 +4715,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -4706,8 +4726,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -4717,8 +4737,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -4728,8 +4748,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 422 {
@@ -4739,8 +4759,8 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

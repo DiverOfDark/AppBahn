@@ -15,13 +15,12 @@ import eu.appbahn.platform.workspace.entity.WorkspaceMemberEntity;
 import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MemberService {
@@ -37,8 +36,7 @@ public class MemberService {
             WorkspaceMemberRepository memberRepository,
             UserRepository userRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.workspaceRepository = workspaceRepository;
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
@@ -53,8 +51,8 @@ public class MemberService {
         var members = memberRepository.findByWorkspaceId(ws.getId());
         // Batch-fetch all users to avoid N+1
         var userIds = members.stream().map(WorkspaceMemberEntity::getUserId).collect(Collectors.toList());
-        var usersById = userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(UserEntity::getId, u -> u));
+        var usersById =
+                userRepository.findAllById(userIds).stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
 
         return members.stream()
                 .map(m -> {
@@ -75,8 +73,7 @@ public class MemberService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        UserEntity user = userRepository.findByEmail(req.getEmail())
-                .orElse(null);
+        UserEntity user = userRepository.findByEmail(req.getEmail()).orElse(null);
 
         if (user != null) {
             var existing = memberRepository.findByWorkspaceIdAndUserId(ws.getId(), user.getId());
@@ -89,7 +86,12 @@ public class MemberService {
             member.setRole(req.getRole().getValue());
             memberRepository.save(member);
 
-            auditLogService.log(ctx, "member.added", "workspace", ws.getSlug(), ws.getId(),
+            auditLogService.log(
+                    ctx,
+                    "member.added",
+                    "workspace",
+                    ws.getSlug(),
+                    ws.getId(),
                     Map.of("email", req.getEmail(), "role", req.getRole().getValue()));
 
             var resp = new AddMemberResponse();
@@ -108,14 +110,20 @@ public class MemberService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        var member = memberRepository.findByWorkspaceIdAndUserId(ws.getId(), userId)
+        var member = memberRepository
+                .findByWorkspaceIdAndUserId(ws.getId(), userId)
                 .orElseThrow(() -> new NotFoundException("Member not found"));
 
         String oldRole = member.getRole();
         member.setRole(req.getRole().getValue());
         memberRepository.save(member);
 
-        auditLogService.log(ctx, "member.updated", "workspace", ws.getSlug(), ws.getId(),
+        auditLogService.log(
+                ctx,
+                "member.updated",
+                "workspace",
+                ws.getSlug(),
+                ws.getId(),
                 Map.of("role", Map.of("old", oldRole, "new", req.getRole().getValue())));
 
         var dto = new WorkspaceMember();
@@ -130,7 +138,8 @@ public class MemberService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        var member = memberRepository.findByWorkspaceIdAndUserId(ws.getId(), userId)
+        var member = memberRepository
+                .findByWorkspaceIdAndUserId(ws.getId(), userId)
                 .orElseThrow(() -> new NotFoundException("Member not found"));
         memberRepository.delete(member);
 
@@ -138,7 +147,8 @@ public class MemberService {
     }
 
     private WorkspaceEntity findWorkspace(String slug) {
-        return workspaceRepository.findBySlug(slug)
+        return workspaceRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
     }
 }

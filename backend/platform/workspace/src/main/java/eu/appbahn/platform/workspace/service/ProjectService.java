@@ -16,13 +16,12 @@ import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProjectService {
@@ -38,8 +37,7 @@ public class ProjectService {
             WorkspaceRepository workspaceRepository,
             EnvironmentRepository environmentRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.projectRepository = projectRepository;
         this.workspaceRepository = workspaceRepository;
         this.environmentRepository = environmentRepository;
@@ -49,7 +47,8 @@ public class ProjectService {
 
     @Transactional
     public Project create(CreateProjectRequest req, AuthContext ctx) {
-        WorkspaceEntity workspace = workspaceRepository.findBySlug(req.getWorkspaceSlug())
+        WorkspaceEntity workspace = workspaceRepository
+                .findBySlug(req.getWorkspaceSlug())
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + req.getWorkspaceSlug()));
         permissionService.requireWorkspaceRole(ctx, workspace.getId(), MemberRole.ADMIN);
 
@@ -59,14 +58,20 @@ public class ProjectService {
         entity.setSlug(SlugGenerator.generate(req.getName()));
         projectRepository.save(entity);
 
-        auditLogService.log(ctx, "project.created", "project", entity.getSlug(), workspace.getId(),
+        auditLogService.log(
+                ctx,
+                "project.created",
+                "project",
+                entity.getSlug(),
+                workspace.getId(),
                 Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
 
         return EntityMapper.toApi(entity, workspace.getSlug());
     }
 
     public PagedProjectResponse list(String workspaceSlug, Integer page, Integer size, String sort, AuthContext ctx) {
-        WorkspaceEntity workspace = workspaceRepository.findBySlug(workspaceSlug)
+        WorkspaceEntity workspace = workspaceRepository
+                .findBySlug(workspaceSlug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + workspaceSlug));
         permissionService.requireWorkspaceRole(ctx, workspace.getId(), MemberRole.VIEWER);
 
@@ -77,17 +82,21 @@ public class ProjectService {
     }
 
     public Project getBySlug(String slug, AuthContext ctx) {
-        var entity = projectRepository.findBySlug(slug)
+        var entity = projectRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.VIEWER);
-        String workspaceSlug = workspaceRepository.findById(entity.getWorkspaceId())
-                .map(WorkspaceEntity::getSlug).orElse(null);
+        String workspaceSlug = workspaceRepository
+                .findById(entity.getWorkspaceId())
+                .map(WorkspaceEntity::getSlug)
+                .orElse(null);
         return EntityMapper.toApi(entity, workspaceSlug);
     }
 
     @Transactional
     public Project update(String slug, UpdateProjectRequest req, AuthContext ctx) {
-        var entity = projectRepository.findBySlug(slug)
+        var entity = projectRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.ADMIN);
 
@@ -97,35 +106,37 @@ public class ProjectService {
         }
         projectRepository.save(entity);
 
-        auditLogService.log(ctx, "project.updated", "project", entity.getSlug(),
-                entity.getWorkspaceId(), Map.of("name", Map.of("old", oldName, "new", entity.getName())));
+        auditLogService.log(
+                ctx,
+                "project.updated",
+                "project",
+                entity.getSlug(),
+                entity.getWorkspaceId(),
+                Map.of("name", Map.of("old", oldName, "new", entity.getName())));
 
-        String workspaceSlug = workspaceRepository.findById(entity.getWorkspaceId())
-                .map(WorkspaceEntity::getSlug).orElse(null);
+        String workspaceSlug = workspaceRepository
+                .findById(entity.getWorkspaceId())
+                .map(WorkspaceEntity::getSlug)
+                .orElse(null);
         return EntityMapper.toApi(entity, workspaceSlug);
     }
 
     @Transactional
     public void delete(String slug, AuthContext ctx) {
-        var entity = projectRepository.findBySlug(slug)
+        var entity = projectRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.ADMIN);
 
         var environments = environmentRepository.findByProjectId(entity.getId());
         if (!environments.isEmpty()) {
-            List<String> envSlugs = environments.stream()
-                    .map(e -> e.getSlug())
-                    .collect(Collectors.toList());
-            throw new ConflictException(
-                    "Cannot delete project with existing environments",
-                    envSlugs
-            );
+            List<String> envSlugs = environments.stream().map(e -> e.getSlug()).collect(Collectors.toList());
+            throw new ConflictException("Cannot delete project with existing environments", envSlugs);
         }
 
         projectRepository.delete(entity);
 
-        auditLogService.log(ctx, "project.deleted", "project", entity.getSlug(),
-                entity.getWorkspaceId(), null);
+        auditLogService.log(ctx, "project.deleted", "project", entity.getSlug(), entity.getWorkspaceId(), null);
     }
 
     private PagedProjectResponse toPagedResponse(Page<ProjectEntity> page, String workspaceSlug) {

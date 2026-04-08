@@ -20,7 +20,7 @@ var _ MappedNullable = &DomainEntry{}
 // DomainEntry struct for DomainEntry
 type DomainEntry struct {
 	Domain *string `json:"domain,omitempty"`
-	Port *int32 `json:"port,omitempty"`
+	Port   *int32  `json:"port,omitempty"`
 	Status *string `json:"status,omitempty"`
 }
 
@@ -138,7 +138,7 @@ func (o *DomainEntry) SetStatus(v string) {
 }
 
 func (o DomainEntry) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableDomainEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

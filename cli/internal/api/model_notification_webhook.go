@@ -19,12 +19,12 @@ var _ MappedNullable = &NotificationWebhook{}
 
 // NotificationWebhook struct for NotificationWebhook
 type NotificationWebhook struct {
-	Id *string `json:"id,omitempty"`
-	WorkspaceId *string `json:"workspaceId,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Url *string `json:"url,omitempty"`
-	Events []string `json:"events,omitempty"`
-	CreatedBy *string `json:"createdBy,omitempty"`
+	Id          *string  `json:"id,omitempty"`
+	WorkspaceId *string  `json:"workspaceId,omitempty"`
+	Name        *string  `json:"name,omitempty"`
+	Url         *string  `json:"url,omitempty"`
+	Events      []string `json:"events,omitempty"`
+	CreatedBy   *string  `json:"createdBy,omitempty"`
 }
 
 // NewNotificationWebhook instantiates a new NotificationWebhook object
@@ -237,7 +237,7 @@ func (o *NotificationWebhook) SetCreatedBy(v string) {
 }
 
 func (o NotificationWebhook) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableNotificationWebhook) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
