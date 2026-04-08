@@ -31,7 +31,7 @@ const router = createRouter({
         {
           path: ':wsSlug/settings',
           name: 'workspace-settings',
-          component: () => import('@/views/console/PlaceholderView.vue'),
+          component: () => import('@/views/console/WorkspaceSettingsView.vue'),
         },
         {
           path: ':wsSlug/:projSlug',

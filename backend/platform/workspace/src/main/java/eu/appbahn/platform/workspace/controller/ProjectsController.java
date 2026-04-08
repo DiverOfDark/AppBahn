@@ -6,9 +6,11 @@ import eu.appbahn.platform.api.model.PagedProjectResponse;
 import eu.appbahn.platform.api.model.Project;
 import eu.appbahn.platform.api.model.Quota;
 import eu.appbahn.platform.api.model.RegistryConfig;
+import eu.appbahn.platform.api.model.UpdateMemberRequest;
 import eu.appbahn.platform.api.model.UpdateProjectRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.ProjectService;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,20 +55,35 @@ public class ProjectsController implements ProjectsApi {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Not implemented in Sprint 3 ---
+    // --- Role overrides ---
+
+    @Override
+    public ResponseEntity<Void> setProjectMemberRole(
+            String slug, UUID userId, UpdateMemberRequest updateMemberRequest) {
+        projectService.setMemberRoleOverride(slug, userId, updateMemberRequest, AuthContextHolder.get());
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteProjectMemberRole(String slug, UUID userId) {
+        projectService.deleteMemberRoleOverride(slug, userId, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- Settings ---
 
     @Override
     public ResponseEntity<Quota> getProjectQuota(String slug) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(projectService.getQuota(slug, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Quota> setProjectQuota(String slug, Quota quota) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(projectService.setQuota(slug, quota, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Project> setProjectRegistry(String slug, RegistryConfig registryConfig) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(projectService.setRegistry(slug, registryConfig, AuthContextHolder.get()));
     }
 }

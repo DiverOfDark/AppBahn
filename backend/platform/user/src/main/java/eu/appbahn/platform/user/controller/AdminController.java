@@ -1,8 +1,14 @@
 package eu.appbahn.platform.user.controller;
 
 import eu.appbahn.platform.api.AdminApi;
+import eu.appbahn.platform.api.model.PagedAuditLogResponse;
 import eu.appbahn.platform.api.model.PlatformConfig;
 import eu.appbahn.platform.api.model.PlatformConfigBranding;
+import eu.appbahn.platform.common.audit.AuditLogService;
+import eu.appbahn.platform.common.exception.ForbiddenException;
+import eu.appbahn.platform.common.security.AuthContextHolder;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +30,12 @@ public class AdminController implements AdminApi {
     @Value("${platform.branding.login-button-text:Log in with SSO}")
     private String loginButtonText;
 
+    private final AuditLogService auditLogService;
+
+    public AdminController(AuditLogService auditLogService) {
+        this.auditLogService = auditLogService;
+    }
+
     @Override
     public ResponseEntity<PlatformConfig> getPlatformConfig() {
         PlatformConfigBranding branding = new PlatformConfigBranding();
@@ -35,5 +47,30 @@ public class AdminController implements AdminApi {
         PlatformConfig config = new PlatformConfig();
         config.setBranding(branding);
         return ResponseEntity.ok(config);
+    }
+
+    @Override
+    public ResponseEntity<PagedAuditLogResponse> getPlatformAuditLog(
+            Integer page,
+            Integer size,
+            String action,
+            String targetType,
+            UUID actorId,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            String workspaceSlug) {
+        var ctx = AuthContextHolder.get();
+        if (!ctx.platformAdmin()) {
+            throw new ForbiddenException("Platform admin access required");
+        }
+        return ResponseEntity.ok(auditLogService.query(
+                null,
+                action,
+                targetType,
+                actorId,
+                from != null ? from.toInstant() : null,
+                to != null ? to.toInstant() : null,
+                page != null ? page : 0,
+                size != null ? size : 20));
     }
 }

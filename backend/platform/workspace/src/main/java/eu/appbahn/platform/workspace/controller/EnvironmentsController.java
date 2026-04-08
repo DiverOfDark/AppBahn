@@ -12,6 +12,7 @@ import eu.appbahn.platform.api.model.Quota;
 import eu.appbahn.platform.api.model.RegistryConfig;
 import eu.appbahn.platform.api.model.SetTargetClusterRequest;
 import eu.appbahn.platform.api.model.UpdateEnvironmentRequest;
+import eu.appbahn.platform.api.model.UpdateMemberRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.EnvironmentService;
 import eu.appbahn.platform.workspace.service.EnvironmentTokenService;
@@ -84,30 +85,47 @@ public class EnvironmentsController implements EnvironmentsApi {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Not implemented in Sprint 3 ---
+    // --- Role overrides ---
 
     @Override
-    public ResponseEntity<Quota> getEnvironmentQuota(String slug) {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Void> setEnvironmentMemberRole(
+            String slug, UUID userId, UpdateMemberRequest updateMemberRequest) {
+        environmentService.setMemberRoleOverride(slug, userId, updateMemberRequest, AuthContextHolder.get());
+        return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Environment> setApprovalGates(String slug, ApprovalGatesConfig approvalGatesConfig) {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Void> deleteEnvironmentMemberRole(String slug, UUID userId) {
+        environmentService.deleteMemberRoleOverride(slug, userId, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- Settings ---
+
+    @Override
+    public ResponseEntity<Quota> getEnvironmentQuota(String slug) {
+        return ResponseEntity.ok(environmentService.getQuota(slug, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Quota> setEnvironmentQuota(String slug, Quota quota) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(environmentService.setQuota(slug, quota, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Environment> setEnvironmentRegistry(String slug, RegistryConfig registryConfig) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(environmentService.setRegistry(slug, registryConfig, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<Environment> setApprovalGates(String slug, ApprovalGatesConfig approvalGatesConfig) {
+        return ResponseEntity.ok(
+                environmentService.setApprovalGates(slug, approvalGatesConfig, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Environment> setTargetCluster(String slug, SetTargetClusterRequest setTargetClusterRequest) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(
+                environmentService.setTargetCluster(slug, setTargetClusterRequest, AuthContextHolder.get()));
     }
 }

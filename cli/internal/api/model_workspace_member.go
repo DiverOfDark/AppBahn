@@ -22,6 +22,7 @@ type WorkspaceMember struct {
 	UserId *string `json:"userId,omitempty"`
 	Email  *string `json:"email,omitempty"`
 	Role   *string `json:"role,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // NewWorkspaceMember instantiates a new WorkspaceMember object
@@ -137,6 +138,38 @@ func (o *WorkspaceMember) SetRole(v string) {
 	o.Role = &v
 }
 
+// GetStatus returns the Status field value if set, zero value otherwise.
+func (o *WorkspaceMember) GetStatus() string {
+	if o == nil || IsNil(o.Status) {
+		var ret string
+		return ret
+	}
+	return *o.Status
+}
+
+// GetStatusOk returns a tuple with the Status field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *WorkspaceMember) GetStatusOk() (*string, bool) {
+	if o == nil || IsNil(o.Status) {
+		return nil, false
+	}
+	return o.Status, true
+}
+
+// HasStatus returns a boolean if a field has been set.
+func (o *WorkspaceMember) HasStatus() bool {
+	if o != nil && !IsNil(o.Status) {
+		return true
+	}
+
+	return false
+}
+
+// SetStatus gets a reference to the given string and assigns it to the Status field.
+func (o *WorkspaceMember) SetStatus(v string) {
+	o.Status = &v
+}
+
 func (o WorkspaceMember) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -155,6 +188,9 @@ func (o WorkspaceMember) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Role) {
 		toSerialize["role"] = o.Role
+	}
+	if !IsNil(o.Status) {
+		toSerialize["status"] = o.Status
 	}
 	return toSerialize, nil
 }

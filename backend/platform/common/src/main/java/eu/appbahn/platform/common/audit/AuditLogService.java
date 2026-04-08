@@ -1,16 +1,22 @@
 package eu.appbahn.platform.common.audit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.model.AuditLogEntry;
+import eu.appbahn.platform.api.model.PagedAuditLogResponse;
 import eu.appbahn.platform.common.security.AuthContext;
+import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.shared.util.UuidV7;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +70,58 @@ public class AuditLogService {
             repository.save(entry);
         } catch (Exception e) {
             log.warn("Failed to write audit log entry for action {}: {}", action, e.getMessage());
+        }
+    }
+
+    public PagedAuditLogResponse query(
+            UUID workspaceId,
+            String action,
+            String targetType,
+            UUID actorId,
+            Instant from,
+            Instant to,
+            int page,
+            int size) {
+        var pageable = PaginationUtil.toPageable(page, size, null, Sort.by(Sort.Direction.DESC, "timestamp"));
+        var result = repository.findFiltered(
+                workspaceId != null ? workspaceId.toString() : null, action, targetType, actorId, from, to, pageable);
+
+        var entries = result.getContent().stream().map(this::toAuditLogEntry).toList();
+
+        var response = new PagedAuditLogResponse();
+        response.setContent(entries);
+        response.setPage(result.getNumber());
+        response.setSize(result.getSize());
+        response.setTotalElements(result.getTotalElements());
+        response.setTotalPages(result.getTotalPages());
+        return response;
+    }
+
+    private AuditLogEntry toAuditLogEntry(AuditLogEntity e) {
+        var entry = new AuditLogEntry();
+        entry.setId(e.getId());
+        entry.setTimestamp(e.getTimestamp().atOffset(ZoneOffset.UTC));
+        entry.setActorId(e.getActorId());
+        entry.setActorEmail(e.getActorEmail());
+        entry.setActorSource(e.getActorSource());
+        entry.setAction(e.getAction());
+        entry.setTargetType(e.getTargetType());
+        entry.setTargetId(e.getTargetId());
+        entry.setRequestId(e.getRequestId());
+        entry.setContext(parseJson(e.getContext()));
+        entry.setDiff(parseJson(e.getDiff()));
+        return entry;
+    }
+
+    private Object parseJson(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return MAPPER.readValue(json, new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to parse JSON: {}", e.getMessage());
+            return null;
         }
     }
 

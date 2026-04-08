@@ -20,10 +20,12 @@ import eu.appbahn.platform.api.model.UpdateWorkspaceRequest;
 import eu.appbahn.platform.api.model.WebhookDelivery;
 import eu.appbahn.platform.api.model.Workspace;
 import eu.appbahn.platform.api.model.WorkspaceMember;
+import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.GroupMappingService;
 import eu.appbahn.platform.workspace.service.MemberService;
 import eu.appbahn.platform.workspace.service.WorkspaceService;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -37,12 +39,17 @@ public class WorkspacesController implements WorkspacesApi {
     private final WorkspaceService workspaceService;
     private final MemberService memberService;
     private final GroupMappingService groupMappingService;
+    private final AuditLogService auditLogService;
 
     public WorkspacesController(
-            WorkspaceService workspaceService, MemberService memberService, GroupMappingService groupMappingService) {
+            WorkspaceService workspaceService,
+            MemberService memberService,
+            GroupMappingService groupMappingService,
+            AuditLogService auditLogService) {
         this.workspaceService = workspaceService;
         this.memberService = memberService;
         this.groupMappingService = groupMappingService;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -140,18 +147,34 @@ public class WorkspacesController implements WorkspacesApi {
 
     @Override
     public ResponseEntity<PagedAuditLogResponse> getWorkspaceAuditLog(
-            String slug, Integer page, Integer size, String action, String targetType) {
-        return ResponseEntity.status(501).build();
+            String slug,
+            Integer page,
+            Integer size,
+            String action,
+            String targetType,
+            UUID actorId,
+            OffsetDateTime from,
+            OffsetDateTime to) {
+        var wsId = workspaceService.getWorkspaceId(slug, AuthContextHolder.get());
+        return ResponseEntity.ok(auditLogService.query(
+                wsId,
+                action,
+                targetType,
+                actorId,
+                from != null ? from.toInstant() : null,
+                to != null ? to.toInstant() : null,
+                page != null ? page : 0,
+                size != null ? size : 20));
     }
 
     @Override
     public ResponseEntity<Quota> getWorkspaceQuota(String slug) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(workspaceService.getQuota(slug, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<SecuritySettings> getWorkspaceSecurity(String slug) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(workspaceService.getSecurity(slug, AuthContextHolder.get()));
     }
 
     @Override
@@ -166,17 +189,17 @@ public class WorkspacesController implements WorkspacesApi {
 
     @Override
     public ResponseEntity<Quota> setWorkspaceQuota(String slug, Quota quota) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(workspaceService.setQuota(slug, quota, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<Workspace> setWorkspaceRegistry(String slug, RegistryConfig registryConfig) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(workspaceService.setRegistry(slug, registryConfig, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<SecuritySettings> setWorkspaceSecurity(String slug, SecuritySettings securitySettings) {
-        return ResponseEntity.status(501).build();
+        return ResponseEntity.ok(workspaceService.setSecurity(slug, securitySettings, AuthContextHolder.get()));
     }
 
     @Override

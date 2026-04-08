@@ -6,9 +6,14 @@ import type { components } from '@/api/schema'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import DataTable from '@/components/DataTable.vue'
+import CreateDialog from '@/components/CreateDialog.vue'
 
 type Environment = components['schemas']['Environment']
 type Resource = components['schemas']['Resource']
+type EnvironmentToken = components['schemas']['EnvironmentToken']
+
+const TOKEN_ROLES = ['EDITOR', 'VIEWER'] as const
+type TokenRole = (typeof TOKEN_ROLES)[number]
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +27,15 @@ let pollInterval: ReturnType<typeof setInterval> | null = null
 const wsSlug = ref(route.params.wsSlug as string)
 const projSlug = ref(route.params.projSlug as string)
 const envSlug = ref(route.params.envSlug as string)
+
+// -- Tokens --
+const tokens = ref<EnvironmentToken[]>([])
+const showCreateToken = ref(false)
+const createTokenLoading = ref(false)
+const newTokenName = ref('')
+const newTokenRole = ref<TokenRole>('VIEWER')
+const newTokenExpiresDays = ref<number | undefined>(90)
+const createdToken = ref<string | null>(null)
 
 async function fetchEnvironment() {
   try {
@@ -49,10 +63,23 @@ async function fetchResources() {
   }
 }
 
+async function fetchTokens() {
+  try {
+    const { data } = await api.GET('/environments/{slug}/tokens', {
+      params: { path: { slug: envSlug.value } },
+    })
+    if (data) {
+      tokens.value = data
+    }
+  } catch {
+    // Non-critical — don't block the page
+  }
+}
+
 async function fetchData() {
   loading.value = true
   error.value = ''
-  await Promise.all([fetchEnvironment(), fetchResources()])
+  await Promise.all([fetchEnvironment(), fetchResources(), fetchTokens()])
   loading.value = false
 }
 
@@ -82,6 +109,61 @@ async function deleteEnvironment() {
   } catch {
     error.value = 'Failed to delete environment'
   }
+}
+
+// -- Token actions --
+
+async function createToken() {
+  if (!newTokenName.value.trim()) return
+  createTokenLoading.value = true
+  createdToken.value = null
+  try {
+    const { data } = await api.POST('/environments/{slug}/tokens', {
+      params: { path: { slug: envSlug.value } },
+      body: {
+        name: newTokenName.value.trim(),
+        role: newTokenRole.value,
+        expiresInDays: newTokenExpiresDays.value,
+      },
+    })
+    if (data?.token) {
+      createdToken.value = data.token
+    }
+    showCreateToken.value = false
+    newTokenName.value = ''
+    newTokenRole.value = 'VIEWER'
+    newTokenExpiresDays.value = 90
+    await fetchTokens()
+  } catch {
+    error.value = 'Failed to create token'
+  } finally {
+    createTokenLoading.value = false
+  }
+}
+
+async function deleteToken(tokenId: string, tokenName?: string) {
+  const confirmed = window.confirm(`Revoke token "${tokenName ?? tokenId}"? This cannot be undone.`)
+  if (!confirmed) return
+  try {
+    await api.DELETE('/environments/{slug}/tokens/{tokenId}', {
+      params: { path: { slug: envSlug.value, tokenId } },
+    })
+    await fetchTokens()
+  } catch {
+    error.value = 'Failed to delete token'
+  }
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return '--'
+  const d = new Date(iso)
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function statusClass(status?: string): string {
@@ -208,6 +290,92 @@ onUnmounted(stopPolling)
           </tr>
         </template>
       </DataTable>
+
+      <!-- Tokens -->
+      <div class="tokens-section">
+        <div class="tokens-header">
+          <h2 class="section-title">Tokens</h2>
+          <button class="btn-primary" @click="showCreateToken = true">+ Create Token</button>
+        </div>
+
+        <!-- Created token alert (shown once) -->
+        <div v-if="createdToken" class="token-created-alert">
+          <p class="token-created-label">
+            Token created successfully. Copy it now -- it will not be shown again.
+          </p>
+          <div class="token-created-value">
+            <code class="token-code">{{ createdToken }}</code>
+            <button class="btn-secondary btn-sm" @click="createdToken = null">Dismiss</button>
+          </div>
+        </div>
+
+        <EmptyState v-if="tokens.length === 0" message="No tokens for this environment." />
+
+        <DataTable v-else>
+          <template #header>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Expires At</th>
+            <th>Last Used</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </template>
+          <template #body>
+            <tr v-for="token in tokens" :key="token.id">
+              <td class="cell-name">{{ token.name }}</td>
+              <td>
+                <span class="role-badge">{{ token.role }}</span>
+              </td>
+              <td class="cell-date">{{ formatDate(token.expiresAt) }}</td>
+              <td class="cell-date">{{ formatDate(token.lastUsedAt) }}</td>
+              <td class="cell-date">{{ formatDate(token.createdAt) }}</td>
+              <td>
+                <button class="btn-danger btn-sm" @click="deleteToken(token.id!, token.name)">
+                  Revoke
+                </button>
+              </td>
+            </tr>
+          </template>
+        </DataTable>
+      </div>
+
+      <!-- Create Token Dialog -->
+      <CreateDialog
+        title="Create Token"
+        :open="showCreateToken"
+        :loading="createTokenLoading"
+        @close="showCreateToken = false"
+        @submit="createToken"
+      >
+        <div class="form-stack">
+          <label class="form-label">
+            Name
+            <input
+              v-model="newTokenName"
+              class="form-input"
+              type="text"
+              placeholder="e.g. ci-deploy"
+              autofocus
+            />
+          </label>
+          <label class="form-label">
+            Role
+            <select v-model="newTokenRole" class="form-input">
+              <option v-for="r in TOKEN_ROLES" :key="r" :value="r">{{ r }}</option>
+            </select>
+          </label>
+          <label class="form-label">
+            Expires In (days)
+            <input
+              v-model.number="newTokenExpiresDays"
+              class="form-input"
+              type="number"
+              min="1"
+              placeholder="90"
+            />
+          </label>
+        </div>
+      </CreateDialog>
     </template>
   </div>
 </template>
@@ -294,5 +462,78 @@ onUnmounted(stopPolling)
 
 .status-stopped {
   color: var(--color-status-stopped);
+}
+
+/* ── Tokens section ──────────────────────────────────────────────── */
+
+.tokens-section {
+  margin-top: 40px;
+}
+
+.tokens-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tokens-header .section-title {
+  margin-bottom: 0;
+}
+
+.token-created-alert {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-status-ready);
+  border-radius: var(--radius-md);
+}
+
+.token-created-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-status-ready);
+  margin-bottom: 8px;
+}
+
+.token-created-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.token-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-base);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  word-break: break-all;
+  flex: 1;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-raised);
+  color: var(--color-text-secondary);
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 </style>
