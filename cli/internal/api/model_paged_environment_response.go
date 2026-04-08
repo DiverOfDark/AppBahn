@@ -19,11 +19,11 @@ var _ MappedNullable = &PagedEnvironmentResponse{}
 
 // PagedEnvironmentResponse struct for PagedEnvironmentResponse
 type PagedEnvironmentResponse struct {
-	Content []Environment `json:"content,omitempty"`
-	Page *int32 `json:"page,omitempty"`
-	Size *int32 `json:"size,omitempty"`
-	TotalElements *int64 `json:"totalElements,omitempty"`
-	TotalPages *int32 `json:"totalPages,omitempty"`
+	Content       []Environment `json:"content,omitempty"`
+	Page          *int32        `json:"page,omitempty"`
+	Size          *int32        `json:"size,omitempty"`
+	TotalElements *int64        `json:"totalElements,omitempty"`
+	TotalPages    *int32        `json:"totalPages,omitempty"`
 }
 
 // NewPagedEnvironmentResponse instantiates a new PagedEnvironmentResponse object
@@ -204,7 +204,7 @@ func (o *PagedEnvironmentResponse) SetTotalPages(v int32) {
 }
 
 func (o PagedEnvironmentResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -266,5 +266,3 @@ func (v *NullablePagedEnvironmentResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

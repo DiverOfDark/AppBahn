@@ -20,16 +20,16 @@ var _ MappedNullable = &Deployment{}
 
 // Deployment struct for Deployment
 type Deployment struct {
-	Id *string `json:"id,omitempty"`
-	ResourceSlug *string `json:"resourceSlug,omitempty"`
-	EnvironmentSlug *string `json:"environmentSlug,omitempty"`
-	SourceRef *string `json:"sourceRef,omitempty"`
-	ImageRef *string `json:"imageRef,omitempty"`
-	TriggeredBy *string `json:"triggeredBy,omitempty"`
-	Status *string `json:"status,omitempty"`
-	IsPrimary *bool `json:"isPrimary,omitempty"`
-	SourceDeploymentId *string `json:"sourceDeploymentId,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Id                 *string    `json:"id,omitempty"`
+	ResourceSlug       *string    `json:"resourceSlug,omitempty"`
+	EnvironmentSlug    *string    `json:"environmentSlug,omitempty"`
+	SourceRef          *string    `json:"sourceRef,omitempty"`
+	ImageRef           *string    `json:"imageRef,omitempty"`
+	TriggeredBy        *string    `json:"triggeredBy,omitempty"`
+	Status             *string    `json:"status,omitempty"`
+	IsPrimary          *bool      `json:"isPrimary,omitempty"`
+	SourceDeploymentId *string    `json:"sourceDeploymentId,omitempty"`
+	CreatedAt          *time.Time `json:"createdAt,omitempty"`
 }
 
 // NewDeployment instantiates a new Deployment object
@@ -370,7 +370,7 @@ func (o *Deployment) SetCreatedAt(v time.Time) {
 }
 
 func (o Deployment) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -447,5 +447,3 @@ func (v *NullableDeployment) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

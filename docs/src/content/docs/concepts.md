@@ -50,17 +50,17 @@ Slugs are assigned at creation time and never change, even if you rename the obj
 
 ## Roles and permissions
 
-| Role | Workspaces | Projects | Environments | Resources | Members |
-|------|-----------|----------|-------------|-----------|---------|
-| Owner | Edit, delete | Create/edit/delete | Create/edit/delete | Full CRUD | Manage all |
-| Admin | Edit | Create/edit/delete | Create/edit/delete | Full CRUD | Manage Editors and Viewers |
-| Editor | View | View | View | Full CRUD | View |
-| Viewer | View | View | View | View | View |
+| Role   | Workspaces   | Projects           | Environments       | Resources | Members                    |
+| ------ | ------------ | ------------------ | ------------------ | --------- | -------------------------- |
+| Owner  | Edit, delete | Create/edit/delete | Create/edit/delete | Full CRUD | Manage all                 |
+| Admin  | Edit         | Create/edit/delete | Create/edit/delete | Full CRUD | Manage Editors and Viewers |
+| Editor | View         | View               | View               | Full CRUD | View                       |
+| Viewer | View         | View               | View               | View      | View                       |
 
 ## Deletion rules
 
-| Entity | Behavior |
-|--------|----------|
-| Workspace | Blocked (409) if projects exist |
-| Project | Blocked (409) if environments exist |
+| Entity      | Behavior                                       |
+| ----------- | ---------------------------------------------- |
+| Workspace   | Blocked (409) if projects exist                |
+| Project     | Blocked (409) if environments exist            |
 | Environment | Cascades — deletes namespace and all resources |

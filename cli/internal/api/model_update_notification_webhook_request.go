@@ -19,8 +19,8 @@ var _ MappedNullable = &UpdateNotificationWebhookRequest{}
 
 // UpdateNotificationWebhookRequest struct for UpdateNotificationWebhookRequest
 type UpdateNotificationWebhookRequest struct {
-	Name *string `json:"name,omitempty"`
-	Url *string `json:"url,omitempty"`
+	Name   *string  `json:"name,omitempty"`
+	Url    *string  `json:"url,omitempty"`
 	Events []string `json:"events,omitempty"`
 }
 
@@ -138,7 +138,7 @@ func (o *UpdateNotificationWebhookRequest) SetEvents(v []string) {
 }
 
 func (o UpdateNotificationWebhookRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableUpdateNotificationWebhookRequest) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

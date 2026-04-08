@@ -32,10 +32,14 @@ export const useThemeStore = defineStore('theme', () => {
     theme.value = theme.value === 'dark' ? 'light' : 'dark'
   }
 
-  watch(theme, (t) => {
-    writeTheme(t)
-    apply(t)
-  }, { immediate: true })
+  watch(
+    theme,
+    (t) => {
+      writeTheme(t)
+      apply(t)
+    },
+    { immediate: true },
+  )
 
   return { theme, toggle }
 })

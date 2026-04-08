@@ -20,10 +20,10 @@ var _ MappedNullable = &ResourceTypeDefinition{}
 
 // ResourceTypeDefinition struct for ResourceTypeDefinition
 type ResourceTypeDefinition struct {
-	Type *string `json:"type,omitempty"`
-	Definition map[string]interface{} `json:"definition,omitempty"`
-	AdminConfig map[string]interface{} `json:"adminConfig,omitempty"`
-	LastSyncedAt *time.Time `json:"lastSyncedAt,omitempty"`
+	Type         *string                `json:"type,omitempty"`
+	Definition   map[string]interface{} `json:"definition,omitempty"`
+	AdminConfig  map[string]interface{} `json:"adminConfig,omitempty"`
+	LastSyncedAt *time.Time             `json:"lastSyncedAt,omitempty"`
 }
 
 // NewResourceTypeDefinition instantiates a new ResourceTypeDefinition object
@@ -172,7 +172,7 @@ func (o *ResourceTypeDefinition) SetLastSyncedAt(v time.Time) {
 }
 
 func (o ResourceTypeDefinition) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -231,5 +231,3 @@ func (v *NullableResourceTypeDefinition) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

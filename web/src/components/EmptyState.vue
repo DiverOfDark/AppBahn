@@ -7,7 +7,16 @@ defineProps<{
 <template>
   <div class="empty-state">
     <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 48 48" fill="none">
-      <rect x="4" y="8" width="40" height="32" rx="3" stroke="currentColor" stroke-width="1.5" fill="none" />
+      <rect
+        x="4"
+        y="8"
+        width="40"
+        height="32"
+        rx="3"
+        stroke="currentColor"
+        stroke-width="1.5"
+        fill="none"
+      />
       <line x1="4" y1="16" x2="44" y2="16" stroke="currentColor" stroke-width="1.5" />
       <circle cx="10" cy="12" r="1.5" fill="currentColor" />
       <circle cx="16" cy="12" r="1.5" fill="currentColor" />

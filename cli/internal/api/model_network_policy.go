@@ -19,11 +19,11 @@ var _ MappedNullable = &NetworkPolicy{}
 
 // NetworkPolicy struct for NetworkPolicy
 type NetworkPolicy struct {
-	Id *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	WorkspaceId *string `json:"workspaceId,omitempty"`
-	Policy map[string]interface{} `json:"policy,omitempty"`
+	Id          *string                `json:"id,omitempty"`
+	Name        *string                `json:"name,omitempty"`
+	Description *string                `json:"description,omitempty"`
+	WorkspaceId *string                `json:"workspaceId,omitempty"`
+	Policy      map[string]interface{} `json:"policy,omitempty"`
 }
 
 // NewNetworkPolicy instantiates a new NetworkPolicy object
@@ -204,7 +204,7 @@ func (o *NetworkPolicy) SetPolicy(v map[string]interface{}) {
 }
 
 func (o NetworkPolicy) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -266,5 +266,3 @@ func (v *NullableNetworkPolicy) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

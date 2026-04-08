@@ -2,11 +2,10 @@ package eu.appbahn.platform.user.service;
 
 import eu.appbahn.platform.user.entity.UserEntity;
 import eu.appbahn.platform.user.repository.UserRepository;
+import java.util.UUID;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -20,13 +19,12 @@ public class UserService {
     @Transactional
     public UserEntity findOrCreateFromJwt(Jwt jwt) {
         String subject = jwt.getSubject();
-        return userRepository.findByOidcSubjectId(subject)
-                .orElseGet(() -> {
-                    var user = new UserEntity();
-                    user.setOidcSubjectId(subject);
-                    user.setEmail(jwt.getClaimAsString("email"));
-                    return userRepository.save(user);
-                });
+        return userRepository.findByOidcSubjectId(subject).orElseGet(() -> {
+            var user = new UserEntity();
+            user.setOidcSubjectId(subject);
+            user.setEmail(jwt.getClaimAsString("email"));
+            return userRepository.save(user);
+        });
     }
 
     public UserEntity findById(UUID id) {

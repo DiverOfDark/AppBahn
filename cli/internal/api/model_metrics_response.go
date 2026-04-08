@@ -21,9 +21,9 @@ var _ MappedNullable = &MetricsResponse{}
 // MetricsResponse struct for MetricsResponse
 type MetricsResponse struct {
 	Series []MetricsSeries `json:"series,omitempty"`
-	Start *time.Time `json:"start,omitempty"`
-	End *time.Time `json:"end,omitempty"`
-	Step *int32 `json:"step,omitempty"`
+	Start  *time.Time      `json:"start,omitempty"`
+	End    *time.Time      `json:"end,omitempty"`
+	Step   *int32          `json:"step,omitempty"`
 }
 
 // NewMetricsResponse instantiates a new MetricsResponse object
@@ -172,7 +172,7 @@ func (o *MetricsResponse) SetStep(v int32) {
 }
 
 func (o MetricsResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -231,5 +231,3 @@ func (v *NullableMetricsResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -1,5 +1,9 @@
 package eu.appbahn.platform.common.security;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +17,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -27,36 +26,40 @@ public class SecurityConfig {
             HttpSecurity http,
             BiFunction<Jwt, List<String>, AuthContext> authContextResolver,
             Function<String, Optional<Authentication>> environmentTokenAuthenticator,
-            @Qualifier("oidcHttpSecurityCustomizer") Optional<Customizer<HttpSecurity>> oidcCustomizer
-    ) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll()
-                .requestMatchers("/docs/api/**", "/scalar/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/v1/openapi/**").permitAll()
-                .requestMatchers("/api/v1/webhooks/**").permitAll()
-                // SPA and static assets
-                .requestMatchers("/", "/index.html", "/console/**", "/login", "/auth/complete").permitAll()
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/api/v1/admin/config").permitAll()
-                .requestMatchers("/assets/**", "/favicon.ico").permitAll()
-                // OAuth2 login endpoints handled by Spring
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                    .jwtAuthenticationConverter(new AppBahnJwtAuthenticationConverter(authContextResolver))
-                )
-            )
-            .addFilterBefore(
-                new EnvironmentTokenFilter(environmentTokenAuthenticator),
-                BearerTokenAuthenticationFilter.class
-            );
+            @Qualifier("oidcHttpSecurityCustomizer") Optional<Customizer<HttpSecurity>> oidcCustomizer)
+            throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus")
+                        .permitAll()
+                        .requestMatchers("/docs/api/**", "/scalar/**", "/v3/api-docs/**")
+                        .permitAll()
+                        .requestMatchers("/api/v1/openapi/**")
+                        .permitAll()
+                        .requestMatchers("/api/v1/webhooks/**")
+                        .permitAll()
+                        // SPA and static assets
+                        .requestMatchers("/", "/index.html", "/console/**", "/login", "/auth/complete")
+                        .permitAll()
+                        .requestMatchers("/api/v1/auth/**")
+                        .permitAll()
+                        .requestMatchers("/api/v1/admin/config")
+                        .permitAll()
+                        .requestMatchers("/assets/**", "/favicon.ico")
+                        .permitAll()
+                        // OAuth2 login endpoints handled by Spring
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**")
+                        .permitAll()
+                        // All other endpoints require authentication
+                        .anyRequest()
+                        .authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(new AppBahnJwtAuthenticationConverter(authContextResolver))))
+                .addFilterBefore(
+                        new EnvironmentTokenFilter(environmentTokenAuthenticator),
+                        BearerTokenAuthenticationFilter.class);
 
         // OAuth2 Login (OIDC authorization code + PKCE)
         oidcCustomizer.ifPresent(customizer -> {

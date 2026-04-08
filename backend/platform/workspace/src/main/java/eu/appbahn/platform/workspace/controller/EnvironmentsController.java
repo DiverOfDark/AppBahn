@@ -15,12 +15,11 @@ import eu.appbahn.platform.api.model.UpdateEnvironmentRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.EnvironmentService;
 import eu.appbahn.platform.workspace.service.EnvironmentTokenService;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -41,7 +40,8 @@ public class EnvironmentsController implements EnvironmentsApi {
     }
 
     @Override
-    public ResponseEntity<PagedEnvironmentResponse> listEnvironments(String projectSlug, Integer page, Integer size, String sort) {
+    public ResponseEntity<PagedEnvironmentResponse> listEnvironments(
+            String projectSlug, Integer page, Integer size, String sort) {
         var result = environmentService.list(projectSlug, page, size, sort, AuthContextHolder.get());
         return ResponseEntity.ok(result);
     }
@@ -52,7 +52,8 @@ public class EnvironmentsController implements EnvironmentsApi {
     }
 
     @Override
-    public ResponseEntity<Environment> updateEnvironment(String slug, UpdateEnvironmentRequest updateEnvironmentRequest) {
+    public ResponseEntity<Environment> updateEnvironment(
+            String slug, UpdateEnvironmentRequest updateEnvironmentRequest) {
         var env = environmentService.update(slug, updateEnvironmentRequest, AuthContextHolder.get());
         return ResponseEntity.ok(env);
     }
@@ -71,8 +72,10 @@ public class EnvironmentsController implements EnvironmentsApi {
     }
 
     @Override
-    public ResponseEntity<CreateEnvironmentTokenResponse> createEnvironmentToken(String slug, CreateEnvironmentTokenRequest createEnvironmentTokenRequest) {
-        return ResponseEntity.status(201).body(tokenService.createToken(slug, createEnvironmentTokenRequest, AuthContextHolder.get()));
+    public ResponseEntity<CreateEnvironmentTokenResponse> createEnvironmentToken(
+            String slug, CreateEnvironmentTokenRequest createEnvironmentTokenRequest) {
+        return ResponseEntity.status(201)
+                .body(tokenService.createToken(slug, createEnvironmentTokenRequest, AuthContextHolder.get()));
     }
 
     @Override

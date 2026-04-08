@@ -14,12 +14,11 @@ import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class EnvironmentService {
@@ -35,8 +34,7 @@ public class EnvironmentService {
             ProjectRepository projectRepository,
             PermissionService permissionService,
             NamespaceService namespaceService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
         this.permissionService = permissionService;
@@ -46,7 +44,8 @@ public class EnvironmentService {
 
     @Transactional
     public Environment create(CreateEnvironmentRequest req, AuthContext ctx) {
-        ProjectEntity project = projectRepository.findBySlug(req.getProjectSlug())
+        ProjectEntity project = projectRepository
+                .findBySlug(req.getProjectSlug())
                 .orElseThrow(() -> new NotFoundException("Project not found: " + req.getProjectSlug()));
         permissionService.requireProjectRole(ctx, project.getId(), MemberRole.ADMIN);
 
@@ -62,7 +61,11 @@ public class EnvironmentService {
         // Create Kubernetes namespace
         namespaceService.createNamespace(entity.getSlug());
 
-        auditLogService.log(ctx, "environment.created", "environment", entity.getSlug(),
+        auditLogService.log(
+                ctx,
+                "environment.created",
+                "environment",
+                entity.getSlug(),
                 project.getWorkspaceId(),
                 Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
 
@@ -70,7 +73,8 @@ public class EnvironmentService {
     }
 
     public PagedEnvironmentResponse list(String projectSlug, Integer page, Integer size, String sort, AuthContext ctx) {
-        ProjectEntity project = projectRepository.findBySlug(projectSlug)
+        ProjectEntity project = projectRepository
+                .findBySlug(projectSlug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + projectSlug));
         permissionService.requireProjectRole(ctx, project.getId(), MemberRole.VIEWER);
 
@@ -81,17 +85,21 @@ public class EnvironmentService {
     }
 
     public Environment getBySlug(String slug, AuthContext ctx) {
-        var entity = environmentRepository.findBySlug(slug)
+        var entity = environmentRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.VIEWER);
-        String projectSlug = projectRepository.findById(entity.getProjectId())
-                .map(ProjectEntity::getSlug).orElse(null);
+        String projectSlug = projectRepository
+                .findById(entity.getProjectId())
+                .map(ProjectEntity::getSlug)
+                .orElse(null);
         return EntityMapper.toApi(entity, projectSlug);
     }
 
     @Transactional
     public Environment update(String slug, UpdateEnvironmentRequest req, AuthContext ctx) {
-        var entity = environmentRepository.findBySlug(slug)
+        var entity = environmentRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
 
@@ -105,7 +113,11 @@ public class EnvironmentService {
         environmentRepository.save(entity);
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);
-        auditLogService.log(ctx, "environment.updated", "environment", entity.getSlug(),
+        auditLogService.log(
+                ctx,
+                "environment.updated",
+                "environment",
+                entity.getSlug(),
                 project != null ? project.getWorkspaceId() : null,
                 Map.of("name", Map.of("old", oldName, "new", entity.getName())));
 
@@ -115,7 +127,8 @@ public class EnvironmentService {
 
     @Transactional
     public void delete(String slug, AuthContext ctx) {
-        var entity = environmentRepository.findBySlug(slug)
+        var entity = environmentRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
 
@@ -123,8 +136,13 @@ public class EnvironmentService {
         namespaceService.deleteNamespace(entity.getSlug());
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);
-        auditLogService.log(ctx, "environment.deleted", "environment", entity.getSlug(),
-                project != null ? project.getWorkspaceId() : null, null);
+        auditLogService.log(
+                ctx,
+                "environment.deleted",
+                "environment",
+                entity.getSlug(),
+                project != null ? project.getWorkspaceId() : null,
+                null);
 
         environmentRepository.delete(entity);
     }

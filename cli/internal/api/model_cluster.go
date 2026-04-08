@@ -20,10 +20,10 @@ var _ MappedNullable = &Cluster{}
 
 // Cluster struct for Cluster
 type Cluster struct {
-	Name *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	KubeconfigSecret *string `json:"kubeconfigSecret,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Name             *string    `json:"name,omitempty"`
+	Description      *string    `json:"description,omitempty"`
+	KubeconfigSecret *string    `json:"kubeconfigSecret,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
 }
 
 // NewCluster instantiates a new Cluster object
@@ -172,7 +172,7 @@ func (o *Cluster) SetCreatedAt(v time.Time) {
 }
 
 func (o Cluster) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -231,5 +231,3 @@ func (v *NullableCluster) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

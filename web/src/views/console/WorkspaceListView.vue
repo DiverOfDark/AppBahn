@@ -66,9 +66,7 @@ onMounted(fetchWorkspaces)
   <div>
     <PageHeader title="Workspaces">
       <template #actions>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Workspace
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Workspace</button>
       </template>
     </PageHeader>
 
@@ -89,9 +87,7 @@ onMounted(fetchWorkspaces)
       message="No workspaces yet. Create one to get started."
     >
       <template #action>
-        <button class="btn-primary" @click="showCreate = true">
-          + Create Workspace
-        </button>
+        <button class="btn-primary" @click="showCreate = true">+ Create Workspace</button>
       </template>
     </EmptyState>
 
@@ -108,11 +104,7 @@ onMounted(fetchWorkspaces)
         />
       </div>
 
-      <PaginationControls
-        :page="page"
-        :total-pages="totalPages"
-        @update:page="onPageChange"
-      />
+      <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
     </template>
 
     <!-- Create dialog -->

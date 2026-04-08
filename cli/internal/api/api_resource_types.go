@@ -18,14 +18,13 @@ import (
 	"net/url"
 )
 
-
 type ResourceTypesAPI interface {
 
 	/*
-	ListResourceTypes List available resource types per cluster
+		ListResourceTypes List available resource types per cluster
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListResourceTypesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListResourceTypesRequest
 	*/
 	ListResourceTypes(ctx context.Context) ApiListResourceTypesRequest
 
@@ -38,9 +37,9 @@ type ResourceTypesAPI interface {
 type ResourceTypesAPIService service
 
 type ApiListResourceTypesRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService ResourceTypesAPI
-	cluster *string
+	cluster    *string
 }
 
 func (r ApiListResourceTypesRequest) Cluster(cluster string) ApiListResourceTypesRequest {
@@ -55,24 +54,25 @@ func (r ApiListResourceTypesRequest) Execute() ([]ResourceTypeInfo, *http.Respon
 /*
 ListResourceTypes List available resource types per cluster
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListResourceTypesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListResourceTypesRequest
 */
 func (a *ResourceTypesAPIService) ListResourceTypes(ctx context.Context) ApiListResourceTypesRequest {
 	return ApiListResourceTypesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []ResourceTypeInfo
+//
+//	@return []ResourceTypeInfo
 func (a *ResourceTypesAPIService) ListResourceTypesExecute(r ApiListResourceTypesRequest) ([]ResourceTypeInfo, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []ResourceTypeInfo
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []ResourceTypeInfo
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourceTypesAPIService.ListResourceTypes")
@@ -135,8 +135,8 @@ func (a *ResourceTypesAPIService) ListResourceTypesExecute(r ApiListResourceType
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

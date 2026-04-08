@@ -19,10 +19,10 @@ var _ MappedNullable = &OidcGroupMapping{}
 
 // OidcGroupMapping struct for OidcGroupMapping
 type OidcGroupMapping struct {
-	Id *string `json:"id,omitempty"`
-	OidcGroup *string `json:"oidcGroup,omitempty"`
+	Id          *string `json:"id,omitempty"`
+	OidcGroup   *string `json:"oidcGroup,omitempty"`
 	WorkspaceId *string `json:"workspaceId,omitempty"`
-	Role *string `json:"role,omitempty"`
+	Role        *string `json:"role,omitempty"`
 }
 
 // NewOidcGroupMapping instantiates a new OidcGroupMapping object
@@ -171,7 +171,7 @@ func (o *OidcGroupMapping) SetRole(v string) {
 }
 
 func (o OidcGroupMapping) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -230,5 +230,3 @@ func (v *NullableOidcGroupMapping) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

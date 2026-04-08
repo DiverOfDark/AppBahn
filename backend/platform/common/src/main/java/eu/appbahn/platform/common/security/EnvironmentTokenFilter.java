@@ -4,13 +4,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.function.Function;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.function.Function;
-import java.util.Optional;
 
 /**
  * Intercepts Bearer tokens with "abp_" prefix and authenticates them
@@ -41,7 +40,9 @@ public class EnvironmentTokenFilter extends OncePerRequestFilter {
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid or expired environment token\"}");
+                    response.getWriter()
+                            .write(
+                                    "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid or expired environment token\"}");
                     return;
                 }
             }

@@ -70,7 +70,7 @@ function stopPolling() {
 
 async function deleteEnvironment() {
   const confirmed = window.confirm(
-    `Are you sure you want to delete environment "${environment.value?.name ?? envSlug.value}"? This action cannot be undone.`
+    `Are you sure you want to delete environment "${environment.value?.name ?? envSlug.value}"? This action cannot be undone.`,
   )
   if (!confirmed) return
 
@@ -97,15 +97,25 @@ function statusClass(status?: string): string {
   return map[status] ?? ''
 }
 
-watch(() => [route.params.wsSlug, route.params.projSlug, route.params.envSlug], ([ws, proj, env]) => {
-  if (ws && proj && env && typeof ws === 'string' && typeof proj === 'string' && typeof env === 'string') {
-    wsSlug.value = ws
-    projSlug.value = proj
-    envSlug.value = env
-    fetchData()
-    startPolling()
-  }
-})
+watch(
+  () => [route.params.wsSlug, route.params.projSlug, route.params.envSlug],
+  ([ws, proj, env]) => {
+    if (
+      ws &&
+      proj &&
+      env &&
+      typeof ws === 'string' &&
+      typeof proj === 'string' &&
+      typeof env === 'string'
+    ) {
+      wsSlug.value = ws
+      projSlug.value = proj
+      envSlug.value = env
+      fetchData()
+      startPolling()
+    }
+  },
+)
 
 onMounted(() => {
   fetchData()
@@ -119,9 +129,7 @@ onUnmounted(stopPolling)
   <div>
     <PageHeader :title="environment?.name ?? 'Environment'">
       <template #actions>
-        <button class="btn-danger" @click="deleteEnvironment">
-          Delete Environment
-        </button>
+        <button class="btn-danger" @click="deleteEnvironment">Delete Environment</button>
       </template>
     </PageHeader>
 
@@ -131,7 +139,9 @@ onUnmounted(stopPolling)
       <span class="breadcrumb-sep">/</span>
       <router-link :to="`/console/${wsSlug}`" class="breadcrumb-link">{{ wsSlug }}</router-link>
       <span class="breadcrumb-sep">/</span>
-      <router-link :to="`/console/${wsSlug}/${projSlug}`" class="breadcrumb-link">{{ projSlug }}</router-link>
+      <router-link :to="`/console/${wsSlug}/${projSlug}`" class="breadcrumb-link">{{
+        projSlug
+      }}</router-link>
       <span class="breadcrumb-sep">/</span>
       <span class="breadcrumb-current">{{ envSlug }}</span>
     </div>
@@ -171,10 +181,7 @@ onUnmounted(stopPolling)
       <!-- Resources -->
       <h2 class="section-title">Resources</h2>
 
-      <EmptyState
-        v-if="resources.length === 0"
-        message="No resources deployed yet."
-      />
+      <EmptyState v-if="resources.length === 0" message="No resources deployed yet." />
 
       <DataTable v-else>
         <template #header>

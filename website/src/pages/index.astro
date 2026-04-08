@@ -2,15 +2,18 @@
 const features = [
   {
     title: 'Git Push to Deploy',
-    description: 'Push your code, we handle the rest. Build detection, container images, zero-config deployments.',
+    description:
+      'Push your code, we handle the rest. Build detection, container images, zero-config deployments.',
   },
   {
     title: 'Managed Databases',
-    description: 'PostgreSQL, Valkey, MongoDB, Kafka, NATS — provisioned and linked as managed services.',
+    description:
+      'PostgreSQL, Valkey, MongoDB, Kafka, NATS — provisioned and linked as managed services.',
   },
   {
     title: 'Auto-TLS',
-    description: 'Automatic TLS certificates for every exposed service. Wildcard domains and custom domains supported.',
+    description:
+      'Automatic TLS certificates for every exposed service. Wildcard domains and custom domains supported.',
   },
   {
     title: 'Observability',
@@ -18,17 +21,20 @@ const features = [
   },
   {
     title: 'Multi-environment',
-    description: 'Staging, production, feature branches — each with isolated Kubernetes namespaces and resource quotas.',
+    description:
+      'Staging, production, feature branches — each with isolated Kubernetes namespaces and resource quotas.',
   },
   {
     title: 'Kubernetes-native',
-    description: 'Resources are CRDs. The operator manages reconciliation. Works with your existing cluster tooling.',
+    description:
+      'Resources are CRDs. The operator manages reconciliation. Works with your existing cluster tooling.',
   },
   {
     title: 'Multi-tenant by design',
-    description: 'Workspaces, projects, and environments with role-based access control. Isolate teams with Kubernetes namespaces.',
+    description:
+      'Workspaces, projects, and environments with role-based access control. Isolate teams with Kubernetes namespaces.',
   },
-];
+]
 ---
 
 <html lang="en">
@@ -38,12 +44,17 @@ const features = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>AppBahn -- Enterprise PaaS on your own Kubernetes infrastructure</title>
-    <meta name="description" content="Deploy from Git to production on your own Kubernetes clusters. AppBahn is the enterprise platform-as-a-service that runs where your data lives." />
+    <meta
+      name="description"
+      content="Deploy from Git to production on your own Kubernetes clusters. AppBahn is the enterprise platform-as-a-service that runs where your data lives."
+    />
     <style>
       /* --------------------------------------------------------
          Reset
          -------------------------------------------------------- */
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -54,35 +65,40 @@ const features = [
          -------------------------------------------------------- */
       @font-face {
         font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2')
+          format('woff2');
         font-weight: 400;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2')
+          format('woff2');
         font-weight: 500;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2')
+          format('woff2');
         font-weight: 600;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Inter';
-        src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Regular.woff2') format('woff2');
+        src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Regular.woff2')
+          format('woff2');
         font-weight: 400;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'JetBrains Mono';
-        src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+        src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2')
+          format('woff2');
         font-weight: 400;
         font-style: normal;
         font-display: swap;
@@ -230,7 +246,9 @@ const features = [
         color: var(--bg-base);
         border: 1px solid var(--accent);
         border-radius: var(--radius);
-        transition: background 0.15s ease, border-color 0.15s ease;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease;
         cursor: pointer;
       }
       .cta:hover {
@@ -369,7 +387,9 @@ const features = [
         <div class="container">
           <div class="hero-content">
             <h1>Deploy on your infrastructure. Not someone else's.</h1>
-            <p>Vercel/Railway developer experience. Your Kubernetes cluster. Your data. Your rules.</p>
+            <p>
+              Vercel/Railway developer experience. Your Kubernetes cluster. Your data. Your rules.
+            </p>
             <a class="cta" href="/docs">Get Started</a>
           </div>
         </div>
@@ -380,12 +400,14 @@ const features = [
         <div class="container">
           <p class="features-label">Capabilities</p>
           <div class="features-grid">
-            {features.map((feature) => (
-              <article class="feature-card">
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </article>
-            ))}
+            {
+              features.map((feature) => (
+                <article class="feature-card">
+                  <h3>{feature.title}</h3>
+                  <p>{feature.description}</p>
+                </article>
+              ))
+            }
           </div>
         </div>
       </section>
@@ -394,7 +416,9 @@ const features = [
     <!-- Footer -->
     <footer>
       <div class="container footer-inner">
-        <span class="footer-copy">&copy; {new Date().getFullYear()} AppBahn. Licensed under ELv2.</span>
+        <span class="footer-copy"
+          >&copy; {new Date().getFullYear()} AppBahn. Licensed under ELv2.</span
+        >
         <span class="footer-europe">Built in Europe</span>
         <ul class="footer-links">
           <li><a href="/docs">Docs</a></li>

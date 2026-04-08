@@ -11,8 +11,8 @@ API version: 1.0.0
 package api
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -21,7 +21,7 @@ var _ MappedNullable = &CreateExposureRequest{}
 
 // CreateExposureRequest struct for CreateExposureRequest
 type CreateExposureRequest struct {
-	Port int32 `json:"port"`
+	Port       int32 `json:"port"`
 	TtlMinutes int32 `json:"ttlMinutes"`
 }
 
@@ -95,7 +95,7 @@ func (o *CreateExposureRequest) SetTtlMinutes(v int32) {
 }
 
 func (o CreateExposureRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -123,10 +123,10 @@ func (o *CreateExposureRequest) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -182,5 +182,3 @@ func (v *NullableCreateExposureRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

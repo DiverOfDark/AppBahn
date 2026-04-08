@@ -28,9 +28,7 @@ function onSubmit(e: Event) {
       <div class="dialog-panel">
         <div class="dialog-header">
           <h2 class="dialog-title">{{ title }}</h2>
-          <button class="dialog-close" @click="$emit('close')" title="Close">
-            &#x2715;
-          </button>
+          <button class="dialog-close" @click="$emit('close')" title="Close">&#x2715;</button>
         </div>
         <form @submit="onSubmit">
           <div class="dialog-body">
@@ -124,7 +122,9 @@ function onSubmit(e: Event) {
   font-weight: 500;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
 }
 
 .dialog-btn--secondary {

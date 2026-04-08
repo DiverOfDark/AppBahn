@@ -19,7 +19,7 @@ var _ MappedNullable = &ApprovalGatesConfig{}
 
 // ApprovalGatesConfig struct for ApprovalGatesConfig
 type ApprovalGatesConfig struct {
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled           *bool  `json:"enabled,omitempty"`
 	RequiredApprovals *int32 `json:"requiredApprovals,omitempty"`
 }
 
@@ -105,7 +105,7 @@ func (o *ApprovalGatesConfig) SetRequiredApprovals(v int32) {
 }
 
 func (o ApprovalGatesConfig) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableApprovalGatesConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

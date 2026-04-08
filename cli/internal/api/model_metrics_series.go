@@ -19,7 +19,7 @@ var _ MappedNullable = &MetricsSeries{}
 
 // MetricsSeries struct for MetricsSeries
 type MetricsSeries struct {
-	Pod *string `json:"pod,omitempty"`
+	Pod    *string     `json:"pod,omitempty"`
 	Values [][]float32 `json:"values,omitempty"`
 }
 
@@ -105,7 +105,7 @@ func (o *MetricsSeries) SetValues(v [][]float32) {
 }
 
 func (o MetricsSeries) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableMetricsSeries) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

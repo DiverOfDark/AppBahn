@@ -2,13 +2,12 @@ package eu.appbahn.platform.workspace.service;
 
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class NamespaceService {
@@ -17,12 +16,12 @@ public class NamespaceService {
 
     @Nullable
     private final KubernetesClient kubernetesClient;
+
     private final String namespacePrefix;
 
     public NamespaceService(
             @Nullable KubernetesClient kubernetesClient,
-            @Value("${platform.namespace-prefix:abp}") String namespacePrefix
-    ) {
+            @Value("${platform.namespace-prefix:abp}") String namespacePrefix) {
         this.kubernetesClient = kubernetesClient;
         this.namespacePrefix = namespacePrefix;
     }
@@ -36,11 +35,9 @@ public class NamespaceService {
         try {
             var ns = new NamespaceBuilder()
                     .withNewMetadata()
-                        .withName(namespaceName)
-                        .withLabels(Map.of(
-                                "app.kubernetes.io/managed-by", "appbahn",
-                                "appbahn.eu/environment-slug", envSlug
-                        ))
+                    .withName(namespaceName)
+                    .withLabels(
+                            Map.of("app.kubernetes.io/managed-by", "appbahn", "appbahn.eu/environment-slug", envSlug))
                     .endMetadata()
                     .build();
             kubernetesClient.namespaces().resource(ns).create();

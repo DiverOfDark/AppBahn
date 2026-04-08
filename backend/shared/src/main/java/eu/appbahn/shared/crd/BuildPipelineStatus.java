@@ -2,9 +2,8 @@ package eu.appbahn.shared.crd;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import eu.appbahn.shared.model.BuildPipelinePhase;
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

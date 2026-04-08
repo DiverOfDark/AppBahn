@@ -19,12 +19,12 @@ var _ MappedNullable = &ResourceTypeInfo{}
 
 // ResourceTypeInfo struct for ResourceTypeInfo
 type ResourceTypeInfo struct {
-	Type *string `json:"type,omitempty"`
-	DisplayName *string `json:"displayName,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Category *string `json:"category,omitempty"`
+	Type         *string                `json:"type,omitempty"`
+	DisplayName  *string                `json:"displayName,omitempty"`
+	Description  *string                `json:"description,omitempty"`
+	Category     *string                `json:"category,omitempty"`
 	ConfigSchema map[string]interface{} `json:"configSchema,omitempty"`
-	Available *bool `json:"available,omitempty"`
+	Available    *bool                  `json:"available,omitempty"`
 }
 
 // NewResourceTypeInfo instantiates a new ResourceTypeInfo object
@@ -237,7 +237,7 @@ func (o *ResourceTypeInfo) SetAvailable(v bool) {
 }
 
 func (o ResourceTypeInfo) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableResourceTypeInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

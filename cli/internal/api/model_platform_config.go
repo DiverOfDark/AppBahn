@@ -19,12 +19,12 @@ var _ MappedNullable = &PlatformConfig{}
 
 // PlatformConfig struct for PlatformConfig
 type PlatformConfig struct {
-	Domain *string `json:"domain,omitempty"`
-	Registry *RegistryConfig `json:"registry,omitempty"`
-	Branding *PlatformConfigBranding `json:"branding,omitempty"`
-	Auth map[string]interface{} `json:"auth,omitempty"`
-	DefaultQuota *Quota `json:"defaultQuota,omitempty"`
-	BuildConfig map[string]interface{} `json:"buildConfig,omitempty"`
+	Domain       *string                 `json:"domain,omitempty"`
+	Registry     *RegistryConfig         `json:"registry,omitempty"`
+	Branding     *PlatformConfigBranding `json:"branding,omitempty"`
+	Auth         map[string]interface{}  `json:"auth,omitempty"`
+	DefaultQuota *Quota                  `json:"defaultQuota,omitempty"`
+	BuildConfig  map[string]interface{}  `json:"buildConfig,omitempty"`
 }
 
 // NewPlatformConfig instantiates a new PlatformConfig object
@@ -237,7 +237,7 @@ func (o *PlatformConfig) SetBuildConfig(v map[string]interface{}) {
 }
 
 func (o PlatformConfig) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullablePlatformConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

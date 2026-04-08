@@ -1,13 +1,11 @@
 package eu.appbahn.platform.common.security;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.BiFunction;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.BiFunction;
 
 public class AppBahnJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 

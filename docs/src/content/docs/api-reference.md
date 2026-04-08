@@ -26,10 +26,10 @@ These specs are the **source of truth** for all generated clients (TypeScript, G
 
 ## Generated Clients
 
-| Client     | Source                         | Usage               |
-|------------|--------------------------------|----------------------|
+| Client     | Source                           | Usage                |
+| ---------- | -------------------------------- | -------------------- |
 | TypeScript | Generated from `public-api.yaml` | Web console (Vue.js) |
 | Go         | Generated from `public-api.yaml` | CLI tool             |
-| Spring     | Generated from both specs       | Backend server stubs |
+| Spring     | Generated from both specs        | Backend server stubs |
 
 <!-- TODO: Add links to generated client packages and usage examples -->

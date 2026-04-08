@@ -19,14 +19,13 @@ import (
 	"strings"
 )
 
-
 type AdminAPI interface {
 
 	/*
-	CreateNetworkPolicy Create network policy
+		CreateNetworkPolicy Create network policy
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCreateNetworkPolicyRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateNetworkPolicyRequest
 	*/
 	CreateNetworkPolicy(ctx context.Context) ApiCreateNetworkPolicyRequest
 
@@ -35,11 +34,11 @@ type AdminAPI interface {
 	CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
 
 	/*
-	DeleteCluster Delete cluster
+		DeleteCluster Delete cluster
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiDeleteClusterRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param name
+		@return ApiDeleteClusterRequest
 	*/
 	DeleteCluster(ctx context.Context, name string) ApiDeleteClusterRequest
 
@@ -47,11 +46,11 @@ type AdminAPI interface {
 	DeleteClusterExecute(r ApiDeleteClusterRequest) (*http.Response, error)
 
 	/*
-	DeleteNetworkPolicy Delete network policy
+		DeleteNetworkPolicy Delete network policy
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id
-	@return ApiDeleteNetworkPolicyRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param id
+		@return ApiDeleteNetworkPolicyRequest
 	*/
 	DeleteNetworkPolicy(ctx context.Context, id string) ApiDeleteNetworkPolicyRequest
 
@@ -59,10 +58,10 @@ type AdminAPI interface {
 	DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyRequest) (*http.Response, error)
 
 	/*
-	GetPlatformAuditLog Query platform-wide audit log
+		GetPlatformAuditLog Query platform-wide audit log
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGetPlatformAuditLogRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiGetPlatformAuditLogRequest
 	*/
 	GetPlatformAuditLog(ctx context.Context) ApiGetPlatformAuditLogRequest
 
@@ -71,14 +70,14 @@ type AdminAPI interface {
 	GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error)
 
 	/*
-	GetPlatformConfig Get public platform configuration
+			GetPlatformConfig Get public platform configuration
 
-	Returns public platform configuration including branding.
-No authentication required — used by the login page.
+			Returns public platform configuration including branding.
+		No authentication required — used by the login page.
 
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGetPlatformConfigRequest
+			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+			@return ApiGetPlatformConfigRequest
 	*/
 	GetPlatformConfig(ctx context.Context) ApiGetPlatformConfigRequest
 
@@ -87,11 +86,11 @@ No authentication required — used by the login page.
 	GetPlatformConfigExecute(r ApiGetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
 
 	/*
-	GetResourceTypeDefinition Get resource type definition
+		GetResourceTypeDefinition Get resource type definition
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param type_
-	@return ApiGetResourceTypeDefinitionRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param type_
+		@return ApiGetResourceTypeDefinitionRequest
 	*/
 	GetResourceTypeDefinition(ctx context.Context, type_ string) ApiGetResourceTypeDefinitionRequest
 
@@ -100,10 +99,10 @@ No authentication required — used by the login page.
 	GetResourceTypeDefinitionExecute(r ApiGetResourceTypeDefinitionRequest) (*ResourceTypeDefinition, *http.Response, error)
 
 	/*
-	ListClusters List registered clusters
+		ListClusters List registered clusters
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListClustersRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListClustersRequest
 	*/
 	ListClusters(ctx context.Context) ApiListClustersRequest
 
@@ -112,10 +111,10 @@ No authentication required — used by the login page.
 	ListClustersExecute(r ApiListClustersRequest) ([]Cluster, *http.Response, error)
 
 	/*
-	ListNetworkPolicies List network policies
+		ListNetworkPolicies List network policies
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListNetworkPoliciesRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListNetworkPoliciesRequest
 	*/
 	ListNetworkPolicies(ctx context.Context) ApiListNetworkPoliciesRequest
 
@@ -124,10 +123,10 @@ No authentication required — used by the login page.
 	ListNetworkPoliciesExecute(r ApiListNetworkPoliciesRequest) ([]NetworkPolicy, *http.Response, error)
 
 	/*
-	ListResourceTypeDefinitions List resource type definitions
+		ListResourceTypeDefinitions List resource type definitions
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListResourceTypeDefinitionsRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListResourceTypeDefinitionsRequest
 	*/
 	ListResourceTypeDefinitions(ctx context.Context) ApiListResourceTypeDefinitionsRequest
 
@@ -136,10 +135,10 @@ No authentication required — used by the login page.
 	ListResourceTypeDefinitionsExecute(r ApiListResourceTypeDefinitionsRequest) ([]ResourceTypeDefinition, *http.Response, error)
 
 	/*
-	ListUsers List users
+		ListUsers List users
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiListUsersRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListUsersRequest
 	*/
 	ListUsers(ctx context.Context) ApiListUsersRequest
 
@@ -148,10 +147,10 @@ No authentication required — used by the login page.
 	ListUsersExecute(r ApiListUsersRequest) (*PagedUserResponse, *http.Response, error)
 
 	/*
-	RegisterCluster Register a new cluster
+		RegisterCluster Register a new cluster
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiRegisterClusterRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiRegisterClusterRequest
 	*/
 	RegisterCluster(ctx context.Context) ApiRegisterClusterRequest
 
@@ -160,10 +159,10 @@ No authentication required — used by the login page.
 	RegisterClusterExecute(r ApiRegisterClusterRequest) (*Cluster, *http.Response, error)
 
 	/*
-	SetPlatformConfig Set platform configuration
+		SetPlatformConfig Set platform configuration
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiSetPlatformConfigRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiSetPlatformConfigRequest
 	*/
 	SetPlatformConfig(ctx context.Context) ApiSetPlatformConfigRequest
 
@@ -172,11 +171,11 @@ No authentication required — used by the login page.
 	SetPlatformConfigExecute(r ApiSetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
 
 	/*
-	UpdateCluster Update cluster
+		UpdateCluster Update cluster
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiUpdateClusterRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param name
+		@return ApiUpdateClusterRequest
 	*/
 	UpdateCluster(ctx context.Context, name string) ApiUpdateClusterRequest
 
@@ -185,11 +184,11 @@ No authentication required — used by the login page.
 	UpdateClusterExecute(r ApiUpdateClusterRequest) (*Cluster, *http.Response, error)
 
 	/*
-	UpdateNetworkPolicy Update network policy
+		UpdateNetworkPolicy Update network policy
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id
-	@return ApiUpdateNetworkPolicyRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param id
+		@return ApiUpdateNetworkPolicyRequest
 	*/
 	UpdateNetworkPolicy(ctx context.Context, id string) ApiUpdateNetworkPolicyRequest
 
@@ -198,11 +197,11 @@ No authentication required — used by the login page.
 	UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
 
 	/*
-	UpdateResourceTypeAdminConfig Update resource type admin configuration
+		UpdateResourceTypeAdminConfig Update resource type admin configuration
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param type_
-	@return ApiUpdateResourceTypeAdminConfigRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param type_
+		@return ApiUpdateResourceTypeAdminConfigRequest
 	*/
 	UpdateResourceTypeAdminConfig(ctx context.Context, type_ string) ApiUpdateResourceTypeAdminConfigRequest
 
@@ -215,8 +214,8 @@ No authentication required — used by the login page.
 type AdminAPIService service
 
 type ApiCreateNetworkPolicyRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
+	ctx                        context.Context
+	ApiService                 AdminAPI
 	createNetworkPolicyRequest *CreateNetworkPolicyRequest
 }
 
@@ -232,24 +231,25 @@ func (r ApiCreateNetworkPolicyRequest) Execute() (*NetworkPolicy, *http.Response
 /*
 CreateNetworkPolicy Create network policy
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateNetworkPolicyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateNetworkPolicyRequest
 */
 func (a *AdminAPIService) CreateNetworkPolicy(ctx context.Context) ApiCreateNetworkPolicyRequest {
 	return ApiCreateNetworkPolicyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return NetworkPolicy
+//
+//	@return NetworkPolicy
 func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *NetworkPolicy
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *NetworkPolicy
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.CreateNetworkPolicy")
@@ -314,8 +314,8 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -325,8 +325,8 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -336,8 +336,8 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -355,9 +355,9 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 }
 
 type ApiDeleteClusterRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
-	name string
+	name       string
 }
 
 func (r ApiDeleteClusterRequest) Execute() (*http.Response, error) {
@@ -367,24 +367,24 @@ func (r ApiDeleteClusterRequest) Execute() (*http.Response, error) {
 /*
 DeleteCluster Delete cluster
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiDeleteClusterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiDeleteClusterRequest
 */
 func (a *AdminAPIService) DeleteCluster(ctx context.Context, name string) ApiDeleteClusterRequest {
 	return ApiDeleteClusterRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
 func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.DeleteCluster")
@@ -445,8 +445,8 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -456,8 +456,8 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -467,8 +467,8 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -477,9 +477,9 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 }
 
 type ApiDeleteNetworkPolicyRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
-	id string
+	id         string
 }
 
 func (r ApiDeleteNetworkPolicyRequest) Execute() (*http.Response, error) {
@@ -489,24 +489,24 @@ func (r ApiDeleteNetworkPolicyRequest) Execute() (*http.Response, error) {
 /*
 DeleteNetworkPolicy Delete network policy
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiDeleteNetworkPolicyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiDeleteNetworkPolicyRequest
 */
 func (a *AdminAPIService) DeleteNetworkPolicy(ctx context.Context, id string) ApiDeleteNetworkPolicyRequest {
 	return ApiDeleteNetworkPolicyRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.DeleteNetworkPolicy")
@@ -567,8 +567,8 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -578,8 +578,8 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -589,8 +589,8 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -599,12 +599,12 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 }
 
 type ApiGetPlatformAuditLogRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
-	page *int32
-	size *int32
-	action *string
-	targetType *string
+	ctx           context.Context
+	ApiService    AdminAPI
+	page          *int32
+	size          *int32
+	action        *string
+	targetType    *string
 	workspaceSlug *string
 }
 
@@ -640,24 +640,25 @@ func (r ApiGetPlatformAuditLogRequest) Execute() (*PagedAuditLogResponse, *http.
 /*
 GetPlatformAuditLog Query platform-wide audit log
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetPlatformAuditLogRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetPlatformAuditLogRequest
 */
 func (a *AdminAPIService) GetPlatformAuditLog(ctx context.Context) ApiGetPlatformAuditLogRequest {
 	return ApiGetPlatformAuditLogRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PagedAuditLogResponse
+//
+//	@return PagedAuditLogResponse
 func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedAuditLogResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedAuditLogResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.GetPlatformAuditLog")
@@ -740,8 +741,8 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -751,8 +752,8 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -770,7 +771,7 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 }
 
 type ApiGetPlatformConfigRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
 }
 
@@ -784,25 +785,25 @@ GetPlatformConfig Get public platform configuration
 Returns public platform configuration including branding.
 No authentication required — used by the login page.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetPlatformConfigRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetPlatformConfigRequest
 */
 func (a *AdminAPIService) GetPlatformConfig(ctx context.Context) ApiGetPlatformConfigRequest {
 	return ApiGetPlatformConfigRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PlatformConfig
+//
+//	@return PlatformConfig
 func (a *AdminAPIService) GetPlatformConfigExecute(r ApiGetPlatformConfigRequest) (*PlatformConfig, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PlatformConfig
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PlatformConfig
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.GetPlatformConfig")
@@ -871,9 +872,9 @@ func (a *AdminAPIService) GetPlatformConfigExecute(r ApiGetPlatformConfigRequest
 }
 
 type ApiGetResourceTypeDefinitionRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
-	type_ string
+	type_      string
 }
 
 func (r ApiGetResourceTypeDefinitionRequest) Execute() (*ResourceTypeDefinition, *http.Response, error) {
@@ -883,26 +884,27 @@ func (r ApiGetResourceTypeDefinitionRequest) Execute() (*ResourceTypeDefinition,
 /*
 GetResourceTypeDefinition Get resource type definition
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param type_
- @return ApiGetResourceTypeDefinitionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param type_
+	@return ApiGetResourceTypeDefinitionRequest
 */
 func (a *AdminAPIService) GetResourceTypeDefinition(ctx context.Context, type_ string) ApiGetResourceTypeDefinitionRequest {
 	return ApiGetResourceTypeDefinitionRequest{
 		ApiService: a,
-		ctx: ctx,
-		type_: type_,
+		ctx:        ctx,
+		type_:      type_,
 	}
 }
 
 // Execute executes the request
-//  @return ResourceTypeDefinition
+//
+//	@return ResourceTypeDefinition
 func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeDefinitionRequest) (*ResourceTypeDefinition, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ResourceTypeDefinition
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResourceTypeDefinition
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.GetResourceTypeDefinition")
@@ -963,8 +965,8 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -974,8 +976,8 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -985,8 +987,8 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1004,7 +1006,7 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 }
 
 type ApiListClustersRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
 }
 
@@ -1015,24 +1017,25 @@ func (r ApiListClustersRequest) Execute() ([]Cluster, *http.Response, error) {
 /*
 ListClusters List registered clusters
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListClustersRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListClustersRequest
 */
 func (a *AdminAPIService) ListClusters(ctx context.Context) ApiListClustersRequest {
 	return ApiListClustersRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []Cluster
+//
+//	@return []Cluster
 func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Cluster, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []Cluster
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.ListClusters")
@@ -1092,8 +1095,8 @@ func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Clust
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1103,8 +1106,8 @@ func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Clust
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1122,7 +1125,7 @@ func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Clust
 }
 
 type ApiListNetworkPoliciesRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
 }
 
@@ -1133,24 +1136,25 @@ func (r ApiListNetworkPoliciesRequest) Execute() ([]NetworkPolicy, *http.Respons
 /*
 ListNetworkPolicies List network policies
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListNetworkPoliciesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListNetworkPoliciesRequest
 */
 func (a *AdminAPIService) ListNetworkPolicies(ctx context.Context) ApiListNetworkPoliciesRequest {
 	return ApiListNetworkPoliciesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []NetworkPolicy
+//
+//	@return []NetworkPolicy
 func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesRequest) ([]NetworkPolicy, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []NetworkPolicy
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []NetworkPolicy
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.ListNetworkPolicies")
@@ -1210,8 +1214,8 @@ func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1221,8 +1225,8 @@ func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1240,7 +1244,7 @@ func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesReq
 }
 
 type ApiListResourceTypeDefinitionsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
 }
 
@@ -1251,24 +1255,25 @@ func (r ApiListResourceTypeDefinitionsRequest) Execute() ([]ResourceTypeDefiniti
 /*
 ListResourceTypeDefinitions List resource type definitions
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListResourceTypeDefinitionsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListResourceTypeDefinitionsRequest
 */
 func (a *AdminAPIService) ListResourceTypeDefinitions(ctx context.Context) ApiListResourceTypeDefinitionsRequest {
 	return ApiListResourceTypeDefinitionsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []ResourceTypeDefinition
+//
+//	@return []ResourceTypeDefinition
 func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTypeDefinitionsRequest) ([]ResourceTypeDefinition, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []ResourceTypeDefinition
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []ResourceTypeDefinition
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.ListResourceTypeDefinitions")
@@ -1328,8 +1333,8 @@ func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTy
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1339,8 +1344,8 @@ func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTy
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1358,11 +1363,11 @@ func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTy
 }
 
 type ApiListUsersRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
-	page *int32
-	size *int32
-	email *string
+	page       *int32
+	size       *int32
+	email      *string
 }
 
 func (r ApiListUsersRequest) Page(page int32) ApiListUsersRequest {
@@ -1387,24 +1392,25 @@ func (r ApiListUsersRequest) Execute() (*PagedUserResponse, *http.Response, erro
 /*
 ListUsers List users
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiListUsersRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListUsersRequest
 */
 func (a *AdminAPIService) ListUsers(ctx context.Context) ApiListUsersRequest {
 	return ApiListUsersRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PagedUserResponse
+//
+//	@return PagedUserResponse
 func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PagedUserResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PagedUserResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.ListUsers")
@@ -1481,8 +1487,8 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1492,8 +1498,8 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1511,8 +1517,8 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 }
 
 type ApiRegisterClusterRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
+	ctx                  context.Context
+	ApiService           AdminAPI
 	createClusterRequest *CreateClusterRequest
 }
 
@@ -1528,24 +1534,25 @@ func (r ApiRegisterClusterRequest) Execute() (*Cluster, *http.Response, error) {
 /*
 RegisterCluster Register a new cluster
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiRegisterClusterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiRegisterClusterRequest
 */
 func (a *AdminAPIService) RegisterCluster(ctx context.Context) ApiRegisterClusterRequest {
 	return ApiRegisterClusterRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Cluster
+//
+//	@return Cluster
 func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*Cluster, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Cluster
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.RegisterCluster")
@@ -1610,8 +1617,8 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1621,8 +1628,8 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1632,8 +1639,8 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 409 {
@@ -1643,8 +1650,8 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1662,8 +1669,8 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 }
 
 type ApiSetPlatformConfigRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
+	ctx            context.Context
+	ApiService     AdminAPI
 	platformConfig *PlatformConfig
 }
 
@@ -1679,24 +1686,25 @@ func (r ApiSetPlatformConfigRequest) Execute() (*PlatformConfig, *http.Response,
 /*
 SetPlatformConfig Set platform configuration
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiSetPlatformConfigRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSetPlatformConfigRequest
 */
 func (a *AdminAPIService) SetPlatformConfig(ctx context.Context) ApiSetPlatformConfigRequest {
 	return ApiSetPlatformConfigRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return PlatformConfig
+//
+//	@return PlatformConfig
 func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest) (*PlatformConfig, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *PlatformConfig
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *PlatformConfig
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.SetPlatformConfig")
@@ -1761,8 +1769,8 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1772,8 +1780,8 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1783,8 +1791,8 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1802,9 +1810,9 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 }
 
 type ApiUpdateClusterRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
-	name string
+	ctx                  context.Context
+	ApiService           AdminAPI
+	name                 string
 	updateClusterRequest *UpdateClusterRequest
 }
 
@@ -1820,26 +1828,27 @@ func (r ApiUpdateClusterRequest) Execute() (*Cluster, *http.Response, error) {
 /*
 UpdateCluster Update cluster
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiUpdateClusterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiUpdateClusterRequest
 */
 func (a *AdminAPIService) UpdateCluster(ctx context.Context, name string) ApiUpdateClusterRequest {
 	return ApiUpdateClusterRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return Cluster
+//
+//	@return Cluster
 func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Cluster, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Cluster
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.UpdateCluster")
@@ -1905,8 +1914,8 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1916,8 +1925,8 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -1927,8 +1936,8 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -1938,8 +1947,8 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1957,9 +1966,9 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 }
 
 type ApiUpdateNetworkPolicyRequest struct {
-	ctx context.Context
-	ApiService AdminAPI
-	id string
+	ctx                        context.Context
+	ApiService                 AdminAPI
+	id                         string
 	updateNetworkPolicyRequest *UpdateNetworkPolicyRequest
 }
 
@@ -1975,26 +1984,27 @@ func (r ApiUpdateNetworkPolicyRequest) Execute() (*NetworkPolicy, *http.Response
 /*
 UpdateNetworkPolicy Update network policy
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiUpdateNetworkPolicyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiUpdateNetworkPolicyRequest
 */
 func (a *AdminAPIService) UpdateNetworkPolicy(ctx context.Context, id string) ApiUpdateNetworkPolicyRequest {
 	return ApiUpdateNetworkPolicyRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return NetworkPolicy
+//
+//	@return NetworkPolicy
 func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *NetworkPolicy
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *NetworkPolicy
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.UpdateNetworkPolicy")
@@ -2060,8 +2070,8 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2071,8 +2081,8 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2082,8 +2092,8 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2093,8 +2103,8 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2112,10 +2122,10 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 }
 
 type ApiUpdateResourceTypeAdminConfigRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AdminAPI
-	type_ string
-	body *map[string]interface{}
+	type_      string
+	body       *map[string]interface{}
 }
 
 func (r ApiUpdateResourceTypeAdminConfigRequest) Body(body map[string]interface{}) ApiUpdateResourceTypeAdminConfigRequest {
@@ -2130,26 +2140,27 @@ func (r ApiUpdateResourceTypeAdminConfigRequest) Execute() (*ResourceTypeDefinit
 /*
 UpdateResourceTypeAdminConfig Update resource type admin configuration
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param type_
- @return ApiUpdateResourceTypeAdminConfigRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param type_
+	@return ApiUpdateResourceTypeAdminConfigRequest
 */
 func (a *AdminAPIService) UpdateResourceTypeAdminConfig(ctx context.Context, type_ string) ApiUpdateResourceTypeAdminConfigRequest {
 	return ApiUpdateResourceTypeAdminConfigRequest{
 		ApiService: a,
-		ctx: ctx,
-		type_: type_,
+		ctx:        ctx,
+		type_:      type_,
 	}
 }
 
 // Execute executes the request
-//  @return ResourceTypeDefinition
+//
+//	@return ResourceTypeDefinition
 func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResourceTypeAdminConfigRequest) (*ResourceTypeDefinition, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ResourceTypeDefinition
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResourceTypeDefinition
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AdminAPIService.UpdateResourceTypeAdminConfig")
@@ -2215,8 +2226,8 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2226,8 +2237,8 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -2237,8 +2248,8 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -2248,8 +2259,8 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

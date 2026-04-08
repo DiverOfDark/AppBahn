@@ -19,9 +19,9 @@ var _ MappedNullable = &UpdateNetworkPolicyRequest{}
 
 // UpdateNetworkPolicyRequest struct for UpdateNetworkPolicyRequest
 type UpdateNetworkPolicyRequest struct {
-	Name *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Policy map[string]interface{} `json:"policy,omitempty"`
+	Name        *string                `json:"name,omitempty"`
+	Description *string                `json:"description,omitempty"`
+	Policy      map[string]interface{} `json:"policy,omitempty"`
 }
 
 // NewUpdateNetworkPolicyRequest instantiates a new UpdateNetworkPolicyRequest object
@@ -138,7 +138,7 @@ func (o *UpdateNetworkPolicyRequest) SetPolicy(v map[string]interface{}) {
 }
 
 func (o UpdateNetworkPolicyRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableUpdateNetworkPolicyRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

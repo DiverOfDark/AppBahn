@@ -19,8 +19,8 @@ var _ MappedNullable = &GitRepo{}
 
 // GitRepo struct for GitRepo
 type GitRepo struct {
-	Name *string `json:"name,omitempty"`
-	Url *string `json:"url,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	Url           *string `json:"url,omitempty"`
 	DefaultBranch *string `json:"defaultBranch,omitempty"`
 }
 
@@ -138,7 +138,7 @@ func (o *GitRepo) SetDefaultBranch(v string) {
 }
 
 func (o GitRepo) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableGitRepo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

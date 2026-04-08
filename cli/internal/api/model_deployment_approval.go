@@ -20,11 +20,11 @@ var _ MappedNullable = &DeploymentApproval{}
 
 // DeploymentApproval struct for DeploymentApproval
 type DeploymentApproval struct {
-	Id *string `json:"id,omitempty"`
-	DeploymentId *string `json:"deploymentId,omitempty"`
-	UserId *string `json:"userId,omitempty"`
-	Decision *string `json:"decision,omitempty"`
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	Id           *string    `json:"id,omitempty"`
+	DeploymentId *string    `json:"deploymentId,omitempty"`
+	UserId       *string    `json:"userId,omitempty"`
+	Decision     *string    `json:"decision,omitempty"`
+	UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 }
 
 // NewDeploymentApproval instantiates a new DeploymentApproval object
@@ -205,7 +205,7 @@ func (o *DeploymentApproval) SetUpdatedAt(v time.Time) {
 }
 
 func (o DeploymentApproval) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -267,5 +267,3 @@ func (v *NullableDeploymentApproval) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

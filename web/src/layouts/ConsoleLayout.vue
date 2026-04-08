@@ -22,11 +22,17 @@ function handleLogout() {
           <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
             <rect width="40" height="40" rx="4" fill="var(--color-accent)" />
             <text
-              x="50%" y="54%"
-              dominant-baseline="middle" text-anchor="middle"
+              x="50%"
+              y="54%"
+              dominant-baseline="middle"
+              text-anchor="middle"
               fill="var(--color-bg-base)"
-              font-family="var(--font-heading)" font-weight="700" font-size="18"
-            >A</text>
+              font-family="var(--font-heading)"
+              font-weight="700"
+              font-size="18"
+            >
+              A
+            </text>
           </svg>
           <span class="topbar-title">AppBahn</span>
         </router-link>
@@ -40,16 +46,19 @@ function handleLogout() {
           <span v-if="themeStore.theme === 'dark'">&#9788;</span>
           <span v-else>&#9790;</span>
         </button>
-        <button class="topbar-action" title="Log out" @click="handleLogout">
-          &#x2192;
-        </button>
+        <button class="topbar-action" title="Log out" @click="handleLogout">&#x2192;</button>
       </div>
     </header>
 
     <div class="console-body">
       <!-- Sidebar -->
       <nav class="sidebar">
-        <router-link to="/console" class="sidebar-link" active-class="sidebar-link--active" :exact="true">
+        <router-link
+          to="/console"
+          class="sidebar-link"
+          active-class="sidebar-link--active"
+          :exact="true"
+        >
           Workspaces
         </router-link>
         <router-link to="/console/admin" class="sidebar-link" active-class="sidebar-link--active">
@@ -123,7 +132,9 @@ function handleLogout() {
   justify-content: center;
   cursor: pointer;
   font-size: 16px;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .topbar-action:hover {
@@ -158,7 +169,9 @@ function handleLogout() {
   color: var(--color-text-secondary);
   text-decoration: none;
   border-left: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .sidebar-link:hover {

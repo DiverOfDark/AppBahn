@@ -20,15 +20,15 @@ var _ MappedNullable = &Resource{}
 
 // Resource struct for Resource
 type Resource struct {
-	Slug *string `json:"slug,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Type *string `json:"type,omitempty"`
-	EnvironmentSlug *string `json:"environmentSlug,omitempty"`
-	Config map[string]interface{} `json:"config,omitempty"`
-	Links []map[string]interface{} `json:"links,omitempty"`
-	Status *string `json:"status,omitempty"`
-	StatusDetail map[string]interface{} `json:"statusDetail,omitempty"`
-	LastSyncedAt *time.Time `json:"lastSyncedAt,omitempty"`
+	Slug            *string                  `json:"slug,omitempty"`
+	Name            *string                  `json:"name,omitempty"`
+	Type            *string                  `json:"type,omitempty"`
+	EnvironmentSlug *string                  `json:"environmentSlug,omitempty"`
+	Config          map[string]interface{}   `json:"config,omitempty"`
+	Links           []map[string]interface{} `json:"links,omitempty"`
+	Status          *string                  `json:"status,omitempty"`
+	StatusDetail    map[string]interface{}   `json:"statusDetail,omitempty"`
+	LastSyncedAt    *time.Time               `json:"lastSyncedAt,omitempty"`
 }
 
 // NewResource instantiates a new Resource object
@@ -337,7 +337,7 @@ func (o *Resource) SetLastSyncedAt(v time.Time) {
 }
 
 func (o Resource) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -411,5 +411,3 @@ func (v *NullableResource) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

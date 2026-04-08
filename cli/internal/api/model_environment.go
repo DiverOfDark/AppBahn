@@ -20,17 +20,17 @@ var _ MappedNullable = &Environment{}
 
 // Environment struct for Environment
 type Environment struct {
-	Id *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Slug *string `json:"slug,omitempty"`
-	Description *string `json:"description,omitempty"`
-	ProjectSlug *string `json:"projectSlug,omitempty"`
-	TargetCluster *string `json:"targetCluster,omitempty"`
+	Id            *string              `json:"id,omitempty"`
+	Name          *string              `json:"name,omitempty"`
+	Slug          *string              `json:"slug,omitempty"`
+	Description   *string              `json:"description,omitempty"`
+	ProjectSlug   *string              `json:"projectSlug,omitempty"`
+	TargetCluster *string              `json:"targetCluster,omitempty"`
 	ApprovalGates *ApprovalGatesConfig `json:"approvalGates,omitempty"`
-	Quota *Quota `json:"quota,omitempty"`
-	Registry *RegistryConfig `json:"registry,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	Quota         *Quota               `json:"quota,omitempty"`
+	Registry      *RegistryConfig      `json:"registry,omitempty"`
+	CreatedAt     *time.Time           `json:"createdAt,omitempty"`
+	UpdatedAt     *time.Time           `json:"updatedAt,omitempty"`
 }
 
 // NewEnvironment instantiates a new Environment object
@@ -403,7 +403,7 @@ func (o *Environment) SetUpdatedAt(v time.Time) {
 }
 
 func (o Environment) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -483,5 +483,3 @@ func (v *NullableEnvironment) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

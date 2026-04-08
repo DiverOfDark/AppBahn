@@ -77,26 +77,26 @@ Create a `values.yaml` with your configuration:
 
 #### Platform
 
-| Value | Required | Default | Description |
-|-------|----------|---------|-------------|
-| `platform.database.url` | Yes | `jdbc:postgresql://postgres:5432/appbahn` | PostgreSQL JDBC connection string |
-| `platform.database.username` | Yes | `appbahn` | Database user |
-| `platform.database.password` | Yes | `appbahn` | Database password |
-| `platform.auth.issuerUrl` | Yes | | OIDC provider issuer URL (supports `.well-known/openid-configuration` discovery) |
-| `platform.auth.clientId` | Yes | | OAuth2 client ID for the platform |
-| `platform.auth.clientSecret` | Yes | | OAuth2 client secret |
-| `platform.auth.audience` | No | `appbahn` | Expected JWT audience claim — tokens without this `aud` are rejected |
-| `platform.auth.platformAdminGroups` | No | `[]` | OIDC group names that grant platform admin access |
-| `platform.namespacePrefix` | No | `abp` | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`) |
+| Value                               | Required | Default                                   | Description                                                                      |
+| ----------------------------------- | -------- | ----------------------------------------- | -------------------------------------------------------------------------------- |
+| `platform.database.url`             | Yes      | `jdbc:postgresql://postgres:5432/appbahn` | PostgreSQL JDBC connection string                                                |
+| `platform.database.username`        | Yes      | `appbahn`                                 | Database user                                                                    |
+| `platform.database.password`        | Yes      | `appbahn`                                 | Database password                                                                |
+| `platform.auth.issuerUrl`           | Yes      |                                           | OIDC provider issuer URL (supports `.well-known/openid-configuration` discovery) |
+| `platform.auth.clientId`            | Yes      |                                           | OAuth2 client ID for the platform                                                |
+| `platform.auth.clientSecret`        | Yes      |                                           | OAuth2 client secret                                                             |
+| `platform.auth.audience`            | No       | `appbahn`                                 | Expected JWT audience claim — tokens without this `aud` are rejected             |
+| `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
+| `platform.namespacePrefix`          | No       | `abp`                                     | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`)                          |
 
 #### Operator
 
-| Value | Required | Default | Description |
-|-------|----------|---------|-------------|
-| `operator.platformApi.endpoint` | No | auto-detected | URL of the platform API (internal service) |
-| `operator.auth.clientId` | Yes | `appbahn-operator` | OAuth2 client ID (client credentials grant) |
-| `operator.auth.clientSecret` | Yes | | OAuth2 client secret |
-| `operator.auth.tokenEndpoint` | Yes | | OIDC token endpoint URL |
+| Value                           | Required | Default            | Description                                 |
+| ------------------------------- | -------- | ------------------ | ------------------------------------------- |
+| `operator.platformApi.endpoint` | No       | auto-detected      | URL of the platform API (internal service)  |
+| `operator.auth.clientId`        | Yes      | `appbahn-operator` | OAuth2 client ID (client credentials grant) |
+| `operator.auth.clientSecret`    | Yes      |                    | OAuth2 client secret                        |
+| `operator.auth.tokenEndpoint`   | Yes      |                    | OIDC token endpoint URL                     |
 
 ### 3. Example `values.yaml`
 

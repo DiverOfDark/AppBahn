@@ -2,6 +2,7 @@ plugins {
     java
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
+    alias(libs.plugins.spotless)
 }
 
 allprojects {
@@ -11,6 +12,17 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "com.diffplug.spotless")
+
+    spotless {
+        java {
+            target("src/**/*.java")
+            palantirJavaFormat()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
 
     java {
         toolchain {

@@ -20,12 +20,12 @@ var _ MappedNullable = &WebhookDelivery{}
 
 // WebhookDelivery struct for WebhookDelivery
 type WebhookDelivery struct {
-	Id *string `json:"id,omitempty"`
-	WebhookId *string `json:"webhookId,omitempty"`
-	Event *string `json:"event,omitempty"`
-	Status *string `json:"status,omitempty"`
-	ResponseCode *int32 `json:"responseCode,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Id           *string    `json:"id,omitempty"`
+	WebhookId    *string    `json:"webhookId,omitempty"`
+	Event        *string    `json:"event,omitempty"`
+	Status       *string    `json:"status,omitempty"`
+	ResponseCode *int32     `json:"responseCode,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
 }
 
 // NewWebhookDelivery instantiates a new WebhookDelivery object
@@ -238,7 +238,7 @@ func (o *WebhookDelivery) SetCreatedAt(v time.Time) {
 }
 
 func (o WebhookDelivery) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -303,5 +303,3 @@ func (v *NullableWebhookDelivery) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

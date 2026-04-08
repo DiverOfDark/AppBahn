@@ -6,7 +6,6 @@ import eu.appbahn.platform.api.model.Workspace;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
-
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 

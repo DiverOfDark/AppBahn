@@ -18,19 +18,18 @@ import (
 	"net/url"
 )
 
-
 type AuthAPI interface {
 
 	/*
-	AuthCallback OIDC callback
+			AuthCallback OIDC callback
 
-	Receives the authorization code from the OIDC provider, exchanges
-it for tokens server-side, then redirects the browser to
-/auth/complete?token={access_token} for the SPA to pick up.
+			Receives the authorization code from the OIDC provider, exchanges
+		it for tokens server-side, then redirects the browser to
+		/auth/complete?token={access_token} for the SPA to pick up.
 
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiAuthCallbackRequest
+			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+			@return ApiAuthCallbackRequest
 	*/
 	AuthCallback(ctx context.Context) ApiAuthCallbackRequest
 
@@ -38,15 +37,15 @@ it for tokens server-side, then redirects the browser to
 	AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Response, error)
 
 	/*
-	AuthLogin Initiate OIDC login
+			AuthLogin Initiate OIDC login
 
-	Generates PKCE code verifier/challenge and state, then redirects
-the browser to the OIDC provider's authorization endpoint.
-No authentication required.
+			Generates PKCE code verifier/challenge and state, then redirects
+		the browser to the OIDC provider's authorization endpoint.
+		No authentication required.
 
 
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiAuthLoginRequest
+			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+			@return ApiAuthLoginRequest
 	*/
 	AuthLogin(ctx context.Context) ApiAuthLoginRequest
 
@@ -58,10 +57,10 @@ No authentication required.
 type AuthAPIService service
 
 type ApiAuthCallbackRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AuthAPI
-	code *string
-	state *string
+	code       *string
+	state      *string
 }
 
 func (r ApiAuthCallbackRequest) Code(code string) ApiAuthCallbackRequest {
@@ -85,23 +84,22 @@ Receives the authorization code from the OIDC provider, exchanges
 it for tokens server-side, then redirects the browser to
 /auth/complete?token={access_token} for the SPA to pick up.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiAuthCallbackRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiAuthCallbackRequest
 */
 func (a *AuthAPIService) AuthCallback(ctx context.Context) ApiAuthCallbackRequest {
 	return ApiAuthCallbackRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
 func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodGet
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthCallback")
@@ -169,8 +167,8 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Re
 				newErr.error = err.Error()
 				return localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -179,7 +177,7 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Re
 }
 
 type ApiAuthLoginRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService AuthAPI
 }
 
@@ -194,23 +192,22 @@ Generates PKCE code verifier/challenge and state, then redirects
 the browser to the OIDC provider's authorization endpoint.
 No authentication required.
 
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiAuthLoginRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiAuthLoginRequest
 */
 func (a *AuthAPIService) AuthLogin(ctx context.Context) ApiAuthLoginRequest {
 	return ApiAuthLoginRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
 func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodGet
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthLogin")

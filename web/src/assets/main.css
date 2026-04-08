@@ -56,7 +56,7 @@
   --color-status-ready: oklch(70% 0.14 145);
   --color-status-degraded: oklch(75% 0.14 80);
   --color-status-error: oklch(65% 0.18 25);
-  --color-status-pending: oklch(65% 0.10 260);
+  --color-status-pending: oklch(65% 0.1 260);
   --color-status-stopped: oklch(50% 0.01 260);
   --color-status-building: oklch(70% 0.12 260);
 
@@ -118,12 +118,19 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   font-weight: 600;
   line-height: 1.2;
 }
 
-code, pre, .font-mono {
+code,
+pre,
+.font-mono {
   font-family: var(--font-mono);
 }

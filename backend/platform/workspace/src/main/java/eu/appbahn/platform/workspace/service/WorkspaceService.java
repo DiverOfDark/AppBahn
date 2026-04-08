@@ -16,14 +16,13 @@ import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WorkspaceService {
@@ -39,8 +38,7 @@ public class WorkspaceService {
             WorkspaceMemberRepository memberRepository,
             ProjectRepository projectRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService
-    ) {
+            AuditLogService auditLogService) {
         this.workspaceRepository = workspaceRepository;
         this.memberRepository = memberRepository;
         this.projectRepository = projectRepository;
@@ -62,7 +60,12 @@ public class WorkspaceService {
         member.setRole(MemberRole.OWNER.name());
         memberRepository.save(member);
 
-        auditLogService.log(ctx, "workspace.created", "workspace", entity.getSlug(), entity.getId(),
+        auditLogService.log(
+                ctx,
+                "workspace.created",
+                "workspace",
+                entity.getSlug(),
+                entity.getId(),
                 Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
 
         return EntityMapper.toApi(entity);
@@ -76,8 +79,7 @@ public class WorkspaceService {
             result = workspaceRepository.findAll(pageable);
         } else {
             // Get workspace IDs from direct memberships
-            List<UUID> workspaceIds = memberRepository.findByUserId(ctx.userId())
-                    .stream()
+            List<UUID> workspaceIds = memberRepository.findByUserId(ctx.userId()).stream()
                     .map(WorkspaceMemberEntity::getWorkspaceId)
                     .collect(Collectors.toList());
 
@@ -91,7 +93,8 @@ public class WorkspaceService {
     }
 
     public Workspace getBySlug(String slug, AuthContext ctx) {
-        var entity = workspaceRepository.findBySlug(slug)
+        var entity = workspaceRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.VIEWER);
         return EntityMapper.toApi(entity);
@@ -99,7 +102,8 @@ public class WorkspaceService {
 
     @Transactional
     public Workspace update(String slug, UpdateWorkspaceRequest req, AuthContext ctx) {
-        var entity = workspaceRepository.findBySlug(slug)
+        var entity = workspaceRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.ADMIN);
 
@@ -109,7 +113,12 @@ public class WorkspaceService {
         }
         workspaceRepository.save(entity);
 
-        auditLogService.log(ctx, "workspace.updated", "workspace", entity.getSlug(), entity.getId(),
+        auditLogService.log(
+                ctx,
+                "workspace.updated",
+                "workspace",
+                entity.getSlug(),
+                entity.getId(),
                 Map.of("name", Map.of("old", (Object) oldName, "new", entity.getName())));
 
         return EntityMapper.toApi(entity);
@@ -117,20 +126,16 @@ public class WorkspaceService {
 
     @Transactional
     public void delete(String slug, AuthContext ctx) {
-        var entity = workspaceRepository.findBySlug(slug)
+        var entity = workspaceRepository
+                .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.OWNER);
 
         // Block if projects exist
         var projects = projectRepository.findByWorkspaceId(entity.getId());
         if (!projects.isEmpty()) {
-            List<String> projectSlugs = projects.stream()
-                    .map(p -> p.getSlug())
-                    .collect(Collectors.toList());
-            throw new ConflictException(
-                    "Cannot delete workspace with existing projects",
-                    projectSlugs
-            );
+            List<String> projectSlugs = projects.stream().map(p -> p.getSlug()).collect(Collectors.toList());
+            throw new ConflictException("Cannot delete workspace with existing projects", projectSlugs);
         }
 
         workspaceRepository.delete(entity);
@@ -140,9 +145,7 @@ public class WorkspaceService {
 
     private PagedWorkspaceResponse toPagedResponse(Page<WorkspaceEntity> page) {
         var response = new PagedWorkspaceResponse();
-        response.setContent(page.getContent().stream()
-                .map(EntityMapper::toApi)
-                .collect(Collectors.toList()));
+        response.setContent(page.getContent().stream().map(EntityMapper::toApi).collect(Collectors.toList()));
         response.setPage(page.getNumber());
         response.setSize(page.getSize());
         response.setTotalElements(page.getTotalElements());

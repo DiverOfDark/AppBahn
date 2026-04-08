@@ -9,5 +9,4 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("appbahn.eu")
 @Version("v1")
 @Kind("BuildPipeline")
-public class BuildPipelineCrd extends CustomResource<BuildPipelineSpec, BuildPipelineStatus> implements Namespaced {
-}
+public class BuildPipelineCrd extends CustomResource<BuildPipelineSpec, BuildPipelineStatus> implements Namespaced {}
