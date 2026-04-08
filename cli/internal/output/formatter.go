@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -70,19 +72,18 @@ func printYAML(w io.Writer, data any) error {
 }
 
 func printTable(w io.Writer, headers []string, rows [][]string) {
-	table := tablewriter.NewWriter(w)
-	table.SetHeader(headers)
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("  ")
-	table.SetNoWhiteSpace(true)
-	table.AppendBulk(rows)
+	table := tablewriter.NewTable(w,
+		tablewriter.WithHeaderAlignment(tw.AlignLeft),
+		tablewriter.WithRowAlignment(tw.AlignLeft),
+		tablewriter.WithHeaderAutoFormat(tw.On),
+		tablewriter.WithPadding(tw.Padding{Left: "  ", Right: "", Overwrite: true}),
+		tablewriter.WithBorders(tw.BorderNone),
+		tablewriter.WithRendererSettings(tw.Settings{
+			Separators: tw.SeparatorsNone,
+			Lines:      tw.LinesNone,
+		}),
+	)
+	table.Header(headers)
+	table.Bulk(rows)
 	table.Render()
 }
