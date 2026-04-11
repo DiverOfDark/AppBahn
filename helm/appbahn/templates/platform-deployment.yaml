@@ -47,9 +47,23 @@ spec:
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_AUDIENCES
               value: {{ .Values.platform.auth.audience | default "appbahn" | quote }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTID
+              {{- if .Values.platform.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.platform.auth.existingSecret | quote }}
+                  key: client-id
+              {{- else }}
               value: {{ .Values.platform.auth.clientId | quote }}
+              {{- end }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTSECRET
+              {{- if .Values.platform.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.platform.auth.existingSecret | quote }}
+                  key: client-secret
+              {{- else }}
               value: {{ .Values.platform.auth.clientSecret | quote }}
+              {{- end }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_APPBAHN_ISSUERURI
               value: {{ .Values.platform.auth.issuerUrl | quote }}
             # Platform config
