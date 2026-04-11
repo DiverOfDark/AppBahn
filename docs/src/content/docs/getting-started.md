@@ -88,8 +88,8 @@ Create a `values.yaml` with your configuration:
 | `platform.database.username`        | Yes      | `appbahn`                                 | Database user                                                                    |
 | `platform.database.password`        | Yes      | `appbahn`                                 | Database password                                                                |
 | `platform.auth.issuerUrl`           | Yes      |                                           | OIDC provider issuer URL (supports `.well-known/openid-configuration` discovery) |
-| `platform.auth.clientId`            | Yes*     |                                           | OAuth2 client ID for the platform (ignored when `existingSecret` is set)         |
-| `platform.auth.clientSecret`        | Yes*     |                                           | OAuth2 client secret (ignored when `existingSecret` is set)                      |
+| `platform.auth.clientId`            | Yes\*    |                                           | OAuth2 client ID for the platform (ignored when `existingSecret` is set)         |
+| `platform.auth.clientSecret`        | Yes\*    |                                           | OAuth2 client secret (ignored when `existingSecret` is set)                      |
 | `platform.auth.existingSecret`      | No       |                                           | Name of an existing Secret containing `client-id` and `client-secret` keys       |
 | `platform.auth.audience`            | No       | `appbahn`                                 | Expected JWT audience claim — tokens without this `aud` are rejected             |
 | `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
@@ -105,8 +105,8 @@ Create a `values.yaml` with your configuration:
 | Value                              | Required | Default            | Description                                                                     |
 | ---------------------------------- | -------- | ------------------ | ------------------------------------------------------------------------------- |
 | `operator.platformApi.endpoint`    | No       | auto-detected      | URL of the platform API (internal service)                                      |
-| `operator.auth.clientId`           | Yes*     | `appbahn-operator` | OAuth2 client ID (ignored when `existingSecret` is set)                         |
-| `operator.auth.clientSecret`       | Yes*     |                    | OAuth2 client secret (ignored when `existingSecret` is set)                     |
+| `operator.auth.clientId`           | Yes\*    | `appbahn-operator` | OAuth2 client ID (ignored when `existingSecret` is set)                         |
+| `operator.auth.clientSecret`       | Yes\*    |                    | OAuth2 client secret (ignored when `existingSecret` is set)                     |
 | `operator.auth.existingSecret`     | No       |                    | Name of an existing Secret containing `client-id` and `client-secret` keys      |
 | `operator.auth.tokenEndpoint`      | Yes      |                    | OIDC token endpoint URL                                                         |
 | `operator.clusterName`             | No       | `local`            | Cluster name reported by the operator (set for multi-cluster deployments)       |
