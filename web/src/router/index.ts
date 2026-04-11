@@ -24,6 +24,11 @@ const router = createRouter({
           component: () => import('@/views/console/WorkspaceListView.vue'),
         },
         {
+          path: 'admin',
+          name: 'admin',
+          component: () => import('@/views/console/PlaceholderView.vue'),
+        },
+        {
           path: ':wsSlug',
           name: 'workspace',
           component: () => import('@/views/console/WorkspaceDashboardView.vue'),
@@ -46,25 +51,25 @@ const router = createRouter({
         {
           path: ':wsSlug/:projSlug/:envSlug/create',
           name: 'create-resource',
-          component: () => import('@/views/console/PlaceholderView.vue'),
+          component: () => import('@/views/console/CreateResourceView.vue'),
         },
         {
           path: ':wsSlug/:projSlug/:envSlug/:resSlug',
           name: 'resource',
-          component: () => import('@/views/console/PlaceholderView.vue'),
-        },
-        {
-          path: 'admin',
-          name: 'admin',
-          component: () => import('@/views/console/PlaceholderView.vue'),
+          component: () => import('@/views/console/ResourceDetailView.vue'),
         },
       ],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
     },
   ],
 })
 
 router.beforeEach((to) => {
-  const publicRoutes = ['login', 'auth-complete']
+  const publicRoutes = ['login', 'auth-complete', 'not-found']
   if (!publicRoutes.includes(to.name as string)) {
     const { checkAuth } = useAuth()
     if (!checkAuth()) {

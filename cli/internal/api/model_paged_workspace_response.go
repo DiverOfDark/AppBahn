@@ -19,11 +19,11 @@ var _ MappedNullable = &PagedWorkspaceResponse{}
 
 // PagedWorkspaceResponse struct for PagedWorkspaceResponse
 type PagedWorkspaceResponse struct {
-	Content       []Workspace `json:"content,omitempty"`
 	Page          *int32      `json:"page,omitempty"`
 	Size          *int32      `json:"size,omitempty"`
 	TotalElements *int64      `json:"totalElements,omitempty"`
 	TotalPages    *int32      `json:"totalPages,omitempty"`
+	Content       []Workspace `json:"content,omitempty"`
 }
 
 // NewPagedWorkspaceResponse instantiates a new PagedWorkspaceResponse object
@@ -41,38 +41,6 @@ func NewPagedWorkspaceResponse() *PagedWorkspaceResponse {
 func NewPagedWorkspaceResponseWithDefaults() *PagedWorkspaceResponse {
 	this := PagedWorkspaceResponse{}
 	return &this
-}
-
-// GetContent returns the Content field value if set, zero value otherwise.
-func (o *PagedWorkspaceResponse) GetContent() []Workspace {
-	if o == nil || IsNil(o.Content) {
-		var ret []Workspace
-		return ret
-	}
-	return o.Content
-}
-
-// GetContentOk returns a tuple with the Content field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *PagedWorkspaceResponse) GetContentOk() ([]Workspace, bool) {
-	if o == nil || IsNil(o.Content) {
-		return nil, false
-	}
-	return o.Content, true
-}
-
-// HasContent returns a boolean if a field has been set.
-func (o *PagedWorkspaceResponse) HasContent() bool {
-	if o != nil && !IsNil(o.Content) {
-		return true
-	}
-
-	return false
-}
-
-// SetContent gets a reference to the given []Workspace and assigns it to the Content field.
-func (o *PagedWorkspaceResponse) SetContent(v []Workspace) {
-	o.Content = v
 }
 
 // GetPage returns the Page field value if set, zero value otherwise.
@@ -203,6 +171,38 @@ func (o *PagedWorkspaceResponse) SetTotalPages(v int32) {
 	o.TotalPages = &v
 }
 
+// GetContent returns the Content field value if set, zero value otherwise.
+func (o *PagedWorkspaceResponse) GetContent() []Workspace {
+	if o == nil || IsNil(o.Content) {
+		var ret []Workspace
+		return ret
+	}
+	return o.Content
+}
+
+// GetContentOk returns a tuple with the Content field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PagedWorkspaceResponse) GetContentOk() ([]Workspace, bool) {
+	if o == nil || IsNil(o.Content) {
+		return nil, false
+	}
+	return o.Content, true
+}
+
+// HasContent returns a boolean if a field has been set.
+func (o *PagedWorkspaceResponse) HasContent() bool {
+	if o != nil && !IsNil(o.Content) {
+		return true
+	}
+
+	return false
+}
+
+// SetContent gets a reference to the given []Workspace and assigns it to the Content field.
+func (o *PagedWorkspaceResponse) SetContent(v []Workspace) {
+	o.Content = v
+}
+
 func (o PagedWorkspaceResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -213,9 +213,6 @@ func (o PagedWorkspaceResponse) MarshalJSON() ([]byte, error) {
 
 func (o PagedWorkspaceResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Content) {
-		toSerialize["content"] = o.Content
-	}
 	if !IsNil(o.Page) {
 		toSerialize["page"] = o.Page
 	}
@@ -227,6 +224,9 @@ func (o PagedWorkspaceResponse) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.TotalPages) {
 		toSerialize["totalPages"] = o.TotalPages
+	}
+	if !IsNil(o.Content) {
+		toSerialize["content"] = o.Content
 	}
 	return toSerialize, nil
 }

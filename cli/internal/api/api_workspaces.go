@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type WorkspacesAPI interface {
@@ -1507,6 +1508,9 @@ type ApiGetWorkspaceAuditLogRequest struct {
 	size       *int32
 	action     *string
 	targetType *string
+	actorId    *string
+	from       *time.Time
+	to         *time.Time
 }
 
 func (r ApiGetWorkspaceAuditLogRequest) Page(page int32) ApiGetWorkspaceAuditLogRequest {
@@ -1526,6 +1530,21 @@ func (r ApiGetWorkspaceAuditLogRequest) Action(action string) ApiGetWorkspaceAud
 
 func (r ApiGetWorkspaceAuditLogRequest) TargetType(targetType string) ApiGetWorkspaceAuditLogRequest {
 	r.targetType = &targetType
+	return r
+}
+
+func (r ApiGetWorkspaceAuditLogRequest) ActorId(actorId string) ApiGetWorkspaceAuditLogRequest {
+	r.actorId = &actorId
+	return r
+}
+
+func (r ApiGetWorkspaceAuditLogRequest) From(from time.Time) ApiGetWorkspaceAuditLogRequest {
+	r.from = &from
+	return r
+}
+
+func (r ApiGetWorkspaceAuditLogRequest) To(to time.Time) ApiGetWorkspaceAuditLogRequest {
+	r.to = &to
 	return r
 }
 
@@ -1590,6 +1609,15 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 	}
 	if r.targetType != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "targetType", r.targetType, "form", "")
+	}
+	if r.actorId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "actorId", r.actorId, "form", "")
+	}
+	if r.from != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "from", r.from, "form", "")
+	}
+	if r.to != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

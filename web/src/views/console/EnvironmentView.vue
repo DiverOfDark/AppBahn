@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
@@ -7,10 +7,17 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import DataTable from '@/components/DataTable.vue'
 import CreateDialog from '@/components/CreateDialog.vue'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import ConfirmButton from '@/components/ConfirmButton.vue'
+import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
+import { statusClass, getDomain } from '@/composables/useResourceHelpers'
+import { formatDate } from '@/utils/format'
 
 type Environment = components['schemas']['Environment']
 type Resource = components['schemas']['Resource']
 type EnvironmentToken = components['schemas']['EnvironmentToken']
+
+const namespacePrefix = ref('abp')
 
 const TOKEN_ROLES = ['EDITOR', 'VIEWER'] as const
 type TokenRole = (typeof TOKEN_ROLES)[number]
@@ -24,9 +31,9 @@ const loading = ref(true)
 const error = ref('')
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
-const wsSlug = ref(route.params.wsSlug as string)
-const projSlug = ref(route.params.projSlug as string)
-const envSlug = ref(route.params.envSlug as string)
+const wsSlug = computed(() => route.params.wsSlug as string)
+const projSlug = computed(() => route.params.projSlug as string)
+const envSlug = computed(() => route.params.envSlug as string)
 
 // -- Tokens --
 const tokens = ref<EnvironmentToken[]>([])
@@ -50,7 +57,7 @@ async function fetchEnvironment() {
   }
 }
 
-async function fetchResources() {
+async function fetchResources({ isPolling = false } = {}) {
   try {
     const { data } = await api.GET('/resources', {
       params: { query: { environmentSlug: envSlug.value, page: 0, size: 50 } },
@@ -59,7 +66,9 @@ async function fetchResources() {
       resources.value = data.content ?? []
     }
   } catch {
-    // Silently fail on poll — keep showing last data
+    if (!isPolling) {
+      error.value = 'Failed to load resources'
+    }
   }
 }
 
@@ -72,20 +81,31 @@ async function fetchTokens() {
       tokens.value = data
     }
   } catch {
-    // Non-critical — don't block the page
+    error.value = 'Failed to load tokens'
+  }
+}
+
+async function fetchNamespacePrefix() {
+  try {
+    const { data } = await api.GET('/admin/config')
+    if (data?.namespacePrefix) {
+      namespacePrefix.value = data.namespacePrefix
+    }
+  } catch {
+    // Fall back to default prefix
   }
 }
 
 async function fetchData() {
   loading.value = true
   error.value = ''
-  await Promise.all([fetchEnvironment(), fetchResources(), fetchTokens()])
+  await Promise.all([fetchEnvironment(), fetchResources(), fetchTokens(), fetchNamespacePrefix()])
   loading.value = false
 }
 
 function startPolling() {
   stopPolling()
-  pollInterval = setInterval(fetchResources, 10000)
+  pollInterval = setInterval(() => fetchResources({ isPolling: true }), 30000)
 }
 
 function stopPolling() {
@@ -96,16 +116,11 @@ function stopPolling() {
 }
 
 async function deleteEnvironment() {
-  const confirmed = window.confirm(
-    `Are you sure you want to delete environment "${environment.value?.name ?? envSlug.value}"? This action cannot be undone.`,
-  )
-  if (!confirmed) return
-
   try {
     await api.DELETE('/environments/{slug}', {
       params: { path: { slug: envSlug.value } },
     })
-    router.push(`/console/${wsSlug.value}/${projSlug.value}`)
+    router.push({ name: 'project', params: { wsSlug: wsSlug.value, projSlug: projSlug.value } })
   } catch {
     error.value = 'Failed to delete environment'
   }
@@ -123,7 +138,7 @@ async function createToken() {
       body: {
         name: newTokenName.value.trim(),
         role: newTokenRole.value,
-        expiresInDays: newTokenExpiresDays.value,
+        expiresInDays: newTokenExpiresDays.value ?? 90,
       },
     })
     if (data?.token) {
@@ -141,9 +156,7 @@ async function createToken() {
   }
 }
 
-async function deleteToken(tokenId: string, tokenName?: string) {
-  const confirmed = window.confirm(`Revoke token "${tokenName ?? tokenId}"? This cannot be undone.`)
-  if (!confirmed) return
+async function deleteToken(tokenId: string) {
   try {
     await api.DELETE('/environments/{slug}/tokens/{tokenId}', {
       params: { path: { slug: envSlug.value, tokenId } },
@@ -154,79 +167,44 @@ async function deleteToken(tokenId: string, tokenName?: string) {
   }
 }
 
-function formatDate(iso?: string): string {
-  if (!iso) return '--'
-  const d = new Date(iso)
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function statusClass(status?: string): string {
-  if (!status) return ''
-  const map: Record<string, string> = {
-    READY: 'status-ready',
-    PENDING: 'status-pending',
-    DEGRADED: 'status-degraded',
-    ERROR: 'status-error',
-    STOPPED: 'status-stopped',
-    RESTARTING: 'status-pending',
-  }
-  return map[status] ?? ''
-}
-
 watch(
-  () => [route.params.wsSlug, route.params.projSlug, route.params.envSlug],
-  ([ws, proj, env]) => {
-    if (
-      ws &&
-      proj &&
-      env &&
-      typeof ws === 'string' &&
-      typeof proj === 'string' &&
-      typeof env === 'string'
-    ) {
-      wsSlug.value = ws
-      projSlug.value = proj
-      envSlug.value = env
-      fetchData()
-      startPolling()
-    }
+  () => [wsSlug.value, projSlug.value, envSlug.value],
+  () => {
+    stopPolling()
+    fetchData()
+    startPolling()
   },
+  { immediate: true },
 )
 
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopPolling()
+  } else {
+    fetchResources({ isPolling: true })
+    startPolling()
+  }
+}
+
 onMounted(() => {
-  fetchData()
-  startPolling()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
-onUnmounted(stopPolling)
+onUnmounted(() => {
+  stopPolling()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
 </script>
 
 <template>
   <div>
     <PageHeader :title="environment?.name ?? 'Environment'">
       <template #actions>
-        <button class="btn-danger" @click="deleteEnvironment">Delete Environment</button>
+        <ConfirmButton label="Delete Environment" @confirm="deleteEnvironment" />
       </template>
     </PageHeader>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <router-link to="/console" class="breadcrumb-link">Workspaces</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <router-link :to="`/console/${wsSlug}`" class="breadcrumb-link">{{ wsSlug }}</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <router-link :to="`/console/${wsSlug}/${projSlug}`" class="breadcrumb-link">{{
-        projSlug
-      }}</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">{{ envSlug }}</span>
-    </div>
+    <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug, projSlug, envSlug }, envSlug, true)" />
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
@@ -256,12 +234,21 @@ onUnmounted(stopPolling)
         </div>
         <div class="summary-item">
           <span class="summary-label">Namespace</span>
-          <span class="summary-value summary-value--mono">abp-{{ environment?.slug }}</span>
+          <span class="summary-value summary-value--mono"
+            >{{ namespacePrefix }}-{{ environment?.slug }}</span
+          >
         </div>
       </div>
 
       <!-- Resources -->
-      <h2 class="section-title">Resources</h2>
+      <div class="resources-header">
+        <h2 class="section-title">Resources</h2>
+        <router-link
+          :to="{ name: 'create-resource', params: { wsSlug, projSlug, envSlug } }"
+          class="btn-primary"
+          >+ Create Resource</router-link
+        >
+      </div>
 
       <EmptyState v-if="resources.length === 0" message="No resources deployed yet." />
 
@@ -270,6 +257,7 @@ onUnmounted(stopPolling)
           <th>Name</th>
           <th>Type</th>
           <th>Status</th>
+          <th>Domain</th>
           <th>Slug</th>
         </template>
         <template #body>
@@ -277,7 +265,19 @@ onUnmounted(stopPolling)
             v-for="res in resources"
             :key="res.slug"
             class="table-row-link"
-            @click="$router.push(`/console/${wsSlug}/${projSlug}/${envSlug}/${res.slug}`)"
+            tabindex="0"
+            @click="
+              $router.push({
+                name: 'resource',
+                params: { wsSlug, projSlug, envSlug, resSlug: res.slug },
+              })
+            "
+            @keydown.enter="
+              $router.push({
+                name: 'resource',
+                params: { wsSlug, projSlug, envSlug, resSlug: res.slug },
+              })
+            "
           >
             <td class="cell-name">{{ res.name }}</td>
             <td class="cell-type">{{ res.type }}</td>
@@ -286,6 +286,7 @@ onUnmounted(stopPolling)
                 {{ res.status ?? 'UNKNOWN' }}
               </span>
             </td>
+            <td class="cell-mono">{{ getDomain(res) }}</td>
             <td class="cell-slug">{{ res.slug }}</td>
           </tr>
         </template>
@@ -330,9 +331,12 @@ onUnmounted(stopPolling)
               <td class="cell-date">{{ formatDate(token.lastUsedAt) }}</td>
               <td class="cell-date">{{ formatDate(token.createdAt) }}</td>
               <td>
-                <button class="btn-danger btn-sm" @click="deleteToken(token.id!, token.name)">
-                  Revoke
-                </button>
+                <ConfirmButton
+                  label="Revoke"
+                  confirm-label="Confirm Revoke"
+                  btn-class="btn-danger btn-sm"
+                  @confirm="deleteToken(token.id!)"
+                />
               </td>
             </tr>
           </template>
@@ -381,89 +385,6 @@ onUnmounted(stopPolling)
 </template>
 
 <style scoped>
-.summary-bar {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  background-color: var(--color-border);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin-bottom: 32px;
-}
-
-@media (min-width: 768px) {
-  .summary-bar {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  background-color: var(--color-bg-surface);
-}
-
-.summary-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-tertiary);
-}
-
-.summary-value {
-  font-size: 14px;
-  color: var(--color-text-primary);
-}
-
-.summary-value--mono {
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
-.section-title {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 12px;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg-raised);
-  color: var(--color-text-secondary);
-}
-
-.status-ready {
-  color: var(--color-status-ready);
-}
-
-.status-pending {
-  color: var(--color-status-pending);
-}
-
-.status-degraded {
-  color: var(--color-status-degraded);
-}
-
-.status-error {
-  color: var(--color-status-error);
-}
-
-.status-stopped {
-  color: var(--color-status-stopped);
-}
-
 /* ── Tokens section ──────────────────────────────────────────────── */
 
 .tokens-section {
@@ -531,9 +452,13 @@ onUnmounted(stopPolling)
   font-size: 12px;
 }
 
-.form-stack {
+.resources-header {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.resources-header .section-title {
+  margin-bottom: 0;
 }
 </style>

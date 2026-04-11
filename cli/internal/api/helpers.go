@@ -29,18 +29,19 @@ func NewClient() (*APIClient, context.Context, error) {
 	cfg.AddDefaultHeader("Authorization", "Bearer "+token)
 
 	client := NewAPIClient(cfg)
-	ctx := context.Background()
+	ctx := context.WithValue(context.Background(), ContextAccessToken, token)
 
 	return client, ctx, nil
 }
 
-// FormatAPIError extracts a readable error message from an API error.
+// FormatAPIError extracts a readable error message from an API error response.
 func FormatAPIError(err error) error {
-	if err == nil {
-		return nil
-	}
-	if genErr, ok := err.(*GenericOpenAPIError); ok {
-		return fmt.Errorf("API error: %s", genErr.Error())
+	if openAPIErr, ok := err.(*GenericOpenAPIError); ok {
+		body := string(openAPIErr.Body())
+		if body != "" {
+			return fmt.Errorf("%s: %s", openAPIErr.Error(), body)
+		}
+		return fmt.Errorf("%s", openAPIErr.Error())
 	}
 	return err
 }

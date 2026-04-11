@@ -1,19 +1,12 @@
 <script setup lang="ts">
+import { formatDateShort } from '@/utils/format'
+
 defineProps<{
   name: string
   slug: string
   to: string
   date?: string
 }>()
-
-function formatDate(iso?: string): string {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 </script>
 
 <template>
@@ -21,7 +14,7 @@ function formatDate(iso?: string): string {
     <div class="card-name">{{ name }}</div>
     <div class="card-meta">
       <span class="card-slug">{{ slug }}</span>
-      <span v-if="date" class="card-date">{{ formatDate(date) }}</span>
+      <span v-if="date" class="card-date">{{ formatDateShort(date) }}</span>
     </div>
   </router-link>
 </template>

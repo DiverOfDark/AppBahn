@@ -24,6 +24,11 @@ openApiGenerate {
         "openApiNullable" to "false",
         "useJakartaEe" to "true",
     ))
+    schemaMappings.set(mapOf(
+        "LinkConfig" to "eu.appbahn.shared.crd.ResourceSpec.ResourceLink",
+        "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
+        "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatus",
+    ))
 }
 
 sourceSets {
@@ -52,4 +57,6 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.fabric8.kube.api.test)
+    testImplementation(libs.fabric8.crd.generator.api)
 }

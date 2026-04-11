@@ -28,6 +28,29 @@ openApiGenerate {
         "dateLibrary" to "java8",
         "generateBuilders" to "true",
     ))
+    // Reuse shared CRD types instead of generating duplicates
+    schemaMappings.set(mapOf(
+        "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
+        "HostingConfig" to "eu.appbahn.shared.crd.ResourceConfig.Hosting",
+        "NetworkingConfig" to "eu.appbahn.shared.crd.ResourceConfig.Networking",
+        "PortConfig" to "eu.appbahn.shared.crd.ResourceConfig.PortConfig",
+        "HealthCheckConfig" to "eu.appbahn.shared.crd.ResourceConfig.HealthCheck",
+        "ProbeConfig" to "eu.appbahn.shared.crd.ResourceConfig.Probe",
+        "HttpGetAction" to "eu.appbahn.shared.crd.ResourceConfig.HttpGetAction",
+        "TcpSocketAction" to "eu.appbahn.shared.crd.ResourceConfig.TcpSocketAction",
+        "ExecAction" to "eu.appbahn.shared.crd.ResourceConfig.ExecAction",
+        "SourceConfig" to "eu.appbahn.shared.crd.Source",
+        "DockerSource" to "eu.appbahn.shared.crd.DockerSource",
+        "GitSource" to "eu.appbahn.shared.crd.GitSource",
+        "PromotionSource" to "eu.appbahn.shared.crd.PromotionSource",
+        "SourceAuth" to "eu.appbahn.shared.crd.SourceAuth",
+        "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatus",
+        "ReplicaStatus" to "eu.appbahn.shared.crd.ResourceStatus.ReplicaStatus",
+        "CustomDomainStatus" to "eu.appbahn.shared.crd.ResourceStatus.CustomDomainStatus",
+        "ResourceCondition" to "eu.appbahn.shared.crd.ResourceStatus.ResourceCondition",
+        "LinkStatus" to "eu.appbahn.shared.crd.ResourceStatus.LinkStatus",
+        "LinkConfig" to "eu.appbahn.shared.crd.ResourceSpec.ResourceLink",
+    ))
 }
 
 // Internal API (operator ↔ platform)
@@ -51,6 +74,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
         "serializationLibrary" to "jackson",
         "dateLibrary" to "java8",
     ))
+    schemaMappings.set(mapOf(
+        "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
+        "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatus",
+        "LinkConfig" to "eu.appbahn.shared.crd.ResourceSpec.ResourceLink",
+    ))
 }
 
 sourceSets {
@@ -67,6 +95,7 @@ tasks.named("compileJava") {
 }
 
 dependencies {
+    implementation(project(":shared"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.swagger.annotations)
     implementation(libs.jackson.databind.nullable)

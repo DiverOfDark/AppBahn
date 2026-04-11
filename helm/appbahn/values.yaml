@@ -40,6 +40,12 @@ platform:
     limits:
       cpu: "2"
       memory: 1Gi
+  quota:
+    maxResources: 50
+    maxCpuCores: 16.0
+    maxMemoryMb: 32768
+  license:
+    resourceLimit: 5
   branding:
     instanceName: "AppBahn"
     tagline: "Deploy and manage your applications"
@@ -52,6 +58,17 @@ operator:
     tag: latest
     pullPolicy: IfNotPresent
   replicas: 1
+  clusterName: "local"
+  ingressClassName: ""
+  clusterIssuer: ""
+  resourceRequestFraction: 0.25
+  fullSyncIntervalMs: 300000
+  fullSyncInitialDelayMs: 60000
+  security:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    dropCapabilities: "ALL"
   platformApi:
     endpoint: ""
   auth:

@@ -137,11 +137,19 @@ components:
         type:
           type: string
         config:
-          type: object
+          $ref: '#/components/schemas/ResourceConfig'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkConfig'
         status:
           type: string
+          enum: [PENDING, READY, RESTARTING, DEGRADED, ERROR, STOPPED]
         statusDetail:
-          type: object
+          $ref: '#/components/schemas/ResourceStatusDetail'
+        createdAt:
+          type: string
+          format: date-time
 
     FullResourceSyncRequest:
       type: object
@@ -153,3 +161,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ResourceSyncRequest'
+
+    # Stubs — mapped to public API models via importMappings in build.gradle.kts
+    ResourceConfig:
+      type: object
+      description: See public-api.yaml ResourceConfig
+    ResourceStatusDetail:
+      type: object
+      description: See public-api.yaml ResourceStatusDetail
+    LinkConfig:
+      type: object
+      description: See public-api.yaml LinkConfig

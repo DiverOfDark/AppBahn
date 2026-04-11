@@ -32,7 +32,7 @@ AppBahn requires an OpenID Connect (OIDC) provider for authentication. Any provi
 
 - **Client type**: Confidential (with client secret)
 - **Grant type**: Client Credentials
-- **Scopes**: `openid`
+- **Scopes**: `openid`, `internal` (the `internal` scope grants access to the platform's internal sync API)
 - **Audience**: Must match the platform's audience (default: `appbahn`)
 - No redirect URI needed
 
@@ -52,12 +52,17 @@ To grant users platform-wide admin access, configure `platform.auth.platformAdmi
 3. Create a client `appbahn-operator` with:
    - Client authentication: On
    - Authentication flow: Service accounts roles (Client Credentials)
-4. For **both** clients, add an audience mapper (Mappers → Add mapper → Audience):
+4. Create a client scope `internal` (Client Scopes → Create):
+   - Name: `internal`
+   - Type: Optional
+   - Include in token scope: On
+   - Assign this scope to the `appbahn-operator` client (Client → Client Scopes → Add client scope)
+5. For **both** clients, add an audience mapper (Mappers → Add mapper → Audience):
    - Included Custom Audience: `appbahn`
    - Add to ID token: On
    - Add to access token: On
-5. Create a group `appbahn-admins` and add your admin users
-6. Add a group mapper to the `appbahn` client scope to include `groups` in the token
+6. Create a group `appbahn-admins` and add your admin users
+7. Add a group mapper to the `appbahn` client scope to include `groups` in the token
 
 Your issuer URL will be: `https://keycloak.example.com/realms/appbahn`
 
@@ -88,15 +93,24 @@ Create a `values.yaml` with your configuration:
 | `platform.auth.audience`            | No       | `appbahn`                                 | Expected JWT audience claim — tokens without this `aud` are rejected             |
 | `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
 | `platform.namespacePrefix`          | No       | `abp`                                     | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`)                          |
+| `platform.domain.base`              | No       | `appbahn.example.com`                     | Base domain for auto-generated resource URLs (`{slug}.{baseDomain}`)             |
+| `platform.branding.instanceName`    | No       | `AppBahn`                                 | Instance name shown in the console UI                                            |
+| `platform.branding.tagline`         | No       | `Deploy and manage your applications`     | Tagline shown on the login page                                                  |
+| `platform.branding.logoUrl`         | No       |                                           | URL to a custom logo image                                                       |
+| `platform.branding.loginButtonText` | No       | `Log in with SSO`                         | Text on the login button                                                         |
 
 #### Operator
 
-| Value                           | Required | Default            | Description                                 |
-| ------------------------------- | -------- | ------------------ | ------------------------------------------- |
-| `operator.platformApi.endpoint` | No       | auto-detected      | URL of the platform API (internal service)  |
-| `operator.auth.clientId`        | Yes      | `appbahn-operator` | OAuth2 client ID (client credentials grant) |
-| `operator.auth.clientSecret`    | Yes      |                    | OAuth2 client secret                        |
-| `operator.auth.tokenEndpoint`   | Yes      |                    | OIDC token endpoint URL                     |
+| Value                              | Required | Default            | Description                                                                     |
+| ---------------------------------- | -------- | ------------------ | ------------------------------------------------------------------------------- |
+| `operator.platformApi.endpoint`    | No       | auto-detected      | URL of the platform API (internal service)                                      |
+| `operator.auth.clientId`           | Yes      | `appbahn-operator` | OAuth2 client ID (client credentials grant)                                     |
+| `operator.auth.clientSecret`       | Yes      |                    | OAuth2 client secret                                                            |
+| `operator.auth.tokenEndpoint`      | Yes      |                    | OIDC token endpoint URL                                                         |
+| `operator.clusterName`             | No       | `local`            | Cluster name reported by the operator (set for multi-cluster deployments)       |
+| `operator.ingressClassName`        | No       |                    | Ingress class for operator-created Ingresses (required if cluster has multiple) |
+| `operator.clusterIssuer`           | No       |                    | cert-manager ClusterIssuer for TLS certificates                                 |
+| `operator.resourceRequestFraction` | No       | `0.25`             | Fraction of resource limits set as requests (e.g. 0.25 = 25%)                   |
 
 ### 3. Example `values.yaml`
 
@@ -112,9 +126,14 @@ platform:
     clientSecret: my-client-secret
     platformAdminGroups:
       - appbahn-admins
+  domain:
+    base: appbahn.example.com
   namespacePrefix: abp
 
 operator:
+  clusterName: production
+  ingressClassName: nginx
+  clusterIssuer: letsencrypt
   auth:
     clientId: appbahn-operator
     clientSecret: operator-secret

@@ -30,6 +30,7 @@ type Deployment struct {
 	IsPrimary          *bool      `json:"isPrimary,omitempty"`
 	SourceDeploymentId *string    `json:"sourceDeploymentId,omitempty"`
 	CreatedAt          *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt          *time.Time `json:"updatedAt,omitempty"`
 }
 
 // NewDeployment instantiates a new Deployment object
@@ -369,6 +370,38 @@ func (o *Deployment) SetCreatedAt(v time.Time) {
 	o.CreatedAt = &v
 }
 
+// GetUpdatedAt returns the UpdatedAt field value if set, zero value otherwise.
+func (o *Deployment) GetUpdatedAt() time.Time {
+	if o == nil || IsNil(o.UpdatedAt) {
+		var ret time.Time
+		return ret
+	}
+	return *o.UpdatedAt
+}
+
+// GetUpdatedAtOk returns a tuple with the UpdatedAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Deployment) GetUpdatedAtOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.UpdatedAt) {
+		return nil, false
+	}
+	return o.UpdatedAt, true
+}
+
+// HasUpdatedAt returns a boolean if a field has been set.
+func (o *Deployment) HasUpdatedAt() bool {
+	if o != nil && !IsNil(o.UpdatedAt) {
+		return true
+	}
+
+	return false
+}
+
+// SetUpdatedAt gets a reference to the given time.Time and assigns it to the UpdatedAt field.
+func (o *Deployment) SetUpdatedAt(v time.Time) {
+	o.UpdatedAt = &v
+}
+
 func (o Deployment) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -408,6 +441,9 @@ func (o Deployment) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.CreatedAt) {
 		toSerialize["createdAt"] = o.CreatedAt
+	}
+	if !IsNil(o.UpdatedAt) {
+		toSerialize["updatedAt"] = o.UpdatedAt
 	}
 	return toSerialize, nil
 }

@@ -17,4 +17,8 @@ public interface EnvironmentRepository extends JpaRepository<EnvironmentEntity, 
     List<EnvironmentEntity> findByProjectId(UUID projectId);
 
     boolean existsByProjectId(UUID projectId);
+
+    List<EnvironmentEntity> findByProjectIdIn(List<UUID> projectIds);
+
+    List<EnvironmentEntity> findByTargetCluster(String targetCluster);
 }

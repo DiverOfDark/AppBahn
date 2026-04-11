@@ -8,6 +8,8 @@ import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import EntityCard from '@/components/EntityCard.vue'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
@@ -96,12 +98,7 @@ onMounted(fetchData)
       </template>
     </PageHeader>
 
-    <!-- Workspace slug breadcrumb -->
-    <div class="breadcrumb">
-      <router-link to="/console" class="breadcrumb-link">Workspaces</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">{{ wsSlug }}</span>
-    </div>
+    <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug }, wsSlug, true)" />
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">

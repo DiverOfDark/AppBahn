@@ -21,11 +21,11 @@ var _ MappedNullable = &CreateResourceRequest{}
 
 // CreateResourceRequest struct for CreateResourceRequest
 type CreateResourceRequest struct {
-	Name            string                   `json:"name"`
-	Type            string                   `json:"type"`
-	EnvironmentSlug string                   `json:"environmentSlug"`
-	Config          map[string]interface{}   `json:"config"`
-	Links           []map[string]interface{} `json:"links,omitempty"`
+	Name            string         `json:"name"`
+	Type            string         `json:"type"`
+	EnvironmentSlug string         `json:"environmentSlug"`
+	Config          ResourceConfig `json:"config"`
+	Links           []LinkConfig   `json:"links,omitempty"`
 }
 
 type _CreateResourceRequest CreateResourceRequest
@@ -34,7 +34,7 @@ type _CreateResourceRequest CreateResourceRequest
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateResourceRequest(name string, type_ string, environmentSlug string, config map[string]interface{}) *CreateResourceRequest {
+func NewCreateResourceRequest(name string, type_ string, environmentSlug string, config ResourceConfig) *CreateResourceRequest {
 	this := CreateResourceRequest{}
 	this.Name = name
 	this.Type = type_
@@ -124,9 +124,9 @@ func (o *CreateResourceRequest) SetEnvironmentSlug(v string) {
 }
 
 // GetConfig returns the Config field value
-func (o *CreateResourceRequest) GetConfig() map[string]interface{} {
+func (o *CreateResourceRequest) GetConfig() ResourceConfig {
 	if o == nil {
-		var ret map[string]interface{}
+		var ret ResourceConfig
 		return ret
 	}
 
@@ -135,22 +135,22 @@ func (o *CreateResourceRequest) GetConfig() map[string]interface{} {
 
 // GetConfigOk returns a tuple with the Config field value
 // and a boolean to check if the value has been set.
-func (o *CreateResourceRequest) GetConfigOk() (map[string]interface{}, bool) {
+func (o *CreateResourceRequest) GetConfigOk() (*ResourceConfig, bool) {
 	if o == nil {
-		return map[string]interface{}{}, false
+		return nil, false
 	}
-	return o.Config, true
+	return &o.Config, true
 }
 
 // SetConfig sets field value
-func (o *CreateResourceRequest) SetConfig(v map[string]interface{}) {
+func (o *CreateResourceRequest) SetConfig(v ResourceConfig) {
 	o.Config = v
 }
 
 // GetLinks returns the Links field value if set, zero value otherwise.
-func (o *CreateResourceRequest) GetLinks() []map[string]interface{} {
+func (o *CreateResourceRequest) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
-		var ret []map[string]interface{}
+		var ret []LinkConfig
 		return ret
 	}
 	return o.Links
@@ -158,7 +158,7 @@ func (o *CreateResourceRequest) GetLinks() []map[string]interface{} {
 
 // GetLinksOk returns a tuple with the Links field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateResourceRequest) GetLinksOk() ([]map[string]interface{}, bool) {
+func (o *CreateResourceRequest) GetLinksOk() ([]LinkConfig, bool) {
 	if o == nil || IsNil(o.Links) {
 		return nil, false
 	}
@@ -174,8 +174,8 @@ func (o *CreateResourceRequest) HasLinks() bool {
 	return false
 }
 
-// SetLinks gets a reference to the given []map[string]interface{} and assigns it to the Links field.
-func (o *CreateResourceRequest) SetLinks(v []map[string]interface{}) {
+// SetLinks gets a reference to the given []LinkConfig and assigns it to the Links field.
+func (o *CreateResourceRequest) SetLinks(v []LinkConfig) {
 	o.Links = v
 }
 

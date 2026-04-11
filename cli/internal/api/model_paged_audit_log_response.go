@@ -19,11 +19,11 @@ var _ MappedNullable = &PagedAuditLogResponse{}
 
 // PagedAuditLogResponse struct for PagedAuditLogResponse
 type PagedAuditLogResponse struct {
-	Content       []AuditLogEntry `json:"content,omitempty"`
 	Page          *int32          `json:"page,omitempty"`
 	Size          *int32          `json:"size,omitempty"`
 	TotalElements *int64          `json:"totalElements,omitempty"`
 	TotalPages    *int32          `json:"totalPages,omitempty"`
+	Content       []AuditLogEntry `json:"content,omitempty"`
 }
 
 // NewPagedAuditLogResponse instantiates a new PagedAuditLogResponse object
@@ -41,38 +41,6 @@ func NewPagedAuditLogResponse() *PagedAuditLogResponse {
 func NewPagedAuditLogResponseWithDefaults() *PagedAuditLogResponse {
 	this := PagedAuditLogResponse{}
 	return &this
-}
-
-// GetContent returns the Content field value if set, zero value otherwise.
-func (o *PagedAuditLogResponse) GetContent() []AuditLogEntry {
-	if o == nil || IsNil(o.Content) {
-		var ret []AuditLogEntry
-		return ret
-	}
-	return o.Content
-}
-
-// GetContentOk returns a tuple with the Content field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *PagedAuditLogResponse) GetContentOk() ([]AuditLogEntry, bool) {
-	if o == nil || IsNil(o.Content) {
-		return nil, false
-	}
-	return o.Content, true
-}
-
-// HasContent returns a boolean if a field has been set.
-func (o *PagedAuditLogResponse) HasContent() bool {
-	if o != nil && !IsNil(o.Content) {
-		return true
-	}
-
-	return false
-}
-
-// SetContent gets a reference to the given []AuditLogEntry and assigns it to the Content field.
-func (o *PagedAuditLogResponse) SetContent(v []AuditLogEntry) {
-	o.Content = v
 }
 
 // GetPage returns the Page field value if set, zero value otherwise.
@@ -203,6 +171,38 @@ func (o *PagedAuditLogResponse) SetTotalPages(v int32) {
 	o.TotalPages = &v
 }
 
+// GetContent returns the Content field value if set, zero value otherwise.
+func (o *PagedAuditLogResponse) GetContent() []AuditLogEntry {
+	if o == nil || IsNil(o.Content) {
+		var ret []AuditLogEntry
+		return ret
+	}
+	return o.Content
+}
+
+// GetContentOk returns a tuple with the Content field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PagedAuditLogResponse) GetContentOk() ([]AuditLogEntry, bool) {
+	if o == nil || IsNil(o.Content) {
+		return nil, false
+	}
+	return o.Content, true
+}
+
+// HasContent returns a boolean if a field has been set.
+func (o *PagedAuditLogResponse) HasContent() bool {
+	if o != nil && !IsNil(o.Content) {
+		return true
+	}
+
+	return false
+}
+
+// SetContent gets a reference to the given []AuditLogEntry and assigns it to the Content field.
+func (o *PagedAuditLogResponse) SetContent(v []AuditLogEntry) {
+	o.Content = v
+}
+
 func (o PagedAuditLogResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -213,9 +213,6 @@ func (o PagedAuditLogResponse) MarshalJSON() ([]byte, error) {
 
 func (o PagedAuditLogResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Content) {
-		toSerialize["content"] = o.Content
-	}
 	if !IsNil(o.Page) {
 		toSerialize["page"] = o.Page
 	}
@@ -227,6 +224,9 @@ func (o PagedAuditLogResponse) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.TotalPages) {
 		toSerialize["totalPages"] = o.TotalPages
+	}
+	if !IsNil(o.Content) {
+		toSerialize["content"] = o.Content
 	}
 	return toSerialize, nil
 }

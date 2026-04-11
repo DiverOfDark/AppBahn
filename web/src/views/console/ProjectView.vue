@@ -8,6 +8,9 @@ import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import DataTable from '@/components/DataTable.vue'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
+import { formatDate } from '@/utils/format'
 
 type Project = components['schemas']['Project']
 type Environment = components['schemas']['Environment']
@@ -75,15 +78,6 @@ function onPageChange(p: number) {
   fetchData()
 }
 
-function formatDate(iso?: string): string {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 watch(
   () => [route.params.wsSlug, route.params.projSlug],
   ([ws, proj]) => {
@@ -107,14 +101,7 @@ onMounted(fetchData)
       </template>
     </PageHeader>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <router-link to="/console" class="breadcrumb-link">Workspaces</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <router-link :to="`/console/${wsSlug}`" class="breadcrumb-link">{{ wsSlug }}</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">{{ projSlug }}</span>
-    </div>
+    <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug, projSlug }, projSlug, true)" />
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
@@ -151,7 +138,19 @@ onMounted(fetchData)
             v-for="env in environments"
             :key="env.slug"
             class="table-row-link"
-            @click="$router.push(`/console/${wsSlug}/${projSlug}/${env.slug}`)"
+            tabindex="0"
+            @click="
+              $router.push({
+                name: 'environment',
+                params: { wsSlug, projSlug, envSlug: env.slug },
+              })
+            "
+            @keydown.enter="
+              $router.push({
+                name: 'environment',
+                params: { wsSlug, projSlug, envSlug: env.slug },
+              })
+            "
           >
             <td class="cell-name">{{ env.name }}</td>
             <td class="cell-slug">{{ env.slug }}</td>

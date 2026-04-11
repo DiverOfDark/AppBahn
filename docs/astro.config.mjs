@@ -20,12 +20,14 @@ export default defineConfig({
 					label: 'Getting Started',
 					items: [
 						{ label: 'Getting Started', slug: 'getting-started' },
+						{ label: 'Your First Deployment', slug: 'first-deployment' },
 					],
 				},
 				{
 					label: 'Concepts',
 					items: [
 						{ label: 'Concepts', slug: 'concepts' },
+						{ label: 'Resource Types', slug: 'resource-types' },
 					],
 				},
 				{

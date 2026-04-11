@@ -52,6 +52,9 @@ public class SecurityConfig {
                         // OAuth2 login endpoints handled by Spring
                         .requestMatchers("/oauth2/**", "/login/oauth2/**")
                         .permitAll()
+                        // Internal API — only accessible by operator (client credentials with 'internal' scope)
+                        .requestMatchers("/api/v1/internal/**")
+                        .hasAuthority("SCOPE_internal")
                         // All other endpoints require authentication
                         .anyRequest()
                         .authenticated())

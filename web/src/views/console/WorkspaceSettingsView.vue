@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
@@ -8,6 +8,10 @@ import DataTable from '@/components/DataTable.vue'
 import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import ConfirmButton from '@/components/ConfirmButton.vue'
+import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
+import { formatDate } from '@/utils/format'
 
 type Workspace = components['schemas']['Workspace']
 type WorkspaceMember = components['schemas']['WorkspaceMember']
@@ -76,8 +80,6 @@ const runtimeClassName = ref('')
 const auditEntries = ref<AuditLogEntry[]>([])
 const auditPage = ref(0)
 const auditTotalPages = ref(0)
-
-const breadcrumbWsLink = computed(() => `/console/${wsSlug.value}`)
 
 // ── Fetch functions ──────────────────────────────────────────────────
 
@@ -216,9 +218,7 @@ async function updateMemberRole(userId: string, role: Role) {
   }
 }
 
-async function removeMember(userId: string, email?: string) {
-  const confirmed = window.confirm(`Remove ${email ?? 'this member'} from the workspace?`)
-  if (!confirmed) return
+async function removeMember(userId: string) {
   try {
     await api.DELETE('/workspaces/{slug}/members/{userId}', {
       params: { path: { slug: wsSlug.value, userId } },
@@ -263,8 +263,6 @@ async function updateMappingRole(mappingId: string, role: Role) {
 }
 
 async function deleteMapping(mappingId: string) {
-  const confirmed = window.confirm('Delete this group mapping?')
-  if (!confirmed) return
   try {
     await api.DELETE('/workspaces/{slug}/group-mappings/{mappingId}', {
       params: { path: { slug: wsSlug.value, mappingId } },
@@ -349,20 +347,6 @@ function switchTab(tab: Tab) {
   fetchTabData()
 }
 
-// ── Format helpers ───────────────────────────────────────────────────
-
-function formatDate(iso?: string): string {
-  if (!iso) return '--'
-  const d = new Date(iso)
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 // ── Lifecycle ────────────────────────────────────────────────────────
 
 watch(
@@ -382,14 +366,7 @@ onMounted(fetchTabData)
   <div>
     <PageHeader :title="`${workspace?.name ?? 'Workspace'} Settings`" />
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <router-link to="/console" class="breadcrumb-link">Workspaces</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <router-link :to="breadcrumbWsLink" class="breadcrumb-link">{{ wsSlug }}</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">Settings</span>
-    </div>
+    <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug }, 'Settings', true)" />
 
     <!-- Tab bar -->
     <div class="tab-bar">
@@ -457,9 +434,12 @@ onMounted(fetchTabData)
               </select>
             </td>
             <td>
-              <button class="btn-danger btn-sm" @click="removeMember(member.userId!, member.email)">
-                Remove
-              </button>
+              <ConfirmButton
+                label="Remove"
+                confirm-label="Confirm Remove"
+                btn-class="btn-danger btn-sm"
+                @confirm="removeMember(member.userId!)"
+              />
             </td>
           </tr>
         </template>
@@ -523,7 +503,7 @@ onMounted(fetchTabData)
               </select>
             </td>
             <td>
-              <button class="btn-danger btn-sm" @click="deleteMapping(mapping.id!)">Delete</button>
+              <ConfirmButton btn-class="btn-danger btn-sm" @confirm="deleteMapping(mapping.id!)" />
             </td>
           </tr>
         </template>
@@ -771,12 +751,6 @@ onMounted(fetchTabData)
 
 .form-actions {
   padding-top: 8px;
-}
-
-.form-hint {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-  margin-top: -8px;
 }
 
 .role-select {

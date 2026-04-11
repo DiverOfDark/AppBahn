@@ -1258,11 +1258,22 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    PagedResponse: {
+      page?: number
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      totalPages?: number
+    }
     ErrorResponse: {
       status: number
       error: string
       message: string
       details?: string[]
+      current?: number
+      limit?: number
+      dimension?: string
+      level?: string
     }
     Workspace: {
       /** Format: uuid */
@@ -1283,13 +1294,8 @@ export interface components {
     UpdateWorkspaceRequest: {
       name?: string
     }
-    PagedWorkspaceResponse: {
+    PagedWorkspaceResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['Workspace'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     Project: {
       /** Format: uuid */
@@ -1311,13 +1317,8 @@ export interface components {
     UpdateProjectRequest: {
       name?: string
     }
-    PagedProjectResponse: {
+    PagedProjectResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['Project'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     Environment: {
       /** Format: uuid */
@@ -1344,13 +1345,8 @@ export interface components {
       name?: string
       description?: string
     }
-    PagedEnvironmentResponse: {
+    PagedEnvironmentResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['Environment'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     ApprovalGatesConfig: {
       enabled?: boolean
@@ -1378,7 +1374,7 @@ export interface components {
       name: string
       /** @enum {string} */
       role: 'EDITOR' | 'VIEWER'
-      expiresInDays?: number
+      expiresInDays: number
     }
     CreateEnvironmentTokenResponse: {
       /** Format: uuid */
@@ -1395,38 +1391,268 @@ export interface components {
       name?: string
       type?: string
       environmentSlug?: string
-      config?: Record<string, never>
-      links?: Record<string, never>[]
+      config?: components['schemas']['ResourceConfig']
+      links?: components['schemas']['LinkConfig'][]
       /** @enum {string} */
       status?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
-      statusDetail?: Record<string, never>
+      statusDetail?: components['schemas']['ResourceStatusDetail']
       /** Format: date-time */
       lastSyncedAt?: string
+      /** Format: date-time */
+      createdAt?: string
+      /** Format: date-time */
+      updatedAt?: string
     }
     CreateResourceRequest: {
       name: string
       type: string
       environmentSlug: string
-      config: Record<string, never>
-      links?: Record<string, never>[]
+      config: components['schemas']['ResourceConfig']
+      links?: components['schemas']['LinkConfig'][]
     }
     UpdateResourceRequest: {
       name?: string
-      config?: Record<string, never>
-      links?: Record<string, never>[]
-      confirmDestructive?: boolean
+      config?: components['schemas']['ResourceConfig']
+      links?: components['schemas']['LinkConfig'][]
     }
     ResourceCreatedResponse: {
       slug?: string
       environmentSlug?: string
     }
-    PagedResourceResponse: {
+    PagedResourceResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['Resource'][]
-      page?: number
-      size?: number
+    }
+    ResourceConfig: {
+      source?: components['schemas']['SourceConfig']
+      hosting?: components['schemas']['HostingConfig']
+      networking?: components['schemas']['NetworkingConfig']
+      healthCheck?: components['schemas']['HealthCheckConfig']
+      env?: {
+        [key: string]: string
+      }
+      /** @enum {string} */
+      runMode?: 'continuous' | 'cron'
+    }
+    SourceConfig:
+      | components['schemas']['DockerSource']
+      | components['schemas']['GitSource']
+      | components['schemas']['PromotionSource']
+    SourceBase: {
+      type: string
+      /** @description Polling interval, e.g. '5m'. '0' disables polling. */
+      pollInterval?: string
+      webhookEnabled?: boolean
+    }
+    DockerSource: components['schemas']['SourceBase'] & {
+      image: string
+      tag?: string
+      registryUrl?: string
+      /** @description ESO path for registry credentials */
+      credentialRef?: string
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'docker'
+    }
+    GitSource: components['schemas']['SourceBase'] & {
+      url: string
+      branch: string
+      /** @description Subdirectory within repo */
+      path?: string
+      auth?: components['schemas']['SourceAuth']
+      buildConfig?: components['schemas']['BuildConfig']
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'git'
+    }
+    PromotionSource: components['schemas']['SourceBase'] & {
+      /** @description Slug of the source environment */
+      sourceEnvironment: string
+      /** @description Slug of the source resource */
+      sourceResource: string
+      /** @description Auto-trigger deployment on source success */
+      autoPromote?: boolean
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'promotion'
+    }
+    SourceAuth: {
+      /** @enum {string} */
+      type: 'none' | 'basic' | 'ssh_key'
+      /** @description ESO path for credentials */
+      credentialRef?: string
+    }
+    BuildConfig:
+      | components['schemas']['PeelboxBuildConfig']
+      | components['schemas']['BuildpackBuildConfig']
+      | components['schemas']['RailpackBuildConfig']
+      | components['schemas']['DockerfileBuildConfig']
+    BuildConfigBase: {
+      type: string
+    }
+    PeelboxBuildConfig: components['schemas']['BuildConfigBase'] & {
+      universalBuild?: Record<string, never>[]
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'peelbox'
+    }
+    BuildpackBuildConfig: components['schemas']['BuildConfigBase'] & {
+      builder?: string
+      buildVars?: {
+        [key: string]: string
+      }
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'buildpack'
+    }
+    RailpackBuildConfig: components['schemas']['BuildConfigBase'] & {
+      provider?: string
+      buildVars?: {
+        [key: string]: string
+      }
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'railpack'
+    }
+    DockerfileBuildConfig: components['schemas']['BuildConfigBase'] & {
+      /** @description Path to Dockerfile relative to source root */
+      path?: string
+      /** @description Multi-stage build target */
+      target?: string
+      buildArgs?: {
+        [key: string]: string
+      }
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'dockerfile'
+    }
+    HostingConfig: {
+      /** @description Kubernetes CPU quantity, e.g. '500m' or '2' */
+      cpu?: string
+      /** @description Kubernetes memory quantity, e.g. '256Mi' or '1Gi' */
+      memory?: string
+      /** @description Minimum replicas (baseline count); used with maxReplicas for autoscaling */
+      minReplicas?: number
+      /** @description Maximum replicas for autoscaling; used for worst-case quota calculation */
+      maxReplicas?: number
+    }
+    NetworkingConfig: {
+      ports?: components['schemas']['PortConfig'][]
+    }
+    PortConfig: {
+      port?: number
+      /** @enum {string} */
+      expose?: 'ingress' | 'tcp' | 'none'
+      /** @description Custom domain for this port (only when expose=ingress; auto-generated if omitted) */
+      domain?: string
+    }
+    HealthCheckConfig: {
+      readiness?: components['schemas']['ProbeConfig']
+      liveness?: components['schemas']['ProbeConfig']
+      startup?: components['schemas']['ProbeConfig']
+    }
+    ProbeConfig: {
+      httpGet?: components['schemas']['HttpGetAction']
+      tcpSocket?: components['schemas']['TcpSocketAction']
+      exec?: components['schemas']['ExecAction']
+      initialDelaySeconds?: number
+      periodSeconds?: number
+      failureThreshold?: number
+    }
+    HttpGetAction: {
+      path?: string
+      port?: number
+    }
+    TcpSocketAction: {
+      port?: number
+    }
+    ExecAction: {
+      command?: string[]
+    }
+    LinkConfig: {
+      resource: string
+      secret?: string
+      env?: {
+        [key: string]: string
+      }
+    }
+    ResourceStatusDetail: {
+      phase?: string
+      message?: string
       /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
+      observedGeneration?: number
+      replicas?: components['schemas']['ReplicaStatus']
+      conditions?: components['schemas']['ResourceCondition'][]
+      customDomains?: components['schemas']['CustomDomainStatus'][]
+      links?: components['schemas']['LinkStatus'][]
+      /** Format: uuid */
+      primaryDeploymentId?: string
+      primaryImage?: string
+      /** Format: date-time */
+      lastDeploymentTime?: string
+      /** Format: date-time */
+      lastSyncTime?: string
+      /** Format: uuid */
+      latestDeploymentId?: string
+      /** @enum {string} */
+      latestDeploymentStatus?:
+        | 'QUEUED'
+        | 'AWAITING_APPROVAL'
+        | 'BUILDING'
+        | 'COPYING_IMAGE'
+        | 'DEPLOYING'
+        | 'SUCCEEDED'
+        | 'FAILED'
+        | 'REJECTED'
+    }
+    ReplicaStatus: {
+      desired?: number
+      ready?: number
+      updated?: number
+      available?: number
+    }
+    ResourceCondition: {
+      type?: string
+      status?: string
+      /** Format: date-time */
+      lastUpdateTime?: string
+      reason?: string
+      message?: string
+    }
+    CustomDomainStatus: {
+      domain?: string
+      port?: number
+      status?: string
+      dnsCname?: string
+      tlsIssuer?: string
+      /** Format: date-time */
+      tlsExpiresAt?: string
+    }
+    LinkStatus: {
+      resource?: string
+      status?: string
+      /** Format: date-time */
+      lastSyncTime?: string
     }
     Deployment: {
       /** Format: uuid */
@@ -1452,21 +1678,24 @@ export interface components {
       sourceDeploymentId?: string
       /** Format: date-time */
       createdAt?: string
+      /** Format: date-time */
+      updatedAt?: string
     }
     TriggerDeploymentRequest: {
       sourceRef?: string
+    }
+    TriggerDeploymentResponse: {
+      /** Format: uuid */
+      deploymentId: string
+      /** @enum {string} */
+      status: 'QUEUED' | 'DEPLOYING' | 'DUPLICATE'
     }
     RollbackRequest: {
       /** Format: uuid */
       deploymentId: string
     }
-    PagedDeploymentResponse: {
+    PagedDeploymentResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['Deployment'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     DeploymentApproval: {
       /** Format: uuid */
@@ -1486,13 +1715,8 @@ export interface components {
       email?: string
       oidcSubjectId?: string
     }
-    PagedUserResponse: {
+    PagedUserResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['User'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     WorkspaceMember: {
       /** Format: uuid */
@@ -1626,13 +1850,25 @@ export interface components {
       /** Format: date-time */
       lastSyncedAt?: string
     }
+    /** @description Admin configuration update for a resource type */
+    UpdateResourceTypeAdminConfigRequest: {
+      storageClass?: string
+      labels?: {
+        [key: string]: string
+      }
+    } & {
+      [key: string]: unknown
+    }
     ResourceTypeInfo: {
       type?: string
       displayName?: string
       description?: string
       /** @enum {string} */
       category?: 'deployment' | 'database' | 'storage' | 'messaging'
-      configSchema?: Record<string, never>
+      /** @description JSON Schema describing the resource type configuration */
+      configSchema?: {
+        [key: string]: unknown
+      }
       available?: boolean
     }
     AuditLogEntry: {
@@ -1651,13 +1887,8 @@ export interface components {
       diff?: Record<string, never>
       requestId?: string
     }
-    PagedAuditLogResponse: {
+    PagedAuditLogResponse: components['schemas']['PagedResponse'] & {
       content?: components['schemas']['AuditLogEntry'][]
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
     }
     BuildDetectionJob: {
       /** Format: uuid */
@@ -1771,6 +2002,11 @@ export interface components {
     }
     PlatformConfig: {
       domain?: string
+      /**
+       * @description Kubernetes namespace prefix used for environments
+       * @example abp
+       */
+      namespacePrefix?: string
       registry?: components['schemas']['RegistryConfig']
       branding?: {
         /**
@@ -1847,6 +2083,15 @@ export interface components {
     }
     /** @description Unprocessable entity */
     UnprocessableEntity: {
+      headers: {
+        [name: string]: unknown
+      }
+      content: {
+        'application/json': components['schemas']['ErrorResponse']
+      }
+    }
+    /** @description Resource limit reached */
+    PaymentRequired: {
       headers: {
         [name: string]: unknown
       }
@@ -3315,6 +3560,7 @@ export interface operations {
       }
       400: components['responses']['BadRequest']
       401: components['responses']['Unauthorized']
+      402: components['responses']['PaymentRequired']
       403: components['responses']['Forbidden']
       409: components['responses']['Conflict']
       422: components['responses']['UnprocessableEntity']
@@ -3570,6 +3816,8 @@ export interface operations {
       query?: {
         page?: number
         size?: number
+        /** @description Sort field and direction (e.g. createdAt,desc). Defaults to createdAt,desc. */
+        sort?: string
       }
       header?: never
       path: {
@@ -3608,13 +3856,13 @@ export interface operations {
       }
     }
     responses: {
-      /** @description Deployment triggered */
-      201: {
+      /** @description Deployment accepted */
+      202: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Deployment']
+          'application/json': components['schemas']['TriggerDeploymentResponse']
         }
       }
       400: components['responses']['BadRequest']
@@ -4606,7 +4854,7 @@ export interface operations {
     }
     requestBody: {
       content: {
-        'application/json': Record<string, never>
+        'application/json': components['schemas']['UpdateResourceTypeAdminConfigRequest']
       }
     }
     responses: {

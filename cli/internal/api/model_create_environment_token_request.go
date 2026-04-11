@@ -23,7 +23,7 @@ var _ MappedNullable = &CreateEnvironmentTokenRequest{}
 type CreateEnvironmentTokenRequest struct {
 	Name          string `json:"name"`
 	Role          string `json:"role"`
-	ExpiresInDays *int32 `json:"expiresInDays,omitempty"`
+	ExpiresInDays int32  `json:"expiresInDays"`
 }
 
 type _CreateEnvironmentTokenRequest CreateEnvironmentTokenRequest
@@ -32,10 +32,11 @@ type _CreateEnvironmentTokenRequest CreateEnvironmentTokenRequest
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateEnvironmentTokenRequest(name string, role string) *CreateEnvironmentTokenRequest {
+func NewCreateEnvironmentTokenRequest(name string, role string, expiresInDays int32) *CreateEnvironmentTokenRequest {
 	this := CreateEnvironmentTokenRequest{}
 	this.Name = name
 	this.Role = role
+	this.ExpiresInDays = expiresInDays
 	return &this
 }
 
@@ -95,36 +96,28 @@ func (o *CreateEnvironmentTokenRequest) SetRole(v string) {
 	o.Role = v
 }
 
-// GetExpiresInDays returns the ExpiresInDays field value if set, zero value otherwise.
+// GetExpiresInDays returns the ExpiresInDays field value
 func (o *CreateEnvironmentTokenRequest) GetExpiresInDays() int32 {
-	if o == nil || IsNil(o.ExpiresInDays) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.ExpiresInDays
+
+	return o.ExpiresInDays
 }
 
-// GetExpiresInDaysOk returns a tuple with the ExpiresInDays field value if set, nil otherwise
+// GetExpiresInDaysOk returns a tuple with the ExpiresInDays field value
 // and a boolean to check if the value has been set.
 func (o *CreateEnvironmentTokenRequest) GetExpiresInDaysOk() (*int32, bool) {
-	if o == nil || IsNil(o.ExpiresInDays) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ExpiresInDays, true
+	return &o.ExpiresInDays, true
 }
 
-// HasExpiresInDays returns a boolean if a field has been set.
-func (o *CreateEnvironmentTokenRequest) HasExpiresInDays() bool {
-	if o != nil && !IsNil(o.ExpiresInDays) {
-		return true
-	}
-
-	return false
-}
-
-// SetExpiresInDays gets a reference to the given int32 and assigns it to the ExpiresInDays field.
+// SetExpiresInDays sets field value
 func (o *CreateEnvironmentTokenRequest) SetExpiresInDays(v int32) {
-	o.ExpiresInDays = &v
+	o.ExpiresInDays = v
 }
 
 func (o CreateEnvironmentTokenRequest) MarshalJSON() ([]byte, error) {
@@ -139,9 +132,7 @@ func (o CreateEnvironmentTokenRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
 	toSerialize["role"] = o.Role
-	if !IsNil(o.ExpiresInDays) {
-		toSerialize["expiresInDays"] = o.ExpiresInDays
-	}
+	toSerialize["expiresInDays"] = o.ExpiresInDays
 	return toSerialize, nil
 }
 
@@ -152,6 +143,7 @@ func (o *CreateEnvironmentTokenRequest) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"name",
 		"role",
+		"expiresInDays",
 	}
 
 	allProperties := make(map[string]interface{})

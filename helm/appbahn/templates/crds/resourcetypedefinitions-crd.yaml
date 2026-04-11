@@ -18,8 +18,210 @@ spec:
           spec:
             properties:
               adminConfigSchema:
+                properties:
+                  additionalProperties:
+                    properties:
+                      additionalProperties:
+                        additionalProperties:
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      defaultValue:
+                        type: object
+                      description:
+                        type: string
+                      enumValues:
+                        items:
+                          type: string
+                        type: array
+                      items:
+                        additionalProperties:
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      maximum:
+                        type: integer
+                      minimum:
+                        type: integer
+                      pattern:
+                        type: string
+                      properties:
+                        additionalProperties:
+                          additionalProperties:
+                            type: object
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      required:
+                        items:
+                          type: string
+                        type: array
+                      title:
+                        type: string
+                      type:
+                        type: string
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  description:
+                    type: string
+                  properties:
+                    additionalProperties:
+                      properties:
+                        additionalProperties:
+                          additionalProperties:
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        defaultValue:
+                          type: object
+                        description:
+                          type: string
+                        enumValues:
+                          items:
+                            type: string
+                          type: array
+                        items:
+                          additionalProperties:
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        maximum:
+                          type: integer
+                        minimum:
+                          type: integer
+                        pattern:
+                          type: string
+                        properties:
+                          additionalProperties:
+                            additionalProperties:
+                              type: object
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        required:
+                          items:
+                            type: string
+                          type: array
+                        title:
+                          type: string
+                        type:
+                          type: string
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    type: object
+                  required:
+                    items:
+                      type: string
+                    type: array
+                  title:
+                    type: string
+                  type:
+                    type: string
+                type: object
                 x-kubernetes-preserve-unknown-fields: true
+              category:
+                type: string
               configSchema:
+                properties:
+                  additionalProperties:
+                    properties:
+                      additionalProperties:
+                        additionalProperties:
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      defaultValue:
+                        type: object
+                      description:
+                        type: string
+                      enumValues:
+                        items:
+                          type: string
+                        type: array
+                      items:
+                        additionalProperties:
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      maximum:
+                        type: integer
+                      minimum:
+                        type: integer
+                      pattern:
+                        type: string
+                      properties:
+                        additionalProperties:
+                          additionalProperties:
+                            type: object
+                          type: object
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      required:
+                        items:
+                          type: string
+                        type: array
+                      title:
+                        type: string
+                      type:
+                        type: string
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  description:
+                    type: string
+                  properties:
+                    additionalProperties:
+                      properties:
+                        additionalProperties:
+                          additionalProperties:
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        defaultValue:
+                          type: object
+                        description:
+                          type: string
+                        enumValues:
+                          items:
+                            type: string
+                          type: array
+                        items:
+                          additionalProperties:
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        maximum:
+                          type: integer
+                        minimum:
+                          type: integer
+                        pattern:
+                          type: string
+                        properties:
+                          additionalProperties:
+                            additionalProperties:
+                              type: object
+                            type: object
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        required:
+                          items:
+                            type: string
+                          type: array
+                        title:
+                          type: string
+                        type:
+                          type: string
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    type: object
+                  required:
+                    items:
+                      type: string
+                    type: array
+                  title:
+                    type: string
+                  type:
+                    type: string
+                type: object
                 x-kubernetes-preserve-unknown-fields: true
               connectionDisplay:
                 items:
@@ -56,6 +258,9 @@ spec:
                     type: boolean
                 type: object
               quotaDimensions:
+                additionalProperties:
+                  type: string
+                type: object
                 x-kubernetes-preserve-unknown-fields: true
               reconciliation:
                 properties:
@@ -69,8 +274,17 @@ spec:
                   specTemplate:
                     x-kubernetes-preserve-unknown-fields: true
                   statusMapping:
+                    properties:
+                      error:
+                        type: string
+                      message:
+                        type: string
+                      ready:
+                        type: string
+                    type: object
                     x-kubernetes-preserve-unknown-fields: true
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               secretOutput:
                 items:
                   properties:
@@ -90,6 +304,7 @@ spec:
                   type: object
                 type: array
             type: object
+            x-kubernetes-preserve-unknown-fields: true
           status:
             properties:
               available:

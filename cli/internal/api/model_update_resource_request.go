@@ -19,10 +19,9 @@ var _ MappedNullable = &UpdateResourceRequest{}
 
 // UpdateResourceRequest struct for UpdateResourceRequest
 type UpdateResourceRequest struct {
-	Name               *string                  `json:"name,omitempty"`
-	Config             map[string]interface{}   `json:"config,omitempty"`
-	Links              []map[string]interface{} `json:"links,omitempty"`
-	ConfirmDestructive *bool                    `json:"confirmDestructive,omitempty"`
+	Name   *string         `json:"name,omitempty"`
+	Config *ResourceConfig `json:"config,omitempty"`
+	Links  []LinkConfig    `json:"links,omitempty"`
 }
 
 // NewUpdateResourceRequest instantiates a new UpdateResourceRequest object
@@ -75,19 +74,19 @@ func (o *UpdateResourceRequest) SetName(v string) {
 }
 
 // GetConfig returns the Config field value if set, zero value otherwise.
-func (o *UpdateResourceRequest) GetConfig() map[string]interface{} {
+func (o *UpdateResourceRequest) GetConfig() ResourceConfig {
 	if o == nil || IsNil(o.Config) {
-		var ret map[string]interface{}
+		var ret ResourceConfig
 		return ret
 	}
-	return o.Config
+	return *o.Config
 }
 
 // GetConfigOk returns a tuple with the Config field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UpdateResourceRequest) GetConfigOk() (map[string]interface{}, bool) {
+func (o *UpdateResourceRequest) GetConfigOk() (*ResourceConfig, bool) {
 	if o == nil || IsNil(o.Config) {
-		return map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.Config, true
 }
@@ -101,15 +100,15 @@ func (o *UpdateResourceRequest) HasConfig() bool {
 	return false
 }
 
-// SetConfig gets a reference to the given map[string]interface{} and assigns it to the Config field.
-func (o *UpdateResourceRequest) SetConfig(v map[string]interface{}) {
-	o.Config = v
+// SetConfig gets a reference to the given ResourceConfig and assigns it to the Config field.
+func (o *UpdateResourceRequest) SetConfig(v ResourceConfig) {
+	o.Config = &v
 }
 
 // GetLinks returns the Links field value if set, zero value otherwise.
-func (o *UpdateResourceRequest) GetLinks() []map[string]interface{} {
+func (o *UpdateResourceRequest) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
-		var ret []map[string]interface{}
+		var ret []LinkConfig
 		return ret
 	}
 	return o.Links
@@ -117,7 +116,7 @@ func (o *UpdateResourceRequest) GetLinks() []map[string]interface{} {
 
 // GetLinksOk returns a tuple with the Links field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UpdateResourceRequest) GetLinksOk() ([]map[string]interface{}, bool) {
+func (o *UpdateResourceRequest) GetLinksOk() ([]LinkConfig, bool) {
 	if o == nil || IsNil(o.Links) {
 		return nil, false
 	}
@@ -133,41 +132,9 @@ func (o *UpdateResourceRequest) HasLinks() bool {
 	return false
 }
 
-// SetLinks gets a reference to the given []map[string]interface{} and assigns it to the Links field.
-func (o *UpdateResourceRequest) SetLinks(v []map[string]interface{}) {
+// SetLinks gets a reference to the given []LinkConfig and assigns it to the Links field.
+func (o *UpdateResourceRequest) SetLinks(v []LinkConfig) {
 	o.Links = v
-}
-
-// GetConfirmDestructive returns the ConfirmDestructive field value if set, zero value otherwise.
-func (o *UpdateResourceRequest) GetConfirmDestructive() bool {
-	if o == nil || IsNil(o.ConfirmDestructive) {
-		var ret bool
-		return ret
-	}
-	return *o.ConfirmDestructive
-}
-
-// GetConfirmDestructiveOk returns a tuple with the ConfirmDestructive field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *UpdateResourceRequest) GetConfirmDestructiveOk() (*bool, bool) {
-	if o == nil || IsNil(o.ConfirmDestructive) {
-		return nil, false
-	}
-	return o.ConfirmDestructive, true
-}
-
-// HasConfirmDestructive returns a boolean if a field has been set.
-func (o *UpdateResourceRequest) HasConfirmDestructive() bool {
-	if o != nil && !IsNil(o.ConfirmDestructive) {
-		return true
-	}
-
-	return false
-}
-
-// SetConfirmDestructive gets a reference to the given bool and assigns it to the ConfirmDestructive field.
-func (o *UpdateResourceRequest) SetConfirmDestructive(v bool) {
-	o.ConfirmDestructive = &v
 }
 
 func (o UpdateResourceRequest) MarshalJSON() ([]byte, error) {
@@ -188,9 +155,6 @@ func (o UpdateResourceRequest) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Links) {
 		toSerialize["links"] = o.Links
-	}
-	if !IsNil(o.ConfirmDestructive) {
-		toSerialize["confirmDestructive"] = o.ConfirmDestructive
 	}
 	return toSerialize, nil
 }
