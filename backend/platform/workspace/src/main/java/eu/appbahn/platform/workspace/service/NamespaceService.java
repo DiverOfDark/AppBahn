@@ -2,6 +2,8 @@ package eu.appbahn.platform.workspace.service;
 
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import java.net.HttpURLConnection;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,24 +28,35 @@ public class NamespaceService {
         this.namespacePrefix = namespacePrefix;
     }
 
+    public String computeNamespace(String envSlug) {
+        return namespacePrefix + "-" + envSlug;
+    }
+
     public void createNamespace(String envSlug) {
         if (kubernetesClient == null) {
             log.debug("Kubernetes client not available, skipping namespace creation");
             return;
         }
-        String namespaceName = namespacePrefix + "-" + envSlug;
+        String namespaceName = computeNamespace(envSlug);
         try {
             var ns = new NamespaceBuilder()
                     .withNewMetadata()
                     .withName(namespaceName)
-                    .withLabels(
-                            Map.of("app.kubernetes.io/managed-by", "appbahn", "appbahn.eu/environment-slug", envSlug))
+                    .withLabels(Map.of(
+                            eu.appbahn.shared.Labels.MANAGED_BY_KEY,
+                            eu.appbahn.shared.Labels.MANAGED_BY_VALUE,
+                            eu.appbahn.shared.Labels.ENVIRONMENT_SLUG_KEY,
+                            envSlug))
                     .endMetadata()
                     .build();
             kubernetesClient.namespaces().resource(ns).create();
             log.info("Created namespace: {}", namespaceName);
-        } catch (Exception e) {
-            log.warn("Failed to create namespace {}: {}", namespaceName, e.getMessage());
+        } catch (KubernetesClientException e) {
+            if (e.getCode() == HttpURLConnection.HTTP_CONFLICT) {
+                log.info("Namespace {} already exists, skipping creation", namespaceName);
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -52,12 +65,16 @@ public class NamespaceService {
             log.debug("Kubernetes client not available, skipping namespace deletion");
             return;
         }
-        String namespaceName = namespacePrefix + "-" + envSlug;
+        String namespaceName = computeNamespace(envSlug);
         try {
             kubernetesClient.namespaces().withName(namespaceName).delete();
             log.info("Deleted namespace: {}", namespaceName);
-        } catch (Exception e) {
-            log.warn("Failed to delete namespace {}: {}", namespaceName, e.getMessage());
+        } catch (KubernetesClientException e) {
+            if (e.getCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                log.info("Namespace {} already deleted, skipping", namespaceName);
+            } else {
+                throw e;
+            }
         }
     }
 }

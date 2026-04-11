@@ -1,14 +1,20 @@
 package eu.appbahn.platform.common.security;
 
+import java.util.Collection;
 import java.util.List;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 
 public class AppBahnAuthenticationToken extends AbstractAuthenticationToken {
 
     private final AuthContext authContext;
 
     public AppBahnAuthenticationToken(AuthContext authContext) {
-        super(List.of()); // No Spring authorities — permissions are handled by PermissionService
+        this(authContext, List.of());
+    }
+
+    public AppBahnAuthenticationToken(AuthContext authContext, Collection<? extends GrantedAuthority> authorities) {
+        super(authorities);
         this.authContext = authContext;
         setAuthenticated(true);
     }

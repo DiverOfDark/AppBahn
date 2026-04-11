@@ -4,24 +4,35 @@ server:
 spring:
   application:
     name: appbahn-operator
-
-platform:
-  api:
-    base-url: ${PLATFORM_API_URL:http://localhost:8080}
-
-spring:
   security:
     oauth2:
       client:
         registration:
           appbahn:
-            client-id: ${OIDC_CLIENT_ID:appbahn-operator}
-            client-secret: ${OIDC_CLIENT_SECRET:}
+            client-id: appbahn-operator
+            client-secret:
             authorization-grant-type: client_credentials
-            scope: openid
+            scope: openid,internal
         provider:
           appbahn:
-            token-uri: ${OIDC_TOKEN_ENDPOINT:}
+            token-uri:
+
+operator:
+  cluster-name: local
+  ingress-class-name:
+  cluster-issuer:
+  resource-request-fraction: 0.25
+  full-sync-interval-ms: 300000
+  full-sync-initial-delay-ms: 60000
+  security:
+    run-as-non-root: true
+    read-only-root-filesystem: true
+    allow-privilege-escalation: false
+    drop-capabilities: ALL
+
+platform:
+  api:
+    base-url: http://localhost:8080
 
 management:
   endpoints:

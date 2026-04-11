@@ -19,12 +19,14 @@ var _ MappedNullable = &PlatformConfig{}
 
 // PlatformConfig struct for PlatformConfig
 type PlatformConfig struct {
-	Domain       *string                 `json:"domain,omitempty"`
-	Registry     *RegistryConfig         `json:"registry,omitempty"`
-	Branding     *PlatformConfigBranding `json:"branding,omitempty"`
-	Auth         map[string]interface{}  `json:"auth,omitempty"`
-	DefaultQuota *Quota                  `json:"defaultQuota,omitempty"`
-	BuildConfig  map[string]interface{}  `json:"buildConfig,omitempty"`
+	Domain *string `json:"domain,omitempty"`
+	// Kubernetes namespace prefix used for environments
+	NamespacePrefix *string                 `json:"namespacePrefix,omitempty"`
+	Registry        *RegistryConfig         `json:"registry,omitempty"`
+	Branding        *PlatformConfigBranding `json:"branding,omitempty"`
+	Auth            map[string]interface{}  `json:"auth,omitempty"`
+	DefaultQuota    *Quota                  `json:"defaultQuota,omitempty"`
+	BuildConfig     map[string]interface{}  `json:"buildConfig,omitempty"`
 }
 
 // NewPlatformConfig instantiates a new PlatformConfig object
@@ -74,6 +76,38 @@ func (o *PlatformConfig) HasDomain() bool {
 // SetDomain gets a reference to the given string and assigns it to the Domain field.
 func (o *PlatformConfig) SetDomain(v string) {
 	o.Domain = &v
+}
+
+// GetNamespacePrefix returns the NamespacePrefix field value if set, zero value otherwise.
+func (o *PlatformConfig) GetNamespacePrefix() string {
+	if o == nil || IsNil(o.NamespacePrefix) {
+		var ret string
+		return ret
+	}
+	return *o.NamespacePrefix
+}
+
+// GetNamespacePrefixOk returns a tuple with the NamespacePrefix field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PlatformConfig) GetNamespacePrefixOk() (*string, bool) {
+	if o == nil || IsNil(o.NamespacePrefix) {
+		return nil, false
+	}
+	return o.NamespacePrefix, true
+}
+
+// HasNamespacePrefix returns a boolean if a field has been set.
+func (o *PlatformConfig) HasNamespacePrefix() bool {
+	if o != nil && !IsNil(o.NamespacePrefix) {
+		return true
+	}
+
+	return false
+}
+
+// SetNamespacePrefix gets a reference to the given string and assigns it to the NamespacePrefix field.
+func (o *PlatformConfig) SetNamespacePrefix(v string) {
+	o.NamespacePrefix = &v
 }
 
 // GetRegistry returns the Registry field value if set, zero value otherwise.
@@ -248,6 +282,9 @@ func (o PlatformConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Domain) {
 		toSerialize["domain"] = o.Domain
+	}
+	if !IsNil(o.NamespacePrefix) {
+		toSerialize["namespacePrefix"] = o.NamespacePrefix
 	}
 	if !IsNil(o.Registry) {
 		toSerialize["registry"] = o.Registry

@@ -21,10 +21,14 @@ var _ MappedNullable = &ErrorResponse{}
 
 // ErrorResponse struct for ErrorResponse
 type ErrorResponse struct {
-	Status  int32    `json:"status"`
-	Error   string   `json:"error"`
-	Message string   `json:"message"`
-	Details []string `json:"details,omitempty"`
+	Status    int32    `json:"status"`
+	Error     string   `json:"error"`
+	Message   string   `json:"message"`
+	Details   []string `json:"details,omitempty"`
+	Current   *int32   `json:"current,omitempty"`
+	Limit     *int32   `json:"limit,omitempty"`
+	Dimension *string  `json:"dimension,omitempty"`
+	Level     *string  `json:"level,omitempty"`
 }
 
 type _ErrorResponse ErrorResponse
@@ -153,6 +157,134 @@ func (o *ErrorResponse) SetDetails(v []string) {
 	o.Details = v
 }
 
+// GetCurrent returns the Current field value if set, zero value otherwise.
+func (o *ErrorResponse) GetCurrent() int32 {
+	if o == nil || IsNil(o.Current) {
+		var ret int32
+		return ret
+	}
+	return *o.Current
+}
+
+// GetCurrentOk returns a tuple with the Current field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ErrorResponse) GetCurrentOk() (*int32, bool) {
+	if o == nil || IsNil(o.Current) {
+		return nil, false
+	}
+	return o.Current, true
+}
+
+// HasCurrent returns a boolean if a field has been set.
+func (o *ErrorResponse) HasCurrent() bool {
+	if o != nil && !IsNil(o.Current) {
+		return true
+	}
+
+	return false
+}
+
+// SetCurrent gets a reference to the given int32 and assigns it to the Current field.
+func (o *ErrorResponse) SetCurrent(v int32) {
+	o.Current = &v
+}
+
+// GetLimit returns the Limit field value if set, zero value otherwise.
+func (o *ErrorResponse) GetLimit() int32 {
+	if o == nil || IsNil(o.Limit) {
+		var ret int32
+		return ret
+	}
+	return *o.Limit
+}
+
+// GetLimitOk returns a tuple with the Limit field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ErrorResponse) GetLimitOk() (*int32, bool) {
+	if o == nil || IsNil(o.Limit) {
+		return nil, false
+	}
+	return o.Limit, true
+}
+
+// HasLimit returns a boolean if a field has been set.
+func (o *ErrorResponse) HasLimit() bool {
+	if o != nil && !IsNil(o.Limit) {
+		return true
+	}
+
+	return false
+}
+
+// SetLimit gets a reference to the given int32 and assigns it to the Limit field.
+func (o *ErrorResponse) SetLimit(v int32) {
+	o.Limit = &v
+}
+
+// GetDimension returns the Dimension field value if set, zero value otherwise.
+func (o *ErrorResponse) GetDimension() string {
+	if o == nil || IsNil(o.Dimension) {
+		var ret string
+		return ret
+	}
+	return *o.Dimension
+}
+
+// GetDimensionOk returns a tuple with the Dimension field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ErrorResponse) GetDimensionOk() (*string, bool) {
+	if o == nil || IsNil(o.Dimension) {
+		return nil, false
+	}
+	return o.Dimension, true
+}
+
+// HasDimension returns a boolean if a field has been set.
+func (o *ErrorResponse) HasDimension() bool {
+	if o != nil && !IsNil(o.Dimension) {
+		return true
+	}
+
+	return false
+}
+
+// SetDimension gets a reference to the given string and assigns it to the Dimension field.
+func (o *ErrorResponse) SetDimension(v string) {
+	o.Dimension = &v
+}
+
+// GetLevel returns the Level field value if set, zero value otherwise.
+func (o *ErrorResponse) GetLevel() string {
+	if o == nil || IsNil(o.Level) {
+		var ret string
+		return ret
+	}
+	return *o.Level
+}
+
+// GetLevelOk returns a tuple with the Level field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ErrorResponse) GetLevelOk() (*string, bool) {
+	if o == nil || IsNil(o.Level) {
+		return nil, false
+	}
+	return o.Level, true
+}
+
+// HasLevel returns a boolean if a field has been set.
+func (o *ErrorResponse) HasLevel() bool {
+	if o != nil && !IsNil(o.Level) {
+		return true
+	}
+
+	return false
+}
+
+// SetLevel gets a reference to the given string and assigns it to the Level field.
+func (o *ErrorResponse) SetLevel(v string) {
+	o.Level = &v
+}
+
 func (o ErrorResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -168,6 +300,18 @@ func (o ErrorResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize["message"] = o.Message
 	if !IsNil(o.Details) {
 		toSerialize["details"] = o.Details
+	}
+	if !IsNil(o.Current) {
+		toSerialize["current"] = o.Current
+	}
+	if !IsNil(o.Limit) {
+		toSerialize["limit"] = o.Limit
+	}
+	if !IsNil(o.Dimension) {
+		toSerialize["dimension"] = o.Dimension
+	}
+	if !IsNil(o.Level) {
+		toSerialize["level"] = o.Level
 	}
 	return toSerialize, nil
 }

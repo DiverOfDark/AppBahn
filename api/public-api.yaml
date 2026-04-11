@@ -1454,6 +1454,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
+        "402":
+          $ref: '#/components/responses/PaymentRequired'
         "409":
           $ref: '#/components/responses/Conflict'
         "422":
@@ -1676,12 +1678,12 @@ paths:
             schema:
               $ref: '#/components/schemas/TriggerDeploymentRequest'
       responses:
-        "201":
-          description: Deployment triggered
+        "202":
+          description: Deployment accepted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Deployment'
+                $ref: '#/components/schemas/TriggerDeploymentResponse'
         "400":
           $ref: '#/components/responses/BadRequest'
         "401":
@@ -1706,6 +1708,12 @@ paths:
           schema:
             type: integer
             default: 20
+        - name: sort
+          in: query
+          description: Sort field and direction (e.g. createdAt,desc). Defaults to createdAt,desc.
+          schema:
+            type: string
+            default: "createdAt,desc"
       responses:
         "200":
           description: Paged list of deployments
@@ -2665,7 +2673,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/UpdateResourceTypeAdminConfigRequest'
       responses:
         "200":
           description: Resource type definition updated
@@ -2762,8 +2770,28 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    PaymentRequired:
+      description: Resource limit reached
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    # ── Pagination Base ─────────────────────────────────────────────────────
+    PagedResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
     # ── Error ─────────────────────────────────────────────────────────────────
     ErrorResponse:
       type: object
@@ -2779,6 +2807,14 @@ components:
           type: array
           items:
             type: string
+        current:
+          type: integer
+        limit:
+          type: integer
+        dimension:
+          type: string
+        level:
+          type: string
 
     # ── Workspace ─────────────────────────────────────────────────────────────
     Workspace:
@@ -2818,21 +2854,14 @@ components:
           type: string
 
     PagedWorkspaceResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Workspace'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Workspace'
 
     # ── Project ───────────────────────────────────────────────────────────────
     Project:
@@ -2874,21 +2903,14 @@ components:
           type: string
 
     PagedProjectResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Project'
 
     # ── Environment ───────────────────────────────────────────────────────────
     Environment:
@@ -2940,21 +2962,14 @@ components:
           type: string
 
     PagedEnvironmentResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Environment'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Environment'
 
     ApprovalGatesConfig:
       type: object
@@ -3038,17 +3053,23 @@ components:
         environmentSlug:
           type: string
         config:
-          type: object
+          $ref: '#/components/schemas/ResourceConfig'
         links:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/LinkConfig'
         status:
           type: string
           enum: [PENDING, READY, RESTARTING, DEGRADED, ERROR, STOPPED]
         statusDetail:
-          type: object
+          $ref: '#/components/schemas/ResourceStatusDetail'
         lastSyncedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -3063,11 +3084,11 @@ components:
         environmentSlug:
           type: string
         config:
-          type: object
+          $ref: '#/components/schemas/ResourceConfig'
         links:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/LinkConfig'
 
     UpdateResourceRequest:
       type: object
@@ -3075,13 +3096,11 @@ components:
         name:
           type: string
         config:
-          type: object
+          $ref: '#/components/schemas/ResourceConfig'
         links:
           type: array
           items:
-            type: object
-        confirmDestructive:
-          type: boolean
+            $ref: '#/components/schemas/LinkConfig'
 
     ResourceCreatedResponse:
       type: object
@@ -3092,21 +3111,386 @@ components:
           type: string
 
     PagedResourceResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Resource'
+
+    # ── Resource Config ───────────────────────────────────────────────────────
+    ResourceConfig:
       type: object
       properties:
-        content:
+        source:
+          $ref: '#/components/schemas/SourceConfig'
+        hosting:
+          $ref: '#/components/schemas/HostingConfig'
+        networking:
+          $ref: '#/components/schemas/NetworkingConfig'
+        healthCheck:
+          $ref: '#/components/schemas/HealthCheckConfig'
+        env:
+          type: object
+          additionalProperties:
+            type: string
+        runMode:
+          type: string
+          enum: [continuous, cron]
+
+    # ── Source Config (polymorphic) ──────────────────────────────────────────
+    SourceConfig:
+      oneOf:
+        - $ref: '#/components/schemas/DockerSource'
+        - $ref: '#/components/schemas/GitSource'
+        - $ref: '#/components/schemas/PromotionSource'
+      discriminator:
+        propertyName: type
+        mapping:
+          docker: '#/components/schemas/DockerSource'
+          git: '#/components/schemas/GitSource'
+          promotion: '#/components/schemas/PromotionSource'
+
+    SourceBase:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+        pollInterval:
+          type: string
+          description: "Polling interval, e.g. '5m'. '0' disables polling."
+        webhookEnabled:
+          type: boolean
+
+    DockerSource:
+      allOf:
+        - $ref: '#/components/schemas/SourceBase'
+        - type: object
+          required: [image]
+          properties:
+            image:
+              type: string
+            tag:
+              type: string
+            registryUrl:
+              type: string
+            credentialRef:
+              type: string
+              description: "ESO path for registry credentials"
+
+    GitSource:
+      allOf:
+        - $ref: '#/components/schemas/SourceBase'
+        - type: object
+          required: [url, branch]
+          properties:
+            url:
+              type: string
+            branch:
+              type: string
+            path:
+              type: string
+              description: "Subdirectory within repo"
+            auth:
+              $ref: '#/components/schemas/SourceAuth'
+            buildConfig:
+              $ref: '#/components/schemas/BuildConfig'
+
+    PromotionSource:
+      allOf:
+        - $ref: '#/components/schemas/SourceBase'
+        - type: object
+          required: [sourceEnvironment, sourceResource]
+          properties:
+            sourceEnvironment:
+              type: string
+              description: "Slug of the source environment"
+            sourceResource:
+              type: string
+              description: "Slug of the source resource"
+            autoPromote:
+              type: boolean
+              description: "Auto-trigger deployment on source success"
+
+    SourceAuth:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [none, basic, ssh_key]
+        credentialRef:
+          type: string
+          description: "ESO path for credentials"
+
+    # ── Build Config (polymorphic) ────────────────────────────────────────
+    BuildConfig:
+      oneOf:
+        - $ref: '#/components/schemas/PeelboxBuildConfig'
+        - $ref: '#/components/schemas/BuildpackBuildConfig'
+        - $ref: '#/components/schemas/RailpackBuildConfig'
+        - $ref: '#/components/schemas/DockerfileBuildConfig'
+      discriminator:
+        propertyName: type
+        mapping:
+          peelbox: '#/components/schemas/PeelboxBuildConfig'
+          buildpack: '#/components/schemas/BuildpackBuildConfig'
+          railpack: '#/components/schemas/RailpackBuildConfig'
+          dockerfile: '#/components/schemas/DockerfileBuildConfig'
+
+    BuildConfigBase:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+
+    PeelboxBuildConfig:
+      allOf:
+        - $ref: '#/components/schemas/BuildConfigBase'
+        - type: object
+          properties:
+            universalBuild:
+              type: array
+              items:
+                type: object
+
+    BuildpackBuildConfig:
+      allOf:
+        - $ref: '#/components/schemas/BuildConfigBase'
+        - type: object
+          properties:
+            builder:
+              type: string
+            buildVars:
+              type: object
+              additionalProperties:
+                type: string
+
+    RailpackBuildConfig:
+      allOf:
+        - $ref: '#/components/schemas/BuildConfigBase'
+        - type: object
+          properties:
+            provider:
+              type: string
+            buildVars:
+              type: object
+              additionalProperties:
+                type: string
+
+    DockerfileBuildConfig:
+      allOf:
+        - $ref: '#/components/schemas/BuildConfigBase'
+        - type: object
+          properties:
+            path:
+              type: string
+              description: "Path to Dockerfile relative to source root"
+            target:
+              type: string
+              description: "Multi-stage build target"
+            buildArgs:
+              type: object
+              additionalProperties:
+                type: string
+
+    HostingConfig:
+      type: object
+      properties:
+        cpu:
+          type: string
+          description: "Kubernetes CPU quantity, e.g. '500m' or '2'"
+        memory:
+          type: string
+          description: "Kubernetes memory quantity, e.g. '256Mi' or '1Gi'"
+        minReplicas:
+          type: integer
+          description: "Minimum replicas (baseline count); used with maxReplicas for autoscaling"
+        maxReplicas:
+          type: integer
+          description: "Maximum replicas for autoscaling; used for worst-case quota calculation"
+
+    NetworkingConfig:
+      type: object
+      properties:
+        ports:
           type: array
           items:
-            $ref: '#/components/schemas/Resource'
-        page:
+            $ref: '#/components/schemas/PortConfig'
+
+    PortConfig:
+      type: object
+      properties:
+        port:
           type: integer
-        size:
+        expose:
+          type: string
+          enum: [ingress, tcp, none]
+        domain:
+          type: string
+          description: "Custom domain for this port (only when expose=ingress; auto-generated if omitted)"
+
+    HealthCheckConfig:
+      type: object
+      properties:
+        readiness:
+          $ref: '#/components/schemas/ProbeConfig'
+        liveness:
+          $ref: '#/components/schemas/ProbeConfig'
+        startup:
+          $ref: '#/components/schemas/ProbeConfig'
+
+    ProbeConfig:
+      type: object
+      properties:
+        httpGet:
+          $ref: '#/components/schemas/HttpGetAction'
+        tcpSocket:
+          $ref: '#/components/schemas/TcpSocketAction'
+        exec:
+          $ref: '#/components/schemas/ExecAction'
+        initialDelaySeconds:
           type: integer
-        totalElements:
+        periodSeconds:
+          type: integer
+        failureThreshold:
+          type: integer
+
+    HttpGetAction:
+      type: object
+      properties:
+        path:
+          type: string
+        port:
+          type: integer
+
+    TcpSocketAction:
+      type: object
+      properties:
+        port:
+          type: integer
+
+    ExecAction:
+      type: object
+      properties:
+        command:
+          type: array
+          items:
+            type: string
+
+    LinkConfig:
+      type: object
+      required: [resource]
+      properties:
+        resource:
+          type: string
+        secret:
+          type: string
+        env:
+          type: object
+          additionalProperties:
+            type: string
+
+    ResourceStatusDetail:
+      type: object
+      properties:
+        phase:
+          type: string
+        message:
+          type: string
+        observedGeneration:
           type: integer
           format: int64
-        totalPages:
+        replicas:
+          $ref: '#/components/schemas/ReplicaStatus'
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceCondition'
+        customDomains:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomDomainStatus'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkStatus'
+        primaryDeploymentId:
+          type: string
+          format: uuid
+        primaryImage:
+          type: string
+        lastDeploymentTime:
+          type: string
+          format: date-time
+        lastSyncTime:
+          type: string
+          format: date-time
+        latestDeploymentId:
+          type: string
+          format: uuid
+        latestDeploymentStatus:
+          type: string
+          enum: [QUEUED, AWAITING_APPROVAL, BUILDING, COPYING_IMAGE, DEPLOYING, SUCCEEDED, FAILED, REJECTED]
+
+    ReplicaStatus:
+      type: object
+      properties:
+        desired:
           type: integer
+        ready:
+          type: integer
+        updated:
+          type: integer
+        available:
+          type: integer
+
+    ResourceCondition:
+      type: object
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+        lastUpdateTime:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        message:
+          type: string
+
+    CustomDomainStatus:
+      type: object
+      properties:
+        domain:
+          type: string
+        port:
+          type: integer
+        status:
+          type: string
+        dnsCname:
+          type: string
+        tlsIssuer:
+          type: string
+        tlsExpiresAt:
+          type: string
+          format: date-time
+
+    LinkStatus:
+      type: object
+      properties:
+        resource:
+          type: string
+        status:
+          type: string
+        lastSyncTime:
+          type: string
+          format: date-time
 
     # ── Deployment ────────────────────────────────────────────────────────────
     Deployment:
@@ -3137,12 +3521,26 @@ components:
         createdAt:
           type: string
           format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     TriggerDeploymentRequest:
       type: object
       properties:
         sourceRef:
           type: string
+
+    TriggerDeploymentResponse:
+      type: object
+      required: [deploymentId, status]
+      properties:
+        deploymentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, DEPLOYING, DUPLICATE]
 
     RollbackRequest:
       type: object
@@ -3153,21 +3551,14 @@ components:
           format: uuid
 
     PagedDeploymentResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Deployment'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/Deployment'
 
     DeploymentApproval:
       type: object
@@ -3201,21 +3592,14 @@ components:
           type: string
 
     PagedUserResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
 
     # ── Workspace Member ──────────────────────────────────────────────────────
     WorkspaceMember:
@@ -3479,6 +3863,18 @@ components:
           type: string
           format: date-time
 
+    UpdateResourceTypeAdminConfigRequest:
+      type: object
+      description: Admin configuration update for a resource type
+      properties:
+        storageClass:
+          type: string
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: true
+
     ResourceTypeInfo:
       type: object
       properties:
@@ -3493,6 +3889,8 @@ components:
           enum: [deployment, database, storage, messaging]
         configSchema:
           type: object
+          additionalProperties: true
+          description: JSON Schema describing the resource type configuration
         available:
           type: boolean
 
@@ -3527,21 +3925,14 @@ components:
           type: string
 
     PagedAuditLogResponse:
-      type: object
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/AuditLogEntry'
-        page:
-          type: integer
-        size:
-          type: integer
-        totalElements:
-          type: integer
-          format: int64
-        totalPages:
-          type: integer
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditLogEntry'
 
     # ── Build Detection ───────────────────────────────────────────────────────
     BuildDetectionJob:
@@ -3785,6 +4176,10 @@ components:
       properties:
         domain:
           type: string
+        namespacePrefix:
+          type: string
+          description: Kubernetes namespace prefix used for environments
+          example: "abp"
         registry:
           $ref: '#/components/schemas/RegistryConfig'
         branding:
@@ -3812,4 +4207,3 @@ components:
           $ref: '#/components/schemas/Quota'
         buildConfig:
           type: object
-

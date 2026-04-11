@@ -19,9 +19,8 @@ var _ MappedNullable = &SecuritySettings{}
 
 // SecuritySettings struct for SecuritySettings
 type SecuritySettings struct {
-	AllowedIpRanges       []string `json:"allowedIpRanges,omitempty"`
-	RequireMfa            *bool    `json:"requireMfa,omitempty"`
-	SessionTimeoutMinutes *int32   `json:"sessionTimeoutMinutes,omitempty"`
+	// Kubernetes RuntimeClass name for pod isolation (e.g. \"gvisor\", \"kata\"). Null means default (runc).
+	RuntimeClassName *string `json:"runtimeClassName,omitempty"`
 }
 
 // NewSecuritySettings instantiates a new SecuritySettings object
@@ -41,100 +40,36 @@ func NewSecuritySettingsWithDefaults() *SecuritySettings {
 	return &this
 }
 
-// GetAllowedIpRanges returns the AllowedIpRanges field value if set, zero value otherwise.
-func (o *SecuritySettings) GetAllowedIpRanges() []string {
-	if o == nil || IsNil(o.AllowedIpRanges) {
-		var ret []string
+// GetRuntimeClassName returns the RuntimeClassName field value if set, zero value otherwise.
+func (o *SecuritySettings) GetRuntimeClassName() string {
+	if o == nil || IsNil(o.RuntimeClassName) {
+		var ret string
 		return ret
 	}
-	return o.AllowedIpRanges
+	return *o.RuntimeClassName
 }
 
-// GetAllowedIpRangesOk returns a tuple with the AllowedIpRanges field value if set, nil otherwise
+// GetRuntimeClassNameOk returns a tuple with the RuntimeClassName field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SecuritySettings) GetAllowedIpRangesOk() ([]string, bool) {
-	if o == nil || IsNil(o.AllowedIpRanges) {
+func (o *SecuritySettings) GetRuntimeClassNameOk() (*string, bool) {
+	if o == nil || IsNil(o.RuntimeClassName) {
 		return nil, false
 	}
-	return o.AllowedIpRanges, true
+	return o.RuntimeClassName, true
 }
 
-// HasAllowedIpRanges returns a boolean if a field has been set.
-func (o *SecuritySettings) HasAllowedIpRanges() bool {
-	if o != nil && !IsNil(o.AllowedIpRanges) {
+// HasRuntimeClassName returns a boolean if a field has been set.
+func (o *SecuritySettings) HasRuntimeClassName() bool {
+	if o != nil && !IsNil(o.RuntimeClassName) {
 		return true
 	}
 
 	return false
 }
 
-// SetAllowedIpRanges gets a reference to the given []string and assigns it to the AllowedIpRanges field.
-func (o *SecuritySettings) SetAllowedIpRanges(v []string) {
-	o.AllowedIpRanges = v
-}
-
-// GetRequireMfa returns the RequireMfa field value if set, zero value otherwise.
-func (o *SecuritySettings) GetRequireMfa() bool {
-	if o == nil || IsNil(o.RequireMfa) {
-		var ret bool
-		return ret
-	}
-	return *o.RequireMfa
-}
-
-// GetRequireMfaOk returns a tuple with the RequireMfa field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *SecuritySettings) GetRequireMfaOk() (*bool, bool) {
-	if o == nil || IsNil(o.RequireMfa) {
-		return nil, false
-	}
-	return o.RequireMfa, true
-}
-
-// HasRequireMfa returns a boolean if a field has been set.
-func (o *SecuritySettings) HasRequireMfa() bool {
-	if o != nil && !IsNil(o.RequireMfa) {
-		return true
-	}
-
-	return false
-}
-
-// SetRequireMfa gets a reference to the given bool and assigns it to the RequireMfa field.
-func (o *SecuritySettings) SetRequireMfa(v bool) {
-	o.RequireMfa = &v
-}
-
-// GetSessionTimeoutMinutes returns the SessionTimeoutMinutes field value if set, zero value otherwise.
-func (o *SecuritySettings) GetSessionTimeoutMinutes() int32 {
-	if o == nil || IsNil(o.SessionTimeoutMinutes) {
-		var ret int32
-		return ret
-	}
-	return *o.SessionTimeoutMinutes
-}
-
-// GetSessionTimeoutMinutesOk returns a tuple with the SessionTimeoutMinutes field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *SecuritySettings) GetSessionTimeoutMinutesOk() (*int32, bool) {
-	if o == nil || IsNil(o.SessionTimeoutMinutes) {
-		return nil, false
-	}
-	return o.SessionTimeoutMinutes, true
-}
-
-// HasSessionTimeoutMinutes returns a boolean if a field has been set.
-func (o *SecuritySettings) HasSessionTimeoutMinutes() bool {
-	if o != nil && !IsNil(o.SessionTimeoutMinutes) {
-		return true
-	}
-
-	return false
-}
-
-// SetSessionTimeoutMinutes gets a reference to the given int32 and assigns it to the SessionTimeoutMinutes field.
-func (o *SecuritySettings) SetSessionTimeoutMinutes(v int32) {
-	o.SessionTimeoutMinutes = &v
+// SetRuntimeClassName gets a reference to the given string and assigns it to the RuntimeClassName field.
+func (o *SecuritySettings) SetRuntimeClassName(v string) {
+	o.RuntimeClassName = &v
 }
 
 func (o SecuritySettings) MarshalJSON() ([]byte, error) {
@@ -147,14 +82,8 @@ func (o SecuritySettings) MarshalJSON() ([]byte, error) {
 
 func (o SecuritySettings) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.AllowedIpRanges) {
-		toSerialize["allowedIpRanges"] = o.AllowedIpRanges
-	}
-	if !IsNil(o.RequireMfa) {
-		toSerialize["requireMfa"] = o.RequireMfa
-	}
-	if !IsNil(o.SessionTimeoutMinutes) {
-		toSerialize["sessionTimeoutMinutes"] = o.SessionTimeoutMinutes
+	if !IsNil(o.RuntimeClassName) {
+		toSerialize["runtimeClassName"] = o.RuntimeClassName
 	}
 	return toSerialize, nil
 }

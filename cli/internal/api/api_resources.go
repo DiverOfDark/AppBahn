@@ -391,8 +391,8 @@ type ResourcesAPI interface {
 	TriggerDeployment(ctx context.Context, slug string) ApiTriggerDeploymentRequest
 
 	// TriggerDeploymentExecute executes the request
-	//  @return Deployment
-	TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*Deployment, *http.Response, error)
+	//  @return TriggerDeploymentResponse
+	TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*TriggerDeploymentResponse, *http.Response, error)
 
 	/*
 		UpdateResource Update resource (JSON merge patch)
@@ -1110,6 +1110,17 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 402 {
 			var v ErrorResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
@@ -2949,6 +2960,7 @@ type ApiListDeploymentsRequest struct {
 	slug       string
 	page       *int32
 	size       *int32
+	sort       *string
 }
 
 func (r ApiListDeploymentsRequest) Page(page int32) ApiListDeploymentsRequest {
@@ -2958,6 +2970,12 @@ func (r ApiListDeploymentsRequest) Page(page int32) ApiListDeploymentsRequest {
 
 func (r ApiListDeploymentsRequest) Size(size int32) ApiListDeploymentsRequest {
 	r.size = &size
+	return r
+}
+
+// Sort field and direction (e.g. createdAt,desc). Defaults to createdAt,desc.
+func (r ApiListDeploymentsRequest) Sort(sort string) ApiListDeploymentsRequest {
+	r.sort = &sort
 	return r
 }
 
@@ -3016,6 +3034,13 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 		var defaultValue int32 = 20
 		parameterAddToHeaderOrQuery(localVarQueryParams, "size", defaultValue, "form", "")
 		r.size = &defaultValue
+	}
+	if r.sort != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
+	} else {
+		var defaultValue string = "createdAt,desc"
+		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", defaultValue, "form", "")
+		r.sort = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -4455,7 +4480,7 @@ func (r ApiTriggerDeploymentRequest) TriggerDeploymentRequest(triggerDeploymentR
 	return r
 }
 
-func (r ApiTriggerDeploymentRequest) Execute() (*Deployment, *http.Response, error) {
+func (r ApiTriggerDeploymentRequest) Execute() (*TriggerDeploymentResponse, *http.Response, error) {
 	return r.ApiService.TriggerDeploymentExecute(r)
 }
 
@@ -4476,13 +4501,13 @@ func (a *ResourcesAPIService) TriggerDeployment(ctx context.Context, slug string
 
 // Execute executes the request
 //
-//	@return Deployment
-func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*Deployment, *http.Response, error) {
+//	@return TriggerDeploymentResponse
+func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*TriggerDeploymentResponse, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *Deployment
+		localVarReturnValue *TriggerDeploymentResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.TriggerDeployment")

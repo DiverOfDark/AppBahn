@@ -23,7 +23,9 @@ public final class SlugGenerator {
     }
 
     static String normalize(String name) {
-        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
+        String cleaned = name.toLowerCase().replaceAll("[^a-z0-9]", "");
+        // Strip leading digits — slugs must start with a letter
+        return cleaned.replaceAll("^[0-9]+", "");
     }
 
     private static String randomSuffix() {

@@ -60,6 +60,9 @@
   --color-status-stopped: oklch(50% 0.01 260);
   --color-status-building: oklch(70% 0.12 260);
 
+  /* Surfaces */
+  --color-bg-error: oklch(30% 0.08 25);
+
   /* Text */
   --color-text-primary: oklch(93% 0.005 80);
   --color-text-secondary: oklch(65% 0.01 260);
@@ -93,6 +96,8 @@
 
   --color-border: oklch(85% 0.005 80);
   --color-border-strong: oklch(75% 0.008 80);
+
+  --color-bg-error: oklch(92% 0.04 25);
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */

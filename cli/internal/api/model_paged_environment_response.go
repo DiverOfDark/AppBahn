@@ -19,11 +19,11 @@ var _ MappedNullable = &PagedEnvironmentResponse{}
 
 // PagedEnvironmentResponse struct for PagedEnvironmentResponse
 type PagedEnvironmentResponse struct {
-	Content       []Environment `json:"content,omitempty"`
 	Page          *int32        `json:"page,omitempty"`
 	Size          *int32        `json:"size,omitempty"`
 	TotalElements *int64        `json:"totalElements,omitempty"`
 	TotalPages    *int32        `json:"totalPages,omitempty"`
+	Content       []Environment `json:"content,omitempty"`
 }
 
 // NewPagedEnvironmentResponse instantiates a new PagedEnvironmentResponse object
@@ -41,38 +41,6 @@ func NewPagedEnvironmentResponse() *PagedEnvironmentResponse {
 func NewPagedEnvironmentResponseWithDefaults() *PagedEnvironmentResponse {
 	this := PagedEnvironmentResponse{}
 	return &this
-}
-
-// GetContent returns the Content field value if set, zero value otherwise.
-func (o *PagedEnvironmentResponse) GetContent() []Environment {
-	if o == nil || IsNil(o.Content) {
-		var ret []Environment
-		return ret
-	}
-	return o.Content
-}
-
-// GetContentOk returns a tuple with the Content field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *PagedEnvironmentResponse) GetContentOk() ([]Environment, bool) {
-	if o == nil || IsNil(o.Content) {
-		return nil, false
-	}
-	return o.Content, true
-}
-
-// HasContent returns a boolean if a field has been set.
-func (o *PagedEnvironmentResponse) HasContent() bool {
-	if o != nil && !IsNil(o.Content) {
-		return true
-	}
-
-	return false
-}
-
-// SetContent gets a reference to the given []Environment and assigns it to the Content field.
-func (o *PagedEnvironmentResponse) SetContent(v []Environment) {
-	o.Content = v
 }
 
 // GetPage returns the Page field value if set, zero value otherwise.
@@ -203,6 +171,38 @@ func (o *PagedEnvironmentResponse) SetTotalPages(v int32) {
 	o.TotalPages = &v
 }
 
+// GetContent returns the Content field value if set, zero value otherwise.
+func (o *PagedEnvironmentResponse) GetContent() []Environment {
+	if o == nil || IsNil(o.Content) {
+		var ret []Environment
+		return ret
+	}
+	return o.Content
+}
+
+// GetContentOk returns a tuple with the Content field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PagedEnvironmentResponse) GetContentOk() ([]Environment, bool) {
+	if o == nil || IsNil(o.Content) {
+		return nil, false
+	}
+	return o.Content, true
+}
+
+// HasContent returns a boolean if a field has been set.
+func (o *PagedEnvironmentResponse) HasContent() bool {
+	if o != nil && !IsNil(o.Content) {
+		return true
+	}
+
+	return false
+}
+
+// SetContent gets a reference to the given []Environment and assigns it to the Content field.
+func (o *PagedEnvironmentResponse) SetContent(v []Environment) {
+	o.Content = v
+}
+
 func (o PagedEnvironmentResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -213,9 +213,6 @@ func (o PagedEnvironmentResponse) MarshalJSON() ([]byte, error) {
 
 func (o PagedEnvironmentResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Content) {
-		toSerialize["content"] = o.Content
-	}
 	if !IsNil(o.Page) {
 		toSerialize["page"] = o.Page
 	}
@@ -227,6 +224,9 @@ func (o PagedEnvironmentResponse) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.TotalPages) {
 		toSerialize["totalPages"] = o.TotalPages
+	}
+	if !IsNil(o.Content) {
+		toSerialize["content"] = o.Content
 	}
 	return toSerialize, nil
 }

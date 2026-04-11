@@ -30,6 +30,9 @@ public class AdminController implements AdminApi {
     @Value("${platform.branding.login-button-text:Log in with SSO}")
     private String loginButtonText;
 
+    @Value("${platform.namespace-prefix:abp}")
+    private String namespacePrefix;
+
     private final AuditLogService auditLogService;
 
     public AdminController(AuditLogService auditLogService) {
@@ -46,6 +49,7 @@ public class AdminController implements AdminApi {
 
         PlatformConfig config = new PlatformConfig();
         config.setBranding(branding);
+        config.setNamespacePrefix(namespacePrefix);
         return ResponseEntity.ok(config);
     }
 

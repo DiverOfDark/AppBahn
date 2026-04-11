@@ -15,10 +15,20 @@ spec:
         {{- include "appbahn.operator.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "appbahn.fullname" . }}-operator
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: operator
           image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
           imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           ports:
             - name: http
               containerPort: 8080
@@ -31,14 +41,38 @@ spec:
               mountPath: /etc/webhook/tls
               readOnly: true
           env:
-            - name: PLATFORM_API_URL
+            - name: PLATFORM_API_BASEURL
               value: {{ .Values.operator.platformApi.endpoint | default (printf "http://%s-platform:8080" (include "appbahn.fullname" .)) | quote }}
-            - name: OIDC_CLIENT_ID
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTID
               value: {{ .Values.operator.auth.clientId | default "appbahn-operator" | quote }}
-            - name: OIDC_CLIENT_SECRET
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTSECRET
               value: {{ .Values.operator.auth.clientSecret | quote }}
-            - name: OIDC_TOKEN_ENDPOINT
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_APPBAHN_TOKENURI
               value: {{ .Values.operator.auth.tokenEndpoint | quote }}
+            - name: OPERATOR_CLUSTERNAME
+              value: {{ .Values.operator.clusterName | quote }}
+            {{- if .Values.operator.ingressClassName }}
+            - name: OPERATOR_INGRESSCLASSNAME
+              value: {{ .Values.operator.ingressClassName | quote }}
+            {{- end }}
+            {{- if .Values.operator.clusterIssuer }}
+            - name: OPERATOR_CLUSTERISSUER
+              value: {{ .Values.operator.clusterIssuer | quote }}
+            {{- end }}
+            - name: OPERATOR_RESOURCEREQUESTFRACTION
+              value: {{ .Values.operator.resourceRequestFraction | quote }}
+            - name: OPERATOR_FULLSYNCINTERVALMS
+              value: {{ .Values.operator.fullSyncIntervalMs | quote }}
+            - name: OPERATOR_FULLSYNCINITIALDELAYMS
+              value: {{ .Values.operator.fullSyncInitialDelayMs | quote }}
+            - name: OPERATOR_SECURITY_RUNASNONROOT
+              value: {{ .Values.operator.security.runAsNonRoot | quote }}
+            - name: OPERATOR_SECURITY_READONLYROOTFILESYSTEM
+              value: {{ .Values.operator.security.readOnlyRootFilesystem | quote }}
+            - name: OPERATOR_SECURITY_ALLOWPRIVILEGEESCALATION
+              value: {{ .Values.operator.security.allowPrivilegeEscalation | quote }}
+            - name: OPERATOR_SECURITY_DROPCAPABILITIES
+              value: {{ .Values.operator.security.dropCapabilities | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health

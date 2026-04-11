@@ -1,5 +1,6 @@
 package eu.appbahn.platform.common.util;
 
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -9,6 +10,10 @@ public final class PaginationUtil {
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 20;
     private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.ASC, "name");
+
+    /** Fields that are safe to sort on across all entities. */
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("name", "slug", "type", "status", "createdAt", "updatedAt", "timestamp");
 
     private PaginationUtil() {}
 
@@ -29,6 +34,9 @@ public final class PaginationUtil {
         }
         String[] parts = sort.split(",");
         String property = parts[0].trim();
+        if (!ALLOWED_SORT_FIELDS.contains(property)) {
+            return defaultSort;
+        }
         Sort.Direction direction =
                 parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         return Sort.by(direction, property);

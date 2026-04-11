@@ -33,4 +33,7 @@ podman run --rm \
 rm -f "$OUTPUT_DIR/go.mod" "$OUTPUT_DIR/go.sum" "$OUTPUT_DIR/.travis.yml" "$OUTPUT_DIR/git_push.sh"
 rm -rf "$OUTPUT_DIR/.openapi-generator" "$OUTPUT_DIR/test" "$OUTPUT_DIR/docs" "$OUTPUT_DIR/api"
 
+# Format generated Go code
+gofmt -w "$OUTPUT_DIR"
+
 echo "API client generated in $OUTPUT_DIR"

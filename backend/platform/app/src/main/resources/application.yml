@@ -8,19 +8,19 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${OIDC_ISSUER_URI}
-          audiences: ${OIDC_AUDIENCE:appbahn}
+          issuer-uri:
+          audiences: appbahn
       client:
         registration:
           appbahn:
-            client-id: ${OIDC_CLIENT_ID:}
-            client-secret: ${OIDC_CLIENT_SECRET:}
+            client-id:
+            client-secret:
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/appbahn"
         provider:
           appbahn:
-            issuer-uri: ${OIDC_ISSUER_URI}
+            issuer-uri:
 
 springdoc:
   api-docs:
@@ -37,12 +37,19 @@ scalar:
   layout: modern
 
 platform:
-  namespace-prefix: ${NAMESPACE_PREFIX:abp}
-  admin-groups: ${PLATFORM_ADMIN_GROUPS:}
+  namespace-prefix: abp
+  base-domain: appbahn.local
+  admin-groups:
   kubernetes:
-    enabled: ${KUBERNETES_ENABLED:true}
+    enabled: true
+  quota:
+    default-max-resources: 50
+    default-max-cpu-cores: 16.0
+    default-max-memory-mb: 32768
+  license:
+    resource-limit: 5
   branding:
     instance-name: AppBahn
     tagline: Deploy and manage your applications
-    logo-url: ""
+    logo-url:
     login-button-text: Log in with SSO

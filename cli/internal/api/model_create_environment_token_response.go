@@ -23,6 +23,7 @@ type CreateEnvironmentTokenResponse struct {
 	Id        *string    `json:"id,omitempty"`
 	Name      *string    `json:"name,omitempty"`
 	Token     *string    `json:"token,omitempty"`
+	Role      *string    `json:"role,omitempty"`
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 }
 
@@ -139,6 +140,38 @@ func (o *CreateEnvironmentTokenResponse) SetToken(v string) {
 	o.Token = &v
 }
 
+// GetRole returns the Role field value if set, zero value otherwise.
+func (o *CreateEnvironmentTokenResponse) GetRole() string {
+	if o == nil || IsNil(o.Role) {
+		var ret string
+		return ret
+	}
+	return *o.Role
+}
+
+// GetRoleOk returns a tuple with the Role field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateEnvironmentTokenResponse) GetRoleOk() (*string, bool) {
+	if o == nil || IsNil(o.Role) {
+		return nil, false
+	}
+	return o.Role, true
+}
+
+// HasRole returns a boolean if a field has been set.
+func (o *CreateEnvironmentTokenResponse) HasRole() bool {
+	if o != nil && !IsNil(o.Role) {
+		return true
+	}
+
+	return false
+}
+
+// SetRole gets a reference to the given string and assigns it to the Role field.
+func (o *CreateEnvironmentTokenResponse) SetRole(v string) {
+	o.Role = &v
+}
+
 // GetExpiresAt returns the ExpiresAt field value if set, zero value otherwise.
 func (o *CreateEnvironmentTokenResponse) GetExpiresAt() time.Time {
 	if o == nil || IsNil(o.ExpiresAt) {
@@ -189,6 +222,9 @@ func (o CreateEnvironmentTokenResponse) ToMap() (map[string]interface{}, error) 
 	}
 	if !IsNil(o.Token) {
 		toSerialize["token"] = o.Token
+	}
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
 	}
 	if !IsNil(o.ExpiresAt) {
 		toSerialize["expiresAt"] = o.ExpiresAt

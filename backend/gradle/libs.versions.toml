@@ -30,7 +30,10 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", versio
 
 # Kubernetes / Operator
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
+fabric8-generator-annotations = { module = "io.fabric8:generator-annotations", version.ref = "fabric8" }
 fabric8-crd-generator-apt = { module = "io.fabric8:crd-generator-apt", version.ref = "fabric8" }
+fabric8-crd-generator-api = { module = "io.fabric8:crd-generator-api-v2", version.ref = "fabric8" }
+fabric8-kube-api-test = { module = "io.fabric8:kube-api-test", version.ref = "fabric8" }
 josdk-spring-boot-starter = { module = "io.javaoperatorsdk:operator-framework-spring-boot-starter", version.ref = "josdk-spring-boot" }
 
 # API docs

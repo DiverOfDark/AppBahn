@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type AdminAPI interface {
@@ -605,6 +606,9 @@ type ApiGetPlatformAuditLogRequest struct {
 	size          *int32
 	action        *string
 	targetType    *string
+	actorId       *string
+	from          *time.Time
+	to            *time.Time
 	workspaceSlug *string
 }
 
@@ -625,6 +629,21 @@ func (r ApiGetPlatformAuditLogRequest) Action(action string) ApiGetPlatformAudit
 
 func (r ApiGetPlatformAuditLogRequest) TargetType(targetType string) ApiGetPlatformAuditLogRequest {
 	r.targetType = &targetType
+	return r
+}
+
+func (r ApiGetPlatformAuditLogRequest) ActorId(actorId string) ApiGetPlatformAuditLogRequest {
+	r.actorId = &actorId
+	return r
+}
+
+func (r ApiGetPlatformAuditLogRequest) From(from time.Time) ApiGetPlatformAuditLogRequest {
+	r.from = &from
+	return r
+}
+
+func (r ApiGetPlatformAuditLogRequest) To(to time.Time) ApiGetPlatformAuditLogRequest {
+	r.to = &to
 	return r
 }
 
@@ -691,6 +710,15 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 	}
 	if r.targetType != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "targetType", r.targetType, "form", "")
+	}
+	if r.actorId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "actorId", r.actorId, "form", "")
+	}
+	if r.from != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "from", r.from, "form", "")
+	}
+	if r.to != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "form", "")
 	}
 	if r.workspaceSlug != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "workspaceSlug", r.workspaceSlug, "form", "")
@@ -2122,14 +2150,14 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 }
 
 type ApiUpdateResourceTypeAdminConfigRequest struct {
-	ctx        context.Context
-	ApiService AdminAPI
-	type_      string
-	body       *map[string]interface{}
+	ctx                                  context.Context
+	ApiService                           AdminAPI
+	type_                                string
+	updateResourceTypeAdminConfigRequest *UpdateResourceTypeAdminConfigRequest
 }
 
-func (r ApiUpdateResourceTypeAdminConfigRequest) Body(body map[string]interface{}) ApiUpdateResourceTypeAdminConfigRequest {
-	r.body = &body
+func (r ApiUpdateResourceTypeAdminConfigRequest) UpdateResourceTypeAdminConfigRequest(updateResourceTypeAdminConfigRequest UpdateResourceTypeAdminConfigRequest) ApiUpdateResourceTypeAdminConfigRequest {
+	r.updateResourceTypeAdminConfigRequest = &updateResourceTypeAdminConfigRequest
 	return r
 }
 
@@ -2174,8 +2202,8 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.body == nil {
-		return localVarReturnValue, nil, reportError("body is required and must be specified")
+	if r.updateResourceTypeAdminConfigRequest == nil {
+		return localVarReturnValue, nil, reportError("updateResourceTypeAdminConfigRequest is required and must be specified")
 	}
 
 	// to determine the Content-Type header
@@ -2196,7 +2224,7 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
 	// body params
-	localVarPostBody = r.body
+	localVarPostBody = r.updateResourceTypeAdminConfigRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

@@ -15,36 +15,70 @@ spec:
         {{- include "appbahn.platform.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "appbahn.fullname" . }}-platform
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: platform
           image: "{{ .Values.platform.image.repository }}:{{ .Values.platform.image.tag }}"
           imagePullPolicy: {{ .Values.platform.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
           env:
             # Database
-            - name: DATABASE_URL
+            - name: SPRING_DATASOURCE_URL
               value: {{ .Values.platform.database.url | quote }}
-            - name: DATABASE_USERNAME
+            - name: SPRING_DATASOURCE_USERNAME
               value: {{ .Values.platform.database.username | quote }}
-            - name: DATABASE_PASSWORD
+            - name: SPRING_DATASOURCE_PASSWORD
               value: {{ .Values.platform.database.password | quote }}
             # OIDC
-            - name: OIDC_ISSUER_URI
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
               value: {{ .Values.platform.auth.issuerUrl | quote }}
-            - name: OIDC_CLIENT_ID
-              value: {{ .Values.platform.auth.clientId | quote }}
-            - name: OIDC_CLIENT_SECRET
-              value: {{ .Values.platform.auth.clientSecret | quote }}
-            - name: OIDC_AUDIENCE
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_AUDIENCES
               value: {{ .Values.platform.auth.audience | default "appbahn" | quote }}
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTID
+              value: {{ .Values.platform.auth.clientId | quote }}
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTSECRET
+              value: {{ .Values.platform.auth.clientSecret | quote }}
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_APPBAHN_ISSUERURI
+              value: {{ .Values.platform.auth.issuerUrl | quote }}
             # Platform config
-            - name: NAMESPACE_PREFIX
+            - name: PLATFORM_NAMESPACEPREFIX
               value: {{ .Values.platform.namespacePrefix | default "abp" | quote }}
-            - name: PLATFORM_ADMIN_GROUPS
+            - name: PLATFORM_BASEDOMAIN
+              value: {{ .Values.platform.domain.base | quote }}
+            - name: PLATFORM_ADMINGROUPS
               value: {{ join "," .Values.platform.auth.platformAdminGroups | quote }}
+            # Quota / License
+            - name: PLATFORM_QUOTA_DEFAULTMAXRESOURCES
+              value: {{ .Values.platform.quota.maxResources | quote }}
+            - name: PLATFORM_QUOTA_DEFAULTMAXCPUCORES
+              value: {{ .Values.platform.quota.maxCpuCores | quote }}
+            - name: PLATFORM_QUOTA_DEFAULTMAXMEMORYMB
+              value: {{ .Values.platform.quota.maxMemoryMb | quote }}
+            - name: PLATFORM_LICENSE_RESOURCELIMIT
+              value: {{ .Values.platform.license.resourceLimit | quote }}
+            # Branding
+            - name: PLATFORM_BRANDING_INSTANCENAME
+              value: {{ .Values.platform.branding.instanceName | quote }}
+            - name: PLATFORM_BRANDING_TAGLINE
+              value: {{ .Values.platform.branding.tagline | quote }}
+            {{- if .Values.platform.branding.logoUrl }}
+            - name: PLATFORM_BRANDING_LOGOURL
+              value: {{ .Values.platform.branding.logoUrl | quote }}
+            {{- end }}
+            - name: PLATFORM_BRANDING_LOGINBUTTONTEXT
+              value: {{ .Values.platform.branding.loginButtonText | quote }}
           livenessProbe:
             httpGet:
               path: /actuator/health

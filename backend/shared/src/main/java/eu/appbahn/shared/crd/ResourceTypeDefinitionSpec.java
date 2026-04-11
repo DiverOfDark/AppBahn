@@ -1,24 +1,37 @@
 package eu.appbahn.shared.crd;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import java.util.List;
+import java.util.Map;
 import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceTypeDefinitionSpec {
 
     private String displayName;
     private String description;
+    private String category;
     private String icon;
-    private JsonNode configSchema;
+
+    @PreserveUnknownFields
+    private JsonSchemaDefinition configSchema;
+
     private List<SecretOutput> secretOutput;
     private List<ConnectionDisplayEntry> connectionDisplay;
     private Discovery discovery;
     private Lifecycle lifecycle;
-    private JsonNode quotaDimensions;
-    private JsonNode adminConfigSchema;
+
+    @PreserveUnknownFields
+    private Map<String, String> quotaDimensions;
+
+    @PreserveUnknownFields
+    private JsonSchemaDefinition adminConfigSchema;
+
     private Reconciliation reconciliation;
 
     @Data
@@ -61,8 +74,15 @@ public class ResourceTypeDefinitionSpec {
     @Data
     public static class Reconciliation {
         private CrdRef crd;
+
+        // JsonNode is intentional here: specTemplate maps to arbitrary third-party CRD specs
+        // via Go-template expressions. The structure is inherently schema-free (any nesting depth,
+        // any field names) so a typed POJO is not feasible.
+        @PreserveUnknownFields
         private JsonNode specTemplate;
-        private JsonNode statusMapping;
+
+        @PreserveUnknownFields
+        private StatusMappingDefinition statusMapping;
     }
 
     @Data

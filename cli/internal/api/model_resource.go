@@ -20,15 +20,17 @@ var _ MappedNullable = &Resource{}
 
 // Resource struct for Resource
 type Resource struct {
-	Slug            *string                  `json:"slug,omitempty"`
-	Name            *string                  `json:"name,omitempty"`
-	Type            *string                  `json:"type,omitempty"`
-	EnvironmentSlug *string                  `json:"environmentSlug,omitempty"`
-	Config          map[string]interface{}   `json:"config,omitempty"`
-	Links           []map[string]interface{} `json:"links,omitempty"`
-	Status          *string                  `json:"status,omitempty"`
-	StatusDetail    map[string]interface{}   `json:"statusDetail,omitempty"`
-	LastSyncedAt    *time.Time               `json:"lastSyncedAt,omitempty"`
+	Slug            *string               `json:"slug,omitempty"`
+	Name            *string               `json:"name,omitempty"`
+	Type            *string               `json:"type,omitempty"`
+	EnvironmentSlug *string               `json:"environmentSlug,omitempty"`
+	Config          *ResourceConfig       `json:"config,omitempty"`
+	Links           []LinkConfig          `json:"links,omitempty"`
+	Status          *string               `json:"status,omitempty"`
+	StatusDetail    *ResourceStatusDetail `json:"statusDetail,omitempty"`
+	LastSyncedAt    *time.Time            `json:"lastSyncedAt,omitempty"`
+	CreatedAt       *time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt       *time.Time            `json:"updatedAt,omitempty"`
 }
 
 // NewResource instantiates a new Resource object
@@ -177,19 +179,19 @@ func (o *Resource) SetEnvironmentSlug(v string) {
 }
 
 // GetConfig returns the Config field value if set, zero value otherwise.
-func (o *Resource) GetConfig() map[string]interface{} {
+func (o *Resource) GetConfig() ResourceConfig {
 	if o == nil || IsNil(o.Config) {
-		var ret map[string]interface{}
+		var ret ResourceConfig
 		return ret
 	}
-	return o.Config
+	return *o.Config
 }
 
 // GetConfigOk returns a tuple with the Config field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Resource) GetConfigOk() (map[string]interface{}, bool) {
+func (o *Resource) GetConfigOk() (*ResourceConfig, bool) {
 	if o == nil || IsNil(o.Config) {
-		return map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.Config, true
 }
@@ -203,15 +205,15 @@ func (o *Resource) HasConfig() bool {
 	return false
 }
 
-// SetConfig gets a reference to the given map[string]interface{} and assigns it to the Config field.
-func (o *Resource) SetConfig(v map[string]interface{}) {
-	o.Config = v
+// SetConfig gets a reference to the given ResourceConfig and assigns it to the Config field.
+func (o *Resource) SetConfig(v ResourceConfig) {
+	o.Config = &v
 }
 
 // GetLinks returns the Links field value if set, zero value otherwise.
-func (o *Resource) GetLinks() []map[string]interface{} {
+func (o *Resource) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
-		var ret []map[string]interface{}
+		var ret []LinkConfig
 		return ret
 	}
 	return o.Links
@@ -219,7 +221,7 @@ func (o *Resource) GetLinks() []map[string]interface{} {
 
 // GetLinksOk returns a tuple with the Links field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Resource) GetLinksOk() ([]map[string]interface{}, bool) {
+func (o *Resource) GetLinksOk() ([]LinkConfig, bool) {
 	if o == nil || IsNil(o.Links) {
 		return nil, false
 	}
@@ -235,8 +237,8 @@ func (o *Resource) HasLinks() bool {
 	return false
 }
 
-// SetLinks gets a reference to the given []map[string]interface{} and assigns it to the Links field.
-func (o *Resource) SetLinks(v []map[string]interface{}) {
+// SetLinks gets a reference to the given []LinkConfig and assigns it to the Links field.
+func (o *Resource) SetLinks(v []LinkConfig) {
 	o.Links = v
 }
 
@@ -273,19 +275,19 @@ func (o *Resource) SetStatus(v string) {
 }
 
 // GetStatusDetail returns the StatusDetail field value if set, zero value otherwise.
-func (o *Resource) GetStatusDetail() map[string]interface{} {
+func (o *Resource) GetStatusDetail() ResourceStatusDetail {
 	if o == nil || IsNil(o.StatusDetail) {
-		var ret map[string]interface{}
+		var ret ResourceStatusDetail
 		return ret
 	}
-	return o.StatusDetail
+	return *o.StatusDetail
 }
 
 // GetStatusDetailOk returns a tuple with the StatusDetail field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Resource) GetStatusDetailOk() (map[string]interface{}, bool) {
+func (o *Resource) GetStatusDetailOk() (*ResourceStatusDetail, bool) {
 	if o == nil || IsNil(o.StatusDetail) {
-		return map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.StatusDetail, true
 }
@@ -299,9 +301,9 @@ func (o *Resource) HasStatusDetail() bool {
 	return false
 }
 
-// SetStatusDetail gets a reference to the given map[string]interface{} and assigns it to the StatusDetail field.
-func (o *Resource) SetStatusDetail(v map[string]interface{}) {
-	o.StatusDetail = v
+// SetStatusDetail gets a reference to the given ResourceStatusDetail and assigns it to the StatusDetail field.
+func (o *Resource) SetStatusDetail(v ResourceStatusDetail) {
+	o.StatusDetail = &v
 }
 
 // GetLastSyncedAt returns the LastSyncedAt field value if set, zero value otherwise.
@@ -334,6 +336,70 @@ func (o *Resource) HasLastSyncedAt() bool {
 // SetLastSyncedAt gets a reference to the given time.Time and assigns it to the LastSyncedAt field.
 func (o *Resource) SetLastSyncedAt(v time.Time) {
 	o.LastSyncedAt = &v
+}
+
+// GetCreatedAt returns the CreatedAt field value if set, zero value otherwise.
+func (o *Resource) GetCreatedAt() time.Time {
+	if o == nil || IsNil(o.CreatedAt) {
+		var ret time.Time
+		return ret
+	}
+	return *o.CreatedAt
+}
+
+// GetCreatedAtOk returns a tuple with the CreatedAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Resource) GetCreatedAtOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.CreatedAt) {
+		return nil, false
+	}
+	return o.CreatedAt, true
+}
+
+// HasCreatedAt returns a boolean if a field has been set.
+func (o *Resource) HasCreatedAt() bool {
+	if o != nil && !IsNil(o.CreatedAt) {
+		return true
+	}
+
+	return false
+}
+
+// SetCreatedAt gets a reference to the given time.Time and assigns it to the CreatedAt field.
+func (o *Resource) SetCreatedAt(v time.Time) {
+	o.CreatedAt = &v
+}
+
+// GetUpdatedAt returns the UpdatedAt field value if set, zero value otherwise.
+func (o *Resource) GetUpdatedAt() time.Time {
+	if o == nil || IsNil(o.UpdatedAt) {
+		var ret time.Time
+		return ret
+	}
+	return *o.UpdatedAt
+}
+
+// GetUpdatedAtOk returns a tuple with the UpdatedAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Resource) GetUpdatedAtOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.UpdatedAt) {
+		return nil, false
+	}
+	return o.UpdatedAt, true
+}
+
+// HasUpdatedAt returns a boolean if a field has been set.
+func (o *Resource) HasUpdatedAt() bool {
+	if o != nil && !IsNil(o.UpdatedAt) {
+		return true
+	}
+
+	return false
+}
+
+// SetUpdatedAt gets a reference to the given time.Time and assigns it to the UpdatedAt field.
+func (o *Resource) SetUpdatedAt(v time.Time) {
+	o.UpdatedAt = &v
 }
 
 func (o Resource) MarshalJSON() ([]byte, error) {
@@ -372,6 +438,12 @@ func (o Resource) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.LastSyncedAt) {
 		toSerialize["lastSyncedAt"] = o.LastSyncedAt
+	}
+	if !IsNil(o.CreatedAt) {
+		toSerialize["createdAt"] = o.CreatedAt
+	}
+	if !IsNil(o.UpdatedAt) {
+		toSerialize["updatedAt"] = o.UpdatedAt
 	}
 	return toSerialize, nil
 }
