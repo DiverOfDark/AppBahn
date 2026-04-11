@@ -58,4 +58,4 @@ release:
     owner: diverofdark
     name: appbahn
   draft: false
-  prerelease: auto
+  prerelease: false
