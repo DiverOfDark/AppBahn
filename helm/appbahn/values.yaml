@@ -12,6 +12,9 @@ platform:
     issuerUrl: ""
     clientId: ""
     clientSecret: ""
+    # Use an existing Secret instead of inline clientId/clientSecret.
+    # The secret must contain keys: client-id, client-secret
+    existingSecret: ""
     audience: ""
     groupClaim: "groups"
     platformAdminGroups: []
@@ -74,6 +77,9 @@ operator:
   auth:
     clientId: "appbahn-operator"
     clientSecret: ""
+    # Use an existing Secret instead of inline clientId/clientSecret.
+    # The secret must contain keys: client-id, client-secret
+    existingSecret: ""
     tokenEndpoint: ""
   cache:
     refreshInterval: "5m"
@@ -87,6 +93,8 @@ operator:
 
 serviceMonitor:
   enabled: false
+
+additionalObjects: []
 
 builtinResourceTypes:
   - name: postgresql

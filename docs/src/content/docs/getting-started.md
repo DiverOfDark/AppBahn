@@ -88,8 +88,9 @@ Create a `values.yaml` with your configuration:
 | `platform.database.username`        | Yes      | `appbahn`                                 | Database user                                                                    |
 | `platform.database.password`        | Yes      | `appbahn`                                 | Database password                                                                |
 | `platform.auth.issuerUrl`           | Yes      |                                           | OIDC provider issuer URL (supports `.well-known/openid-configuration` discovery) |
-| `platform.auth.clientId`            | Yes      |                                           | OAuth2 client ID for the platform                                                |
-| `platform.auth.clientSecret`        | Yes      |                                           | OAuth2 client secret                                                             |
+| `platform.auth.clientId`            | Yes*     |                                           | OAuth2 client ID for the platform (ignored when `existingSecret` is set)         |
+| `platform.auth.clientSecret`        | Yes*     |                                           | OAuth2 client secret (ignored when `existingSecret` is set)                      |
+| `platform.auth.existingSecret`      | No       |                                           | Name of an existing Secret containing `client-id` and `client-secret` keys       |
 | `platform.auth.audience`            | No       | `appbahn`                                 | Expected JWT audience claim — tokens without this `aud` are rejected             |
 | `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
 | `platform.namespacePrefix`          | No       | `abp`                                     | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`)                          |
@@ -104,8 +105,9 @@ Create a `values.yaml` with your configuration:
 | Value                              | Required | Default            | Description                                                                     |
 | ---------------------------------- | -------- | ------------------ | ------------------------------------------------------------------------------- |
 | `operator.platformApi.endpoint`    | No       | auto-detected      | URL of the platform API (internal service)                                      |
-| `operator.auth.clientId`           | Yes      | `appbahn-operator` | OAuth2 client ID (client credentials grant)                                     |
-| `operator.auth.clientSecret`       | Yes      |                    | OAuth2 client secret                                                            |
+| `operator.auth.clientId`           | Yes*     | `appbahn-operator` | OAuth2 client ID (ignored when `existingSecret` is set)                         |
+| `operator.auth.clientSecret`       | Yes*     |                    | OAuth2 client secret (ignored when `existingSecret` is set)                     |
+| `operator.auth.existingSecret`     | No       |                    | Name of an existing Secret containing `client-id` and `client-secret` keys      |
 | `operator.auth.tokenEndpoint`      | Yes      |                    | OIDC token endpoint URL                                                         |
 | `operator.clusterName`             | No       | `local`            | Cluster name reported by the operator (set for multi-cluster deployments)       |
 | `operator.ingressClassName`        | No       |                    | Ingress class for operator-created Ingresses (required if cluster has multiple) |
@@ -138,6 +140,78 @@ operator:
     clientId: appbahn-operator
     clientSecret: operator-secret
     tokenEndpoint: https://keycloak.example.com/realms/appbahn/protocol/openid-connect/token
+```
+
+### Using existing Secrets for OIDC credentials
+
+Instead of passing client credentials as plaintext in `values.yaml`, you can reference a pre-existing Kubernetes Secret. This is recommended for production deployments and works well with external secret managers (e.g. External Secrets Operator, Sealed Secrets).
+
+The Secret must contain two keys: `client-id` and `client-secret`.
+
+```bash
+# Create the secrets before installing the chart
+kubectl create secret generic appbahn-platform-oidc \
+  --namespace appbahn \
+  --from-literal=client-id=appbahn \
+  --from-literal=client-secret=my-client-secret
+
+kubectl create secret generic appbahn-operator-oidc \
+  --namespace appbahn \
+  --from-literal=client-id=appbahn-operator \
+  --from-literal=client-secret=operator-secret
+```
+
+Then reference them in your `values.yaml`:
+
+```yaml
+platform:
+  auth:
+    issuerUrl: https://keycloak.example.com/realms/appbahn
+    existingSecret: appbahn-platform-oidc
+    # clientId and clientSecret are ignored when existingSecret is set
+
+operator:
+  auth:
+    existingSecret: appbahn-operator-oidc
+    tokenEndpoint: https://keycloak.example.com/realms/appbahn/protocol/openid-connect/token
+```
+
+> **Note**: When `existingSecret` is set, the `clientId` and `clientSecret` values are ignored. All credential fields are read from the referenced Secret.
+
+### Additional objects
+
+You can create arbitrary Kubernetes objects as part of the Helm release using the `additionalObjects` list. Each entry is a complete Kubernetes manifest rendered as-is. This is useful for creating Secrets, ConfigMaps, ExternalSecrets, or any other resources alongside AppBahn.
+
+```yaml
+additionalObjects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: appbahn-platform-oidc
+    type: Opaque
+    stringData:
+      client-id: appbahn
+      client-secret: my-client-secret
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: appbahn-operator-oidc
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: vault-backend
+        kind: ClusterSecretStore
+      target:
+        name: appbahn-operator-oidc
+      data:
+        - secretKey: client-id
+          remoteRef:
+            key: appbahn/operator
+            property: client-id
+        - secretKey: client-secret
+          remoteRef:
+            key: appbahn/operator
+            property: client-secret
 ```
 
 ### 4. Verify the installation

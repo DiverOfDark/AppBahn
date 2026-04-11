@@ -44,9 +44,23 @@ spec:
             - name: PLATFORM_API_BASEURL
               value: {{ .Values.operator.platformApi.endpoint | default (printf "http://%s-platform:8080" (include "appbahn.fullname" .)) | quote }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTID
+              {{- if .Values.operator.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.operator.auth.existingSecret | quote }}
+                  key: client-id
+              {{- else }}
               value: {{ .Values.operator.auth.clientId | default "appbahn-operator" | quote }}
+              {{- end }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_APPBAHN_CLIENTSECRET
+              {{- if .Values.operator.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.operator.auth.existingSecret | quote }}
+                  key: client-secret
+              {{- else }}
               value: {{ .Values.operator.auth.clientSecret | quote }}
+              {{- end }}
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_APPBAHN_TOKENURI
               value: {{ .Values.operator.auth.tokenEndpoint | quote }}
             - name: OPERATOR_CLUSTERNAME
