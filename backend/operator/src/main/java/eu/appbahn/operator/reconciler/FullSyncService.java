@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -36,9 +37,10 @@ public class FullSyncService {
     }
 
     @EventListener(ApplicationReadyEvent.class)
+    @Order(100) // Run after OperatorStarter (JOSDK) which starts the operator on the same event
     public void onStartup() {
         log.info("Performing startup full sync");
-        performFullSync();
+        Thread.startVirtualThread(this::performFullSync);
     }
 
     @Scheduled(
