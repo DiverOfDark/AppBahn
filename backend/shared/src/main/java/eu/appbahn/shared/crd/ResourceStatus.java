@@ -10,7 +10,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResourceStatus {
 
-    @PrinterColumn(name = "PHASE")
+    @PrinterColumn(name = "PHASE", priority = 3)
     private ResourcePhase phase;
 
     private String message;

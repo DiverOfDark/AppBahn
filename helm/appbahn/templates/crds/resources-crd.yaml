@@ -14,15 +14,15 @@ spec:
   - additionalPrinterColumns:
     - jsonPath: .spec.name
       name: NAME
-      priority: 0
+      priority: 2
       type: string
     - jsonPath: .spec.type
       name: TYPE
-      priority: 0
+      priority: 1
       type: string
     - jsonPath: .status.phase
       name: PHASE
-      priority: 0
+      priority: 3
       type: string
     name: v1
     schema:

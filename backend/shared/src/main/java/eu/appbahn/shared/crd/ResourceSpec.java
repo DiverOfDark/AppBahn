@@ -12,12 +12,12 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResourceSpec {
 
-    @PrinterColumn(name = "TYPE")
+    @PrinterColumn(name = "TYPE", priority = 1)
     @Required
     @Size(min = 1)
     private String type;
 
-    @PrinterColumn(name = "NAME")
+    @PrinterColumn(name = "NAME", priority = 2)
     @Required
     @Size(min = 1)
     private String name;
