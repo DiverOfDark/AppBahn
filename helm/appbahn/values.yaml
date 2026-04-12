@@ -1,6 +1,6 @@
 platform:
   image:
-    repository: ghcr.io/appbahn/appbahn-platform
+    repository: ghcr.io/diverofdark/appbahn/appbahn-platform
     tag: ""
     pullPolicy: IfNotPresent
   replicas: 1
@@ -57,7 +57,7 @@ platform:
 
 operator:
   image:
-    repository: ghcr.io/appbahn/appbahn-operator
+    repository: ghcr.io/diverofdark/appbahn/appbahn-operator
     tag: ""
     pullPolicy: IfNotPresent
   replicas: 1
