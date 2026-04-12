@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="4" fill="#1a1a2e"/>
-  <text x="16" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="600" font-size="18" fill="#d4a843">A</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773 768" fill="none">
+  <rect width="773" height="768" rx="64" fill="#1a1a1a"/>
+  <g transform="translate(386.5, 384)">
+    <g transform="translate(-200, -240)">
+      <path d="M200 0 L380 480 L320 480 L270 340 L130 340 L80 480 L20 480 Z" fill="#d4a843"/>
+      <path d="M200 120 L280 340 L120 340 Z" fill="#1a1a1a"/>
+      <line x1="140" y1="260" x2="260" y2="260" stroke="#d4a843" stroke-width="20"/>
+      <line x1="160" y1="200" x2="240" y2="200" stroke="#d4a843" stroke-width="16"/>
+    </g>
+  </g>
 </svg>

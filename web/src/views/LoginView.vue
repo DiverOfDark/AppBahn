@@ -58,23 +58,7 @@ onMounted(async () => {
           :alt="branding.instanceName"
           class="login-logo"
         />
-        <div v-else class="login-logo-placeholder">
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <rect width="40" height="40" rx="4" fill="var(--color-accent)" />
-            <text
-              x="50%"
-              y="54%"
-              dominant-baseline="middle"
-              text-anchor="middle"
-              fill="var(--color-bg-base)"
-              font-family="var(--font-heading)"
-              font-weight="700"
-              font-size="18"
-            >
-              A
-            </text>
-          </svg>
-        </div>
+        <img v-else src="/logo.png" alt="AppBahn" class="login-logo" />
         <h1 class="login-title">{{ branding.instanceName }}</h1>
         <p class="login-tagline">{{ branding.tagline }}</p>
       </div>
