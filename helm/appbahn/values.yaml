@@ -69,7 +69,6 @@ operator:
   fullSyncInitialDelayMs: 60000
   security:
     runAsNonRoot: true
-    readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     dropCapabilities: "ALL"
   platformApi:
