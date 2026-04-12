@@ -2,6 +2,7 @@ package eu.appbahn.operator.auth;
 
 import eu.appbahn.operator.client.ApiClient;
 import eu.appbahn.operator.client.api.ResourceSyncApi;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,8 @@ public class OAuth2ClientConfig {
             @Value("${platform.api.base-url:http://localhost:8080}") String baseUrl) {
         var apiClient = new ApiClient();
         apiClient.updateBaseUri(baseUrl + "/api/v1/internal");
+        apiClient.setConnectTimeout(Duration.ofSeconds(5));
+        apiClient.setReadTimeout(Duration.ofSeconds(30));
         apiClient.setRequestInterceptor(builder -> {
             var request = OAuth2AuthorizeRequest.withClientRegistrationId("appbahn")
                     .principal("operator")
