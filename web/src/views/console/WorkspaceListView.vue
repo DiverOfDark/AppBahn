@@ -7,6 +7,7 @@ import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import EntityCard from '@/components/EntityCard.vue'
+import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
 type Workspace = components['schemas']['Workspace']
 
@@ -18,6 +19,7 @@ const showCreate = ref(false)
 const createLoading = ref(false)
 const newName = ref('')
 const error = ref('')
+const { refreshSidebar } = useSidebarRefresh()
 
 async function fetchWorkspaces() {
   loading.value = true
@@ -47,6 +49,7 @@ async function createWorkspace() {
     showCreate.value = false
     newName.value = ''
     await fetchWorkspaces()
+    refreshSidebar()
   } catch {
     error.value = 'Failed to create workspace'
   } finally {

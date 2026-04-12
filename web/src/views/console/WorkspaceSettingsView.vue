@@ -13,6 +13,7 @@ import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { formatDate } from '@/utils/format'
 import { usePageTitle } from '@/composables/usePageTitle'
+import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
 type Workspace = components['schemas']['Workspace']
 type WorkspaceMember = components['schemas']['WorkspaceMember']
@@ -38,6 +39,7 @@ const TAB_LABELS: Record<Tab, string> = {
 
 const route = useRoute()
 const { setPageTitle } = usePageTitle()
+const { refreshSidebar } = useSidebarRefresh()
 const wsSlug = ref(route.params.wsSlug as string)
 
 const workspace = ref<Workspace | null>(null)
@@ -325,6 +327,7 @@ async function saveSecurity() {
     // runtimeClassName is set on the workspace object itself
     // Re-fetch to confirm
     await fetchWorkspace()
+    refreshSidebar()
     saveSuccess.value = 'Security settings saved.'
   } catch {
     error.value = 'Failed to save security settings'
