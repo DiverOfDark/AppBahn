@@ -25,7 +25,6 @@ AppBahn requires an OpenID Connect (OIDC) provider for authentication. Any provi
 - **Grant type**: Authorization Code
 - **Redirect URI**: `https://<your-appbahn-domain>/login/oauth2/code/appbahn`
 - **Scopes**: `openid`, `profile`, `email`
-- **Audience**: Configure the token to include `aud: appbahn` (the platform rejects tokens without this audience)
 - **Token claims**: Ensure the ID token includes `email` and optionally `groups` (for OIDC group mapping)
 
 **2. Operator client** (Client Credentials flow, for machine-to-machine):
@@ -33,10 +32,9 @@ AppBahn requires an OpenID Connect (OIDC) provider for authentication. Any provi
 - **Client type**: Confidential (with client secret)
 - **Grant type**: Client Credentials
 - **Scopes**: `openid`, `internal` (the `internal` scope grants access to the platform's internal sync API)
-- **Audience**: Must match the platform's audience (default: `appbahn`)
 - No redirect URI needed
 
-> **Security note**: The audience claim (`aud`) prevents token reuse across applications. A JWT issued for a different application on the same OIDC provider will be rejected by AppBahn because it won't contain `aud: appbahn`.
+> **Note**: AppBahn validates tokens using the issuer (`iss`) claim. All tokens from the configured OIDC provider are trusted. The `internal` scope is what distinguishes operator tokens from user tokens — only operator tokens with `SCOPE_internal` can access the internal sync API.
 
 ### Platform admin groups
 
@@ -44,27 +42,174 @@ To grant users platform-wide admin access, configure `platform.auth.platformAdmi
 
 ### Example: Keycloak
 
-1. Create a realm (e.g. `appbahn`)
-2. Create a client `appbahn` with:
-   - Client authentication: On
-   - Authentication flow: Standard flow (Authorization Code)
-   - Valid redirect URIs: `https://appbahn.example.com/login/oauth2/code/appbahn`
-3. Create a client `appbahn-operator` with:
-   - Client authentication: On
-   - Authentication flow: Service accounts roles (Client Credentials)
-4. Create a client scope `internal` (Client Scopes → Create):
-   - Name: `internal`
-   - Type: Optional
-   - Include in token scope: On
-   - Assign this scope to the `appbahn-operator` client (Client → Client Scopes → Add client scope)
-5. For **both** clients, add an audience mapper (Mappers → Add mapper → Audience):
-   - Included Custom Audience: `appbahn`
-   - Add to ID token: On
-   - Add to access token: On
-6. Create a group `appbahn-admins` and add your admin users
-7. Add a group mapper to the `appbahn` client scope to include `groups` in the token
+Keycloak uses standard OIDC clients for both the platform and operator.
 
-Your issuer URL will be: `https://keycloak.example.com/realms/appbahn`
+#### 1. Create a Realm
+
+Create a new realm (e.g. `appbahn`) or use an existing one. All clients will live in this realm.
+
+#### 2. Platform Client (Authorization Code)
+
+Go to **Clients** → **Create client**:
+
+- **Client ID**: `appbahn`
+- **Client authentication**: On (confidential client)
+- **Authentication flow**: Check **Standard flow** (Authorization Code), uncheck Direct access grants
+- **Valid redirect URIs**: `https://appbahn.example.com/login/oauth2/code/appbahn`
+- **Web origins**: `https://appbahn.example.com`
+
+Save the generated **Client Secret** from the **Credentials** tab.
+
+#### 3. Operator Client (Client Credentials)
+
+Go to **Clients** → **Create client**:
+
+- **Client ID**: `appbahn-operator`
+- **Client authentication**: On
+- **Authentication flow**: Check **Service accounts roles** only (this enables Client Credentials grant)
+
+Save the generated **Client Secret** from the **Credentials** tab.
+
+#### 4. Create the `internal` Client Scope
+
+The operator needs the `internal` scope to access the platform's sync API.
+
+1. Go to **Client scopes** → **Create client scope**
+2. Configure:
+   - **Name**: `internal`
+   - **Type**: Optional
+   - **Include in token scope**: On
+3. Assign to the operator client: go to **Clients** → `appbahn-operator` → **Client scopes** → **Add client scope** → select `internal` → **Add** as **Default**
+
+#### 5. Add Groups to ID Tokens
+
+AppBahn uses the `groups` claim in the ID token for OIDC group mapping and platform admin access.
+
+1. Go to **Client scopes** → `appbahn` (the dedicated scope for your platform client, created automatically)
+2. **Mappers** → **Add mapper** → **By configuration** → **Group Membership**
+3. Configure:
+   - **Name**: `groups`
+   - **Token claim name**: `groups`
+   - **Full group path**: Off (use short names)
+   - **Add to ID token**: On
+   - **Add to access token**: On
+
+#### 6. Create Admin Group
+
+1. Go to **Groups** → **Create group** → name it `appbahn-admins`
+2. Add your admin users to this group (**Users** → select user → **Groups** → **Join group**)
+3. Set `platform.auth.platformAdminGroups: ["appbahn-admins"]` in your Helm values
+
+#### Configuration values
+
+- **Issuer URL**: `https://keycloak.example.com/realms/appbahn`
+- **Token endpoint**: `https://keycloak.example.com/realms/appbahn/protocol/openid-connect/token`
+
+### Example: Zitadel
+
+Zitadel handles the two client types differently:
+
+- **Platform client** → standard OIDC Application (Authorization Code flow)
+- **Operator client** → Service Account (Machine User) with client credentials
+
+#### 1. Create a Project
+
+Create a project (e.g. "AppBahn") in the Zitadel console. Note the **Project ID** — you'll need it for audience configuration.
+
+#### 2. Platform OIDC Application
+
+In your project, create an OIDC Application:
+
+- **Name**: `AppBahn Platform`
+- **Application type**: Web
+- **Authentication method**: Basic (confidential client with secret)
+- **Redirect URI**: `https://appbahn.example.com/login/oauth2/code/appbahn`
+- **Post-logout redirect URI**: `https://appbahn.example.com`
+- **Grant type**: Authorization Code
+- **Response type**: Code
+- **Token type**: JWT
+- Enable: Access Token Role Assertion, ID Token Role Assertion, ID Token Userinfo Assertion
+
+Save the generated **Client ID** and **Client Secret**.
+
+#### 3. Operator Service Account (Machine User)
+
+> **Important**: The operator requires Client Credentials flow, which in Zitadel is only supported by **Service Accounts (Machine Users)** — not by OIDC or API applications. OIDC application credentials cannot be used with `grant_type=client_credentials`, and API application credentials are only for token introspection, not token acquisition.
+
+1. Go to **Users** → **Service Users** → **New**
+2. Create a machine user (e.g. username `appbahn-operator`, name "AppBahn Operator")
+3. Click **Actions** → **Generate Client Secret**
+4. Copy the **Client ID** and **Client Secret** immediately (the secret cannot be retrieved later)
+
+#### 4. Create the `internal` project role
+
+The operator requests `scope=openid internal` when fetching tokens. In Zitadel, custom scopes map to project roles:
+
+1. Go to your project → **Roles** → **New**
+2. Create a role with key `internal` and display name "AppBahn Internal"
+
+#### 5. Grant the operator access to the project
+
+The machine user needs a **User Grant** on the project so its tokens include the correct audience and roles:
+
+1. Go to **Authorizations** → **New**
+2. Select the `appbahn-operator` service user
+3. Select your project
+4. Assign the `internal` role
+
+Without this grant, the operator's tokens won't include the correct roles.
+
+#### Terraform example
+
+If you manage Zitadel with Terraform, here's the complete setup:
+
+```hcl
+# Platform OIDC client (Authorization Code flow)
+resource "zitadel_application_oidc" "appbahn_platform" {
+  org_id                      = var.zitadel_org_id
+  project_id                  = zitadel_project.your_project.id
+  name                        = "AppBahn Platform"
+  redirect_uris               = ["https://appbahn.example.com/login/oauth2/code/appbahn"]
+  post_logout_redirect_uris   = ["https://appbahn.example.com"]
+  response_types              = ["OIDC_RESPONSE_TYPE_CODE"]
+  grant_types                 = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE"]
+  app_type                    = "OIDC_APP_TYPE_WEB"
+  auth_method_type            = "OIDC_AUTH_METHOD_TYPE_BASIC"
+  version                     = "OIDC_VERSION_1_0"
+  access_token_type           = "OIDC_TOKEN_TYPE_JWT"
+  access_token_role_assertion = true
+  id_token_role_assertion     = true
+  id_token_userinfo_assertion = true
+}
+
+# Operator service account (Client Credentials flow)
+resource "zitadel_machine_user" "appbahn_operator" {
+  org_id            = var.zitadel_org_id
+  user_name         = "appbahn-operator"
+  name              = "AppBahn Operator"
+  with_secret       = true
+  access_token_type = "ACCESS_TOKEN_TYPE_JWT"
+}
+
+# Project role for the 'internal' scope
+resource "zitadel_project_role" "appbahn_internal" {
+  org_id       = var.zitadel_org_id
+  project_id   = zitadel_project.your_project.id
+  role_key     = "internal"
+  display_name = "AppBahn Internal"
+}
+
+# Grant the operator access to the project with the internal role
+resource "zitadel_user_grant" "appbahn_operator" {
+  org_id     = var.zitadel_org_id
+  project_id = zitadel_project.your_project.id
+  user_id    = zitadel_machine_user.appbahn_operator.id
+  role_keys  = [zitadel_project_role.appbahn_internal.role_key]
+}
+```
+
+Your issuer URL will be: `https://auth.example.com` (your Zitadel domain)
+Your token endpoint will be: `https://auth.example.com/oauth/v2/token`
 
 ## Installation
 
@@ -86,12 +231,12 @@ Create a `values.yaml` with your configuration:
 | ----------------------------------- | -------- | ----------------------------------------- | -------------------------------------------------------------------------------- |
 | `platform.database.url`             | Yes      | `jdbc:postgresql://postgres:5432/appbahn` | PostgreSQL JDBC connection string                                                |
 | `platform.database.username`        | Yes      | `appbahn`                                 | Database user                                                                    |
-| `platform.database.password`        | Yes      | `appbahn`                                 | Database password                                                                |
+| `platform.database.password`        | Yes\*    | `appbahn`                                 | Database password (ignored when `credentialRef` is set)                          |
+| `platform.database.credentialRef`   | No       |                                           | Existing Secret with `username` and `password` keys for database credentials     |
 | `platform.auth.issuerUrl`           | Yes      |                                           | OIDC provider issuer URL (supports `.well-known/openid-configuration` discovery) |
 | `platform.auth.clientId`            | Yes\*    |                                           | OAuth2 client ID for the platform (ignored when `existingSecret` is set)         |
 | `platform.auth.clientSecret`        | Yes\*    |                                           | OAuth2 client secret (ignored when `existingSecret` is set)                      |
 | `platform.auth.existingSecret`      | No       |                                           | Name of an existing Secret containing `client-id` and `client-secret` keys       |
-| `platform.auth.audience`            | No       | `appbahn`                                 | Expected JWT audience claim — tokens without this `aud` are rejected             |
 | `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
 | `platform.namespacePrefix`          | No       | `abp`                                     | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`)                          |
 | `platform.domain.base`              | No       | `appbahn.example.com`                     | Base domain for auto-generated resource URLs (`{slug}.{baseDomain}`)             |
