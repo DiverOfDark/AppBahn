@@ -37,9 +37,23 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: {{ .Values.platform.database.url | quote }}
             - name: SPRING_DATASOURCE_USERNAME
+              {{- if .Values.platform.database.credentialRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.platform.database.credentialRef | quote }}
+                  key: username
+              {{- else }}
               value: {{ .Values.platform.database.username | quote }}
+              {{- end }}
             - name: SPRING_DATASOURCE_PASSWORD
+              {{- if .Values.platform.database.credentialRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.platform.database.credentialRef | quote }}
+                  key: password
+              {{- else }}
               value: {{ .Values.platform.database.password | quote }}
+              {{- end }}
             # OIDC
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
               value: {{ .Values.platform.auth.issuerUrl | quote }}
