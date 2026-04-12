@@ -102,11 +102,17 @@ public class WebhookServerConfig {
         byte[] keyBytes = Base64.getDecoder().decode(keyBase64);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
 
-        PrivateKey privateKey;
-        try {
-            privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
-        } catch (Exception e) {
-            privateKey = KeyFactory.getInstance("EC").generatePrivate(keySpec);
+        PrivateKey privateKey = null;
+        for (String algorithm : List.of("RSA", "EC", "Ed25519", "EdDSA")) {
+            try {
+                privateKey = KeyFactory.getInstance(algorithm).generatePrivate(keySpec);
+                break;
+            } catch (Exception ignored) {
+                // Try next algorithm
+            }
+        }
+        if (privateKey == null) {
+            throw new java.security.GeneralSecurityException("Unable to parse private key — unsupported algorithm");
         }
 
         // Build PKCS12 keystore
