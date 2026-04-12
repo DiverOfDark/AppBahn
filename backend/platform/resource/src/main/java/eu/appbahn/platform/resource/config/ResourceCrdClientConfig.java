@@ -4,8 +4,8 @@ import eu.appbahn.platform.resource.service.KubernetesResourceCrdClient;
 import eu.appbahn.platform.resource.service.NoOpResourceCrdClient;
 import eu.appbahn.platform.resource.service.ResourceCrdClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class ResourceCrdClientConfig {
 
     @Bean
-    @ConditionalOnBean(KubernetesClient.class)
+    @ConditionalOnProperty(name = "platform.kubernetes.enabled", matchIfMissing = true)
     public ResourceCrdClient kubernetesResourceCrdClient(KubernetesClient kubernetesClient) {
         return new KubernetesResourceCrdClient(kubernetesClient);
     }
