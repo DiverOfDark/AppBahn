@@ -8,6 +8,7 @@ import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
 type Environment = components['schemas']['Environment']
+type Resource = components['schemas']['Resource']
 
 const route = useRoute()
 const router = useRouter()
@@ -16,10 +17,13 @@ const { generation } = useSidebarRefresh()
 const workspaces = ref<Workspace[]>([])
 const expandedWs = ref<Set<string>>(new Set())
 const expandedProj = ref<Set<string>>(new Set())
+const expandedEnv = ref<Set<string>>(new Set())
 const projectsByWs = ref<Record<string, Project[]>>({})
 const envsByProj = ref<Record<string, Environment[]>>({})
+const resourcesByEnv = ref<Record<string, Resource[]>>({})
 const loadingWs = ref<Set<string>>(new Set())
 const loadingProj = ref<Set<string>>(new Set())
+const loadingEnv = ref<Set<string>>(new Set())
 const loadingRoot = ref(true)
 
 async function fetchWorkspaces() {
@@ -66,6 +70,21 @@ async function fetchEnvironments(projSlug: string, force = false) {
   }
 }
 
+async function fetchResources(envSlug: string, force = false) {
+  if (!force && resourcesByEnv.value[envSlug]) return
+  loadingEnv.value.add(envSlug)
+  try {
+    const { data } = await api.GET('/resources', {
+      params: { query: { environmentSlug: envSlug, page: 0, size: 100 } },
+    })
+    if (data) {
+      resourcesByEnv.value[envSlug] = data.content ?? []
+    }
+  } finally {
+    loadingEnv.value.delete(envSlug)
+  }
+}
+
 function toggleWs(wsSlug: string) {
   if (expandedWs.value.has(wsSlug)) {
     expandedWs.value.delete(wsSlug)
@@ -84,10 +103,32 @@ function toggleProj(projSlug: string) {
   }
 }
 
-function isActive(wsSlug: string, projSlug?: string, envSlug?: string): boolean {
+function toggleEnv(envSlug: string) {
+  if (expandedEnv.value.has(envSlug)) {
+    expandedEnv.value.delete(envSlug)
+  } else {
+    expandedEnv.value.add(envSlug)
+    fetchResources(envSlug)
+  }
+}
+
+function isActive(wsSlug: string, projSlug?: string, envSlug?: string, resSlug?: string): boolean {
   const params = route.params
+  if (resSlug) {
+    return (
+      params.wsSlug === wsSlug &&
+      params.projSlug === projSlug &&
+      params.envSlug === envSlug &&
+      params.resSlug === resSlug
+    )
+  }
   if (envSlug) {
-    return params.wsSlug === wsSlug && params.projSlug === projSlug && params.envSlug === envSlug
+    return (
+      params.wsSlug === wsSlug &&
+      params.projSlug === projSlug &&
+      params.envSlug === envSlug &&
+      !params.resSlug
+    )
   }
   if (projSlug) {
     return params.wsSlug === wsSlug && params.projSlug === projSlug && !params.envSlug
@@ -95,8 +136,10 @@ function isActive(wsSlug: string, projSlug?: string, envSlug?: string): boolean 
   return params.wsSlug === wsSlug && !params.projSlug
 }
 
-function navigate(wsSlug: string, projSlug?: string, envSlug?: string) {
-  if (envSlug) {
+function navigate(wsSlug: string, projSlug?: string, envSlug?: string, resSlug?: string) {
+  if (resSlug) {
+    router.push({ name: 'resource', params: { wsSlug, projSlug, envSlug, resSlug } })
+  } else if (envSlug) {
     router.push({ name: 'environment', params: { wsSlug, projSlug, envSlug } })
   } else if (projSlug) {
     router.push({ name: 'project', params: { wsSlug, projSlug } })
@@ -106,7 +149,7 @@ function navigate(wsSlug: string, projSlug?: string, envSlug?: string) {
 }
 
 async function expandToCurrentRoute() {
-  const { wsSlug, projSlug } = route.params as Record<string, string>
+  const { wsSlug, projSlug, envSlug } = route.params as Record<string, string>
   if (wsSlug) {
     expandedWs.value.add(wsSlug)
     await fetchProjects(wsSlug)
@@ -115,10 +158,14 @@ async function expandToCurrentRoute() {
     expandedProj.value.add(projSlug)
     await fetchEnvironments(projSlug)
   }
+  if (envSlug) {
+    expandedEnv.value.add(envSlug)
+    await fetchResources(envSlug)
+  }
 }
 
 watch(
-  () => [route.params.wsSlug, route.params.projSlug, route.params.envSlug],
+  () => [route.params.wsSlug, route.params.projSlug, route.params.envSlug, route.params.resSlug],
   () => expandToCurrentRoute(),
 )
 
@@ -129,6 +176,9 @@ watch(generation, async () => {
   }
   for (const projSlug of expandedProj.value) {
     await fetchEnvironments(projSlug, true)
+  }
+  for (const envSlug of expandedEnv.value) {
+    await fetchResources(envSlug, true)
   }
 })
 
@@ -181,10 +231,49 @@ onMounted(async () => {
               <div
                 class="tree-item tree-item--env"
                 :class="{ 'tree-item--active': isActive(ws.slug!, proj.slug!, env.slug!) }"
-                @click="navigate(ws.slug!, proj.slug!, env.slug!)"
               >
-                <span class="tree-leaf-dot">&#8226;</span>
-                <span class="tree-label">{{ env.name }}</span>
+                <button class="tree-toggle" @click.stop="toggleEnv(env.slug!)">
+                  <span
+                    class="tree-chevron"
+                    :class="{ 'tree-chevron--open': expandedEnv.has(env.slug!) }"
+                    >&#9656;</span
+                  >
+                </button>
+                <span class="tree-label" @click="navigate(ws.slug!, proj.slug!, env.slug!)">{{
+                  env.name
+                }}</span>
+              </div>
+
+              <div v-if="expandedEnv.has(env.slug!)" class="tree-children">
+                <div v-if="loadingEnv.has(env.slug!)" class="tree-loading tree-loading--res">
+                  Loading...
+                </div>
+
+                <div
+                  v-for="res in resourcesByEnv[env.slug!] ?? []"
+                  :key="res.slug"
+                  class="tree-node"
+                >
+                  <div
+                    class="tree-item tree-item--res"
+                    :class="{
+                      'tree-item--active': isActive(ws.slug!, proj.slug!, env.slug!, res.slug!),
+                    }"
+                    @click="navigate(ws.slug!, proj.slug!, env.slug!, res.slug!)"
+                  >
+                    <span class="tree-leaf-dot">&#8226;</span>
+                    <span class="tree-label">{{ res.name }}</span>
+                  </div>
+                </div>
+
+                <div
+                  v-if="
+                    !loadingEnv.has(env.slug!) && (resourcesByEnv[env.slug!] ?? []).length === 0
+                  "
+                  class="tree-empty tree-empty--res"
+                >
+                  No resources
+                </div>
               </div>
             </div>
 
@@ -287,6 +376,15 @@ onMounted(async () => {
 
 .tree-item--env {
   padding-left: 36px;
+}
+
+.tree-item--res {
+  padding-left: 52px;
+}
+
+.tree-loading--res,
+.tree-empty--res {
+  padding-left: 52px;
 }
 
 .tree-toggle {
