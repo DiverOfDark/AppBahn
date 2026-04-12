@@ -51,7 +51,10 @@ tasks.named("compileJava") {
 dependencies {
     implementation(project(":shared"))
 
-    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.web) {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
+    implementation(libs.spring.boot.starter.jetty)
     implementation(libs.spring.boot.starter.actuator)
     runtimeOnly(libs.micrometer.registry.prometheus)
     implementation(libs.spring.boot.starter.oauth2.client)

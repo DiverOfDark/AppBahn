@@ -1,5 +1,8 @@
 server:
   port: 8080
+  jetty:
+    threads:
+      max: 50
 
 spring:
   application:
@@ -33,6 +36,10 @@ operator:
 platform:
   api:
     base-url: http://localhost:8080
+
+logging:
+  level:
+    org.springframework.security.oauth2.client: DEBUG
 
 management:
   endpoints:

@@ -23,12 +23,19 @@ export const api = createClient<paths>({
   headers: {},
 })
 
-// Attach bearer token to every request
+// Attach bearer token to every request and handle auth failures
 api.use({
   async onRequest({ request }) {
     if (accessToken) {
       request.headers.set('Authorization', `Bearer ${accessToken}`)
     }
     return request
+  },
+  async onResponse({ response }) {
+    if (response.status === 401) {
+      setAccessToken(null)
+      window.location.href = '/'
+    }
+    return response
   },
 })

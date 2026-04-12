@@ -1,5 +1,8 @@
 server:
   port: 8080
+  jetty:
+    threads:
+      max: 50
 
 spring:
   application:
@@ -24,7 +27,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri:
-          audiences: appbahn
       client:
         registration:
           appbahn:
