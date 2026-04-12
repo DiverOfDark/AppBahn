@@ -43,6 +43,7 @@ subprojects {
         "annotationProcessor"(rootProject.libs.lombok)
     }
 
+
     pluginManager.withPlugin("org.springframework.boot") {
         tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootBuildImage> {
             val registryProp = project.providers.gradleProperty("dockerRegistry")

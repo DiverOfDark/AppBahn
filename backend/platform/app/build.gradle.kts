@@ -21,7 +21,10 @@ dependencies {
     implementation(project(":platform:observability"))
     implementation(project(":platform:user"))
 
-    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.web) {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
+    implementation(libs.spring.boot.starter.jetty)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.springdoc.openapi.starter)
     implementation(libs.scalar.spring)

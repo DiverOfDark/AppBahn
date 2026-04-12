@@ -15,7 +15,6 @@ platform:
     # Use an existing Secret instead of inline clientId/clientSecret.
     # The secret must contain keys: client-id, client-secret
     existingSecret: ""
-    audience: ""
     groupClaim: "groups"
     platformAdminGroups: []
   secretStore:
