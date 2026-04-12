@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/admin/config")
                         .permitAll()
-                        .requestMatchers("/assets/**", "/favicon.ico")
+                        .requestMatchers("/assets/**", "/favicon.ico", "/logo.png")
                         .permitAll()
                         // OAuth2 login endpoints handled by Spring
                         .requestMatchers("/oauth2/**", "/login/oauth2/**")
