@@ -1,8 +1,7 @@
 package eu.appbahn.operator.webhook;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -18,33 +17,32 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResourceAdmissionController {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceAdmissionController.class);
-
-    private final ObjectMapper objectMapper;
-
-    public ResourceAdmissionController(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    private static final String API_VERSION = "admission.k8s.io/v1";
+    private static final String KIND = "AdmissionReview";
 
     @PostMapping(
             path = "/validate-appbahn-eu-v1-resource",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public JsonNode validate(@RequestBody JsonNode admissionReview) {
-        String uid = admissionReview.path("request").path("uid").asText();
-        String operation = admissionReview.path("request").path("operation").asText();
-        String name = admissionReview.path("request").path("name").asText();
-        String namespace = admissionReview.path("request").path("namespace").asText();
+    public AdmissionReview validate(@RequestBody AdmissionReview review) {
+        AdmissionRequest request = review.request();
+        log.debug(
+                "Admission review: {} {} {}/{}",
+                request.operation(),
+                request.uid(),
+                request.namespace(),
+                request.name());
 
-        log.debug("Admission review: {} {} {}/{}", operation, uid, namespace, name);
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.put("apiVersion", "admission.k8s.io/v1");
-        response.put("kind", "AdmissionReview");
-
-        ObjectNode responseBody = response.putObject("response");
-        responseBody.put("uid", uid);
-        responseBody.put("allowed", true);
-
-        return response;
+        return new AdmissionReview(API_VERSION, KIND, null, new AdmissionResponse(request.uid(), true));
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record AdmissionReview(
+            String apiVersion, String kind, AdmissionRequest request, AdmissionResponse response) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record AdmissionRequest(String uid, String operation, String name, String namespace) {}
+
+    public record AdmissionResponse(String uid, boolean allowed) {}
 }
