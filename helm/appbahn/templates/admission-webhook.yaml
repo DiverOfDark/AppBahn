@@ -14,6 +14,15 @@ spec:
     {{- include "appbahn.operator.selectorLabels" . | nindent 4 }}
 ---
 apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "appbahn.fullname" . }}-webhook-selfsign
+  labels:
+    {{- include "appbahn.operator.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "appbahn.fullname" . }}-webhook-cert
@@ -22,8 +31,8 @@ metadata:
 spec:
   secretName: {{ include "appbahn.fullname" . }}-webhook-tls
   issuerRef:
-    name: {{ .Values.platform.ingress.certIssuer | default "letsencrypt" }}
-    kind: ClusterIssuer
+    name: {{ include "appbahn.fullname" . }}-webhook-selfsign
+    kind: Issuer
   dnsNames:
     - {{ include "appbahn.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
     - {{ include "appbahn.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.cluster.local

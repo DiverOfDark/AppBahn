@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: platform
-          image: "{{ .Values.platform.image.repository }}:{{ .Values.platform.image.tag }}"
+          image: "{{ .Values.platform.image.repository }}:{{ .Values.platform.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.platform.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false

@@ -1,7 +1,7 @@
 platform:
   image:
     repository: ghcr.io/appbahn/appbahn-platform
-    tag: latest
+    tag: ""
     pullPolicy: IfNotPresent
   replicas: 1
   domain:
@@ -58,7 +58,7 @@ platform:
 operator:
   image:
     repository: ghcr.io/appbahn/appbahn-operator
-    tag: latest
+    tag: ""
     pullPolicy: IfNotPresent
   replicas: 1
   clusterName: "local"
