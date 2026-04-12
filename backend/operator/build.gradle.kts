@@ -3,9 +3,14 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.git.properties)
 }
 
 extra["dockerImageName"] = "operator"
+
+gitProperties {
+    dotGitDirectory.set(rootProject.layout.projectDirectory.dir("../.git"))
+}
 
 val internalSpecFile = rootProject.layout.projectDirectory.file("../api/internal-api.yaml")
 val generatedDir = layout.buildDirectory.dir("generated/internal-client")
@@ -48,6 +53,7 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.actuator)
+    runtimeOnly(libs.micrometer.registry.prometheus)
     implementation(libs.spring.boot.starter.oauth2.client)
     implementation(libs.josdk.spring.boot.starter)
     implementation(libs.fabric8.kubernetes.client)

@@ -6,11 +6,14 @@ metadata:
     {{- include "appbahn.platform.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.platform.replicas }}
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       {{- include "appbahn.platform.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/values: {{ toYaml .Values | sha256sum }}
       labels:
         {{- include "appbahn.platform.selectorLabels" . | nindent 8 }}
     spec:

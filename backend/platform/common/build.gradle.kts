@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(libs.fabric8.kubernetes.client)
     implementation(libs.spring.boot.starter.actuator)
+    runtimeOnly(libs.micrometer.registry.prometheus)
     implementation(libs.spring.boot.starter.validation)
 
     implementation(libs.spring.boot.starter.flyway)

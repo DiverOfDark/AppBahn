@@ -2,9 +2,14 @@ plugins {
     java
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.git.properties)
 }
 
 extra["dockerImageName"] = "platform"
+
+gitProperties {
+    dotGitDirectory.set(rootProject.layout.projectDirectory.dir("../.git"))
+}
 
 dependencies {
     implementation(project(":shared"))
