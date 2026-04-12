@@ -10,6 +10,7 @@ import PaginationControls from '@/components/PaginationControls.vue'
 import EntityCard from '@/components/EntityCard.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
@@ -26,6 +27,7 @@ const createLoading = ref(false)
 const newName = ref('')
 const error = ref('')
 
+const { setPageTitle } = usePageTitle()
 const wsSlug = ref(route.params.wsSlug as string)
 
 async function fetchData() {
@@ -42,6 +44,7 @@ async function fetchData() {
     ])
     if (wsRes.data) {
       workspace.value = wsRes.data
+      setPageTitle(wsRes.data.name ?? wsSlug.value)
     }
     if (projRes.data) {
       projects.value = projRes.data.content ?? []

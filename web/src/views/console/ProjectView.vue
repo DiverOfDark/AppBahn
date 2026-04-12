@@ -11,6 +11,7 @@ import DataTable from '@/components/DataTable.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { formatDate } from '@/utils/format'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 type Project = components['schemas']['Project']
 type Environment = components['schemas']['Environment']
@@ -27,6 +28,7 @@ const createLoading = ref(false)
 const newName = ref('')
 const error = ref('')
 
+const { setPageTitle } = usePageTitle()
 const wsSlug = ref(route.params.wsSlug as string)
 const projSlug = ref(route.params.projSlug as string)
 
@@ -44,6 +46,7 @@ async function fetchData() {
     ])
     if (projRes.data) {
       project.value = projRes.data
+      setPageTitle(projRes.data.name ?? projSlug.value)
     }
     if (envRes.data) {
       environments.value = envRes.data.content ?? []
