@@ -11,6 +11,7 @@ import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { statusClass, getDomain } from '@/composables/useResourceHelpers'
 import { formatDate } from '@/utils/format'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 type Resource = components['schemas']['Resource']
 type Deployment = components['schemas']['Deployment']
@@ -22,6 +23,7 @@ const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
 const resSlug = computed(() => route.params.resSlug as string)
+const { setPageTitle } = usePageTitle()
 
 const resource = ref<Resource | null>(null)
 const deployments = ref<Deployment[]>([])
@@ -40,6 +42,7 @@ async function fetchResource() {
     })
     if (data) {
       resource.value = data
+      setPageTitle(data.name ?? resSlug.value)
     }
   } catch {
     error.value = 'Failed to load resource'

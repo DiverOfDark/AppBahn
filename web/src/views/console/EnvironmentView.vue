@@ -12,6 +12,7 @@ import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { statusClass, getDomain } from '@/composables/useResourceHelpers'
 import { formatDate } from '@/utils/format'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 type Environment = components['schemas']['Environment']
 type Resource = components['schemas']['Resource']
@@ -31,6 +32,7 @@ const loading = ref(true)
 const error = ref('')
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
+const { setPageTitle } = usePageTitle()
 const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
@@ -51,6 +53,7 @@ async function fetchEnvironment() {
     })
     if (data) {
       environment.value = data
+      setPageTitle(data.name ?? envSlug.value)
     }
   } catch {
     error.value = 'Failed to load environment'

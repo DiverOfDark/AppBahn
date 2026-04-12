@@ -12,6 +12,7 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { formatDate } from '@/utils/format'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 type Workspace = components['schemas']['Workspace']
 type WorkspaceMember = components['schemas']['WorkspaceMember']
@@ -36,6 +37,7 @@ const TAB_LABELS: Record<Tab, string> = {
 }
 
 const route = useRoute()
+const { setPageTitle } = usePageTitle()
 const wsSlug = ref(route.params.wsSlug as string)
 
 const workspace = ref<Workspace | null>(null)
@@ -90,6 +92,7 @@ async function fetchWorkspace() {
     })
     if (data) {
       workspace.value = data
+      setPageTitle(data.name ?? wsSlug.value, 'Settings')
       runtimeClassName.value = data.runtimeClassName ?? ''
       if (data.registry) {
         registry.value = { ...data.registry }
