@@ -30,6 +30,13 @@ metadata:
     {{- include "appbahn.operator.labels" . | nindent 4 }}
 spec:
   secretName: {{ include "appbahn.fullname" . }}-webhook-tls
+  subject:
+    organizations:
+      - appbahn
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    encoding: PKCS8
   issuerRef:
     name: {{ include "appbahn.fullname" . }}-webhook-selfsign
     kind: Issuer
