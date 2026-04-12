@@ -11,6 +11,7 @@ import EntityCard from '@/components/EntityCard.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { usePageTitle } from '@/composables/usePageTitle'
+import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
@@ -28,6 +29,7 @@ const newName = ref('')
 const error = ref('')
 
 const { setPageTitle } = usePageTitle()
+const { refreshSidebar } = useSidebarRefresh()
 const wsSlug = ref(route.params.wsSlug as string)
 
 async function fetchData() {
@@ -67,6 +69,7 @@ async function createProject() {
     showCreate.value = false
     newName.value = ''
     await fetchData()
+    refreshSidebar()
   } catch {
     error.value = 'Failed to create project'
   } finally {

@@ -13,6 +13,7 @@ import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { statusClass, getDomain } from '@/composables/useResourceHelpers'
 import { formatDate } from '@/utils/format'
 import { usePageTitle } from '@/composables/usePageTitle'
+import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
 type Environment = components['schemas']['Environment']
 type Resource = components['schemas']['Resource']
@@ -33,6 +34,7 @@ const error = ref('')
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const { setPageTitle } = usePageTitle()
+const { refreshSidebar } = useSidebarRefresh()
 const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
@@ -123,6 +125,7 @@ async function deleteEnvironment() {
     await api.DELETE('/environments/{slug}', {
       params: { path: { slug: envSlug.value } },
     })
+    refreshSidebar()
     router.push({ name: 'project', params: { wsSlug: wsSlug.value, projSlug: projSlug.value } })
   } catch {
     error.value = 'Failed to delete environment'

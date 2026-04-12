@@ -3,6 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
+import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
@@ -10,6 +11,7 @@ type Environment = components['schemas']['Environment']
 
 const route = useRoute()
 const router = useRouter()
+const { generation } = useSidebarRefresh()
 
 const workspaces = ref<Workspace[]>([])
 const expandedWs = ref<Set<string>>(new Set())
@@ -34,8 +36,8 @@ async function fetchWorkspaces() {
   }
 }
 
-async function fetchProjects(wsSlug: string) {
-  if (projectsByWs.value[wsSlug]) return
+async function fetchProjects(wsSlug: string, force = false) {
+  if (!force && projectsByWs.value[wsSlug]) return
   loadingWs.value.add(wsSlug)
   try {
     const { data } = await api.GET('/projects', {
@@ -49,8 +51,8 @@ async function fetchProjects(wsSlug: string) {
   }
 }
 
-async function fetchEnvironments(projSlug: string) {
-  if (envsByProj.value[projSlug]) return
+async function fetchEnvironments(projSlug: string, force = false) {
+  if (!force && envsByProj.value[projSlug]) return
   loadingProj.value.add(projSlug)
   try {
     const { data } = await api.GET('/environments', {
@@ -119,6 +121,16 @@ watch(
   () => [route.params.wsSlug, route.params.projSlug, route.params.envSlug],
   () => expandToCurrentRoute(),
 )
+
+watch(generation, async () => {
+  await fetchWorkspaces()
+  for (const wsSlug of expandedWs.value) {
+    await fetchProjects(wsSlug, true)
+  }
+  for (const projSlug of expandedProj.value) {
+    await fetchEnvironments(projSlug, true)
+  }
+})
 
 onMounted(async () => {
   await fetchWorkspaces()
