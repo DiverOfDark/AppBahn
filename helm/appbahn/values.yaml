@@ -71,6 +71,7 @@ operator:
     runAsNonRoot: true
     allowPrivilegeEscalation: false
     dropCapabilities: "ALL"
+    readOnlyRootFilesystem: false
   platformApi:
     endpoint: ""
   auth:
