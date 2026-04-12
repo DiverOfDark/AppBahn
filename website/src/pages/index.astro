@@ -45,7 +45,7 @@ const features = [
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>AppBahn -- Enterprise PaaS on your own Kubernetes infrastructure</title>
@@ -187,6 +187,23 @@ const features = [
         align-items: center;
         justify-content: space-between;
         height: calc(var(--grid) * 8);
+      }
+
+      .wordmark-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: var(--text-primary);
+      }
+
+      .wordmark-link:hover {
+        color: var(--text-primary);
+      }
+
+      .nav-logo {
+        height: 28px;
+        width: auto;
       }
 
       .wordmark {
@@ -378,7 +395,10 @@ const features = [
     <!-- Navigation -->
     <nav>
       <div class="container nav-inner">
-        <span class="wordmark">AppBahn</span>
+        <a href="/" class="wordmark-link">
+          <img src="/logo.png" alt="AppBahn" class="nav-logo" />
+          <span class="wordmark">AppBahn</span>
+        </a>
         <ul class="nav-links">
           <li><a href="/docs">Docs</a></li>
           <li><a href="https://github.com/diverofdark/appbahn">GitHub</a></li>

@@ -8,6 +8,11 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'AppBahn Docs',
+			favicon: '/favicon.png',
+			logo: {
+				src: './public/logo.png',
+				alt: 'AppBahn',
+			},
 			social: [
 				{
 					icon: 'github',

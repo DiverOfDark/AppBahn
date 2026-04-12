@@ -20,21 +20,7 @@ function handleLogout() {
     <header class="topbar">
       <div class="topbar-left">
         <router-link to="/console" class="topbar-brand">
-          <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
-            <rect width="40" height="40" rx="4" fill="var(--color-accent)" />
-            <text
-              x="50%"
-              y="54%"
-              dominant-baseline="middle"
-              text-anchor="middle"
-              fill="var(--color-bg-base)"
-              font-family="var(--font-heading)"
-              font-weight="700"
-              font-size="18"
-            >
-              A
-            </text>
-          </svg>
+          <img src="/logo.png" alt="AppBahn" class="topbar-logo" />
           <span class="topbar-title">AppBahn</span>
         </router-link>
       </div>
@@ -96,6 +82,11 @@ function handleLogout() {
   gap: 8px;
   text-decoration: none;
   color: var(--color-text-primary);
+}
+
+.topbar-logo {
+  height: 24px;
+  width: auto;
 }
 
 .topbar-title {
