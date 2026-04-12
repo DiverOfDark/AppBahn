@@ -2,6 +2,7 @@
 import { useThemeStore } from '@/stores/theme'
 import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
+import SidebarTree from '@/components/SidebarTree.vue'
 
 const themeStore = useThemeStore()
 const { logout } = useAuth()
@@ -53,17 +54,7 @@ function handleLogout() {
     <div class="console-body">
       <!-- Sidebar -->
       <nav class="sidebar">
-        <router-link
-          to="/console"
-          class="sidebar-link"
-          active-class="sidebar-link--active"
-          :exact="true"
-        >
-          Workspaces
-        </router-link>
-        <router-link to="/console/admin" class="sidebar-link" active-class="sidebar-link--active">
-          Admin
-        </router-link>
+        <SidebarTree />
       </nav>
 
       <!-- Main content -->
@@ -152,35 +143,14 @@ function handleLogout() {
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 
 .sidebar {
-  width: 200px;
+  width: 240px;
   padding: 8px;
   border-right: 1px solid var(--color-border);
   background-color: var(--color-bg-surface);
   display: flex;
   flex-direction: column;
-  gap: 2px;
   flex-shrink: 0;
-}
-
-.sidebar-link {
-  display: block;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.sidebar-link:hover {
-  color: var(--color-text-primary);
-}
-
-.sidebar-link--active {
-  color: var(--color-text-primary);
-  border-left-color: var(--color-accent);
+  overflow-y: auto;
 }
 
 /* ── Content ─────────────────────────────────────────────────────────── */
