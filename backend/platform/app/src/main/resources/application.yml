@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: appbahn-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/appbahn
+    username: appbahn
+    password: appbahn
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
   security:
     oauth2:
       resourceserver:
@@ -35,6 +50,18 @@ scalar:
   pageTitle: AppBahn API Reference
   theme: default
   layout: modern
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    git:
+      mode: full
 
 platform:
   namespace-prefix: abp
