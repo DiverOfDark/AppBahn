@@ -35,9 +35,9 @@ public class LicenseService {
     @Transactional(propagation = Propagation.MANDATORY)
     public void checkLicense() {
         if (resourceLimit <= 0) {
-            return; // Unlimited
+            return;
         }
-        // Acquire a global advisory lock so concurrent creates are serialised
+        // Global advisory lock — serialise concurrent creates so the count stays honest.
         entityManager
                 .createNativeQuery("SELECT pg_advisory_xact_lock(hashtext('appbahn_license_check'))")
                 .getSingleResult();

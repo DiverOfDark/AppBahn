@@ -51,10 +51,7 @@ public class ResourceSyncService {
         syncResource(request, null);
     }
 
-    /**
-     * Sync a single resource. If a pre-resolved environment is provided it is used directly,
-     * avoiding redundant DB lookups when called from {@link #fullSync}.
-     */
+    /** {@code preResolvedEnv} skips the lookup when the caller (fullSync) already has it. */
     @Transactional
     public void syncResource(ResourceSyncRequest request, EnvironmentEntity preResolvedEnv) {
         var env = preResolvedEnv != null
@@ -111,18 +108,18 @@ public class ResourceSyncService {
             entity.setUpdatedAt(now);
             resourceCacheRepository.save(entity);
         }
-        // Update deployment status using explicit fields from the operator (not resource phase).
-        // The operator reports latestDeploymentId + latestDeploymentStatus based on actual
-        // K8s Deployment rollout status, avoiding the resource-phase != deployment-status mismatch.
+        // Use the operator's explicit latestDeploymentId/Status (driven by K8s rollout) rather
+        // than the resource phase, which would misreport during rolling updates.
         if (statusDetail != null
                 && statusDetail.getLatestDeploymentId() != null
                 && statusDetail.getLatestDeploymentStatus() != null) {
             var deploymentStatus = statusDetail.getLatestDeploymentStatus();
             try {
                 UUID deploymentId = UUID.fromString(statusDetail.getLatestDeploymentId());
+                // Intentionally does NOT filter `!isPrimary()`: a primary can transition back
+                // to FAILED if the K8s rollout ultimately fails (DeploymentRollbackTest).
                 deploymentRepository
                         .findByIdAndResourceSlug(deploymentId, request.getSlug())
-                        .filter(d -> !d.isPrimary())
                         .filter(d -> deploymentStatus != d.getStatus())
                         .ifPresent(d -> {
                             d.setStatus(deploymentStatus);
@@ -133,7 +130,6 @@ public class ResourceSyncService {
                                     deploymentStatus,
                                     request.getSlug());
 
-                            // Transfer primary flag when deployment reaches SUCCEEDED
                             if (deploymentStatus == eu.appbahn.shared.crd.DeploymentStatus.SUCCEEDED) {
                                 deploymentRepository.transferPrimary(request.getSlug(), d.getId());
                                 log.info("Deployment {} became primary for resource {}", d.getId(), request.getSlug());
@@ -151,20 +147,17 @@ public class ResourceSyncService {
 
     @Transactional
     public void deleteResourceSync(String slug) {
-        resourceCacheRepository.deleteById(slug);
+        // Idempotent — ResourceService.delete may have already removed the row.
+        resourceCacheRepository.deleteBySlugIfExists(slug);
         log.info("Deleted resource from cache: {}", slug);
     }
 
     @Transactional
     public void fullSync(FullResourceSyncRequest request) {
-        // Record the sync start time BEFORE processing. During the prune phase, only resources
-        // with lastSyncedAt strictly before this timestamp are eligible for deletion. This prevents
-        // a race where a concurrent syncResource creates a new cache entry between the upsert loop
-        // and the prune query — the concurrent entry will have lastSyncedAt >= syncStartedAt and
-        // will be preserved.
+        // Capture BEFORE processing: the prune phase only deletes rows whose lastSyncedAt
+        // predates this timestamp, so a concurrent syncResource is safe.
         Instant syncStartedAt = Instant.now();
 
-        // Pre-resolve all distinct environment slugs to avoid N+1 queries
         Map<String, EnvironmentEntity> envCache = new HashMap<>();
         for (var res : request.getResources()) {
             envCache.computeIfAbsent(res.getEnvironmentSlug(), slug -> environmentRepository
@@ -178,8 +171,6 @@ public class ResourceSyncService {
             syncResource(res, envCache.get(res.getEnvironmentSlug()));
         }
 
-        // Delete stale resources in a single query — those belonging to this cluster's
-        // environments that were not in the incoming set and have not been synced since we started.
         var clusterEnvIds = environmentRepository.findByTargetCluster(request.getClusterName()).stream()
                 .map(env -> env.getId())
                 .toList();

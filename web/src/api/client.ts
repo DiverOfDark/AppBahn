@@ -23,7 +23,6 @@ export const api = createClient<paths>({
   headers: {},
 })
 
-// Attach bearer token to every request and handle auth failures
 api.use({
   async onRequest({ request }) {
     if (accessToken) {

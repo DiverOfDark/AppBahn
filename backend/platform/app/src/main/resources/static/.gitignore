@@ -1,0 +1,4 @@
+# Synced from web/dist by the `syncWebAssets` Gradle task before bootJar/bootBuildImage.
+# This directory is build output, not source — keep it empty in git.
+*
+!.gitignore

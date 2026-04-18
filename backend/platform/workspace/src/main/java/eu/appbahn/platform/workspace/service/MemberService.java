@@ -72,7 +72,6 @@ public class MemberService {
             result.add(dto);
         }
 
-        // Include pending invitations
         var pending = pendingInvitationRepository.findByWorkspaceId(ws.getId());
         for (var inv : pending) {
             var dto = new WorkspaceMember();
@@ -90,7 +89,6 @@ public class MemberService {
         var ws = findWorkspace(slug);
         permissionService.requireWorkspaceRole(ctx, ws.getId(), MemberRole.ADMIN);
 
-        // Check for existing pending invitation
         var existingPending = pendingInvitationRepository.findByWorkspaceIdAndEmail(ws.getId(), req.getEmail());
         if (existingPending.isPresent()) {
             throw new ConflictException("Invitation already pending for this email", List.of(req.getEmail()));

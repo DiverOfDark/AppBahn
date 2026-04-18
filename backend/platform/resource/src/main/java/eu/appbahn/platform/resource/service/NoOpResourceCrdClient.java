@@ -32,6 +32,11 @@ public class NoOpResourceCrdClient implements ResourceCrdClient {
     }
 
     @Override
+    public void delete(String slug, String namespace) {
+        log.warn("Kubernetes client not available — CRD not deleted for resource {} in namespace {}", slug, namespace);
+    }
+
+    @Override
     @Nullable
     public ResourceCrd get(String slug, String namespace) {
         log.warn("Kubernetes client not available — cannot fetch CRD {} in namespace {}", slug, namespace);

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface AuditLogRepository extends JpaRepository<AuditLogEntity, AuditLogEntity.AuditLogId> {
@@ -19,29 +20,28 @@ public interface AuditLogRepository extends JpaRepository<AuditLogEntity, AuditL
 
     @Query(value = """
             SELECT * FROM audit_log
-            WHERE (:workspaceId IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
-              AND (:action IS NULL OR action = :action)
-              AND (:targetType IS NULL OR target_type = :targetType)
-              AND (:actorId IS NULL OR actor_id = :actorId)
-              AND (:fromTs IS NULL OR timestamp >= :fromTs)
-              AND (:toTs IS NULL OR timestamp <= :toTs)
-            ORDER BY timestamp DESC
+            WHERE (CAST(:workspaceId AS text) IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
+              AND (CAST(:action AS text) IS NULL OR action = :action)
+              AND (CAST(:targetType AS text) IS NULL OR target_type = :targetType)
+              AND (CAST(:actorId AS uuid) IS NULL OR actor_id = :actorId)
+              AND (CAST(:fromTs AS timestamptz) IS NULL OR timestamp >= :fromTs)
+              AND (CAST(:toTs AS timestamptz) IS NULL OR timestamp <= :toTs)
             """, countQuery = """
             SELECT count(*) FROM audit_log
-            WHERE (:workspaceId IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
-              AND (:action IS NULL OR action = :action)
-              AND (:targetType IS NULL OR target_type = :targetType)
-              AND (:actorId IS NULL OR actor_id = :actorId)
-              AND (:fromTs IS NULL OR timestamp >= :fromTs)
-              AND (:toTs IS NULL OR timestamp <= :toTs)
+            WHERE (CAST(:workspaceId AS text) IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
+              AND (CAST(:action AS text) IS NULL OR action = :action)
+              AND (CAST(:targetType AS text) IS NULL OR target_type = :targetType)
+              AND (CAST(:actorId AS uuid) IS NULL OR actor_id = :actorId)
+              AND (CAST(:fromTs AS timestamptz) IS NULL OR timestamp >= :fromTs)
+              AND (CAST(:toTs AS timestamptz) IS NULL OR timestamp <= :toTs)
             """, nativeQuery = true)
     Page<AuditLogEntity> findFiltered(
-            String workspaceId,
-            String action,
-            String targetType,
-            UUID actorId,
-            Instant fromTs,
-            Instant toTs,
+            @Param("workspaceId") String workspaceId,
+            @Param("action") String action,
+            @Param("targetType") String targetType,
+            @Param("actorId") UUID actorId,
+            @Param("fromTs") Instant fromTs,
+            @Param("toTs") Instant toTs,
             Pageable pageable);
 
     @Modifying

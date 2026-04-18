@@ -11,24 +11,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Creates an Ingress for the first port with expose=ingress.
- *
- * <p>Multi-port ingress (separate rules/hosts per port) requires per-port domain
- * configuration which is tracked as tech debt. For Sprint 5, only one port is
- * exposed via ingress.
- */
+/** Creates an Ingress for the first port with expose=ingress. Multi-port is planned tech debt. */
 @KubernetesDependent
 public class IngressDependentResource extends CRUDKubernetesDependentResource<Ingress, ResourceCrd> {
 
-    public IngressDependentResource() {
+    private final OperatorConfig operatorConfig;
+
+    public IngressDependentResource(OperatorConfig operatorConfig) {
         super(Ingress.class);
+        this.operatorConfig = operatorConfig;
     }
 
     @Override
     protected Ingress desired(ResourceCrd primary, Context<ResourceCrd> context) {
-        String ingressClassName = OperatorConfig.get().getIngressClassName();
-        String clusterIssuer = OperatorConfig.get().getClusterIssuer();
+        String ingressClassName = operatorConfig.getIngressClassName();
+        String clusterIssuer = operatorConfig.getClusterIssuer();
         String name = primary.getMetadata().getName();
         String namespace = primary.getMetadata().getNamespace();
 
@@ -41,7 +38,6 @@ public class IngressDependentResource extends CRUDKubernetesDependentResource<In
             throw new IllegalStateException("Resource " + name + ": at least one port with expose=ingress is required");
         }
 
-        // Use the first ingress port with a domain
         var firstPort = ingressPorts.get(0);
         int port = firstPort.getPort();
         String domain = firstPort.getDomain();
@@ -81,7 +77,7 @@ public class IngressDependentResource extends CRUDKubernetesDependentResource<In
                 .withPathType(Labels.INGRESS_PATH_TYPE)
                 .withNewBackend()
                 .withNewService()
-                .withName(name)
+                .withName(name + "-ingress")
                 .withNewPort()
                 .withNumber(port)
                 .endPort()

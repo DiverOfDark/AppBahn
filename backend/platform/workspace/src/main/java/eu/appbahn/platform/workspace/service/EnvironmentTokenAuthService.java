@@ -31,16 +31,14 @@ public class EnvironmentTokenAuthService {
 
         EnvironmentTokenEntity token = tokenOpt.get();
 
-        // Check expiry
         if (token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now())) {
             return Optional.empty();
         }
 
-        // Update last used
         token.setLastUsedAt(Instant.now());
         tokenRepository.save(token);
 
-        // Token-based auth: userId and email are null per spec (actor_source="token")
+        // actor_source="token" per spec — userId/email null.
         var ctx = new AuthContext(null, null, List.of(), false);
         return Optional.of(new AppBahnAuthenticationToken(ctx));
     }

@@ -8,11 +8,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Security configuration for the operator. Permits the admission webhook endpoint and actuator
- * health checks without authentication. The operator uses OAuth2 client credentials only for
- * outbound calls to the platform API, not for securing its own endpoints.
- */
+/** Admission-webhook and actuator endpoints are open; OAuth2 client_credentials is outbound only. */
 @Configuration
 @EnableWebSecurity
 public class OperatorSecurityConfig {

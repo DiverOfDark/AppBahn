@@ -1,7 +1,6 @@
 plugins {
     java
     alias(libs.plugins.spring.boot) apply false
-    alias(libs.plugins.spring.dependency.management)
 }
 
 val crdOutputDir = layout.projectDirectory.dir("../../helm/appbahn/templates/crds")
@@ -46,7 +45,6 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
 
-    testImplementation(platform(libs.testcontainers.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

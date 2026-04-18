@@ -3,6 +3,8 @@ package eu.appbahn.operator.reconciler;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
+import eu.appbahn.shared.crd.ResourcePhase;
+import eu.appbahn.shared.crd.ResourceStatus;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvFromSourceBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -22,13 +24,16 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
     private static final Quantity DEFAULT_CPU = new Quantity("250m");
     private static final Quantity DEFAULT_MEMORY = new Quantity("256Mi");
 
-    public DeploymentDependentResource() {
+    private final OperatorConfig operatorConfig;
+
+    public DeploymentDependentResource(OperatorConfig operatorConfig) {
         super(Deployment.class);
+        this.operatorConfig = operatorConfig;
     }
 
     @Override
     protected Deployment desired(ResourceCrd primary, Context<ResourceCrd> context) {
-        double requestFraction = OperatorConfig.get().getRequestFraction();
+        double requestFraction = operatorConfig.getRequestFraction();
         String name = primary.getMetadata().getName();
         String namespace = primary.getMetadata().getNamespace();
         ResourceConfig config = primary.getSpec().getConfig();
@@ -46,6 +51,10 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         Integer port = config.getLowestPort();
         int replicas;
         if (Boolean.TRUE.equals(primary.getSpec().getStopped())) {
+            replicas = 0;
+        } else if (isCurrentRevisionFailed(primary)) {
+            // Stop K8s from crashlooping a terminally-failed revision. Recovery requires a
+            // spec edit (bumps generation) or restart (bumps deploymentRevision).
             replicas = 0;
         } else {
             replicas = hosting != null && hosting.getMinReplicas() != null
@@ -69,6 +78,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .endMetadata()
                 .withNewSpec()
                 .withReplicas(replicas)
+                .withProgressDeadlineSeconds(120)
                 .withNewSelector()
                 .withMatchLabels(Labels.forResource(name))
                 .endSelector()
@@ -106,22 +116,21 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                         Labels.RESOURCE_KEY_EPHEMERAL_STORAGE, new Quantity(Labels.EPHEMERAL_STORAGE_LIMIT)))
                 .endResources()
                 .withNewSecurityContext()
-                .withRunAsNonRoot(OperatorConfig.get().getSecurity().runAsNonRoot())
-                .withReadOnlyRootFilesystem(OperatorConfig.get().getSecurity().readOnlyRootFilesystem())
-                .withAllowPrivilegeEscalation(OperatorConfig.get().getSecurity().allowPrivilegeEscalation())
+                .withRunAsNonRoot(operatorConfig.getSecurity().runAsNonRoot())
+                .withReadOnlyRootFilesystem(operatorConfig.getSecurity().readOnlyRootFilesystem())
+                .withAllowPrivilegeEscalation(operatorConfig.getSecurity().allowPrivilegeEscalation())
                 .withNewCapabilities()
-                .addToDrop(OperatorConfig.get().getSecurity().dropCapabilities().toArray(String[]::new))
+                .addToDrop(operatorConfig.getSecurity().dropCapabilities().toArray(String[]::new))
                 .endCapabilities()
                 .endSecurityContext()
                 .endContainer()
                 .withNewSecurityContext()
-                .withRunAsNonRoot(true)
+                .withRunAsNonRoot(operatorConfig.getSecurity().runAsNonRoot())
                 .endSecurityContext()
                 .endSpec()
                 .endTemplate()
                 .endSpec();
 
-        // Add health probes
         addHealthProbes(deploymentBuilder, config, port);
 
         return deploymentBuilder.build();
@@ -168,7 +177,6 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                         .endSpec();
             }
         } else if (port != null) {
-            // Default TCP readiness probe on the lowest port
             builder.editSpec()
                     .editTemplate()
                     .editSpec()
@@ -188,10 +196,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         }
     }
 
-    /**
-     * Build a Fabric8 Probe from the CRD ProbeConfig. Supports httpGet, tcpSocket, and exec
-     * actions. If no action is configured, defaults to tcpSocket on the container port.
-     */
+    /** Defaults to tcpSocket on the container port when no action is configured. */
     private io.fabric8.kubernetes.api.model.Probe buildProbe(ResourceConfig.Probe probeConfig, Integer defaultPort) {
         var probeBuilder = new io.fabric8.kubernetes.api.model.ProbeBuilder();
 
@@ -210,7 +215,6 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                     .withCommand(probeConfig.getExec().getCommand())
                     .endExec();
         } else {
-            // tcpSocket (explicit or default fallback)
             int port;
             if (probeConfig.getTcpSocket() != null && probeConfig.getTcpSocket().getPort() != null) {
                 port = probeConfig.getTcpSocket().getPort();
@@ -238,5 +242,20 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         BigDecimal amount = new BigDecimal(q.getAmount());
         var scaled = amount.multiply(BigDecimal.valueOf(factor));
         return new Quantity(scaled.stripTrailingZeros().toPlainString() + (format != null ? format : ""));
+    }
+
+    /** ERROR + zero ready replicas observed for the current spec generation. */
+    static boolean isCurrentRevisionFailed(ResourceCrd primary) {
+        ResourceStatus status = primary.getStatus();
+        if (status == null || status.getPhase() != ResourcePhase.ERROR) {
+            return false;
+        }
+        Long observed = status.getObservedGeneration();
+        Long current = primary.getMetadata() != null ? primary.getMetadata().getGeneration() : null;
+        if (observed == null || current == null || !observed.equals(current)) {
+            return false;
+        }
+        ResourceStatus.ReplicaStatus replicas = status.getReplicas();
+        return replicas == null || replicas.getReady() == 0;
     }
 }

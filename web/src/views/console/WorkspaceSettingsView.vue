@@ -179,7 +179,7 @@ async function fetchTabData() {
       case 'audit-log':
         await fetchAuditLog()
         break
-      // registry and security data comes from fetchWorkspace
+      // registry/security load via fetchWorkspace, no per-tab fetch needed.
     }
   } finally {
     loading.value = false
@@ -324,8 +324,6 @@ async function saveSecurity() {
       params: { path: { slug: wsSlug.value } },
       body: { name: workspace.value?.name },
     })
-    // runtimeClassName is set on the workspace object itself
-    // Re-fetch to confirm
     await fetchWorkspace()
     refreshSidebar()
     saveSuccess.value = 'Security settings saved.'
