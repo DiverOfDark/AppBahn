@@ -14,10 +14,10 @@
     "format:check": "prettier --check 'src/**/*.{astro,ts,js,md,css}'"
   },
   "dependencies": {
-    "astro": "^6.1.4"
+    "astro": "^6.1.6"
   },
   "devDependencies": {
-    "prettier": "3.8.1",
+    "prettier": "3.8.2",
     "prettier-plugin-astro": "^0.14.1"
   }
 }
