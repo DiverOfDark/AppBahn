@@ -22,16 +22,9 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Configures Spring's OAuth2 Login for the OIDC authorization code + PKCE flow.
- * <p>
- * Spring handles: PKCE generation, state management, authorization redirect,
- * callback, token exchange. We provide a custom success handler that extracts
- * the access token and redirects the SPA to pick it up.
- * <p>
- * Authorization requests are stored in base64-encoded JSON cookies (no server-side
- * session state), keeping the application stateless and horizontally scalable.
- * The cookie contains only public data (authorization URI, client ID, state,
- * scopes) — no secrets. Spring validates all fields server-side on callback.
+ * OAuth2 Login for the authorization-code + PKCE flow. Authorization requests ride in a
+ * short-lived HttpOnly cookie (no server-side session), so the platform stays horizontally
+ * scalable. The cookie carries only public data — secrets never touch it.
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.appbahn.client-id", matchIfMissing = false)
@@ -58,11 +51,7 @@ public class OidcLoginConfig {
         };
     }
 
-    /**
-     * Stores OAuth2AuthorizationRequest in a short-lived HttpOnly cookie using
-     * JSON + base64 encoding. No Java serialization (avoids RCE risk),
-     * no encryption needed (all fields are public, already in browser URL).
-     */
+    /** JSON + base64 in a cookie — no Java serialization (RCE risk) and no secrets to encrypt. */
     static class CookieAuthorizationRequestRepository
             implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 

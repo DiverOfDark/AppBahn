@@ -10,6 +10,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -61,4 +62,14 @@ public class ResourceCacheEntity {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /**
+     * Optimistic lock version. Hibernate increments this on every update and fails with
+     * {@link org.springframework.orm.ObjectOptimisticLockingFailureException} if another
+     * transaction wrote concurrently. Used by {@code ResourceService.create} to retry the
+     * upsert when operator sync races platform create on the same slug.
+     */
+    @Version
+    @Column(nullable = false)
+    private Long version;
 }

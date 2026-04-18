@@ -1,23 +1,33 @@
 package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.client.api.ResourceSyncApi;
+import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceStatus;
+import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Workflow;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
+import io.javaoperatorsdk.operator.processing.event.ResourceID;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +62,18 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
     private static final Logger log = LoggerFactory.getLogger(ResourceReconciler.class);
 
+    /** Waiting reasons that will never start successfully — surface them without waiting for progressDeadlineSeconds. */
+    private static final Set<String> TERMINAL_WAITING_REASONS = Set.of(
+            "ImagePullBackOff",
+            "ErrImagePull",
+            "InvalidImageName",
+            "CreateContainerConfigError",
+            "CreateContainerError",
+            "RunContainerError");
+
+    /** CrashLoopBackOff is terminal only after this many restarts — gives transient-race startups time to recover. */
+    private static final int CRASHLOOP_RESTART_THRESHOLD = 3;
+
     private final ResourceSyncApi resourceSyncApi;
     private final OperatorConfig operatorConfig;
     private final long rescheduleSeconds;
@@ -69,6 +91,29 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         this.syncFailureCounter = Counter.builder("appbahn.operator.sync.failures")
                 .description("Number of failed platform sync attempts")
                 .register(meterRegistry);
+    }
+
+    /**
+     * Extra event source: watch Pods carrying {@link Labels#RESOURCE_KEY} so pod-level failures
+     * (ImagePullBackOff, CrashLoopBackOff, ...) trigger a reconcile without waiting 120s for
+     * the Deployment's ProgressDeadlineExceeded. JOSDK already wires the Deployment/Ingress.
+     */
+    @Override
+    public List<EventSource<?, ResourceCrd>> prepareEventSources(EventSourceContext<ResourceCrd> context) {
+        var podInformerConfig = InformerEventSourceConfiguration.from(Pod.class, ResourceCrd.class)
+                .withLabelSelector(Labels.RESOURCE_KEY)
+                .withSecondaryToPrimaryMapper(pod -> {
+                    if (pod.getMetadata() == null || pod.getMetadata().getLabels() == null) {
+                        return Set.of();
+                    }
+                    String resourceName = pod.getMetadata().getLabels().get(Labels.RESOURCE_KEY);
+                    if (resourceName == null) {
+                        return Set.of();
+                    }
+                    return Set.of(new ResourceID(resourceName, pod.getMetadata().getNamespace()));
+                })
+                .build();
+        return List.of(new InformerEventSource<>(podInformerConfig, context));
     }
 
     @Override
@@ -135,12 +180,11 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     private ResourceStatus deriveStatus(ResourceCrd resource, Deployment k8sDeployment, Context<ResourceCrd> context) {
         var status = new ResourceStatus();
         status.setObservedGeneration(resource.getMetadata().getGeneration());
-        // Preserve syncFailed from previous status — it's managed by syncToPlatform, not derived from K8s
+        // syncFailed is owned by syncToPlatform, not derived from K8s.
         if (resource.getStatus() != null) {
             status.setSyncFailed(resource.getStatus().getSyncFailed());
         }
 
-        // Track the deployment being processed (from spec.deploymentRevision)
         String deploymentRevision = resource.getSpec().getDeploymentRevision();
         if (deploymentRevision != null) {
             status.setLatestDeploymentId(deploymentRevision);
@@ -180,6 +224,28 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             return status;
         }
 
+        // DeploymentDependentResource scales to 0 on a terminally-failed revision (see
+        // isCurrentRevisionFailed). Preserve ERROR so status doesn't flip to PENDING once
+        // the crashing pods are gone.
+        if (desired == 0 && DeploymentDependentResource.isCurrentRevisionFailed(resource)) {
+            var prev = resource.getStatus();
+            status.setPhase(ResourcePhase.ERROR);
+            status.setMessage(
+                    prev != null && prev.getMessage() != null
+                            ? prev.getMessage()
+                            : "Deployment terminally failed; scaled to 0 to stop restart loop");
+            var replicas = new ResourceStatus.ReplicaStatus();
+            replicas.setDesired(desired);
+            replicas.setReady(ready);
+            replicas.setUpdated(updated);
+            replicas.setAvailable(available);
+            status.setReplicas(replicas);
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
+            }
+            return status;
+        }
+
         var replicas = new ResourceStatus.ReplicaStatus();
         replicas.setDesired(desired);
         replicas.setReady(ready);
@@ -187,7 +253,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         replicas.setAvailable(available);
         status.setReplicas(replicas);
 
-        // Derive domains from Ingress secondary resource, not spec echo
+        // Derive from Ingress secondary, not spec echo.
         var config = resource.getSpec().getConfig();
         String ingressDomain = config != null ? config.getIngressDomain() : null;
         if (ingressDomain != null) {
@@ -200,14 +266,26 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             }
         }
 
-        if (ready >= desired && desired > 0) {
+        // Fast-fail pod-level failures instead of waiting ~120s for ProgressDeadlineExceeded.
+        Optional<String> podFailure = detectPodFailure(context.getSecondaryResources(Pod.class));
+        boolean conditionRolloutFailed = hasFailedRolloutCondition(depStatus);
+        boolean rolloutFailed = conditionRolloutFailed || podFailure.isPresent();
+
+        if (rolloutFailed && ready > 0) {
+            status.setPhase(ResourcePhase.DEGRADED);
+            status.setMessage(podFailure
+                    .map(reason -> reason + " (old replicas still serving)")
+                    .orElseGet(() -> "Deployment rollout failed but " + ready + " old replica(s) still running"));
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
+            }
+        } else if (ready >= desired && desired > 0) {
             status.setPhase(ResourcePhase.READY);
             status.setMessage(null);
             if (deploymentRevision != null) {
                 status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.SUCCEEDED);
             }
         } else if (ready > 0) {
-            // H1: Check if a rolling update is in progress
             if (updated < desired) {
                 status.setPhase(ResourcePhase.RESTARTING);
                 status.setMessage("Rolling update in progress: " + ready + "/" + desired + " replicas ready");
@@ -219,11 +297,9 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
             }
         } else {
-            // Zero ready replicas — check for rollout failure via K8s conditions
-            boolean rolloutFailed = hasFailedRolloutCondition(depStatus);
             if (rolloutFailed) {
                 status.setPhase(ResourcePhase.ERROR);
-                status.setMessage("Deployment rollout failed");
+                status.setMessage(podFailure.orElse("Deployment rollout failed"));
                 if (deploymentRevision != null) {
                     status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
                 }
@@ -237,6 +313,42 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         }
 
         return status;
+    }
+
+    /**
+     * Inspect pods belonging to this resource for terminal container failures. Returns a formatted
+     * {@code "<reason>: <message>"} on the first bad pod, or empty. Pods mid-deletion are
+     * skipped — their containers enter odd transient states during shutdown.
+     */
+    static Optional<String> detectPodFailure(Set<Pod> pods) {
+        for (Pod pod : pods) {
+            if (pod.getMetadata() != null && pod.getMetadata().getDeletionTimestamp() != null) {
+                continue;
+            }
+            if (pod.getStatus() == null || pod.getStatus().getContainerStatuses() == null) {
+                continue;
+            }
+            for (ContainerStatus cs : pod.getStatus().getContainerStatuses()) {
+                if (cs.getState() == null || cs.getState().getWaiting() == null) {
+                    continue;
+                }
+                String reason = cs.getState().getWaiting().getReason();
+                String message = cs.getState().getWaiting().getMessage();
+                if (TERMINAL_WAITING_REASONS.contains(reason)) {
+                    return Optional.of(formatFailure(reason, message));
+                }
+                if ("CrashLoopBackOff".equals(reason)
+                        && cs.getRestartCount() != null
+                        && cs.getRestartCount() >= CRASHLOOP_RESTART_THRESHOLD) {
+                    return Optional.of(formatFailure(reason + " (restarts=" + cs.getRestartCount() + ")", message));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static String formatFailure(String reason, String message) {
+        return message != null && !message.isBlank() ? reason + ": " + message : reason;
     }
 
     private static boolean hasFailedRolloutCondition(io.fabric8.kubernetes.api.model.apps.DeploymentStatus depStatus) {

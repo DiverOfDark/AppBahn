@@ -61,13 +61,12 @@ public class DeploymentService {
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Acquire advisory lock on resource slug to prevent concurrent deployment triggers
+        // Serialise concurrent triggers for the same resource.
         entityManager
                 .createNativeQuery("SELECT pg_advisory_xact_lock(hashtext(CAST(:slug AS TEXT)))")
                 .setParameter("slug", resourceSlug)
                 .getSingleResult();
 
-        // Resolve image from resource config
         String imageRef = null;
         String sourceRef = req.getSourceRef();
         ResourceConfig resConfig = resource.getConfig();
@@ -82,7 +81,7 @@ public class DeploymentService {
             }
         }
 
-        // Check for duplicate deployment — if sourceRef matches the current primary, skip
+        // Skip if sourceRef matches the current primary.
         if (sourceRef != null) {
             var currentPrimary = deploymentRepository.findByResourceSlugAndPrimaryTrue(resourceSlug);
             if (currentPrimary.isPresent()
@@ -95,18 +94,17 @@ public class DeploymentService {
             }
         }
 
-        // Enforce build concurrency: at most 1 building + 1 queued per resource.
-        // Delete any previously queued deployments — newest trigger wins.
+        // Build concurrency: at most 1 building + 1 queued per resource. Newest trigger wins.
         deploymentRepository.deleteByResourceSlugAndStatus(resourceSlug, eu.appbahn.shared.crd.DeploymentStatus.QUEUED);
 
-        // Create deployment record (NOT primary — becomes primary only on SUCCEEDED)
+        // Not primary — promotion happens on SUCCEEDED.
         var entity = new DeploymentEntity();
         entity.setResourceSlug(resourceSlug);
         entity.setEnvironmentId(env.getId());
         entity.setSourceRef(sourceRef);
         entity.setImageRef(imageRef);
         entity.setTriggeredBy(TriggerType.MANUAL);
-        // Docker sources skip QUEUED (no build step) and go straight to DEPLOYING
+        // Docker has no build step, so skip QUEUED and go straight to DEPLOYING.
         if (resConfig != null
                 && (resConfig.getSource() instanceof eu.appbahn.shared.crd.DockerSource
                         || resConfig.getSource() == null)) {
@@ -117,9 +115,7 @@ public class DeploymentService {
         entity.setPrimary(false);
         deploymentRepository.save(entity);
 
-        // Update the Resource CRD to trigger operator reconciliation.
-        // Setting deploymentRevision on the spec changes the pod template annotation,
-        // which causes K8s to roll out new pods.
+        // Bumping deploymentRevision flips the pod template annotation, forcing K8s to roll.
         String namespace = namespaceService.computeNamespace(env.getSlug());
         var existingCrd = crdClient.get(resourceSlug, namespace);
         if (existingCrd != null) {
@@ -128,7 +124,6 @@ public class DeploymentService {
             log.info("Updated CRD deploymentRevision for resource {}", resourceSlug);
         }
 
-        // Audit
         auditLogService.log(
                 ctx,
                 "deployment.triggered",

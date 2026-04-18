@@ -52,13 +52,11 @@ final class ResourceConfigMerger {
         if (patchNode.has("source") && !patchNode.get("source").isNull()) {
             JsonNode sourceNode = patchNode.get("source");
             if (result.getSource() == null) {
-                // Source doesn't exist yet — patch MUST include type to create it
                 if (!sourceNode.has("type")) {
                     throw new ValidationException("Field 'source.type' is required when creating source");
                 }
                 result.setSource(objectMapper.convertValue(sourceNode, Source.class));
             } else {
-                // Merge patch fields into existing source via Jackson's updater
                 result.setSource(objectMapper.updateValue(result.getSource(), sourceNode));
             }
         }

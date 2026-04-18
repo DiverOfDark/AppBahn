@@ -31,14 +31,18 @@ import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class ResourceService {
@@ -58,6 +62,7 @@ public class ResourceService {
     private final ResourceCrdClient crdClient;
     private final ObjectMapper objectMapper;
     private final String baseDomain;
+    private final TransactionTemplate compensationTxTemplate;
 
     public ResourceService(
             ResourceCacheRepository resourceCacheRepository,
@@ -72,6 +77,7 @@ public class ResourceService {
             NamespaceService namespaceService,
             ResourceCrdClient crdClient,
             ObjectMapper objectMapper,
+            PlatformTransactionManager transactionManager,
             @org.springframework.beans.factory.annotation.Value("${platform.base-domain:appbahn.local}")
                     String baseDomain) {
         this.resourceCacheRepository = resourceCacheRepository;
@@ -87,6 +93,9 @@ public class ResourceService {
         this.crdClient = crdClient;
         this.objectMapper = objectMapper;
         this.baseDomain = baseDomain;
+        // REQUIRES_NEW: the afterCommit hook fires after the outer transaction is closed.
+        this.compensationTxTemplate = new TransactionTemplate(transactionManager);
+        this.compensationTxTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     @Transactional
@@ -103,14 +112,12 @@ public class ResourceService {
 
         ResourceConfig resourceConfig = objectMapper.convertValue(req.getConfig(), ResourceConfig.class);
 
-        // Quota + license checks run within the same transaction; the advisory lock acquired
-        // inside checkQuota() is held until this transaction commits.
+        // checkQuota()'s advisory lock is held until commit.
         quotaService.checkQuota(env.getId(), null, resourceConfig);
         licenseService.checkLicense();
 
         String slug = SlugGenerator.generate(req.getName());
 
-        // Auto-generate domain for ingress-exposed ports
         assignDomain(resourceConfig, slug);
 
         UUID workspaceId = environmentLookupService.getWorkspaceId(env);
@@ -127,25 +134,36 @@ public class ResourceService {
         spec.setProjectId(env.getProjectId().toString());
         spec.setWorkspaceId(workspaceId.toString());
         spec.setConfig(resourceConfig);
+
+        List<ResourceSpec.ResourceLink> resourceLinks = List.of();
+        if (req.getLinks() != null && !req.getLinks().isEmpty()) {
+            validateLinks(req.getLinks(), slug);
+            resourceLinks = req.getLinks();
+        }
+        spec.setLinks(resourceLinks);
         crd.setSpec(spec);
 
-        // Insert a minimal cache entry immediately so the license count is accurate
-        // for concurrent creates. The operator will overwrite this on first sync.
-        // Must be saved before deployment (FK constraint).
-        var cacheEntry = new ResourceCacheEntity();
+        // Upsert a minimal cache entry now so concurrent creates see accurate license count and
+        // the FK from DeploymentEntity holds. Links/statusDetail cleared so a resurrected slug
+        // doesn't inherit the prior incarnation's state. Operator overwrites on first sync.
+        var now = java.time.Instant.now();
+        var cacheEntry = resourceCacheRepository.findBySlug(slug).orElseGet(ResourceCacheEntity::new);
+        boolean isNew = cacheEntry.getSlug() == null;
         cacheEntry.setSlug(slug);
         cacheEntry.setEnvironmentId(env.getId());
         cacheEntry.setName(req.getName());
         cacheEntry.setType(req.getType());
         cacheEntry.setConfig(resourceConfig);
+        cacheEntry.setLinks(resourceLinks);
+        cacheEntry.setStatusDetail(null);
         cacheEntry.setStatus(ResourcePhase.PENDING);
-        var now = java.time.Instant.now();
         cacheEntry.setLastSyncedAt(now);
-        cacheEntry.setCreatedAt(now);
+        if (isNew) {
+            cacheEntry.setCreatedAt(now);
+        }
         cacheEntry.setUpdatedAt(now);
         resourceCacheRepository.save(cacheEntry);
 
-        // For Docker sources, create an initial deployment record so there's an audit trail
         DeploymentEntity initialDeployment = null;
         if (resourceConfig.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSource
                 && dockerSource.getImage() != null) {
@@ -165,11 +183,26 @@ public class ResourceService {
             spec.setDeploymentRevision(initialDeployment.getId().toString());
         }
 
-        crdClient.create(crd);
-        log.info(
-                "Created Resource CRD: {} in namespace {}",
-                slug,
-                crd.getMetadata().getNamespace());
+        // Defer CRD create until after commit so the operator's sync callback sees the cache row
+        // (UPDATE path) instead of racing us with a duplicate INSERT. On CRD failure, the
+        // compensation marks the cache row ERROR rather than leaving a ghost row.
+        final var crdToCreate = crd;
+        runAfterCommit(() -> {
+            try {
+                crdClient.create(crdToCreate);
+                log.info(
+                        "Created Resource CRD: {} in namespace {}",
+                        slug,
+                        crdToCreate.getMetadata().getNamespace());
+            } catch (RuntimeException ex) {
+                log.error(
+                        "Failed to create Resource CRD {} in namespace {} — marking cache row ERROR",
+                        slug,
+                        crdToCreate.getMetadata().getNamespace(),
+                        ex);
+                markCacheRowError(slug, "Failed to create Kubernetes resource: " + ex.getMessage());
+            }
+        });
 
         auditLogService.log(
                 ctx,
@@ -233,12 +266,11 @@ public class ResourceService {
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Capture old values for audit diff
         String oldName = entity.getName();
         ResourceConfig oldConfig = entity.getConfig();
         var oldLinks = entity.getLinks();
 
-        // Merge config changes (merge returns a deep copy; existing is never mutated)
+        // merge() returns a deep copy; existing is never mutated.
         ResourceConfig mergedConfig = null;
         if (req.getConfig() != null) {
             ResourceConfig existingConfig = entity.getConfig();
@@ -249,8 +281,6 @@ public class ResourceService {
             }
 
             mergedConfig = ResourceConfigMerger.merge(existingConfig, patchNode, objectMapper);
-
-            // Auto-generate domain if update introduces an ingress port
             assignDomain(mergedConfig, slug);
 
             if (ResourceConfigMerger.hasHostingChange(existingConfig, mergedConfig)) {
@@ -258,7 +288,6 @@ public class ResourceService {
             }
         }
 
-        // Links from the API are now the same type as CRD ResourceLink (via schema mapping)
         List<ResourceSpec.ResourceLink> mergedLinks = null;
         if (req.getLinks() != null && !req.getLinks().isEmpty()) {
             validateLinks(req.getLinks(), slug);
@@ -283,7 +312,6 @@ public class ResourceService {
             log.warn("CRD not found for resource {} during update — K8s state may diverge", slug);
         }
 
-        // Save merged config to cache entity before returning
         if (req.getName() != null) {
             entity.setName(req.getName());
         }
@@ -319,7 +347,6 @@ public class ResourceService {
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Check for dependencies (other resources linking to this one)
         var dependents = resourceCacheRepository.findByLinkedResourceSlug(slug);
         var dependentSlugs = dependents.stream()
                 .filter(r -> !r.getSlug().equals(slug))
@@ -330,18 +357,24 @@ public class ResourceService {
                     "resource_has_dependents", "Cannot delete resource: other resources depend on it", dependentSlugs);
         }
 
-        // Delete CRD from Kubernetes
-        var existingCrd = getCrd(slug, env.getSlug());
-        if (existingCrd != null) {
-            crdClient.delete(existingCrd);
-            log.info("Deleted Resource CRD: {}", slug);
-        }
-
-        // Count deployments before cascade delete
         long deploymentCount = deploymentRepository.countByResourceSlug(slug);
 
-        // Remove from cache (cascade-deletes deployments via FK)
-        resourceCacheRepository.deleteById(slug);
+        // Native DELETE (not the managed delete) so a concurrent operator sync doesn't abort
+        // this transaction with StaleObjectStateException. Cascades to deployments via FK.
+        resourceCacheRepository.deleteBySlugIfExists(slug);
+
+        // Defer CRD delete until after commit; otherwise the operator's delete-sync races us
+        // and our transaction tries to commit a stale DELETE. Delete by identity so fabric8
+        // tolerates a missing target.
+        final String namespace = namespaceService.computeNamespace(env.getSlug());
+        runAfterCommit(() -> {
+            try {
+                crdClient.delete(slug, namespace);
+                log.info("Deleted Resource CRD: {} in namespace {}", slug, namespace);
+            } catch (RuntimeException ex) {
+                log.error("Failed to delete Resource CRD {} in namespace {}", slug, namespace, ex);
+            }
+        });
 
         auditLogService.log(
                 ctx,
@@ -355,33 +388,26 @@ public class ResourceService {
     @Transactional
     public void stop(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
-        var entity = resolved.entity();
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        if (ResourcePhase.STOPPED == entity.getStatus()) {
-            return; // Already stopped — idempotent no-op
-        }
-
-        var allowed =
-                Set.of(ResourcePhase.READY, ResourcePhase.RESTARTING, ResourcePhase.DEGRADED, ResourcePhase.ERROR);
-        if (!allowed.contains(entity.getStatus())) {
-            throw new ConflictException(
-                    "Resource must be in READY, RESTARTING, DEGRADED, or ERROR to stop, current status: "
-                            + entity.getStatus());
-        }
-
-        // Update the CRD to set stopped = true
+        // Gate on spec.stopped (authoritative) rather than cache status (a proxy that breaks
+        // under concurrency when the row is mid-transition).
         var existingCrd = getCrd(slug, env.getSlug());
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
+        if (Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
+            return;
+        }
+
         existingCrd.getSpec().setStopped(true);
         crdClient.update(existingCrd);
         log.info("Stopped Resource CRD: {}", slug);
 
-        entity.setStatus(ResourcePhase.STOPPED);
-        resourceCacheRepository.save(entity);
+        // PENDING is transitional — pods still run until the operator sees readyReplicas == 0
+        // and flips to STOPPED.
+        resourceCacheRepository.updateStatusBySlug(slug, ResourcePhase.PENDING.name());
 
         auditLogService.log(ctx, "resource.stopped", "resource", slug, workspaceId, null);
     }
@@ -389,26 +415,23 @@ public class ResourceService {
     @Transactional
     public void start(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
-        var entity = resolved.entity();
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Start only from STOPPED
-        if (ResourcePhase.STOPPED != entity.getStatus()) {
-            throw new ConflictException("Resource must be STOPPED to start, current status: " + entity.getStatus());
-        }
-
-        // Update the CRD to set stopped = false
+        // See stop() for why we gate on spec, not cache.
         var existingCrd = getCrd(slug, env.getSlug());
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
+        if (!Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
+            return;
+        }
+
         existingCrd.getSpec().setStopped(false);
         crdClient.update(existingCrd);
         log.info("Started Resource CRD: {}", slug);
 
-        entity.setStatus(ResourcePhase.PENDING);
-        resourceCacheRepository.save(entity);
+        resourceCacheRepository.updateStatusBySlug(slug, ResourcePhase.PENDING.name());
 
         auditLogService.log(ctx, "resource.started", "resource", slug, workspaceId, null);
     }
@@ -420,27 +443,24 @@ public class ResourceService {
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Restart only from READY
         if (ResourcePhase.READY != entity.getStatus()) {
             throw new ConflictException("Resource must be READY to restart, current status: " + entity.getStatus());
         }
 
-        // Trigger restart by bumping deploymentRevision
         var existingCrd = getCrd(slug, env.getSlug());
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        existingCrd.getSpec().setDeploymentRevision(java.time.Instant.now().toString());
+        // Must be a UUID — public-api.yaml declares deploymentRevision as such.
+        existingCrd.getSpec().setDeploymentRevision(UUID.randomUUID().toString());
         crdClient.update(existingCrd);
         log.info("Restarted Resource CRD: {}", slug);
 
-        entity.setStatus(ResourcePhase.RESTARTING);
-        resourceCacheRepository.save(entity);
+        resourceCacheRepository.updateStatusBySlug(slug, ResourcePhase.RESTARTING.name());
 
         auditLogService.log(ctx, "resource.restarted", "resource", slug, workspaceId, null);
     }
 
-    /** Fetch a ResourceCrd from Kubernetes by slug and environment slug. Returns null if not found. */
     @Nullable
     private ResourceCrd getCrd(String slug, String envSlug) {
         String namespace = namespaceService.computeNamespace(envSlug);
@@ -448,23 +468,58 @@ public class ResourceService {
     }
 
     /**
-     * Auto-generate the domain for resources with ingress-exposed ports.
-     * Per spec: primary domain is {@code {slug}.{baseDomain}}, additional ingress ports
-     * use {@code {slug}-{port}.{baseDomain}}.
-     *
-     * <p>For Sprint 5 (single ingress port), only the primary domain is set on hosting.
-     * Multi-port per-port domains are tracked as tech debt.
+     * If no synchronization is active (unit tests without a managed tx), runs inline instead
+     * of registering — lets callers keep a single code path.
+     */
+    private void runAfterCommit(Runnable action) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
+                }
+            });
+        } else {
+            action.run();
+        }
+    }
+
+    /**
+     * Compensation: flip an already-committed cache row to ERROR after its CRD op failed.
+     * Secondary failures here are swallowed — we've already failed the primary operation.
+     */
+    private void markCacheRowError(String slug, String message) {
+        try {
+            compensationTxTemplate.executeWithoutResult(status -> {
+                resourceCacheRepository.findBySlug(slug).ifPresent(entity -> {
+                    entity.setStatus(ResourcePhase.ERROR);
+                    var detail = entity.getStatusDetail() != null
+                            ? entity.getStatusDetail()
+                            : new eu.appbahn.shared.crd.ResourceStatus();
+                    detail.setPhase(ResourcePhase.ERROR);
+                    detail.setMessage(message);
+                    entity.setStatusDetail(detail);
+                    entity.setUpdatedAt(java.time.Instant.now());
+                    resourceCacheRepository.save(entity);
+                });
+            });
+        } catch (RuntimeException nested) {
+            log.error("Compensation failed: could not mark {} as ERROR: {}", slug, nested.getMessage(), nested);
+        }
+    }
+
+    /**
+     * Primary domain: {@code {slug}.{baseDomain}}. Per-port domains for additional ingress
+     * ports are planned tech debt; today we only set the primary.
      */
     private void assignDomain(ResourceConfig config, String slug) {
         for (var port : config.getIngressPorts()) {
-            // Only set domain if not already provided (allow user override)
             if (port.getDomain() == null) {
                 port.setDomain(slug + "." + baseDomain);
             }
         }
     }
 
-    /** Validate that all linked resources exist and no self-links are present. */
     private void validateLinks(java.util.List<ResourceSpec.ResourceLink> links, String currentSlug) {
         var slugs = new java.util.ArrayList<String>();
         for (var link : links) {

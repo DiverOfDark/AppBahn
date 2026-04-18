@@ -2,7 +2,6 @@ plugins {
     java
     alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot) apply false
-    alias(libs.plugins.spring.dependency.management)
 }
 
 // API specs live in the top-level /api directory

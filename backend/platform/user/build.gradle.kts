@@ -1,7 +1,6 @@
 plugins {
     java
     alias(libs.plugins.spring.boot) apply false
-    alias(libs.plugins.spring.dependency.management)
 }
 
 tasks.named<Jar>("jar") {
@@ -20,4 +19,5 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
 
     testImplementation(libs.spring.boot.starter.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }

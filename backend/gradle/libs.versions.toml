@@ -6,10 +6,30 @@ spotless = "8.4.0"
 springdoc = "3.0.2"
 fabric8 = "7.6.1"
 josdk-spring-boot = "6.4.0"
+# flyway kept explicit: catalog 12.3.0 is newer than the spring-boot-dependencies BOM value.
 flyway = "12.3.0"
-postgresql = "42.7.10"
-testcontainers = "1.21.4"
 uuid-creator = "6.1.1"
+scalar-webmvc = "0.6.20"
+swagger-annotations = "2.2.46"
+jackson-databind-nullable = "0.2.10"
+classgraph = "4.8.184"
+playwright = "1.52.0"
+okhttp = "4.12.0"
+# Allure splits its SDK (allure-junit5, allure-okhttp3) and CLI (allure-commandline)
+# into independent release trains — the CLI is much newer than the latest SDK.
+allure = "2.29.1"
+allure-cli = "2.34.1"
+littleproxy = "2.7.0"
+git-properties = "2.5.7"
+node-gradle = "7.1.0"
+gson = "2.10.1"
+gson-fire = "1.9.0"
+jsr305 = "3.0.2"
+
+# Versions NOT declared here are supplied by the spring-boot-dependencies BOM
+# (imported centrally via io.spring.dependency-management in the root build):
+# postgresql, jakarta-validation-api, jakarta-annotation-api, lombok, junit-jupiter,
+# awaitility, assertj, testcontainers, spring-framework, slf4j.
 
 [libraries]
 # Spring Boot starters
@@ -26,7 +46,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 
 # Database
 spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
-postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+postgresql = { module = "org.postgresql:postgresql" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 
@@ -40,31 +60,54 @@ josdk-spring-boot-starter = { module = "io.javaoperatorsdk:operator-framework-sp
 
 # API docs
 springdoc-openapi-starter = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
-scalar-spring = { module = "com.scalar.maven:scalar-webmvc", version = "0.6.20" }
+scalar-spring = { module = "com.scalar.maven:scalar-webmvc", version.ref = "scalar-webmvc" }
 
 # OpenAPI generated code dependencies
-swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version = "2.2.46" }
-jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version = "0.2.10" }
-jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version = "3.1.1" }
-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version = "3.0.0" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
+jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-databind-nullable" }
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api" }
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api" }
 
 # UUID v7
 uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-creator" }
 
 # Lombok
-lombok = { module = "org.projectlombok:lombok", version = "1.18.44" }
+lombok = { module = "org.projectlombok:lombok" }
 
 # Testing
-classgraph = { module = "io.github.classgraph:classgraph", version = "4.8.184" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "6.0.3" }
+classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
-testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+testcontainers-k3s = { module = "org.testcontainers:testcontainers-k3s" }
+
+# E2E testing
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+# Transitive runtime deps of the generated OpenAPI client (java + okhttp-gson target)
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+gson-fire = { module = "io.gsonfire:gson-fire", version.ref = "gson-fire" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
+awaitility = { module = "org.awaitility:awaitility" }
+assertj-core = { module = "org.assertj:assertj-core" }
+# Jackson databind version is supplied transitively by the fabric8 BOM imported in
+# backend/e2e/build.gradle.kts -- keep this entry version-less on purpose.
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+fabric8-kubernetes-client-bom = { module = "io.fabric8:kubernetes-client-bom", version.ref = "fabric8" }
+allure-junit5 = { module = "io.qameta.allure:allure-junit5", version.ref = "allure" }
+allure-okhttp3 = { module = "io.qameta.allure:allure-okhttp3", version.ref = "allure" }
+allure-commandline = { module = "io.qameta.allure:allure-commandline", version.ref = "allure-cli" }
+littleproxy = { module = "io.github.littleproxy:littleproxy", version.ref = "littleproxy" }
+spring-context = { module = "org.springframework:spring-context" }
+spring-test = { module = "org.springframework:spring-test" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple" }
 
 [plugins]
-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.7" }
+git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "git-properties" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }

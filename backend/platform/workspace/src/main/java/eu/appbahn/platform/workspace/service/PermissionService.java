@@ -45,13 +45,11 @@ public class PermissionService {
 
         MemberRole highest = null;
 
-        // Direct membership
         var member = memberRepository.findByWorkspaceIdAndUserId(workspaceId, ctx.userId());
         if (member.isPresent()) {
             highest = MemberRole.valueOf(member.get().getRole());
         }
 
-        // OIDC group mappings
         if (!ctx.groups().isEmpty()) {
             var mappings = groupMappingRepository.findByWorkspaceIdAndOidcGroupIn(workspaceId, ctx.groups());
             for (var mapping : mappings) {
@@ -66,12 +64,18 @@ public class PermissionService {
     }
 
     public MemberRole resolveProjectRole(AuthContext ctx, UUID projectId) {
+        // Platform admin (incl. internal-scope tokens) short-circuits — override lookups below
+        // would otherwise hit repositories with userId=null.
+        if (ctx.platformAdmin()) {
+            return MemberRole.OWNER;
+        }
+
         ProjectEntity project = projectRepository.findById(projectId).orElse(null);
         if (project == null) return null;
 
         MemberRole inherited = resolveWorkspaceRole(ctx, project.getWorkspaceId());
 
-        // Check project override — effective = max(inherited, override)
+        // effective = max(inherited, override)
         var override = projectOverrideRepository.findByProjectIdAndUserId(projectId, ctx.userId());
         if (override.isPresent()) {
             MemberRole overrideRole = MemberRole.valueOf(override.get().getRole());
@@ -84,12 +88,18 @@ public class PermissionService {
     }
 
     public MemberRole resolveEnvironmentRole(AuthContext ctx, UUID environmentId) {
+        // Platform admin (incl. internal-scope tokens) short-circuits — override lookups below
+        // would otherwise hit repositories with userId=null.
+        if (ctx.platformAdmin()) {
+            return MemberRole.OWNER;
+        }
+
         var env = environmentRepository.findById(environmentId).orElse(null);
         if (env == null) return null;
 
         MemberRole inherited = resolveProjectRole(ctx, env.getProjectId());
 
-        // Check environment override — effective = max(inherited, override)
+        // effective = max(inherited, override)
         var override = envOverrideRepository.findByEnvironmentIdAndUserId(environmentId, ctx.userId());
         if (override.isPresent()) {
             MemberRole overrideRole = MemberRole.valueOf(override.get().getRole());

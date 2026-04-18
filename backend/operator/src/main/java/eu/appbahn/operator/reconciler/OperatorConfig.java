@@ -5,15 +5,8 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
-/**
- * Operator configuration bound from {@code operator.*} properties.
- * Uses a static accessor for JOSDK dependent resources which require no-arg constructors
- * and cannot use Spring DI directly. The ResourceReconciler itself receives this via constructor injection.
- */
 @ConfigurationProperties(prefix = "operator")
 public class OperatorConfig {
-
-    private static volatile OperatorConfig instance;
 
     private final double resourceRequestFraction;
     private final String ingressClassName;
@@ -30,14 +23,8 @@ public class OperatorConfig {
         this.resourceRequestFraction = resourceRequestFraction;
         this.ingressClassName = ingressClassName;
         this.clusterName = clusterName;
-        this.clusterIssuer = clusterIssuer;
+        this.clusterIssuer = (clusterIssuer != null && !clusterIssuer.isBlank()) ? clusterIssuer : null;
         this.security = security;
-        instance = this;
-    }
-
-    /** Static accessor for JOSDK dependent resources that lack Spring DI. */
-    public static OperatorConfig get() {
-        return java.util.Objects.requireNonNull(instance, "OperatorConfig not yet initialized");
     }
 
     public double getRequestFraction() {

@@ -34,7 +34,12 @@ platform:
     namespace: ""
     podLabels: {}
     annotations: {}
-    tls: true
+    # TLS is opt-in. Set `tls.secretName` to an existing Kubernetes Secret of type
+    # kubernetes.io/tls in the release namespace — the chart references it from the
+    # Ingress rule but does not create or manage the certificate itself (use cert-manager,
+    # sealed-secrets, external-secrets, or an out-of-band provisioning step).
+    tls:
+      secretName: ""
   resources:
     requests:
       cpu: 500m
@@ -82,6 +87,9 @@ operator:
     tokenEndpoint: ""
   cache:
     refreshInterval: "5m"
+  # Additional env vars to inject into the operator container. Use for deployment-specific
+  # tweaks that don't justify a first-class helm value (e.g. OIDC provider quirks).
+  extraEnv: []
   resources:
     requests:
       cpu: 250m

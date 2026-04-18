@@ -76,7 +76,6 @@ public class EnvironmentService {
         }
         environmentRepository.save(entity);
 
-        // Create Kubernetes namespace
         namespaceService.createNamespace(entity.getSlug());
 
         auditLogService.log(
@@ -150,7 +149,7 @@ public class EnvironmentService {
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
 
-        // Delete Kubernetes namespace (cascades all resources)
+        // Cascades to every resource in the namespace.
         namespaceService.deleteNamespace(entity.getSlug());
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);

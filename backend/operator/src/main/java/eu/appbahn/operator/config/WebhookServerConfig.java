@@ -85,7 +85,6 @@ public class WebhookServerConfig {
     }
 
     private KeyStore buildKeyStoreFromPem(File certFile, File keyFile) throws Exception {
-        // Parse certificates
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         List<X509Certificate> certs = new ArrayList<>();
         try (InputStream is = new ByteArrayInputStream(Files.readAllBytes(certFile.toPath()))) {
@@ -94,7 +93,6 @@ public class WebhookServerConfig {
             }
         }
 
-        // Parse private key
         String keyPem = Files.readString(keyFile.toPath());
         String keyBase64 = keyPem.replaceAll("-----BEGIN .*?-----", "")
                 .replaceAll("-----END .*?-----", "")
@@ -108,14 +106,12 @@ public class WebhookServerConfig {
                 privateKey = KeyFactory.getInstance(algorithm).generatePrivate(keySpec);
                 break;
             } catch (Exception ignored) {
-                // Try next algorithm
             }
         }
         if (privateKey == null) {
             throw new java.security.GeneralSecurityException("Unable to parse private key — unsupported algorithm");
         }
 
-        // Build PKCS12 keystore
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(null, null);
         ks.setKeyEntry("webhook", privateKey, new char[0], certs.toArray(new X509Certificate[0]));

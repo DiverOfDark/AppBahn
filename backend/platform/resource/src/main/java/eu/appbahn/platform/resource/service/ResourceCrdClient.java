@@ -15,6 +15,14 @@ public interface ResourceCrdClient {
     /** Delete a Resource CRD. */
     void delete(ResourceCrd crd);
 
+    /**
+     * Delete a Resource CRD by identity (slug + namespace). Tolerates the object being absent.
+     * Prefer this over {@link #delete(ResourceCrd)} when the caller only has the identity and
+     * does not need to pre-fetch the CRD (which would be racy and add unnecessary I/O to a JPA
+     * transaction).
+     */
+    void delete(String slug, String namespace);
+
     /** Get a Resource CRD by slug and namespace. Returns null if not found. */
     @Nullable
     ResourceCrd get(String slug, String namespace);

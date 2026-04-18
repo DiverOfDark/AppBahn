@@ -1,7 +1,6 @@
 plugins {
     java
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.openapi.generator)
     alias(libs.plugins.git.properties)
 }
@@ -10,6 +9,9 @@ extra["dockerImageName"] = "operator"
 
 gitProperties {
     dotGitDirectory.set(rootProject.layout.projectDirectory.dir("../.git"))
+    // Matches platform/app: worktrees ship `.git` as a file, so don't hard-fail
+    // when the git-properties plugin can't resolve a repo.
+    failOnNoGitDirectory = false
 }
 
 val internalSpecFile = rootProject.layout.projectDirectory.file("../api/internal-api.yaml")

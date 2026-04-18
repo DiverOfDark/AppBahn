@@ -17,7 +17,7 @@ function writeTheme(t: Theme) {
   try {
     localStorage.setItem(STORAGE_KEY, t)
   } catch {
-    // localStorage unavailable
+    // localStorage unavailable (private mode, quota, …)
   }
 }
 

@@ -61,7 +61,6 @@ public class WorkspaceService {
         entity.setSlug(SlugGenerator.generate(req.getName()));
         workspaceRepository.save(entity);
 
-        // Creator becomes OWNER
         var member = new WorkspaceMemberEntity();
         member.setWorkspaceId(entity.getId());
         member.setUserId(ctx.userId());
@@ -86,7 +85,6 @@ public class WorkspaceService {
         if (ctx.platformAdmin()) {
             result = workspaceRepository.findAll(pageable);
         } else {
-            // Get workspace IDs from direct memberships
             List<UUID> workspaceIds = memberRepository.findByUserId(ctx.userId()).stream()
                     .map(WorkspaceMemberEntity::getWorkspaceId)
                     .collect(Collectors.toList());
@@ -147,7 +145,6 @@ public class WorkspaceService {
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.OWNER);
 
-        // Block if projects exist
         var projects = projectRepository.findByWorkspaceId(entity.getId());
         if (!projects.isEmpty()) {
             List<String> projectSlugs = projects.stream().map(p -> p.getSlug()).collect(Collectors.toList());

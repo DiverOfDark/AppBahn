@@ -1,10 +1,14 @@
 package eu.appbahn.platform.common.exception;
 
 import eu.appbahn.platform.api.model.ErrorResponse;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -59,6 +63,38 @@ public class GlobalExceptionHandler {
                         ex.getDimension(),
                         ex.getLimit(),
                         ex.getLevel()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        var fieldErrors = ex.getBindingResult().getFieldErrors();
+        String message = fieldErrors.isEmpty()
+                ? "Validation failed"
+                : fieldErrors.stream()
+                        .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                        .reduce((a, b) -> a + "; " + b)
+                        .orElse("Validation failed");
+        return buildResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Malformed request body");
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "Concurrent modification — please retry");
+    }
+
+    @ExceptionHandler(KubernetesClientException.class)
+    public ResponseEntity<ErrorResponse> handleKubernetesClient(KubernetesClientException ex) {
+        log.error("Kubernetes API error", ex);
+        int k8sCode = ex.getCode();
+        if (k8sCode == 409) {
+            return buildResponse(HttpStatus.CONFLICT, "Kubernetes conflict — please retry");
+        }
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, "Kubernetes API error");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

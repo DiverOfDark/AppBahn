@@ -85,7 +85,6 @@ public class QuotaService {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void checkQuota(UUID environmentId, String excludeSlug, ResourceConfig newResourceConfig) {
-        // Acquire advisory lock on environment
         entityManager
                 .createNativeQuery("SELECT pg_advisory_xact_lock(hashtext(CAST(:envId AS TEXT)))")
                 .setParameter("envId", environmentId.toString())
@@ -98,20 +97,19 @@ public class QuotaService {
                 .getResultList();
 
         if (rows.isEmpty()) {
-            // Environment not found in hierarchy — only check platform defaults
+            // Environment isn't in the hierarchy — fall back to platform defaults.
             var newUsage = newResourceUsage(newResourceConfig);
             checkPlatformDefaults(1, newUsage.cpu, newUsage.memory);
             return;
         }
 
-        // Extract hierarchy quotas and IDs from first row (same across all rows)
+        // First row carries hierarchy quotas + IDs (same across all rows).
         Object[] first = rows.get(0);
         String envQuota = (String) first[7];
         UUID targetProjId = (UUID) first[8];
         String projQuota = (String) first[9];
         String wsQuota = (String) first[10];
 
-        // Aggregate usage per level
         var envUsage = new Usage(0, 0, 0);
         var projUsage = new Usage(0, 0, 0);
         var wsUsage = new Usage(0, 0, 0);
@@ -145,7 +143,6 @@ public class QuotaService {
             }
         }
 
-        // Add the new/updated resource to all levels
         var newUsage = newResourceUsage(newResourceConfig);
         envUsage = envUsage.add(1, newUsage.cpu, newUsage.memory);
         projUsage = projUsage.add(1, newUsage.cpu, newUsage.memory);

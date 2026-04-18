@@ -13,6 +13,7 @@ allprojects {
 subprojects {
     apply(plugin = "java")
     apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "io.spring.dependency-management")
 
     spotless {
         java {
@@ -69,11 +70,9 @@ subprojects {
         }
     }
 
-    pluginManager.withPlugin("io.spring.dependency-management") {
-        the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
-            imports {
-                mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.spring.boot.get()}")
-            }
+    the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${rootProject.libs.versions.spring.boot.get()}")
         }
     }
 }

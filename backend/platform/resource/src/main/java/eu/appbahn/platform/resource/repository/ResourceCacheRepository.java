@@ -24,6 +24,15 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
 
     void deleteBySlug(String slug);
 
+    /**
+     * Native DELETE that tolerates the row being absent (race with concurrent deletes from the
+     * operator's sync callback). Unlike Hibernate's managed delete, this doesn't assert on the
+     * affected row count.
+     */
+    @Modifying
+    @Query(nativeQuery = true, value = "DELETE FROM resource_cache WHERE slug = :slug")
+    int deleteBySlugIfExists(@Param("slug") String slug);
+
     List<ResourceCacheEntity> findByEnvironmentIdIn(Collection<UUID> environmentIds);
 
     @Query(
@@ -31,6 +40,16 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
             value =
                     "SELECT * FROM resource_cache WHERE EXISTS (SELECT 1 FROM jsonb_array_elements(links) elem WHERE elem ->> 'resource' = :resourceSlug)")
     List<ResourceCacheEntity> findByLinkedResourceSlug(@Param("resourceSlug") String resourceSlug);
+
+    /**
+     * Update only the status column via native SQL. Unlike Hibernate's entity save, this does not
+     * check the optimistic lock version -- it always succeeds regardless of concurrent operator
+     * sync writes. The next sync cycle will overwrite the status with the authoritative value
+     * from the CRD anyway, so a brief divergence is harmless.
+     */
+    @Modifying
+    @Query(nativeQuery = true, value = "UPDATE resource_cache SET status = :status WHERE slug = :slug")
+    int updateStatusBySlug(@Param("slug") String slug, @Param("status") String status);
 
     @Modifying
     @Query(
