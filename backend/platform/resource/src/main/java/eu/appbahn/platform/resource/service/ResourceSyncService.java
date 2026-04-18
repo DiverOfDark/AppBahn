@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.internal.model.FullResourceSyncRequest;
 import eu.appbahn.platform.api.internal.model.ResourceSyncRequest;
 import eu.appbahn.platform.common.exception.NotFoundException;
+import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
@@ -13,6 +14,7 @@ import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
 import eu.appbahn.shared.crd.ResourceStatus;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,16 +36,19 @@ public class ResourceSyncService {
     private final DeploymentRepository deploymentRepository;
     private final EnvironmentRepository environmentRepository;
     private final ObjectMapper objectMapper;
+    private final EntityManager entityManager;
 
     public ResourceSyncService(
             ResourceCacheRepository resourceCacheRepository,
             DeploymentRepository deploymentRepository,
             EnvironmentRepository environmentRepository,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            EntityManager entityManager) {
         this.resourceCacheRepository = resourceCacheRepository;
         this.deploymentRepository = deploymentRepository;
         this.environmentRepository = environmentRepository;
         this.objectMapper = objectMapper;
+        this.entityManager = entityManager;
     }
 
     @Transactional
@@ -82,6 +87,7 @@ public class ResourceSyncService {
 
         var now = Instant.now();
         var existing = resourceCacheRepository.findBySlug(request.getSlug()).orElse(null);
+        boolean isFirstSight = existing == null;
         if (existing != null) {
             existing.setName(request.getName());
             existing.setType(request.getType());
@@ -107,6 +113,41 @@ public class ResourceSyncService {
                     request.getCreatedAt() != null ? request.getCreatedAt().toInstant() : now);
             entity.setUpdatedAt(now);
             resourceCacheRepository.save(entity);
+        }
+
+        // First-sight: materialise the initial DeploymentEntity the API used to create.
+        // ResourceService.create pre-generated the deploymentRevision UUID and set it on the
+        // CRD spec — the operator carries it through to status.latestDeploymentId.
+        if (isFirstSight
+                && statusDetail != null
+                && statusDetail.getLatestDeploymentId() != null
+                && config.getSource() instanceof eu.appbahn.shared.crd.DockerSource docker
+                && docker.getImage() != null) {
+            try {
+                UUID depId = UUID.fromString(statusDetail.getLatestDeploymentId());
+                if (deploymentRepository.findById(depId).isEmpty()) {
+                    // Flush the cache row before the FK-dependent deployment insert.
+                    entityManager.flush();
+                    String tag = docker.getTag() != null ? docker.getTag() : "latest";
+                    String imageRef = docker.getImage() + ":" + tag;
+                    var dep = new DeploymentEntity();
+                    dep.setId(depId);
+                    dep.setResourceSlug(request.getSlug());
+                    dep.setEnvironmentId(env.getId());
+                    dep.setSourceRef(imageRef);
+                    dep.setImageRef(imageRef);
+                    dep.setTriggeredBy(TriggerType.MANUAL);
+                    dep.setStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
+                    dep.setPrimary(false);
+                    deploymentRepository.save(dep);
+                    log.info("Materialised initial deployment {} for resource {}", depId, request.getSlug());
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn(
+                        "Invalid latestDeploymentId '{}' on first sync of resource {} — skipping initial deployment",
+                        statusDetail.getLatestDeploymentId(),
+                        request.getSlug());
+            }
         }
         // Use the operator's explicit latestDeploymentId/Status (driven by K8s rollout) rather
         // than the resource phase, which would misreport during rolling updates.
