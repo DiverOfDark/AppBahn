@@ -6,6 +6,9 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
   site: 'https://appbahn.eu',
   output: 'static',
+  redirects: {
+    '/docs': '/docs/getting-started/',
+  },
   integrations: [
     starlight({
       title: 'AppBahn Docs',
