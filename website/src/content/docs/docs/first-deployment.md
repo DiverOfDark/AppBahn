@@ -8,7 +8,7 @@ This guide walks you through deploying a Docker container (nginx) to AppBahn. Yo
 ## Prerequisites
 
 - An AppBahn instance running on your Kubernetes cluster
-- A workspace, project, and environment already created (see [Getting Started](/getting-started))
+- A workspace, project, and environment already created (see [Getting Started](/docs/getting-started/))
 
 ## Step 1: Navigate to Your Environment
 
@@ -99,5 +99,5 @@ appbahn deploy list my-nginx-abc12ef
 
 ## Next Steps
 
-- [Resource Types](/resource-types) — Available types and configuration options
-- [Concepts](/concepts) — Architecture and design overview
+- [Resource Types](/docs/resource-types/) — Available types and configuration options
+- [Concepts](/docs/concepts/) — Architecture and design overview
