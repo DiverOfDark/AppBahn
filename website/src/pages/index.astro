@@ -1,62 +1,97 @@
 ---
-const features = [
+const valueProps = [
   {
-    title: 'Git Push to Deploy',
-    description:
-      'Push your code, we handle the rest. Build detection, container images, zero-config deployments.',
+    idx: '01 · KUBERNETES-NATIVE',
+    title: 'Real orchestration',
+    body: 'A native operator manages Deployments, Services, and Ingresses directly. No Compose wrappers. No external GitOps. Just Kubernetes, the way it was meant to be used.',
   },
   {
-    title: 'Managed Databases',
-    description:
-      'PostgreSQL, Valkey, MongoDB, Kafka, NATS — provisioned and linked as managed services.',
+    idx: '02 · DATA SOVEREIGNTY',
+    title: 'Your infra. Your region.',
+    body: 'Runs on any Kubernetes cluster — on-prem, in your VPC, or at the edge. Data never leaves your boundary. GDPR, HIPAA, and the audit committee all smile.',
   },
   {
-    title: 'Auto-TLS',
-    description:
-      'Automatic TLS certificates for every exposed service. Wildcard domains and custom domains supported.',
+    idx: '03 · MULTI-TENANT',
+    title: 'Workspaces → Resources',
+    body: 'A four-level hierarchy with RBAC at every tier. Give each team a workspace. Each product a project. Each branch an environment. Each service a resource.',
+  },
+]
+
+const stops = [
+  { node: '01', label: 'git push', sub: 'Repo webhook or polling', state: 'done' },
+  { node: '02', label: 'api', sub: 'Deployment record, commit resolved', state: 'done' },
+  { node: '03', label: 'pipeline', sub: 'BuildPipeline CRD created', state: 'done' },
+  { node: '04', label: 'build', sub: 'Runtime detect → image built', state: 'done' },
+  { node: '05', label: 'registry', sub: 'Image pushed', state: 'done' },
+  { node: '06', label: 'operator', sub: 'Deployment, Service, Ingress applied', state: 'active' },
+  { node: '07', label: 'live', sub: '{resource}.appbahn.acme.org', state: '' },
+]
+
+const compareRows = [
+  { name: 'Vercel', model: 'SaaS', region: 'US-centric', self: 'no', orch: '—' },
+  { name: 'Railway', model: 'SaaS', region: 'US-centric', self: 'no', orch: '—' },
+  { name: 'Heroku', model: 'SaaS', region: 'US-centric', self: 'no', orch: '—' },
+  { name: 'Render', model: 'SaaS', region: 'US-centric', self: 'no', orch: '—' },
+  { name: 'Fly.io', model: 'SaaS', region: 'Global', self: 'no', orch: '—' },
+  { name: 'Coolify', model: 'Self-hosted', region: 'Any', self: 'yes', orch: 'docker' },
+  { name: 'Dokploy', model: 'Self-hosted', region: 'Any', self: 'yes', orch: 'docker' },
+  { name: 'AppBahn', model: 'Self-hosted', region: 'Any', self: 'yes', orch: 'k8s', us: true },
+]
+
+const archLayers = [
+  { badge: 'layer 01', name: 'Web Console', meta: 'workspaces · rbac · logs' },
+  { badge: 'layer 02', name: 'Platform API', meta: 'builds · deploys · routing' },
+  { badge: 'layer 03', name: 'AppBahn Operator', meta: 'BuildPipeline CRD · reconcile', hl: true },
+  { badge: 'layer 04', name: 'Builder', meta: 'runtime autodetect → OCI image' },
+  { badge: 'layer 05', name: 'Kubernetes', meta: 'your cluster, any provider' },
+]
+
+const hierarchy = [
+  {
+    idx: '01 · TOP',
+    name: 'Workspace',
+    body: 'Billing boundary. SSO, audit log, quotas. Usually one per company.',
+    example: 'acme-corp',
   },
   {
-    title: 'Observability',
-    description: 'Logs, metrics, and alerts wired in from day one. Pluggable provider backends.',
+    idx: '02',
+    name: 'Project',
+    body: 'A product or codebase. Groups related services together.',
+    example: 'storefront',
   },
   {
-    title: 'Multi-environment',
-    description:
-      'Staging, production, feature branches — each with isolated Kubernetes namespaces and resource quotas.',
+    idx: '03',
+    name: 'Environment',
+    body: 'Isolated deploy target. Per-PR previews, staging, production.',
+    example: 'production',
   },
   {
-    title: 'Kubernetes-native',
-    description:
-      'Resources are CRDs. The operator manages reconciliation. Works with your existing cluster tooling.',
-  },
-  {
-    title: 'Multi-tenant by design',
-    description:
-      'Workspaces, projects, and environments with role-based access control. Isolate teams with Kubernetes namespaces.',
-  },
-  {
-    title: 'Team collaboration',
-    description:
-      'Invite members by email, assign roles, and manage access with OIDC group mappings. Deploy tokens for CI/CD pipelines.',
+    idx: '04 · LEAF',
+    name: 'Resource',
+    body: 'A running service, cron, or managed DB. Scales independently.',
+    example: 'api-gateway',
   },
 ]
 ---
 
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <title>AppBahn -- Enterprise PaaS on your own Kubernetes infrastructure</title>
+    <title>AppBahn — Self-hosted PaaS on Kubernetes</title>
     <meta
       name="description"
-      content="Deploy from Git to production on your own Kubernetes clusters. AppBahn is the enterprise platform-as-a-service that runs where your data lives."
+      content="Vercel-class developer experience on your own Kubernetes cluster. Real orchestration, no YAML, your data, your region."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
     <style>
-      /* --------------------------------------------------------
-         Reset
-         -------------------------------------------------------- */
       *,
       *::before,
       *::after {
@@ -65,83 +100,53 @@ const features = [
         box-sizing: border-box;
       }
 
-      /* --------------------------------------------------------
-         Fonts
-         -------------------------------------------------------- */
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2')
-          format('woff2');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2')
-          format('woff2');
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2')
-          format('woff2');
-        font-weight: 600;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'Inter';
-        src: url('https://cdn.jsdelivr.net/npm/inter-font@3.19.0/Inter%20(web)/Inter-Regular.woff2')
-          format('woff2');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'JetBrains Mono';
-        src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2')
-          format('woff2');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-
-      /* --------------------------------------------------------
-         Design tokens
-         -------------------------------------------------------- */
-      :root {
+      :root,
+      :root[data-theme='dark'] {
         --bg-base: oklch(13% 0.01 260);
-        --bg-raised: oklch(22% 0.008 80);
         --bg-surface: oklch(17% 0.008 260);
-        --accent: oklch(80% 0.16 80);
-        --accent-hover: oklch(85% 0.18 80);
+        --bg-raised: oklch(22% 0.008 80);
+        --bg-overlay: oklch(25% 0.01 260);
+
         --text-primary: oklch(93% 0.005 80);
         --text-secondary: oklch(65% 0.01 260);
         --text-tertiary: oklch(50% 0.01 260);
+
+        --accent: oklch(80% 0.16 80);
+        --accent-hover: oklch(85% 0.18 80);
+        --accent-muted: oklch(45% 0.08 80);
+        --accent-fg: oklch(15% 0.01 80);
+
+        --status-ready: oklch(70% 0.14 145);
+        --status-error: oklch(65% 0.18 25);
+
         --border: oklch(25% 0.005 260);
         --border-strong: oklch(35% 0.005 260);
 
-        --font-heading: 'Geist Sans', system-ui, -apple-system, sans-serif;
-        --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        --radius-input: 2px;
+        --radius-card: 4px;
+        --radius-btn: 4px;
 
-        --radius: 4px;
-        --grid: 8px;
-        --max-width: 1120px;
+        --font-heading: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+        --space-1: 8px;
+        --space-2: 16px;
+        --space-3: 24px;
+        --space-4: 32px;
+        --space-6: 48px;
+        --space-8: 64px;
+
+        --max-width: 1280px;
       }
 
-      /* --------------------------------------------------------
-         Base
-         -------------------------------------------------------- */
-      html {
+      html,
+      body {
         background: var(--bg-base);
         color: var(--text-primary);
         font-family: var(--font-body);
-        font-size: 16px;
-        line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.5;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -152,304 +157,931 @@ const features = [
         flex-direction: column;
       }
 
-      a {
-        color: var(--text-secondary);
-        text-decoration: none;
-        transition: color 0.15s ease;
-      }
-      a:hover {
-        color: var(--text-primary);
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
       }
 
-      /* --------------------------------------------------------
-         Layout
-         -------------------------------------------------------- */
-      .container {
-        width: 100%;
-        max-width: var(--max-width);
-        margin: 0 auto;
-        padding: 0 calc(var(--grid) * 3);
-      }
-
-      /* --------------------------------------------------------
-         Navigation
-         -------------------------------------------------------- */
-      nav {
+      /* ---------- nav ---------- */
+      nav.top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 48px;
+        border-bottom: 1px solid var(--border);
         position: sticky;
         top: 0;
-        z-index: 100;
-        background: var(--bg-base);
-        border-bottom: 1px solid var(--border);
+        background: oklch(13% 0.01 260 / 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+      }
+      nav.top .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--text-primary);
+      }
+      nav.top .brand img {
+        height: 26px;
+        display: block;
+      }
+      nav.top .brand .div {
+        width: 1px;
+        height: 18px;
+        background: var(--border-strong);
+      }
+      nav.top .brand .tag {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+      nav.top .links {
+        display: flex;
+        gap: 28px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+      nav.top .links a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.12s ease;
+      }
+      nav.top .links a:hover {
+        color: var(--text-primary);
+      }
+      nav.top .cta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
       }
 
-      .nav-inner {
+      .btn {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: var(--radius-btn);
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none;
+        display: inline-block;
+        transition:
+          background 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease;
+      }
+      .btn.p {
+        background: var(--accent);
+        color: var(--accent-fg);
+      }
+      .btn.p:hover {
+        background: var(--accent-hover);
+      }
+      .btn.s {
+        background: transparent;
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+      .btn.s:hover {
+        border-color: var(--text-secondary);
+      }
+      .btn.g {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+      .btn.g:hover {
+        background: var(--bg-raised);
+      }
+
+      /* ---------- common ---------- */
+      section {
+        padding: 96px 48px;
+        max-width: var(--max-width);
+        margin: 0 auto;
+        width: 100%;
+      }
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .kicker::before {
+        content: '';
+        width: 18px;
+        height: 1px;
+        background: var(--accent);
+      }
+      h1 {
+        font-family: var(--font-heading);
+        font-size: clamp(40px, 6vw, 72px);
+        font-weight: 700;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        max-width: 900px;
+        margin: 0 0 24px;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.42em;
+        letter-spacing: -0.005em;
+        display: block;
+        margin-top: 14px;
+      }
+      h2 {
+        font-family: var(--font-heading);
+        font-size: clamp(28px, 3.5vw, 44px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        margin: 0 0 16px;
+      }
+      h3 {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+      }
+      .sub {
+        font-size: 17px;
+        color: var(--text-secondary);
+        font-weight: 300;
+        line-height: 1.55;
+        max-width: 640px;
+      }
+      .sub-center {
+        text-align: center;
+        margin: 0 auto 56px;
+      }
+
+      /* ---------- hero ---------- */
+      section.hero {
+        padding-top: 72px;
+        padding-bottom: 64px;
+      }
+      .hero .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 36px;
+        flex-wrap: wrap;
+      }
+      .hero .actions .cmd {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin-left: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hero .actions .cmd::before {
+        content: '$';
+        color: var(--accent);
+      }
+
+      /* ---------- flow diagram ---------- */
+      .flow {
+        margin-top: 64px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        background: var(--bg-surface);
+        overflow: hidden;
+      }
+      .flow-hdr {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: calc(var(--grid) * 8);
       }
-
-      .wordmark-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        color: var(--text-primary);
-      }
-
-      .wordmark-link:hover {
-        color: var(--text-primary);
-      }
-
-      .nav-logo {
-        height: 28px;
-        width: auto;
-      }
-
-      .wordmark {
-        font-family: var(--font-heading);
-        font-weight: 600;
-        font-size: 18px;
-        letter-spacing: -0.02em;
-        color: var(--text-primary);
-      }
-
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: calc(var(--grid) * 4);
-        list-style: none;
-      }
-
-      .nav-links a {
-        font-size: 14px;
-        font-family: var(--font-body);
-        letter-spacing: 0.01em;
-      }
-
-      /* --------------------------------------------------------
-         Hero
-         -------------------------------------------------------- */
-      .hero {
-        padding: calc(var(--grid) * 12) 0 calc(var(--grid) * 10);
-        border-bottom: 1px solid var(--border);
-      }
-
-      .hero-content {
-        max-width: 720px;
-      }
-
-      .hero h1 {
-        font-family: var(--font-heading);
-        font-weight: 600;
-        font-size: clamp(32px, 5vw, 48px);
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-        color: var(--text-primary);
-        margin-bottom: calc(var(--grid) * 3);
-      }
-
-      .hero p {
-        font-size: 18px;
-        line-height: 1.6;
-        color: var(--text-secondary);
-        max-width: 560px;
-        margin-bottom: calc(var(--grid) * 5);
-      }
-
-      .cta {
-        display: inline-block;
-        font-family: var(--font-heading);
-        font-weight: 500;
-        font-size: 14px;
-        letter-spacing: 0.01em;
-        padding: calc(var(--grid) * 1.5) calc(var(--grid) * 3);
-        background: var(--accent);
-        color: var(--bg-base);
-        border: 1px solid var(--accent);
-        border-radius: var(--radius);
-        transition:
-          background 0.15s ease,
-          border-color 0.15s ease;
-        cursor: pointer;
-      }
-      .cta:hover {
-        background: var(--accent-hover);
-        border-color: var(--accent-hover);
-        color: var(--bg-base);
-      }
-
-      /* --------------------------------------------------------
-         Features
-         -------------------------------------------------------- */
-      .features {
-        padding: calc(var(--grid) * 10) 0;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .features-label {
+      .flow-hdr .t {
         font-family: var(--font-mono);
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.1em;
         color: var(--text-tertiary);
-        margin-bottom: calc(var(--grid) * 5);
+        text-transform: uppercase;
+      }
+      .flow-hdr .live {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--status-ready);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.08em;
+      }
+      .flow-hdr .live::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: var(--status-ready);
+        border-radius: 50%;
+      }
+      .flow-body {
+        padding: 48px 32px;
+        overflow-x: auto;
+      }
+      .flow-rail {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(110px, 1fr));
+        gap: 0;
+        position: relative;
+        align-items: start;
+        min-width: 720px;
+      }
+      .flow-rail::before {
+        content: '';
+        position: absolute;
+        left: 7.5%;
+        right: 7.5%;
+        top: 22px;
+        height: 2px;
+        background: var(--border-strong);
+      }
+      .flow-rail::after {
+        content: '';
+        position: absolute;
+        left: 7.5%;
+        top: 22px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 85%, transparent 100%);
+        width: 70%;
+      }
+      .stop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 0 8px;
+      }
+      .stop .node {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--bg-surface);
+        border: 2px solid var(--border-strong);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-tertiary);
+      }
+      .stop.done .node {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-fg);
+      }
+      .stop.active .node {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-fg);
+        box-shadow: 0 0 0 6px oklch(80% 0.16 80 / 0.18);
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+      .stop .label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      .stop.done .label,
+      .stop.active .label {
+        color: var(--text-primary);
+      }
+      .stop .stop-sub {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        font-weight: 300;
+        line-height: 1.4;
+        max-width: 130px;
+        margin: 0 auto;
       }
 
-      .features-grid {
+      /* ---------- value props ---------- */
+      .props {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 1px;
         background: var(--border);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        margin-top: 48px;
+      }
+      .prop {
+        background: var(--bg-surface);
+        padding: 32px 28px;
+      }
+      .prop .idx {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        margin-bottom: 20px;
+      }
+      .prop h3 {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      .prop p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-weight: 300;
+        margin: 0;
+      }
+
+      /* ---------- comparison ---------- */
+      .compare-section {
+        background: var(--bg-surface);
+        margin: 0;
+        max-width: none;
+        padding: 96px 48px;
+        width: 100%;
+      }
+      .compare-inner {
+        max-width: var(--max-width);
+        margin: 0 auto;
+      }
+      .compare {
+        margin-top: 48px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
         overflow: hidden;
       }
-
-      .feature-card {
-        background: var(--bg-raised);
-        padding: calc(var(--grid) * 4);
-      }
-
-      .feature-card h3 {
-        font-family: var(--font-heading);
-        font-weight: 500;
-        font-size: 16px;
-        letter-spacing: -0.01em;
-        color: var(--text-primary);
-        margin-bottom: calc(var(--grid) * 1);
-      }
-
-      .feature-card p {
+      .compare table {
+        width: 100%;
+        border-collapse: collapse;
         font-size: 14px;
-        line-height: 1.5;
+      }
+      .compare th,
+      .compare td {
+        padding: 16px 20px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      .compare thead th {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        font-weight: 500;
+        background: var(--bg-base);
+      }
+      .compare tbody td {
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+      .compare tbody td:first-child {
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+      .compare tr.us {
+        background: oklch(80% 0.16 80 / 0.06);
+      }
+      .compare tr.us td {
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+      .compare tr.us td:first-child {
+        color: var(--accent);
+        font-family: var(--font-heading);
+        font-weight: 700;
+      }
+      .compare tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        border-radius: 2px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .chip.no {
+        background: oklch(65% 0.18 25 / 0.12);
+        color: var(--status-error);
+      }
+      .chip.yes {
+        background: oklch(70% 0.14 145 / 0.12);
+        color: var(--status-ready);
+      }
+      .chip.k8s {
+        background: oklch(80% 0.16 80 / 0.15);
+        color: var(--accent);
+      }
+      .chip.docker {
+        background: oklch(35% 0.005 260);
         color: var(--text-secondary);
       }
 
-      /* --------------------------------------------------------
-         Footer
-         -------------------------------------------------------- */
-      footer {
-        margin-top: auto;
-        border-top: 1px solid var(--border);
-        padding: calc(var(--grid) * 5) 0;
+      /* ---------- architecture ---------- */
+      .arch-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 48px;
+        align-items: center;
+        margin-top: 48px;
       }
-
-      .footer-inner {
+      .arch-stack {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        background: var(--bg-surface);
+        overflow: hidden;
+      }
+      .arch-layer {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 20px;
       }
-
-      .footer-copy {
-        font-size: 13px;
+      .arch-layer:last-child {
+        border-bottom: none;
+      }
+      .arch-layer .badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        width: 80px;
+        flex-shrink: 0;
+      }
+      .arch-layer .name {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 15px;
+        flex: 1;
+      }
+      .arch-layer .meta {
+        font-family: var(--font-mono);
+        font-size: 11px;
         color: var(--text-tertiary);
       }
-
-      .footer-europe {
-        font-size: 13px;
-        color: var(--text-tertiary);
+      .arch-layer.hl {
+        background: oklch(80% 0.16 80 / 0.06);
       }
-
-      .footer-links {
-        display: flex;
-        gap: calc(var(--grid) * 4);
-        list-style: none;
+      .arch-layer.hl .name {
+        color: var(--accent);
       }
-
-      .footer-links a {
-        font-size: 13px;
-        color: var(--text-tertiary);
+      .arch-text h2 {
+        font-size: clamp(24px, 3vw, 36px);
       }
-      .footer-links a:hover {
+      .arch-text p {
+        font-size: 15px;
         color: var(--text-secondary);
+        line-height: 1.6;
+        font-weight: 300;
+        margin: 0 0 14px;
+      }
+      .arch-text .tok {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--accent);
+        background: oklch(80% 0.16 80 / 0.08);
+        padding: 1px 6px;
+        border-radius: 2px;
       }
 
-      /* --------------------------------------------------------
-         Responsive
-         -------------------------------------------------------- */
-      @media (max-width: 768px) {
-        .features-grid {
+      /* ---------- hierarchy ---------- */
+      .hier {
+        display: flex;
+        gap: 0;
+        margin-top: 48px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        background: var(--bg-surface);
+      }
+      .hier-col {
+        flex: 1;
+        padding: 28px 24px;
+        border-right: 1px solid var(--border);
+        position: relative;
+      }
+      .hier-col:last-child {
+        border-right: none;
+      }
+      .hier-col .idx {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-tertiary);
+        margin-bottom: 20px;
+      }
+      .hier-col h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+      .hier-col p {
+        font-size: 12px;
+        color: var(--text-tertiary);
+        font-weight: 300;
+        line-height: 1.5;
+        margin: 0 0 16px;
+      }
+      .hier-col .example {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+        padding: 6px 10px;
+        background: var(--bg-base);
+        border-radius: 2px;
+        display: inline-block;
+      }
+      .hier-col::after {
+        content: '→';
+        position: absolute;
+        right: -9px;
+        top: 32px;
+        font-family: var(--font-mono);
+        color: var(--accent);
+        background: var(--bg-base);
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        z-index: 1;
+      }
+      .hier-col:last-child::after {
+        display: none;
+      }
+
+      /* ---------- final CTA ---------- */
+      .cta-final {
+        text-align: center;
+        padding: 120px 48px;
+        border-top: 1px solid var(--border);
+        max-width: none;
+        margin: 0;
+        width: 100%;
+      }
+      .cta-final h2 {
+        font-size: clamp(32px, 5vw, 56px);
+        max-width: 800px;
+        margin: 0 auto 20px;
+      }
+      .cta-final .sub {
+        margin: 0 auto 36px;
+      }
+      .cta-final .actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .cta-final .kicker {
+        justify-content: center;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        padding: 40px 48px;
+        border-top: 1px solid var(--border);
+        background: var(--bg-surface);
+        margin-top: auto;
+      }
+      footer .inner {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      footer .meta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.06em;
+      }
+      footer .meta img {
+        height: 20px;
+        opacity: 0.8;
+      }
+      footer .cols {
+        display: flex;
+        gap: 32px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+      footer .cols a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.12s ease;
+      }
+      footer .cols a:hover {
+        color: var(--text-primary);
+      }
+
+      /* ---------- responsive ---------- */
+      @media (max-width: 960px) {
+        nav.top {
+          padding: 14px 24px;
+        }
+        nav.top .links {
+          display: none;
+        }
+        section {
+          padding: 64px 24px;
+        }
+        .compare-section {
+          padding: 64px 24px;
+        }
+        .cta-final {
+          padding: 80px 24px;
+        }
+        footer {
+          padding: 32px 24px;
+        }
+        .props {
           grid-template-columns: 1fr;
         }
-
-        .hero {
-          padding: calc(var(--grid) * 8) 0 calc(var(--grid) * 6);
+        .arch-grid {
+          grid-template-columns: 1fr;
+          gap: 32px;
         }
-
-        .footer-inner {
+        .hier {
           flex-direction: column;
-          gap: calc(var(--grid) * 2);
-          text-align: center;
+        }
+        .hier-col {
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        .hier-col:last-child {
+          border-bottom: none;
+        }
+        .hier-col::after {
+          content: '↓';
+          right: auto;
+          left: 32px;
+          top: auto;
+          bottom: -9px;
+        }
+        .compare {
+          overflow-x: auto;
+        }
+        .compare table {
+          min-width: 600px;
         }
       }
 
-      @media (min-width: 769px) and (max-width: 1024px) {
-        .features-grid {
-          grid-template-columns: repeat(2, 1fr);
+      @media (max-width: 540px) {
+        nav.top .brand .tag,
+        nav.top .brand .div {
+          display: none;
+        }
+        .hero .actions .cmd {
+          margin-left: 0;
+          width: 100%;
         }
       }
     </style>
   </head>
   <body>
-    <!-- Navigation -->
-    <nav>
-      <div class="container nav-inner">
-        <a href="/" class="wordmark-link">
-          <img src="/logo.png" alt="AppBahn" class="nav-logo" />
-          <span class="wordmark">AppBahn</span>
-        </a>
-        <ul class="nav-links">
-          <li><a href="/docs">Docs</a></li>
-          <li><a href="https://github.com/diverofdark/appbahn">GitHub</a></li>
-        </ul>
+    <nav class="top">
+      <a href="/" class="brand">
+        <img src="/logo.png" alt="AppBahn" />
+        <div class="div"></div>
+        <span class="tag">self-hosted paas</span>
+      </a>
+      <div class="links">
+        <a href="#why">Why</a>
+        <a href="#compare">Compare</a>
+        <a href="#architecture">Architecture</a>
+        <a href="/docs/">Docs</a>
+        <a href="https://github.com/diverofdark/appbahn">GitHub</a>
+      </div>
+      <div class="cta">
+        <a class="btn p" href="/docs/getting-started/">Start deploying</a>
       </div>
     </nav>
 
-    <!-- Hero -->
     <main>
       <section class="hero">
-        <div class="container">
-          <div class="hero-content">
-            <h1>Deploy on your infrastructure. Not someone else's.</h1>
-            <p>
-              Vercel/Railway developer experience. Your Kubernetes cluster. Your data. Your rules.
-            </p>
-            <a class="cta" href="/docs">Get Started</a>
+        <div class="kicker">Kubernetes-native PaaS</div>
+        <h1>
+          Deploy on your infrastructure.<br />Not someone else's.
+          <em>// Vercel-class DX. Your cluster. Your data. Your rules.</em>
+        </h1>
+        <p class="sub">
+          AppBahn is a self-hosted Platform-as-a-Service that deploys apps from Git onto any
+          Kubernetes cluster. Real orchestration — not Docker Compose wrappers. Your data, your
+          region, your compliance.
+        </p>
+        <div class="actions">
+          <a class="btn p" href="/docs/getting-started/">Start deploying</a>
+          <a class="btn s" href="/docs/">Read the docs</a>
+          <span class="cmd">helm install appbahn appbahn/appbahn</span>
+        </div>
+
+        <div class="flow">
+          <div class="flow-hdr">
+            <span class="t">Push → production · 30-second overview</span>
+            <span class="live">pipeline ready</span>
+          </div>
+          <div class="flow-body">
+            <div class="flow-rail">
+              {
+                stops.map((s) => (
+                  <div class={`stop ${s.state}`}>
+                    <div class="node">{s.node}</div>
+                    <div class="label">{s.label}</div>
+                    <div class="stop-sub">{s.sub}</div>
+                  </div>
+                ))
+              }
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Features -->
-      <section class="features">
-        <div class="container">
-          <p class="features-label">Capabilities</p>
-          <div class="features-grid">
+      <section id="why">
+        <div class="kicker">— Why AppBahn</div>
+        <h2>Production-grade orchestration. None of the YAML.</h2>
+        <p class="sub">
+          Most self-hosted PaaS tools are Docker Compose in a trench coat. AppBahn runs real
+          Kubernetes — with a real operator — so you get HA, rolling updates, and autoscaling by
+          default.
+        </p>
+        <div class="props">
+          {
+            valueProps.map((p) => (
+              <div class="prop">
+                <div class="idx">{p.idx}</div>
+                <h3>{p.title}</h3>
+                <p>{p.body}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section id="compare" class="compare-section">
+        <div class="compare-inner">
+          <div class="kicker">— The landscape</div>
+          <h2>SaaS if you want. Self-hosted if you need.</h2>
+          <p class="sub">
+            Every other self-hosted option is either a Docker Compose wrapper or a Kubernetes YAML
+            editor. AppBahn is the only one that gives you Vercel-class DX on real production
+            infrastructure.
+          </p>
+          <div class="compare">
+            <table>
+              <thead>
+                <tr>
+                  <th>Platform</th><th>Model</th><th>Region focus</th><th>Self-hostable</th><th
+                    >Orchestration</th
+                  >
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  compareRows.map((r) => (
+                    <tr class={r.us ? 'us' : ''}>
+                      <td>{r.name}</td>
+                      <td>{r.model}</td>
+                      <td>{r.region}</td>
+                      <td>
+                        {r.self === 'yes' ? (
+                          <span class="chip yes">Yes</span>
+                        ) : (
+                          <span class="chip no">No</span>
+                        )}
+                      </td>
+                      <td>
+                        {r.orch === 'k8s' && <span class="chip k8s">Kubernetes</span>}
+                        {r.orch === 'docker' && <span class="chip docker">Docker</span>}
+                        {r.orch === '—' && '—'}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <div class="arch-grid">
+          <div class="arch-stack">
             {
-              features.map((feature) => (
-                <article class="feature-card">
-                  <h3>{feature.title}</h3>
-                  <p>{feature.description}</p>
-                </article>
+              archLayers.map((l) => (
+                <div class={`arch-layer ${l.hl ? 'hl' : ''}`}>
+                  <span class="badge">{l.badge}</span>
+                  <span class="name">{l.name}</span>
+                  <span class="meta">{l.meta}</span>
+                </div>
               ))
             }
           </div>
+          <div class="arch-text">
+            <div class="kicker">— Architecture</div>
+            <h2>Three pieces. One operator.</h2>
+            <p>
+              A <span class="tok">web console</span> for managing workspaces, projects, environments,
+              and resources. A <span class="tok">platform API</span> that orchestrates builds, deployments,
+              networking, and observability. And an <span class="tok">operator</span> that runs on any
+              Kubernetes cluster — creating and reconciling the resources your apps need.
+            </p>
+            <p>
+              Metrics flow to Prometheus. Logs to Victoria Logs. Traffic routed through
+              Ingress-NGINX to auto-generated domains. Everything visible in the console.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="kicker">— Multi-tenant by design</div>
+        <h2>Workspace → Project → Environment → Resource</h2>
+        <p class="sub">
+          A four-level hierarchy with RBAC at every tier. Model your org once; everything else
+          inherits.
+        </p>
+        <div class="hier">
+          {
+            hierarchy.map((h) => (
+              <div class="hier-col">
+                <div class="idx">{h.idx}</div>
+                <h3>{h.name}</h3>
+                <p>{h.body}</p>
+                <span class="example">{h.example}</span>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="cta-final">
+        <div class="kicker">— Ready when you are</div>
+        <h2>Deploy the platform. Then deploy on it.</h2>
+        <p class="sub sub-center">
+          Install the operator on your cluster in under ten minutes. Open source, ELv2 licensed,
+          built in Europe.
+        </p>
+        <div class="actions">
+          <a class="btn p" href="/docs/getting-started/">Start deploying</a>
+          <a class="btn g" href="https://github.com/diverofdark/appbahn">View on GitHub →</a>
         </div>
       </section>
     </main>
 
-    <!-- Footer -->
     <footer>
-      <div class="container footer-inner">
-        <span class="footer-copy"
-          >&copy; {new Date().getFullYear()} AppBahn. Licensed under ELv2.</span
-        >
-        <span class="footer-europe">Built in Europe</span>
-        <ul class="footer-links">
-          <li><a href="/docs">Docs</a></li>
-          <li><a href="https://github.com/diverofdark/appbahn">GitHub</a></li>
-          <li><a href="https://github.com/diverofdark/appbahn/blob/master/LICENSE">License</a></li>
-        </ul>
+      <div class="inner">
+        <div class="meta">
+          <img src="/logo.png" alt="AppBahn" />
+          <span>© {new Date().getFullYear()} · ELv2 · Built in Europe</span>
+        </div>
+        <div class="cols">
+          <a href="/docs/">Docs</a>
+          <a href="https://github.com/diverofdark/appbahn">GitHub</a>
+          <a href="https://github.com/diverofdark/appbahn/blob/master/LICENSE">License</a>
+        </div>
       </div>
     </footer>
   </body>
