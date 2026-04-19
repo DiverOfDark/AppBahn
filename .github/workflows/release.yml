@@ -139,17 +139,10 @@ jobs:
           node-version: "22"
       - name: Build website
         run: cd website && npm ci && npm run build
-      - name: Build docs
-        run: cd docs && npm ci && npm run build
-      - name: Merge into site
-        run: |
-          mkdir -p site/docs
-          cp -r website/dist/* site/
-          cp -r docs/dist/* site/docs/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: site/
+          path: website/dist/
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

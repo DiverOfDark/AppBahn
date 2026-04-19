@@ -42,8 +42,7 @@ cli/                   CLI tool (Go)
 api/                   OpenAPI specs (public + internal)
 helm/                  Helm chart
 crds/                  CRD definitions
-website/               Marketing site (Astro)
-docs/                  User documentation (Starlight)
+website/               Public site (Astro) — marketing at /, docs at /docs/* via Starlight
 e2e/                   Playwright E2E tests
 ```
 
