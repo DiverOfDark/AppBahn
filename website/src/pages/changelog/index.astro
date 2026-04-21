@@ -37,10 +37,16 @@ const rendered = await Promise.all(
     <div class="entries">
       {
         rendered.map(({ entry, Content }) => (
-          <article class="entry">
+          <article class="entry" id={entry.data.version ?? entry.id}>
             <header>
               <div class="meta">
-                <span class="version">{entry.data.version}</span>
+                {entry.data.version ? (
+                  <a class="version" href={`#${entry.data.version}`}>
+                    {entry.data.version}
+                  </a>
+                ) : (
+                  <span class="version untagged">Early</span>
+                )}
                 <time datetime={entry.data.date.toISOString()}>{fmt.format(entry.data.date)}</time>
               </div>
               <h2>{entry.data.title}</h2>
@@ -95,6 +101,18 @@ const rendered = await Promise.all(
     border: 1px solid oklch(80% 0.16 80 / 0.3);
     border-radius: 2px;
     text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.12s ease;
+  }
+  .meta .version:hover {
+    background: oklch(80% 0.16 80 / 0.08);
+  }
+  .meta .version.untagged {
+    color: var(--text-tertiary);
+    border-color: var(--border-strong);
+  }
+  .meta .version.untagged:hover {
+    background: transparent;
   }
   .entry h2 {
     font-size: 28px;

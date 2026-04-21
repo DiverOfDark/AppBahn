@@ -1,0 +1,36 @@
+---
+const { siteTitleHref } = Astro.locals.starlightRoute
+---
+
+<a href={siteTitleHref} class="brand sl-flex">
+  <img src="/logo.png" alt="AppBahn" />
+  <span class="divider" aria-hidden="true"></span>
+  <span class="tag">docs</span>
+</a>
+
+<style>
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--sl-color-white);
+  }
+  .brand img {
+    height: 26px;
+    width: auto;
+    display: block;
+  }
+  .brand .divider {
+    width: 1px;
+    height: 18px;
+    background: var(--sl-color-hairline-shade);
+  }
+  .brand .tag {
+    font-family: var(--sl-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--sl-color-gray-3);
+    text-transform: uppercase;
+  }
+</style>

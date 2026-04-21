@@ -13,9 +13,8 @@ export default defineConfig({
     starlight({
       title: 'AppBahn Docs',
       favicon: '/favicon.png',
-      logo: {
-        src: './public/logo.png',
-        alt: 'AppBahn',
+      components: {
+        SiteTitle: './src/components/SiteTitle.astro',
       },
       social: [
         {

@@ -194,11 +194,28 @@ pre {
    Tables — railway track lines
    ----------------------------------------------------------------------------- */
 .sl-markdown-content table {
+  width: 100%;
   border: 1px solid var(--sl-color-hairline);
   border-radius: 4px;
   border-collapse: separate;
   border-spacing: 0;
   overflow: hidden;
+  font-size: 14px;
+  margin: 1.25rem 0;
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--sl-color-hairline);
+  line-height: 1.5;
+}
+
+.sl-markdown-content tr:last-child th,
+.sl-markdown-content tr:last-child td {
+  border-bottom: none;
 }
 
 .sl-markdown-content th {
@@ -209,4 +226,15 @@ pre {
   color: var(--sl-color-gray-3);
   font-weight: 500;
   background: var(--sl-color-gray-7);
+  white-space: nowrap;
+}
+
+.sl-markdown-content td {
+  color: var(--sl-color-gray-2);
+  font-weight: 300;
+}
+
+.sl-markdown-content td:first-child {
+  color: var(--sl-color-white);
+  font-weight: 500;
 }
