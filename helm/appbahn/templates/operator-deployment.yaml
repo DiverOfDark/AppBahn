@@ -50,10 +50,6 @@ spec:
               value: {{ .Values.operator.platformBaseUrl | default (printf "http://%s-platform" (include "appbahn.fullname" .)) | quote }}
             - name: OPERATOR_TUNNEL_CLUSTERNAME
               value: {{ .Values.operator.clusterName | quote }}
-            - name: OPERATOR_TUNNEL_PODNAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
             {{- if .Values.operator.ingressClassName }}
             - name: OPERATOR_INGRESSCLASSNAME
               value: {{ .Values.operator.ingressClassName | quote }}
