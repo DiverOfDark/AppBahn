@@ -67,14 +67,12 @@ api/                   public-api.yaml (OpenAPI) and tunnel-api.proto
                        (Connect tunnel contract)
 backend/
   shared/              CRD models, slug utilities, shared types
-  tunnel-api/          Connect tunnel proto codegen and wire codec
+  tunnel-api/          Connect tunnel proto codegen, wire codec, CRD<->proto mappers
   platform/
     api-spec/          OpenAPI code generation (Spring server stubs)
     app/               Spring Boot entry point, wires all modules
     workspace/         Workspace, project, environment CRUD, quotas
     resource/          Resources, deployments, links
-    git/               Git repo access and build-config detection
-    observability/     Metrics and logs providers (pluggable)
     user/              User management, RBAC, OIDC group mappings
     tunnel/            Operator tunnel server (Connect RPCs, JWT auth)
     common/            Auth context, JWT, base persistence, ID generation

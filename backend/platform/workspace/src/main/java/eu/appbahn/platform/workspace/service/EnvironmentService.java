@@ -41,6 +41,7 @@ public class EnvironmentService {
     private final PermissionService permissionService;
     private final NamespaceService namespaceService;
     private final NamespaceCrdClient namespaceCrdClient;
+    private final TargetClusterResolver targetClusterResolver;
     private final AuditLogService auditLogService;
     private final ObjectMapper objectMapper;
 
@@ -51,6 +52,7 @@ public class EnvironmentService {
             PermissionService permissionService,
             NamespaceService namespaceService,
             NamespaceCrdClient namespaceCrdClient,
+            TargetClusterResolver targetClusterResolver,
             AuditLogService auditLogService,
             ObjectMapper objectMapper) {
         this.environmentRepository = environmentRepository;
@@ -59,6 +61,7 @@ public class EnvironmentService {
         this.permissionService = permissionService;
         this.namespaceService = namespaceService;
         this.namespaceCrdClient = namespaceCrdClient;
+        this.targetClusterResolver = targetClusterResolver;
         this.auditLogService = auditLogService;
         this.objectMapper = objectMapper;
     }
@@ -70,10 +73,13 @@ public class EnvironmentService {
                 .orElseThrow(() -> new NotFoundException("Project not found: " + req.getProjectSlug()));
         permissionService.requireProjectRole(ctx, project.getId(), MemberRole.ADMIN);
 
+        String resolvedCluster = targetClusterResolver.resolve(req.getTargetCluster());
+
         var entity = new EnvironmentEntity();
         entity.setProjectId(project.getId());
         entity.setName(req.getName());
         entity.setSlug(SlugGenerator.generate(req.getName()));
+        entity.setTargetCluster(resolvedCluster);
         if (req.getDescription() != null) {
             entity.setDescription(req.getDescription());
         }
@@ -305,7 +311,7 @@ public class EnvironmentService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setTargetCluster(req.getClusterName());
+        entity.setTargetCluster(targetClusterResolver.resolve(req.getClusterName()));
         environmentRepository.save(entity);
 
         UUID workspaceId = projectRepository

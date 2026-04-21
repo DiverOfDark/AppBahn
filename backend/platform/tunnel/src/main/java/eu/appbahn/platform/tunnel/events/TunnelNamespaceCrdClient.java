@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TunnelNamespaceCrdClient implements NamespaceCrdClient {
 
-    private static final String DEFAULT_CLUSTER = "local";
-
     private final CommandEnqueueService enqueue;
     private final EnvironmentRepository environmentRepository;
 
@@ -55,6 +53,7 @@ public class TunnelNamespaceCrdClient implements NamespaceCrdClient {
         return environmentRepository
                 .findBySlug(environmentSlug)
                 .map(EnvironmentEntity::getTargetCluster)
-                .orElse(DEFAULT_CLUSTER);
+                .orElseThrow(() -> new IllegalStateException(
+                        "No environment found for slug '" + environmentSlug + "' when resolving target cluster"));
     }
 }

@@ -1,4 +1,4 @@
-package eu.appbahn.platform.git.controller;
+package eu.appbahn.platform.resource.controller;
 
 import eu.appbahn.platform.api.GitApi;
 import org.springframework.web.bind.annotation.RequestMapping;

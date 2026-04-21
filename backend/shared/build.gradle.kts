@@ -45,10 +45,6 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
 
-    // tunnel-api proto types so the wire ↔ CRD mapper lives alongside the CRD POJOs.
-    implementation(project(":tunnel-api"))
-    implementation(libs.protobuf.java)
-    implementation(libs.protobuf.java.util)
     implementation(libs.jackson.datatype.jsr310)
 
     testImplementation(libs.junit.jupiter)
