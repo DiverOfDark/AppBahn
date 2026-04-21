@@ -18,7 +18,7 @@ const blog = defineCollection({
 const changelog = defineCollection({
   loader: glob({ base: './src/content/changelog', pattern: '**/*.md' }),
   schema: z.object({
-    version: z.string(),
+    version: z.string().optional(),
     title: z.string(),
     date: z.coerce.date(),
     summary: z.string(),

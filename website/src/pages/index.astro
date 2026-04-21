@@ -11,7 +11,7 @@ const valueProps = [
   {
     idx: '02 · DATA SOVEREIGNTY',
     title: 'Your infra. Your region.',
-    body: 'Runs on any Kubernetes cluster — on-prem, in your VPC, or at the edge. Data never leaves your boundary. GDPR, HIPAA, and the audit committee all smile.',
+    body: 'Runs on any Kubernetes cluster — on-prem, in your VPC, or at the edge. Application data, logs, and secrets stay on your cluster. Your compliance posture stays yours to argue, not ours.',
   },
   {
     idx: '03 · MULTI-TENANT',
@@ -21,13 +21,16 @@ const valueProps = [
 ]
 
 const stops = [
-  { node: '01', label: 'git push', sub: 'Repo webhook or polling', state: 'done' },
-  { node: '02', label: 'api', sub: 'Deployment record, commit resolved', state: 'done' },
-  { node: '03', label: 'pipeline', sub: 'BuildPipeline CRD created', state: 'done' },
-  { node: '04', label: 'build', sub: 'Runtime detect → image built', state: 'done' },
-  { node: '05', label: 'registry', sub: 'Image pushed', state: 'done' },
-  { node: '06', label: 'operator', sub: 'Deployment, Service, Ingress applied', state: 'active' },
-  { node: '07', label: 'live', sub: '{resource}.appbahn.acme.org', state: '' },
+  { node: '01', label: 'image', sub: 'Container image reference', state: 'done' },
+  { node: '02', label: 'api', sub: 'Resource recorded by the platform', state: 'done' },
+  {
+    node: '03',
+    label: 'operator',
+    sub: 'Deployment, Service, Ingress applied',
+    state: 'active',
+  },
+  { node: '04', label: 'tls', sub: 'cert-manager issues the certificate', state: 'done' },
+  { node: '05', label: 'live', sub: '{slug}.{env}.{cluster-domain}', state: 'done' },
 ]
 
 const compareRows = [
@@ -42,18 +45,17 @@ const compareRows = [
 ]
 
 const archLayers = [
-  { badge: 'layer 01', name: 'Web Console', meta: 'workspaces · rbac · logs' },
-  { badge: 'layer 02', name: 'Platform API', meta: 'builds · deploys · routing' },
-  { badge: 'layer 03', name: 'AppBahn Operator', meta: 'BuildPipeline CRD · reconcile', hl: true },
-  { badge: 'layer 04', name: 'Builder', meta: 'runtime autodetect → OCI image' },
-  { badge: 'layer 05', name: 'Kubernetes', meta: 'your cluster, any provider' },
+  { badge: 'layer 01', name: 'Web Console', meta: 'workspaces · rbac · resources' },
+  { badge: 'layer 02', name: 'Platform API', meta: 'teams · tokens · deploys' },
+  { badge: 'layer 03', name: 'AppBahn Operator', meta: 'Resource CRD · reconcile', hl: true },
+  { badge: 'layer 04', name: 'Kubernetes', meta: 'your cluster, any distribution' },
 ]
 
 const hierarchy = [
   {
     idx: '01 · TOP',
     name: 'Workspace',
-    body: 'Billing boundary. SSO, audit log, quotas. Usually one per company.',
+    body: 'Tenancy boundary. SSO, audit log, quotas. Usually one per organisation.',
     example: 'acme-corp',
   },
   {
@@ -65,13 +67,13 @@ const hierarchy = [
   {
     idx: '03',
     name: 'Environment',
-    body: 'Isolated deploy target. Per-PR previews, staging, production.',
+    body: 'Isolated deploy target. Separate config, RBAC, and domains per environment.',
     example: 'production',
   },
   {
     idx: '04 · LEAF',
     name: 'Resource',
-    body: 'A running service, cron, or managed DB. Scales independently.',
+    body: 'A running service backed by a container image. Scales per resource.',
     example: 'api-gateway',
   },
 ]
@@ -417,17 +419,17 @@ const hierarchy = [
       }
       .flow-rail {
         display: grid;
-        grid-template-columns: repeat(7, minmax(110px, 1fr));
+        grid-template-columns: repeat(5, minmax(110px, 1fr));
         gap: 0;
         position: relative;
         align-items: start;
-        min-width: 720px;
+        min-width: 560px;
       }
       .flow-rail::before {
         content: '';
         position: absolute;
-        left: 7.5%;
-        right: 7.5%;
+        left: 10%;
+        right: 10%;
         top: 22px;
         height: 2px;
         background: var(--border-strong);
@@ -435,11 +437,11 @@ const hierarchy = [
       .flow-rail::after {
         content: '';
         position: absolute;
-        left: 7.5%;
+        left: 10%;
         top: 22px;
         height: 2px;
-        background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 85%, transparent 100%);
-        width: 70%;
+        background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 90%, transparent 100%);
+        width: 80%;
       }
       .stop {
         display: flex;
@@ -988,7 +990,7 @@ const hierarchy = [
 
         <div class="flow">
           <div class="flow-hdr">
-            <span class="t">Push → production · 30-second overview</span>
+            <span class="t">Image → live · today's deploy path</span>
             <span class="live">pipeline ready</span>
           </div>
           <div class="flow-body">
@@ -1019,12 +1021,13 @@ const hierarchy = [
       </div>
 
       <section id="why">
-        <div class="kicker">— Why AppBahn</div>
-        <h2>Production-grade orchestration. None of the YAML.</h2>
+        <div class="kicker">— Positioning</div>
+        <h2>Vercel-class DX on real infrastructure — and it stays self-hosted.</h2>
         <p class="sub">
           Most self-hosted PaaS tools are Docker Compose in a trench coat. AppBahn runs real
-          Kubernetes — with a real operator — so you get HA, rolling updates, and autoscaling by
-          default.
+          Kubernetes — with a real operator — so Deployments roll, Ingress routes, TLS issues, and
+          your cluster's autoscaler sees the workloads AppBahn creates exactly like any other
+          Kubernetes workload.
         </p>
         <div class="props">
           {
@@ -1042,11 +1045,11 @@ const hierarchy = [
       <section id="compare" class="compare-section">
         <div class="compare-inner">
           <div class="kicker">— The landscape</div>
-          <h2>SaaS if you want. Self-hosted if you need.</h2>
+          <h2>Self-hosted, not SaaS — on purpose.</h2>
           <p class="sub">
-            Every other self-hosted option is either a Docker Compose wrapper or a Kubernetes YAML
-            editor. AppBahn is the only one that gives you Vercel-class DX on real production
-            infrastructure.
+            There is no AppBahn-operated cloud. Every other self-hosted option in this space is
+            either a Docker Compose wrapper or a Kubernetes YAML editor. AppBahn is the one that
+            gives you Vercel-class DX on real production infrastructure — on your cluster.
           </p>
           <div class="compare">
             <table>
@@ -1103,13 +1106,14 @@ const hierarchy = [
             <h2>Three pieces. One operator.</h2>
             <p>
               A <span class="tok">web console</span> for managing workspaces, projects, environments,
-              and resources. A <span class="tok">platform API</span> that orchestrates builds, deployments,
-              networking, and observability. And an <span class="tok">operator</span> that runs on any
-              Kubernetes cluster — creating and reconciling the resources your apps need.
+              and resources. A <span class="tok">platform API</span> that records teams, resources, and
+              deploys. And an <span class="tok">operator</span> that runs on any Kubernetes cluster —
+              reconciling Resource CRDs into Deployments, Services, and Ingresses.
             </p>
             <p>
-              Metrics flow to Prometheus. Logs to Victoria Logs. Traffic routed through Traefik to
-              auto-generated domains. Everything visible in the console.
+              AppBahn integrates with the stack already in your cluster: Prometheus and Victoria
+              Logs for observability, cert-manager for TLS, whichever Ingress controller you already
+              run. Everything visible in the console.
             </p>
           </div>
         </div>
