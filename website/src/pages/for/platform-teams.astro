@@ -1,0 +1,174 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { REPO_URL } from '../../config'
+
+const pains = [
+  {
+    idx: '01',
+    title: 'The "build a Heroku" ticket',
+    body: 'Someone put "give the team a Heroku-like developer experience" on the roadmap, and now it is yours. The clock is running.',
+  },
+  {
+    idx: '02',
+    title: 'Vercel-ish DX without the vendor',
+    body: 'Developers want git push → live URL. Security wants the workload on your cluster. You want neither to compromise.',
+  },
+  {
+    idx: '03',
+    title: 'Not a YAML workshop',
+    body: 'You do not want to teach twelve product teams kustomize, Helm, Argo CD, and cert-manager. You want one console they click through.',
+  },
+]
+
+const gives = [
+  {
+    idx: '01',
+    title: 'Git-to-pod in one click',
+    body: 'Connect a repo, AppBahn builds and rolls out. Rollback is image-digest-based, not tag-based.',
+  },
+  {
+    idx: '02',
+    title: 'RBAC that matches your org',
+    body: 'Four-level hierarchy: workspace → project → environment → resource. Map teams once; inheritance handles the rest.',
+  },
+  {
+    idx: '03',
+    title: 'Runs on your cluster',
+    body: 'On-prem, AWS, GCP, Hetzner, bare metal, edge — any conformant Kubernetes. We ship the operator; your cluster is the runtime.',
+  },
+  {
+    idx: '04',
+    title: 'Observability already wired',
+    body: 'Metrics to Prometheus. Logs to Victoria Logs. Traces planned. Correlation IDs end-to-end.',
+  },
+  {
+    idx: '05',
+    title: 'Quotas, audit, SSO',
+    body: 'Per-workspace quotas, append-only audit log, OIDC group → role mapping. The boring stuff that makes platform-as-a-product real.',
+  },
+  {
+    idx: '06',
+    title: 'Self-hosted, ELv2',
+    body: 'Free forever on your infrastructure. Source on GitHub. Fork if you must.',
+  },
+]
+---
+
+<Marketing
+  title="AppBahn for platform teams — Self-hosted PaaS on Kubernetes"
+  description="How platform teams ship on AppBahn. Vercel-class DX on your own Kubernetes cluster, without the vendor lock-in. OSS, ELv2, self-hosted."
+>
+  <section class="hero">
+    <div class="kicker">For platform teams</div>
+    <h1>
+      Ship the internal Heroku. Skip the two-year build.
+      <em>// AppBahn gives your developers Vercel-class DX on your cluster.</em>
+    </h1>
+    <p class="sub">
+      Your CTO asked for a "Heroku for us." You priced the build at eighteen months and a headcount
+      of three. AppBahn is the install you deploy instead. Real Kubernetes underneath, a console
+      your developers click through on top.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn s" href={REPO_URL}>Star on GitHub</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— The brief you were handed</div>
+    <h2>Three things platform teams hear in every standup.</h2>
+    <div class="grid-3">
+      {
+        pains.map((p) => (
+          <div class="card">
+            <div class="idx">{p.idx}</div>
+            <h3>{p.title}</h3>
+            <p>{p.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— What AppBahn gives you</div>
+    <h2>A platform, not a toolkit.</h2>
+    <p class="sub">
+      AppBahn is opinionated the way a product is opinionated. You install one operator; your
+      developers get one console. Everything else — builds, rollouts, domains, TLS, logs, RBAC — is
+      already wired.
+    </p>
+    <div class="grid-3 mt">
+      {
+        gives.map((g) => (
+          <div class="card">
+            <div class="idx">{g.idx}</div>
+            <h3>{g.title}</h3>
+            <p>{g.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="kicker">— Ready when you are</div>
+    <h2>Install the operator. Hand developers the URL.</h2>
+    <p class="sub">
+      Ten minutes from zero to first deploy on a fresh cluster. Helm chart, ELv2 license, source on
+      GitHub.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn g" href={REPO_URL}>Star on GitHub →</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .grid-3.mt {
+    margin-top: 48px;
+  }
+  .card {
+    background: var(--bg-surface);
+    padding: 32px 28px;
+  }
+  .card .idx {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+    margin: 0;
+  }
+  section.close {
+    border-top: 1px solid var(--border);
+    padding-top: 96px;
+  }
+  @media (max-width: 960px) {
+    .grid-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

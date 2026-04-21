@@ -1,0 +1,6 @@
+Contact: mailto:security@appbahn.cloud
+Contact: https://appbahn.eu/contact/
+Preferred-Languages: en, de
+Canonical: https://appbahn.eu/.well-known/security.txt
+Policy: https://appbahn.eu/security/
+# Expires and Encryption fields to be added once the PGP key is published.

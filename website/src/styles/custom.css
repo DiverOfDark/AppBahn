@@ -5,7 +5,7 @@
  * single signal-amber accent, hierarchy through weight not color.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('./fonts.css');
 
 /* -----------------------------------------------------------------------------
    Light mode (default before user preference)

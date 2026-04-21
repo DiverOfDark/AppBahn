@@ -1,0 +1,170 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { getCollection, render } from 'astro:content'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft)
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }))
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+
+const fmt = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long', day: 'numeric' })
+---
+
+<Marketing title={`${post.data.title} — AppBahn`} description={post.data.summary}>
+  <article class="post">
+    <header>
+      <div class="kicker">— Blog</div>
+      <div class="meta">
+        <time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+        <span class="author">{post.data.author}</span>
+        {post.data.tags.length > 0 && <span class="tags">{post.data.tags.join(' · ')}</span>}
+      </div>
+      <h1>{post.data.title}</h1>
+      <p class="summary">{post.data.summary}</p>
+    </header>
+
+    <div class="body">
+      <Content />
+    </div>
+
+    <footer class="post-foot">
+      <a href="/blog/">← All posts</a>
+      <a href="/blog/rss.xml">Subscribe · RSS</a>
+    </footer>
+  </article>
+</Marketing>
+
+<style>
+  article.post {
+    max-width: 760px;
+    padding: 96px 48px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  @media (max-width: 960px) {
+    article.post {
+      padding: 64px 24px;
+    }
+  }
+  header {
+    margin-bottom: 56px;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-tertiary);
+    margin: 16px 0 24px;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  .meta .tags {
+    color: var(--accent);
+  }
+  h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(32px, 4.5vw, 48px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0 0 20px;
+  }
+  .summary {
+    font-size: 19px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .body :global(h2),
+  .body :global(h3) {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+    margin: 40px 0 16px;
+    color: var(--text-primary);
+  }
+  .body :global(h2) {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .body :global(h3) {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .body :global(p) {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.75;
+    margin: 0 0 20px;
+  }
+  .body :global(ul),
+  .body :global(ol) {
+    margin: 0 0 20px 24px;
+    padding: 0;
+  }
+  .body :global(li) {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.75;
+    margin-bottom: 8px;
+  }
+  .body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+  .body :global(pre) {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  .body :global(pre code) {
+    border: none;
+    padding: 0;
+    background: transparent;
+    color: var(--text-primary);
+  }
+  .body :global(blockquote) {
+    border-left: 2px solid var(--accent);
+    padding: 4px 20px;
+    margin: 20px 0;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  .body :global(strong) {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .post-foot {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .post-foot a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .post-foot a:hover {
+    text-decoration: underline;
+  }
+</style>

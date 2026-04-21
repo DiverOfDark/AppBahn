@@ -1,4 +1,7 @@
 ---
+import '../styles/fonts.css'
+import { REPO_URL } from '../config'
+
 const valueProps = [
   {
     idx: '01 · KUBERNETES-NATIVE',
@@ -77,19 +80,35 @@ const hierarchy = [
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <title>AppBahn — Self-hosted PaaS on Kubernetes</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#1f1f21" />
+    <title>AppBahn — The self-hosted PaaS on Kubernetes</title>
     <meta
       name="description"
-      content="Self-hosted Platform-as-a-Service on your own Kubernetes cluster. Real orchestration, no YAML, your data, your region."
+      content="AppBahn is a self-hosted Platform-as-a-Service that deploys apps from Git or Docker onto any Kubernetes cluster. Real orchestration. Your data, your region, your compliance."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AppBahn" />
+    <meta property="og:title" content="AppBahn — The self-hosted PaaS on Kubernetes" />
+    <meta
+      property="og:description"
+      content="Self-hosted Platform-as-a-Service on your own Kubernetes cluster. Real orchestration, your data, your region."
+    />
+    <meta property="og:image" content="/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" type="application/rss+xml" title="AppBahn Blog" href="/blog/rss.xml" />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="alternate"
+      type="application/rss+xml"
+      title="AppBahn Changelog"
+      href="/changelog/rss.xml"
     />
     <style>
       *,
@@ -487,6 +506,44 @@ const hierarchy = [
         margin: 0 auto;
       }
 
+      /* ---------- trust bar ---------- */
+      .trust {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 28px 48px;
+        max-width: none;
+        margin: 0;
+      }
+      .trust-inner {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 48px;
+      }
+      .trust .label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        flex-shrink: 0;
+      }
+      .trust .logos {
+        display: flex;
+        gap: 48px;
+        flex: 1;
+        flex-wrap: wrap;
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 18px;
+        color: var(--text-secondary);
+        letter-spacing: -0.01em;
+      }
+      .trust .logos span {
+        opacity: 0.7;
+      }
+
       /* ---------- value props ---------- */
       .props {
         display: grid;
@@ -867,6 +924,18 @@ const hierarchy = [
         .compare table {
           min-width: 600px;
         }
+        .trust {
+          padding: 20px 24px;
+        }
+        .trust-inner {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .trust .logos {
+          gap: 24px;
+          font-size: 15px;
+        }
       }
 
       @media (max-width: 540px) {
@@ -889,14 +958,14 @@ const hierarchy = [
         <span class="tag">self-hosted paas</span>
       </a>
       <div class="links">
-        <a href="#why">Why</a>
-        <a href="#compare">Compare</a>
-        <a href="#architecture">Architecture</a>
         <a href="/docs/getting-started/">Docs</a>
-        <a href="https://github.com/diverofdark/appbahn">GitHub</a>
+        <a href="/blog/">Blog</a>
+        <a href="/changelog/">Changelog</a>
+        <a href="/security/">Security</a>
+        <a href={REPO_URL}>GitHub</a>
       </div>
       <div class="cta">
-        <a class="btn p" href="/docs/getting-started/">Start deploying</a>
+        <a class="btn p" href="/docs/getting-started/">Read the docs</a>
       </div>
     </nav>
 
@@ -904,18 +973,17 @@ const hierarchy = [
       <section class="hero">
         <div class="kicker">Kubernetes-native PaaS</div>
         <h1>
-          Deploy on your infrastructure.<br />Not someone else's.
-          <em>// Your cluster. Your data. Your rules.</em>
+          Ship like Vercel.<br />Run on your own rails.
+          <em>// Vercel-class DX. Your infrastructure. Your rules.</em>
         </h1>
         <p class="sub">
-          AppBahn is a self-hosted Platform-as-a-Service that deploys apps from Git onto any
-          Kubernetes cluster. Real orchestration — not Docker Compose wrappers. Your data, your
+          AppBahn is a self-hosted Platform-as-a-Service that deploys apps from Git or Docker onto
+          any Kubernetes cluster. Real orchestration — not Docker Compose wrappers. Your data, your
           region, your compliance.
         </p>
         <div class="actions">
-          <a class="btn p" href="/docs/getting-started/">Start deploying</a>
-          <a class="btn s" href="/docs/getting-started/">Read the docs</a>
-          <span class="cmd">helm install appbahn appbahn/appbahn</span>
+          <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+          <a class="btn s" href={REPO_URL}>Star on GitHub</a>
         </div>
 
         <div class="flow">
@@ -938,6 +1006,17 @@ const hierarchy = [
           </div>
         </div>
       </section>
+
+      <div class="trust">
+        <div class="trust-inner">
+          <span class="label">Runs on</span>
+          <div class="logos">
+            <span>Kubernetes</span><span>Prometheus</span><span>Victoria Logs</span><span
+              >Traefik</span
+            ><span>cert-manager</span>
+          </div>
+        </div>
+      </div>
 
       <section id="why">
         <div class="kicker">— Why AppBahn</div>
@@ -1029,8 +1108,8 @@ const hierarchy = [
               Kubernetes cluster — creating and reconciling the resources your apps need.
             </p>
             <p>
-              Metrics flow to Prometheus. Logs to Victoria Logs. Traffic routed through
-              Ingress-NGINX to auto-generated domains. Everything visible in the console.
+              Metrics flow to Prometheus. Logs to Victoria Logs. Traffic routed through Traefik to
+              auto-generated domains. Everything visible in the console.
             </p>
           </div>
         </div>
@@ -1065,8 +1144,8 @@ const hierarchy = [
           built in Europe.
         </p>
         <div class="actions">
-          <a class="btn p" href="/docs/getting-started/">Start deploying</a>
-          <a class="btn g" href="https://github.com/diverofdark/appbahn">View on GitHub →</a>
+          <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+          <a class="btn g" href={REPO_URL}>Star on GitHub →</a>
         </div>
       </section>
     </main>
@@ -1078,9 +1157,11 @@ const hierarchy = [
           <span>© {new Date().getFullYear()} · ELv2 · Built in Europe</span>
         </div>
         <div class="cols">
-          <a href="/docs/getting-started/">Docs</a>
-          <a href="https://github.com/diverofdark/appbahn">GitHub</a>
-          <a href="https://github.com/diverofdark/appbahn/blob/master/LICENSE">License</a>
+          <a href="/impressum/">Impressum</a>
+          <a href="/datenschutz/">Datenschutz</a>
+          <a href="/contact/">Contact</a>
+          <a href="/blog/rss.xml">RSS</a>
+          <a href={REPO_URL}>GitHub</a>
         </div>
       </div>
     </footer>
