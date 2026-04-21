@@ -1,6 +1,6 @@
 package eu.appbahn.operator.reconciler;
 
-import eu.appbahn.operator.client.api.ResourceSyncApi;
+import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
@@ -74,19 +74,16 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     /** CrashLoopBackOff is terminal only after this many restarts — gives transient-race startups time to recover. */
     private static final int CRASHLOOP_RESTART_THRESHOLD = 3;
 
-    private final ResourceSyncApi resourceSyncApi;
-    private final OperatorConfig operatorConfig;
+    private final OperatorEventPublisher eventPublisher;
     private final long rescheduleSeconds;
     private final Counter syncFailureCounter;
 
     public ResourceReconciler(
-            ResourceSyncApi resourceSyncApi,
-            OperatorConfig operatorConfig,
+            OperatorEventPublisher eventPublisher,
             MeterRegistry meterRegistry,
             @org.springframework.beans.factory.annotation.Value("${operator.reschedule-seconds:300}")
                     long rescheduleSeconds) {
-        this.resourceSyncApi = resourceSyncApi;
-        this.operatorConfig = operatorConfig;
+        this.eventPublisher = eventPublisher;
         this.rescheduleSeconds = rescheduleSeconds;
         this.syncFailureCounter = Counter.builder("appbahn.operator.sync.failures")
                 .description("Number of failed platform sync attempts")
@@ -123,6 +120,12 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         log.info("Reconciling Resource: {} in namespace {}", name, namespace);
 
         try {
+            // Null spec can leak into the watch cache during delete/create races — skip
+            // reconciling those rather than NPE'ing into an uncaught-error retry loop.
+            if (resource.getSpec() == null) {
+                log.debug("Reconcile called with null spec for {}; skipping", name);
+                return UpdateControl.<ResourceCrd>noUpdate().rescheduleAfter(rescheduleSeconds, TimeUnit.SECONDS);
+            }
             var config = resource.getSpec().getConfig();
             if (config == null
                     || !(config.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSrc)
@@ -160,7 +163,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         log.info("Cleaning up resource: {}", name);
 
         try {
-            resourceSyncApi.deleteResourceSync(name);
+            eventPublisher.emitDeleted(name);
             log.info("Notified platform of resource deletion: {}", name);
         } catch (Exception e) {
             log.warn("Failed to notify platform of deletion for {}: {}", name, e.getMessage());
@@ -392,8 +395,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
     private void syncToPlatform(ResourceCrd resource) {
         try {
-            var syncRequest = ResourceSyncRequestBuilder.fromCrd(resource, operatorConfig.getClusterName());
-            resourceSyncApi.syncResource(syncRequest);
+            eventPublisher.emitSync(resource);
             log.debug("Synced resource {} to platform", resource.getMetadata().getName());
             if (resource.getStatus() != null) {
                 resource.getStatus().setSyncFailed(false);

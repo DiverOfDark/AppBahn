@@ -14,6 +14,9 @@ public class DockerSourceDefinedCondition implements Condition<Deployment, Resou
             DependentResource<Deployment, ResourceCrd> dependentResource,
             ResourceCrd primary,
             Context<ResourceCrd> context) {
+        if (primary.getSpec() == null) {
+            return false;
+        }
         var config = primary.getSpec().getConfig();
         return config != null
                 && config.getSource() instanceof DockerSource dockerSource

@@ -13,6 +13,9 @@ public class ExposeIngressCondition implements Condition<Ingress, ResourceCrd> {
             DependentResource<Ingress, ResourceCrd> dependentResource,
             ResourceCrd primary,
             Context<ResourceCrd> context) {
+        if (primary.getSpec() == null) {
+            return false;
+        }
         var config = primary.getSpec().getConfig();
         if (config == null) {
             return false;

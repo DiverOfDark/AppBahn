@@ -106,8 +106,7 @@ public class ResourceService {
         ResourceConfig resourceConfig = objectMapper.convertValue(req.getConfig(), ResourceConfig.class);
 
         // Pre-CRD gate: reject obviously over-quota/over-license requests before creating the CRD.
-        // There's a small soft-overshoot window between this check and the operator's first sync,
-        // but the operator can close it in a follow-up (Sprint 5.2 workspace_quota_usage counter).
+        // There's a small soft-overshoot window between this check and the operator's first sync.
         quotaService.checkQuota(env.getId(), null, resourceConfig);
         licenseService.checkLicense();
 

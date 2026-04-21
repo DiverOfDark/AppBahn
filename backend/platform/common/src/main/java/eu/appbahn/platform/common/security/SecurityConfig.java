@@ -7,6 +7,8 @@ import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,10 +18,30 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**
+     * Dedicated filter chain for the operator tunnel paths. This chain runs before the
+     * main OAuth2 chain (which would reject our operator-minted JWT because its signing
+     * key isn't the platform's OIDC issuer) and delegates authentication entirely to
+     * {@link eu.appbahn.platform.tunnel.auth.OperatorJwtVerifier} inside the controller.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain tunnelSecurityFilterChain(HttpSecurity http) throws Exception {
+        var builder = PathPatternRequestMatcher.withDefaults();
+        RequestMatcher tunnel = builder.matcher("/appbahn.tunnel.v1.OperatorTunnel/*");
+        http.securityMatcher(tunnel)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -52,9 +74,9 @@ public class SecurityConfig {
                         // OAuth2 login endpoints handled by Spring
                         .requestMatchers("/oauth2/**", "/login/oauth2/**")
                         .permitAll()
-                        // Internal API — only accessible by operator (client credentials with 'internal' scope)
-                        .requestMatchers("/api/v1/internal/**")
-                        .hasAuthority("SCOPE_internal")
+                        // Operator tunnel paths are served by a dedicated SecurityFilterChain
+                        // (see tunnelSecurityFilterChain) that skips the OAuth2 resource-server
+                        // filter. No rule needed here.
                         // All other endpoints require authentication
                         .anyRequest()
                         .authenticated())

@@ -132,7 +132,7 @@ public class WorkspacesController implements WorkspacesApi {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Not implemented in Sprint 3 ---
+    // --- Not implemented ---
 
     @Override
     public ResponseEntity<NotificationWebhook> createNotificationWebhook(

@@ -52,45 +52,16 @@ openApiGenerate {
     ))
 }
 
-// Internal API (operator ↔ platform)
-val internalSpecFile = rootProject.layout.projectDirectory.file("../api/internal-api.yaml")
-val internalGeneratedDir = layout.buildDirectory.dir("generated/spring-internal")
-
-tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateInternal") {
-    generatorName.set("spring")
-    inputSpec.set(internalSpecFile.asFile.absolutePath)
-    outputDir.set(internalGeneratedDir.map { it.asFile.absolutePath })
-    apiPackage.set("eu.appbahn.platform.api.internal")
-    modelPackage.set("eu.appbahn.platform.api.internal.model")
-    invokerPackage.set("eu.appbahn.platform.api.internal")
-    configOptions.set(mapOf(
-        "interfaceOnly" to "true",
-        "useSpringBoot3" to "true",
-        "useTags" to "true",
-        "skipDefaultInterface" to "false",
-        "openApiNullable" to "true",
-        "documentationProvider" to "none",
-        "serializationLibrary" to "jackson",
-        "dateLibrary" to "java8",
-    ))
-    schemaMappings.set(mapOf(
-        "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
-        "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatus",
-        "LinkConfig" to "eu.appbahn.shared.crd.ResourceSpec.ResourceLink",
-    ))
-}
-
 sourceSets {
     main {
         java {
             srcDir(generatedDir.map { it.dir("src/main/java") })
-            srcDir(internalGeneratedDir.map { it.dir("src/main/java") })
         }
     }
 }
 
 tasks.named("compileJava") {
-    dependsOn("openApiGenerate", "openApiGenerateInternal")
+    dependsOn("openApiGenerate")
 }
 
 dependencies {

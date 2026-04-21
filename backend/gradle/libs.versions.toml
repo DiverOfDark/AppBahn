@@ -25,6 +25,9 @@ node-gradle = "7.1.0"
 gson = "2.10.1"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
+protobuf = "3.25.5"
+protobuf-gradle = "0.9.6"
+buf-gradle = "0.11.0"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -74,6 +77,11 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-
 # Lombok
 lombok = { module = "org.projectlombok:lombok" }
 
+# Protobuf runtime (for generated message classes in tunnel-api)
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
+protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+
 # Testing
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
@@ -95,6 +103,7 @@ assertj-core = { module = "org.assertj:assertj-core" }
 # Jackson databind version is supplied transitively by the fabric8 BOM imported in
 # backend/e2e/build.gradle.kts -- keep this entry version-less on purpose.
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 fabric8-kubernetes-client-bom = { module = "io.fabric8:kubernetes-client-bom", version.ref = "fabric8" }
 allure-junit5 = { module = "io.qameta.allure:allure-junit5", version.ref = "allure" }
 allure-okhttp3 = { module = "io.qameta.allure:allure-okhttp3", version.ref = "allure" }
@@ -111,3 +120,5 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobuf-gradle" }
+buf = { id = "build.buf", version.ref = "buf-gradle" }

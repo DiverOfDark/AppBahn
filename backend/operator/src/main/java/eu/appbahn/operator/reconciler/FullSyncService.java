@@ -1,12 +1,8 @@
 package eu.appbahn.operator.reconciler;
 
-import eu.appbahn.operator.client.ApiException;
-import eu.appbahn.operator.client.api.ResourceSyncApi;
-import eu.appbahn.operator.client.model.FullResourceSyncRequest;
-import eu.appbahn.operator.client.model.ResourceSyncRequest;
+import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.crd.ResourceCrd;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,23 +13,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Performs a full resource synchronisation from Kubernetes to the platform API. Runs at startup and
- * every 5 minutes as a safety net to catch missed events.
+ * Pushes every Resource CR in-cluster to the platform via {@code PushEvents} full-sync
+ * chunks. Safety net against dropped reconcile events.
  */
 @Component
 public class FullSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(FullSyncService.class);
 
-    private final ResourceSyncApi resourceSyncApi;
+    private final OperatorEventPublisher eventPublisher;
     private final KubernetesClient kubernetesClient;
-    private final OperatorConfig operatorConfig;
 
-    public FullSyncService(
-            ResourceSyncApi resourceSyncApi, KubernetesClient kubernetesClient, OperatorConfig operatorConfig) {
-        this.resourceSyncApi = resourceSyncApi;
+    public FullSyncService(OperatorEventPublisher eventPublisher, KubernetesClient kubernetesClient) {
+        this.eventPublisher = eventPublisher;
         this.kubernetesClient = kubernetesClient;
-        this.operatorConfig = operatorConfig;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -51,7 +44,7 @@ public class FullSyncService {
         performFullSync();
     }
 
-    synchronized void performFullSync() {
+    public synchronized void performFullSync() {
         try {
             List<ResourceCrd> resources = kubernetesClient
                     .resources(ResourceCrd.class)
@@ -59,19 +52,8 @@ public class FullSyncService {
                     .list()
                     .getItems();
 
-            List<ResourceSyncRequest> syncRequests = new ArrayList<>();
-            for (ResourceCrd crd : resources) {
-                syncRequests.add(ResourceSyncRequestBuilder.fromCrd(crd, operatorConfig.getClusterName()));
-            }
-
-            var fullRequest = new FullResourceSyncRequest();
-            fullRequest.setClusterName(operatorConfig.getClusterName());
-            fullRequest.setResources(syncRequests);
-
-            resourceSyncApi.fullResourceSync(fullRequest);
-            log.info("Full sync completed: {} resources synced", syncRequests.size());
-        } catch (ApiException e) {
-            log.warn("Full sync failed (HTTP {}): {}", e.getCode(), e.getMessage());
+            eventPublisher.emitFullSync(resources);
+            log.info("Full sync completed: {} resources synced", resources.size());
         } catch (Exception e) {
             log.warn("Full sync failed: {}", e.getMessage());
         }

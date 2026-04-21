@@ -76,15 +76,10 @@ operator:
     allowPrivilegeEscalation: false
     dropCapabilities: "ALL"
     readOnlyRootFilesystem: false
-  platformApi:
-    endpoint: ""
-  auth:
-    clientId: "appbahn-operator"
-    clientSecret: ""
-    # Use an existing Secret instead of inline clientId/clientSecret.
-    # The secret must contain keys: client-id, client-secret
-    existingSecret: ""
-    tokenEndpoint: ""
+  # Full platform origin (scheme://host[:port]). Leave blank in-cluster — the chart
+  # derives http://<release>-platform. Set explicitly for cross-cluster installs, e.g.
+  # "https://appbahn.acme.org".
+  platformBaseUrl: ""
   cache:
     refreshInterval: "5m"
   # Additional env vars to inject into the operator container. Use for deployment-specific

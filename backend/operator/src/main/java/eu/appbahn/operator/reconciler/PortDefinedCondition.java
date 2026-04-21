@@ -15,6 +15,9 @@ public class PortDefinedCondition implements Condition<HasMetadata, ResourceCrd>
             DependentResource<HasMetadata, ResourceCrd> dependentResource,
             ResourceCrd primary,
             Context<ResourceCrd> context) {
+        if (primary.getSpec() == null) {
+            return false;
+        }
         var config = primary.getSpec().getConfig();
         return config != null
                 && config.getPorts().stream().anyMatch(p -> p.getPort() != null && p.getExpose() != ExposeMode.TCP);

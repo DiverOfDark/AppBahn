@@ -21,6 +21,11 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        codeSplitting: false,
+      },
+    },
   },
   test: {
     environment: 'jsdom',
