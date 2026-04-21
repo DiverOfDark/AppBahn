@@ -40,9 +40,10 @@ import org.springframework.web.bind.annotation.RestController;
  *       {@code resource_cache} with a PENDING row before the reconciler's watch fires
  *       (fast read-after-write for {@code kubectl apply}).</li>
  * </ul>
- * The operator's own ServiceAccount ({@code system:serviceaccount:appbahn-system:*}) and users
- * whose OIDC groups include a platform-admin group bypass per-env RBAC + quota checks.
- * CPU/memory/storage/replicas quota dimensions remain on the platform-side REST path.
+ * The operator's own ServiceAccount — resolved at startup via {@link OperatorIdentity} from the
+ * projected token's {@code sub} claim — and users whose OIDC groups include a platform-admin
+ * group bypass per-env RBAC + quota checks. CPU/memory/storage/replicas quota dimensions
+ * remain on the platform-side REST path.
  */
 @RestController
 public class ResourceAdmissionController {
@@ -52,12 +53,17 @@ public class ResourceAdmissionController {
     private final AdmissionSnapshotCache admissionCache;
     private final OperatorEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
+    private final OperatorIdentity operatorIdentity;
 
     public ResourceAdmissionController(
-            AdmissionSnapshotCache admissionCache, OperatorEventPublisher eventPublisher, ObjectMapper objectMapper) {
+            AdmissionSnapshotCache admissionCache,
+            OperatorEventPublisher eventPublisher,
+            ObjectMapper objectMapper,
+            OperatorIdentity operatorIdentity) {
         this.admissionCache = admissionCache;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
+        this.operatorIdentity = operatorIdentity;
     }
 
     @PostMapping(
@@ -97,7 +103,8 @@ public class ResourceAdmissionController {
                 request.getUserInfo() != null && request.getUserInfo().getGroups() != null
                         ? request.getUserInfo().getGroups()
                         : List.of();
-        if (user != null && user.startsWith("system:serviceaccount:appbahn-system:")) {
+        String operatorUser = operatorIdentity.username().orElse(null);
+        if (operatorUser != null && operatorUser.equals(user)) {
             Optional<String> envSlug = admissionCache.environmentSlugForNamespace(request.getNamespace());
             if (envSlug.isPresent()) {
                 AdmissionReview response = allow(request.getUid());
