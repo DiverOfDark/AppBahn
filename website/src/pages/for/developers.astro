@@ -1,0 +1,210 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { REPO_URL } from '../../config'
+
+const loop = [
+  { cmd: 'appbahn login', sub: 'OIDC against your IdP.' },
+  { cmd: 'appbahn project create <slug>', sub: 'Create a project under your workspace.' },
+  {
+    cmd: 'appbahn resource create <slug> --image <ref>',
+    sub: 'Declare a container resource with an image reference.',
+  },
+  {
+    cmd: 'appbahn deploy trigger <slug>',
+    sub: 'Roll it out. Operator reconciles Deployment, Service, and Ingress.',
+  },
+  {
+    cmd: 'appbahn deploy status <id>',
+    sub: 'Watch the reconcile. Exits when the resource is ready or failed.',
+  },
+]
+
+const vibes = [
+  {
+    idx: '01',
+    title: 'CLI-first, console-second',
+    body: 'Every action in the console has a CLI flag. Every CLI flag has a docs page. Shell-completion generation is tracked tech debt.',
+  },
+  {
+    idx: '02',
+    title: 'No YAML for common paths',
+    body: 'You get a Deployment, a Service, and an Ingress without typing the word "apiVersion". The operator owns the YAML; you own the app.',
+  },
+  {
+    idx: '03',
+    title: 'Environments as a first-class tier',
+    body: 'Workspace → project → environment → resource. Per-environment config, per-environment RBAC, per-environment slugs. Per-PR preview envs are on the roadmap.',
+  },
+  {
+    idx: '04',
+    title: 'Observability by delegation',
+    body: 'We do not ship metrics and logging stacks. AppBahn plugs into the Prometheus and Victoria Logs already installed in your cluster, so your retention, storage, and access stay yours.',
+  },
+]
+---
+
+<Marketing
+  title="AppBahn for developers — git push to production"
+  description="Railway-style DX on your team's own cluster. CLI-first, environment-scoped config, delegated observability."
+>
+  <section class="hero">
+    <div class="kicker">For developers</div>
+    <h1>
+      Five commands to running. No YAML.
+      <em>// Real Kubernetes underneath. Nothing to configure above.</em>
+    </h1>
+    <p class="sub">
+      Your platform team installed AppBahn so you would stop Slacking them about broken deployments.
+      This is your side of that deal.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn s" href={REPO_URL}>Star on GitHub</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— The inner loop</div>
+    <h2>Five commands. No config files.</h2>
+    <p class="sub">
+      The sequence, roughly. Every one of these has a docs page with the full flag set.
+    </p>
+    <ol class="loop">
+      {
+        loop.map((l) => (
+          <li>
+            <code class="cmd">{l.cmd}</code>
+            <span class="note">{l.sub}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section>
+    <div class="kicker">— How it feels</div>
+    <h2>Boring in the good way.</h2>
+    <div class="grid-2">
+      {
+        vibes.map((v) => (
+          <div class="card">
+            <div class="idx">{v.idx}</div>
+            <h3>{v.title}</h3>
+            <p>{v.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="kicker">— Get the CLI</div>
+    <h2>One binary. GitHub releases.</h2>
+    <p class="sub">
+      Download the <code>appbahn</code> binary from GitHub releases and drop it in your PATH. Platform
+      docs cover the cluster side. Developer docs cover the CLI and the console. Start wherever your problem
+      is.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn g" href={`${REPO_URL}/releases`}>GitHub releases →</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .loop {
+    list-style: none;
+    counter-reset: step;
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+  .loop li {
+    counter-increment: step;
+    padding: 16px 20px 16px 56px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: center;
+    position: relative;
+  }
+  .loop li:last-child {
+    border-bottom: none;
+  }
+  .loop li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .loop code.cmd {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    background: var(--bg-base);
+    padding: 6px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+  .loop .note {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .card {
+    background: var(--bg-surface);
+    padding: 32px 28px;
+  }
+  .card .idx {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+    margin: 0;
+  }
+
+  section.close {
+    border-top: 1px solid var(--border);
+    padding-top: 96px;
+  }
+
+  @media (max-width: 960px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .loop li {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+</style>

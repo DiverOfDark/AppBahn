@@ -1,0 +1,117 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { OPERATOR_EMAIL } from '../config'
+---
+
+<Marketing
+  title="Legal Notice — AppBahn"
+  description="Legal notice under §18 MStV. AppBahn is an open-source project operated by Kirill Orlov."
+>
+  <section class="legal">
+    <div class="kicker">— Legal Notice</div>
+    <h1>Legal Notice</h1>
+    <p class="sub">
+      Information per §18(2) Medienstaatsvertrag (German Interstate Media Treaty). AppBahn is a
+      privately-run open-source project; this page exists for editorial accountability.
+      <a href="/impressum/">Deutsche Fassung</a>.
+    </p>
+
+    <div class="block">
+      <h2>Responsible party</h2>
+      <p>
+        <strong>Kirill Orlov</strong><br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Germany
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Contact</h2>
+      <p>
+        Email: <a href={`mailto:${OPERATOR_EMAIL}`}><code>{OPERATOR_EMAIL}</code></a><br />
+        Phone: +49 176 27540990
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Editorial responsibility under §18(2) MStV</h2>
+      <p>
+        Kirill Orlov<br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Germany
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Note</h2>
+      <p>
+        AppBahn is currently operated as a private open-source project. No commercial offers are
+        made through this website. For security-related disclosures see <a href="/security/"
+          >Security</a
+        >.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Liability for external links</h2>
+      <p>
+        Despite careful content review, we accept no liability for the content of external links.
+        Linked pages are the sole responsibility of their operators.
+      </p>
+    </div>
+
+    <p class="footnote">Last updated: {new Date().toISOString().slice(0, 10)}.</p>
+  </section>
+</Marketing>
+
+<style>
+  section.legal {
+    max-width: 760px;
+  }
+  h1 {
+    margin-bottom: 24px;
+  }
+  .block {
+    margin-top: 40px;
+  }
+  .block h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .block p {
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  .block p strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .block p a,
+  .sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .block p a:hover,
+  .sub a:hover {
+    text-decoration: underline;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  p.footnote {
+    margin-top: 56px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+  }
+</style>

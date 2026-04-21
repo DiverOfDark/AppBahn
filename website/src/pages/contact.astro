@@ -1,0 +1,261 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { CONTACT_EMAIL, SECURITY_EMAIL, REPO_URL } from '../config'
+
+const matrix = [
+  {
+    cap: 'Docker image deploys to auto-generated domain',
+    state: 'shipped',
+    note: 'TLS via cert-manager. Per-PR environments, tear-down on close.',
+  },
+  {
+    cap: 'Workspace → Project → Environment → Resource hierarchy',
+    state: 'shipped',
+    note: 'RBAC at every tier. Slugs everywhere.',
+  },
+  {
+    cap: 'RBAC + OIDC group mapping',
+    state: 'shipped',
+    note: 'Keycloak, Okta, Microsoft Entra ID, Google Workspace.',
+  },
+  {
+    cap: 'Deploy tokens + CLI',
+    state: 'shipped',
+    note: 'Short-lived tokens. Cobra-based binary published to GitHub releases.',
+  },
+  {
+    cap: 'Operator tunnel across any ingress',
+    state: 'shipped',
+    note: 'Connect-tunnel. Works behind NAT and egress-only firewalls.',
+  },
+  {
+    cap: 'Managed Postgres / Valkey / object storage',
+    state: 'planned',
+    note: 'Next release. Same cluster, same backup lifecycle.',
+  },
+  {
+    cap: 'Git-to-deploy with automatic builds',
+    state: 'planned',
+    note: 'Webhook, polling, or manual trigger.',
+  },
+  {
+    cap: 'Buildpack autodetection (Node, Python, Go, Java)',
+    state: 'planned',
+    note: 'Multiple engines; opt in per project.',
+  },
+  {
+    cap: 'Auto-deploy on push + image-digest rollback',
+    state: 'planned',
+    note: 'Rollback by digest, not tag. Actually safe.',
+  },
+  {
+    cap: 'Custom domains + automatic TLS',
+    state: 'planned',
+    note: 'cert-manager reconciliation, DNS automation where available.',
+  },
+  {
+    cap: 'Metrics · logs · traces',
+    state: 'planned',
+    note: 'Prometheus, Victoria Logs, traces pluggable.',
+  },
+  {
+    cap: 'Append-only audit log + Slack notifications',
+    state: 'planned',
+    note: 'Every mutation recorded. Webhook integrations.',
+  },
+  {
+    cap: 'Multi-cluster federation',
+    state: 'planned',
+    note: 'Route workloads across clusters. Approval-gated cluster registration.',
+  },
+]
+---
+
+<Marketing
+  title="Contact — AppBahn"
+  description="Reach the AppBahn maintainer for community questions, press, or security disclosures. No forms — email only."
+>
+  <section class="hero">
+    <div class="kicker">— Contact</div>
+    <h1>Email us. There is no form.</h1>
+    <p class="sub">
+      AppBahn is run by one person plus design-partner collaborators. We do not operate a ticketing
+      queue or a "sales" inbox. Everything lands in the same place, and it is a person who reads it.
+    </p>
+  </section>
+
+  <section class="channels">
+    <div class="channel">
+      <div class="kicker">— Community, press, general</div>
+      <h2>Email <code>{CONTACT_EMAIL}</code></h2>
+      <p>
+        Feature questions, feedback, press inquiries, design-partner conversations about the
+        open-source edition. For technical issues against the code, a GitHub issue usually gets a
+        faster answer — see the <a href={REPO_URL}>repo</a>.
+      </p>
+      <a class="btn p" href={`mailto:${CONTACT_EMAIL}`}>Open your mail client</a>
+    </div>
+
+    <div class="channel">
+      <div class="kicker">— Security disclosure</div>
+      <h2>Email <code>{SECURITY_EMAIL}</code></h2>
+      <p>
+        For vulnerabilities and coordinated disclosure. Please do not open a public GitHub issue for
+        security-sensitive reports. We aim to acknowledge within two business days. See
+        <a href="/.well-known/security.txt">/.well-known/security.txt</a>.
+      </p>
+      <a class="btn s" href={`mailto:${SECURITY_EMAIL}`}>Open your mail client</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Where things stand</div>
+    <h2>What works. What does not yet.</h2>
+    <p class="sub">
+      We would rather be boringly honest than demo-polished. This is the current state of the
+      open-source edition. Nothing listed as "planned" is conditional on a contract.
+    </p>
+    <div class="matrix">
+      <table>
+        <thead>
+          <tr><th>Capability</th><th>State</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          {
+            matrix.map((r) => (
+              <tr>
+                <td>{r.cap}</td>
+                <td>
+                  <span class={`state ${r.state}`}>
+                    {r.state === 'shipped' ? 'SHIPPED' : 'PLANNED'}
+                  </span>
+                </td>
+                <td>{r.note}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  section.channels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    max-width: none;
+    padding: 0;
+  }
+  .channel {
+    background: var(--bg-surface);
+    padding: 64px 48px;
+  }
+  .channel h2 {
+    font-size: 26px;
+  }
+  .channel p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    margin-bottom: 24px;
+  }
+  .channel p.pgp {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.65;
+  }
+  .channel p a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .channel p a:hover {
+    text-decoration: underline;
+  }
+  .channel code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: oklch(80% 0.16 80 / 0.08);
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 0.88em;
+  }
+
+  .matrix {
+    margin-top: 48px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+  .matrix table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .matrix th,
+  .matrix td {
+    padding: 14px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .matrix tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .matrix thead th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    background: var(--bg-base);
+  }
+  .matrix tbody td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .matrix tbody td {
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+  .state {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 3px 9px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .state.shipped {
+    background: oklch(70% 0.14 145 / 0.12);
+    color: var(--status-ready);
+  }
+  .state.planned {
+    background: var(--bg-base);
+    color: var(--text-tertiary);
+  }
+
+  @media (max-width: 960px) {
+    section.channels {
+      grid-template-columns: 1fr;
+    }
+    .channel {
+      padding: 40px 24px;
+    }
+    .matrix {
+      overflow-x: auto;
+    }
+    .matrix table {
+      min-width: 640px;
+    }
+  }
+</style>

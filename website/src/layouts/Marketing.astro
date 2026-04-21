@@ -1,0 +1,401 @@
+---
+import '../styles/fonts.css'
+import { REPO_URL } from '../config'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#1f1f21" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AppBahn" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/og-default.png" />
+    <link rel="alternate" type="application/rss+xml" title="AppBahn Blog" href="/blog/rss.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="AppBahn Changelog"
+      href="/changelog/rss.xml"
+    />
+    <style is:global>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root,
+      :root[data-theme='dark'] {
+        --bg-base: oklch(13% 0.01 260);
+        --bg-surface: oklch(17% 0.008 260);
+        --bg-raised: oklch(22% 0.008 80);
+        --bg-overlay: oklch(25% 0.01 260);
+
+        --text-primary: oklch(93% 0.005 80);
+        --text-secondary: oklch(65% 0.01 260);
+        --text-tertiary: oklch(50% 0.01 260);
+
+        --accent: oklch(80% 0.16 80);
+        --accent-hover: oklch(85% 0.18 80);
+        --accent-muted: oklch(45% 0.08 80);
+        --accent-fg: oklch(15% 0.01 80);
+
+        --status-ready: oklch(70% 0.14 145);
+        --status-error: oklch(65% 0.18 25);
+
+        --border: oklch(25% 0.005 260);
+        --border-strong: oklch(35% 0.005 260);
+
+        --radius-input: 2px;
+        --radius-card: 4px;
+        --radius-btn: 4px;
+
+        --font-heading: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+        --space-1: 8px;
+        --space-2: 16px;
+        --space-3: 24px;
+        --space-4: 32px;
+        --space-6: 48px;
+        --space-8: 64px;
+
+        --max-width: 1280px;
+      }
+
+      html,
+      body {
+        background: var(--bg-base);
+        color: var(--text-primary);
+        font-family: var(--font-body);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      nav.top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 48px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: oklch(13% 0.01 260 / 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+      }
+      nav.top .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--text-primary);
+      }
+      nav.top .brand img {
+        height: 26px;
+        display: block;
+      }
+      nav.top .brand .div {
+        width: 1px;
+        height: 18px;
+        background: var(--border-strong);
+      }
+      nav.top .brand .tag {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+      nav.top .links {
+        display: flex;
+        gap: 28px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+      nav.top .links a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.12s ease;
+      }
+      nav.top .links a:hover {
+        color: var(--text-primary);
+      }
+      nav.top .cta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: var(--radius-btn);
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none;
+        display: inline-block;
+        transition:
+          background 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease;
+      }
+      .btn.p {
+        background: var(--accent);
+        color: var(--accent-fg);
+      }
+      .btn.p:hover {
+        background: var(--accent-hover);
+      }
+      .btn.s {
+        background: transparent;
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+      .btn.s:hover {
+        border-color: var(--text-secondary);
+      }
+      .btn.g {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+      .btn.g:hover {
+        background: var(--bg-raised);
+      }
+
+      section {
+        padding: 96px 48px;
+        max-width: var(--max-width);
+        margin: 0 auto;
+        width: 100%;
+      }
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .kicker::before {
+        content: '';
+        width: 18px;
+        height: 1px;
+        background: var(--accent);
+      }
+      h1 {
+        font-family: var(--font-heading);
+        font-size: clamp(40px, 6vw, 64px);
+        font-weight: 700;
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+        max-width: 900px;
+        margin: 0 0 24px;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.42em;
+        letter-spacing: -0.005em;
+        display: block;
+        margin-top: 14px;
+      }
+      h2 {
+        font-family: var(--font-heading);
+        font-size: clamp(28px, 3.5vw, 40px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        margin: 0 0 16px;
+      }
+      h3 {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+      }
+      .sub {
+        font-size: 17px;
+        color: var(--text-secondary);
+        font-weight: 300;
+        line-height: 1.55;
+        max-width: 720px;
+      }
+
+      .hero .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 36px;
+        flex-wrap: wrap;
+      }
+      .hero .actions .cmd {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin-left: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hero .actions .cmd::before {
+        content: '$';
+        color: var(--accent);
+      }
+
+      footer {
+        padding: 40px 48px;
+        border-top: 1px solid var(--border);
+        background: var(--bg-surface);
+        margin-top: auto;
+      }
+      footer .inner {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      footer .meta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.06em;
+      }
+      footer .meta img {
+        height: 20px;
+        opacity: 0.8;
+      }
+      footer .cols {
+        display: flex;
+        gap: 32px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 300;
+      }
+      footer .cols a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.12s ease;
+      }
+      footer .cols a:hover {
+        color: var(--text-primary);
+      }
+
+      @media (max-width: 960px) {
+        nav.top {
+          padding: 14px 24px;
+        }
+        nav.top .links {
+          display: none;
+        }
+        section {
+          padding: 64px 24px;
+        }
+        footer {
+          padding: 32px 24px;
+        }
+      }
+
+      @media (max-width: 540px) {
+        nav.top .brand .tag,
+        nav.top .brand .div {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="top">
+      <a href="/" class="brand">
+        <img src="/logo.png" alt="AppBahn" />
+        <div class="div"></div>
+        <span class="tag">self-hosted paas</span>
+      </a>
+      <div class="links">
+        <a href="/docs/getting-started/">Docs</a>
+        <a href="/blog/">Blog</a>
+        <a href="/changelog/">Changelog</a>
+        <a href="/security/">Security</a>
+        <a href={REPO_URL}>GitHub</a>
+      </div>
+      <div class="cta">
+        <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      </div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <div class="inner">
+        <div class="meta">
+          <img src="/logo.png" alt="AppBahn" />
+          <span>© {new Date().getFullYear()} · ELv2 · Built in Europe</span>
+        </div>
+        <div class="cols">
+          <a href="/impressum/">Impressum</a>
+          <a href="/datenschutz/">Datenschutz</a>
+          <a href="/contact/">Contact</a>
+          <a href="/blog/rss.xml">RSS</a>
+          <a href={REPO_URL}>GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

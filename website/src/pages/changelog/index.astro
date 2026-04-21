@@ -1,0 +1,146 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { getCollection, render } from 'astro:content'
+
+const entries = (await getCollection('changelog')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+)
+
+const fmt = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' })
+
+const rendered = await Promise.all(
+  entries.map(async (e) => {
+    const { Content } = await render(e)
+    return { entry: e, Content }
+  }),
+)
+---
+
+<Marketing
+  title="Changelog — AppBahn"
+  description="Every release of AppBahn, dated and summarised."
+>
+  <section class="hero">
+    <div class="kicker">— Changelog</div>
+    <h1>Every release, dated.</h1>
+    <p class="sub">
+      Each AppBahn release gets a dated entry here. Cadence tracks the release cadence — best
+      effort, not a calendar commitment. Subscribe by RSS; we do not operate a newsletter.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/changelog/rss.xml">RSS feed</a>
+      <a class="btn s" href="https://github.com/diverofdark/appbahn/releases">GitHub releases</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="entries">
+      {
+        rendered.map(({ entry, Content }) => (
+          <article class="entry">
+            <header>
+              <div class="meta">
+                <span class="version">{entry.data.version}</span>
+                <time datetime={entry.data.date.toISOString()}>{fmt.format(entry.data.date)}</time>
+              </div>
+              <h2>{entry.data.title}</h2>
+              <p class="summary">{entry.data.summary}</p>
+            </header>
+            <div class="body">
+              <Content />
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero .actions {
+    margin-top: 36px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+  .entry {
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+  }
+  .entry:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  .entry header {
+    margin-bottom: 24px;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+  }
+  .meta .version {
+    color: var(--accent);
+    padding: 3px 10px;
+    border: 1px solid oklch(80% 0.16 80 / 0.3);
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .entry h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .entry .summary {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 760px;
+    margin: 0;
+  }
+  .body :global(h3) {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--text-primary);
+  }
+  .body :global(p) {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.7;
+    margin: 0 0 14px;
+    max-width: 760px;
+  }
+  .body :global(ul) {
+    margin: 0 0 14px 20px;
+    padding: 0;
+  }
+  .body :global(li) {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+</style>

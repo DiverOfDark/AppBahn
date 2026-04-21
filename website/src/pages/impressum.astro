@@ -1,0 +1,117 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { OPERATOR_EMAIL } from '../config'
+---
+
+<Marketing
+  title="Impressum — AppBahn"
+  description="Impressum nach §18 MStV. AppBahn ist ein Open-Source-Projekt von Kirill Orlov."
+>
+  <section class="legal">
+    <div class="kicker">— Impressum</div>
+    <h1>Impressum</h1>
+    <p class="sub">
+      Angaben gemäß §18 Abs. 2 Medienstaatsvertrag (MStV). AppBahn ist ein privat betriebenes
+      Open-Source-Projekt; diese Seite dient ausschließlich editorialen Zwecken.
+      <a href="/legal-notice/">English version</a>.
+    </p>
+
+    <div class="block">
+      <h2>Verantwortlich</h2>
+      <p>
+        <strong>Kirill Orlov</strong><br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Deutschland
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Kontakt</h2>
+      <p>
+        E-Mail: <a href={`mailto:${OPERATOR_EMAIL}`}><code>{OPERATOR_EMAIL}</code></a><br />
+        Telefon: +49 176 27540990
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Inhaltlich verantwortlich gem. §18 Abs. 2 MStV</h2>
+      <p>
+        Kirill Orlov<br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Deutschland
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Hinweis</h2>
+      <p>
+        AppBahn wird derzeit als privates Open-Source-Projekt betrieben. Es werden keine
+        kommerziellen Angebote über diese Website gemacht. Für Sicherheits-Hinweise siehe
+        <a href="/security/">Security</a>.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>Haftungsausschluss</h2>
+      <p>
+        Trotz sorgfältiger inhaltlicher Kontrolle übernimmt der Betreiber keine Haftung für die
+        Inhalte externer Links. Für den Inhalt verlinkter Seiten sind ausschließlich deren Betreiber
+        verantwortlich.
+      </p>
+    </div>
+
+    <p class="footnote">Stand: {new Date().toISOString().slice(0, 10)}.</p>
+  </section>
+</Marketing>
+
+<style>
+  section.legal {
+    max-width: 760px;
+  }
+  h1 {
+    margin-bottom: 24px;
+  }
+  .block {
+    margin-top: 40px;
+  }
+  .block h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .block p {
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  .block p strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .block p a,
+  .sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .block p a:hover,
+  .sub a:hover {
+    text-decoration: underline;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  p.footnote {
+    margin-top: 56px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+  }
+</style>

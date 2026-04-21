@@ -1,0 +1,327 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { SECURITY_EMAIL, CONTACT_EMAIL } from '../config'
+
+const posture = [
+  {
+    state: 'done',
+    title: 'Encryption in transit',
+    body: 'TLS 1.3 via cert-manager. HSTS. Modern cipher suites only.',
+  },
+  {
+    state: 'done',
+    title: 'Encryption at rest',
+    body: "Secrets encrypted with the cluster's KMS. Persistent volumes delegated to the cluster's storage class.",
+  },
+  {
+    state: 'done',
+    title: 'OIDC single sign-on',
+    body: 'Keycloak, Okta, Google Workspace. Group-to-role mapping at workspace scope.',
+  },
+  {
+    state: 'planned',
+    title: 'SOC 2 Type I attestation',
+    body: 'Targeted for later. The Type II observation window opens once Type I is achieved.',
+  },
+  {
+    state: 'planned',
+    title: 'BSI C5 self-assessment',
+    body: 'Post-1.0. Targets German regulated-industry readiness.',
+  },
+]
+
+const split = [
+  {
+    lbl: 'ON YOUR CLUSTER',
+    h: 'Everything that matters',
+    body: 'Application pods, databases, secrets, logs, metrics, build artifacts, container registry (optional). All of it runs inside your Kubernetes cluster, under your network and IAM controls.',
+  },
+  {
+    lbl: "ON APPBAHN'S CONTROL PLANE",
+    h: 'Nothing, by default',
+    body: 'AppBahn ships as an operator. There is no hosted control plane — the platform runs alongside your workloads. No metadata leaves the cluster unless you explicitly wire outbound integrations (Slack, external SIEM).',
+  },
+]
+
+const access = [
+  {
+    lbl: 'AUTHENTICATION',
+    h: 'OIDC single sign-on',
+    body: 'Keycloak, Okta, Microsoft Entra ID, Google Workspace, generic OIDC. Enforce SSO for the workspace. OIDC is the only auth path — there are no local users.',
+  },
+  {
+    lbl: 'AUTHORIZATION',
+    h: 'RBAC, four built-in roles',
+    body: 'owner, deployer, developer, viewer — scoped per environment. Mapped from OIDC groups where available.',
+  },
+  {
+    lbl: 'AUDIT',
+    h: 'Every mutation recorded',
+    body: 'Append-only audit log lands in the next release. Exportable to external SIEM via webhook integrations.',
+  },
+  {
+    lbl: 'SECRETS',
+    h: 'Never in plaintext',
+    body: "Encrypted with your cluster's KMS (AWS, GCP, Azure, or Vault). Scoped per-environment. Rotatable without redeploy.",
+  },
+]
+---
+
+<Marketing
+  title="Security — AppBahn"
+  description="AppBahn runs as an operator on your Kubernetes cluster. Your application data and secrets never leave your cluster — because we do not operate one."
+>
+  <section class="hero">
+    <div class="kicker">— Security</div>
+    <h1>Your data does not leave your cluster. We do not operate one.</h1>
+    <p class="sub">
+      AppBahn ships as a Kubernetes operator. There is no hosted control plane, no managed cloud, no
+      vendor side-channel. Your application data, logs, and secrets stay on the cluster you run.
+      Here is exactly what that means.
+    </p>
+  </section>
+
+  <section>
+    <div class="kicker">— Current posture</div>
+    <h2>What is shipped. What is planned.</h2>
+    <p class="sub">
+      Stated as project intent, not as a paid tier. Every item below lands in the open-source
+      distribution.
+    </p>
+    <div class="posture">
+      {
+        posture.map((p) => (
+          <div class="p-card">
+            <div class={`st ${p.state}`}>{p.state === 'done' ? 'SHIPPED' : 'PLANNED'}</div>
+            <h3>{p.title}</h3>
+            <p>{p.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Architecture</div>
+    <h2>Where data lives.</h2>
+    <p class="sub">
+      Because your workloads run on your cluster, the attack surface we are responsible for is
+      narrower than hosted platforms. The split is clean.
+    </p>
+    <div class="col2">
+      {
+        split.map((s) => (
+          <div class="feat">
+            <span class="lbl">{s.lbl}</span>
+            <h4>{s.h}</h4>
+            <p>{s.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Access controls</div>
+    <h2>Who can do what.</h2>
+    <div class="col2">
+      {
+        access.map((a) => (
+          <div class="feat">
+            <span class="lbl">{a.lbl}</span>
+            <h4>{a.h}</h4>
+            <p>{a.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Responsible disclosure</div>
+    <h2>Found something? Tell us.</h2>
+    <div class="disc">
+      <div>
+        <h3>Report a vulnerability</h3>
+        <p>
+          We acknowledge security reports within two business days and aim to triage within five.
+          Fixes ship as ordinary releases; notable issues get a postmortem on the blog. A bug bounty
+          is under consideration post-1.0.
+        </p>
+        <a class="email" href={`mailto:${SECURITY_EMAIL}`}>{SECURITY_EMAIL}</a>
+        <p class="small">
+          Plain-text reports are fine. We will publish a PGP key once a project key is in place.
+        </p>
+      </div>
+      <div>
+        <h3>What to include</h3>
+        <p>
+          Reproduction steps. Affected version (output of <code>appbahn --version</code>). A
+          severity assessment if you have one. The cluster topology (Kubernetes distribution,
+          version, ingress controller) helps us reproduce.
+        </p>
+        <p class="small">
+          For non-security questions, email <a href={`mailto:${CONTACT_EMAIL}`}
+            ><code>{CONTACT_EMAIL}</code></a
+          >.
+        </p>
+      </div>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  section.hero {
+    padding-top: 72px;
+    padding-bottom: 64px;
+  }
+  .posture {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .p-card {
+    background: var(--bg-surface);
+    padding: 28px 24px;
+  }
+  .p-card .st {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+    width: fit-content;
+    padding: 3px 9px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .p-card .st.done {
+    background: oklch(70% 0.14 145 / 0.12);
+    color: var(--status-ready);
+  }
+  .p-card .st.planned {
+    background: var(--bg-base);
+    color: var(--text-tertiary);
+  }
+  .p-card h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .p-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+    margin: 0;
+  }
+  .col2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .feat {
+    background: var(--bg-surface);
+    padding: 28px 24px;
+  }
+  .feat .lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .feat h4 {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 10px 0 10px;
+  }
+  .feat p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .feat p code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+  .disc {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-card);
+    background: var(--bg-surface);
+    padding: 32px;
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  .disc h3 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .disc p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    margin: 0 0 14px;
+  }
+  .disc p.small {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .disc p a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .disc p a:hover {
+    text-decoration: underline;
+  }
+  .disc .email {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--accent);
+    display: inline-block;
+    margin-bottom: 12px;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .disc .email:hover {
+    border-bottom-color: var(--accent);
+  }
+  .disc code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-primary);
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  @media (max-width: 960px) {
+    .posture {
+      grid-template-columns: 1fr;
+    }
+    .col2 {
+      grid-template-columns: 1fr;
+    }
+    .disc {
+      grid-template-columns: 1fr;
+      padding: 24px;
+      gap: 24px;
+    }
+  }
+</style>

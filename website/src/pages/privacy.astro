@@ -1,0 +1,166 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { OPERATOR_EMAIL } from '../config'
+---
+
+<Marketing
+  title="Privacy — AppBahn"
+  description="Privacy policy under GDPR Art. 13/14. AppBahn sets no cookies, runs no analytics, and self-hosts all fonts."
+>
+  <section class="legal">
+    <div class="kicker">— Privacy</div>
+    <h1>Privacy Policy</h1>
+    <p class="sub">
+      This website is static. No cookies, no third-party scripts, no analytics. Everything we still
+      touch is listed below. <a href="/datenschutz/">Deutsche Fassung</a>.
+    </p>
+
+    <div class="block">
+      <h2>1. Controller</h2>
+      <p>
+        Controller under GDPR Art. 4(7):<br />
+        <strong>Kirill Orlov</strong><br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Germany<br />
+        Email: <a href={`mailto:${OPERATOR_EMAIL}`}><code>{OPERATOR_EMAIL}</code></a>
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>2. Hosting (GitHub Pages)</h2>
+      <p>
+        This site is served statically via <strong>GitHub Pages</strong>, operated by GitHub, Inc.,
+        88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. When you visit, GitHub processes
+        technically necessary access data (IP address, timestamp, requested URL, referrer, user
+        agent). Legal basis: Art. 6(1)(f) GDPR (legitimate interest in delivering and securing the
+        service).
+      </p>
+      <p>
+        The transfer to the US is based on the EU-U.S. Data Privacy Framework (GitHub is
+        DPF-certified) and EU Standard Contractual Clauses. The scope, retention, and handling of
+        the logs are governed by GitHub's privacy statement (<a
+          href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+          >docs.github.com</a
+        >).
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>3. No CDN front, no third-party fonts</h2>
+      <p>
+        We self-host all fonts (Geist, Inter, JetBrains Mono) under <code>/fonts/</code> on the same domain.
+        No data is transferred to Google, jsdelivr, Cloudflare, or any third party. This follows the LG
+        München I ruling of 20.01.2022 (Az. 3 O 17493/20). GitHub Pages serves the site directly; no additional
+        CDN is interposed.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>4. Email contact</h2>
+      <p>
+        When you email us (<code>{OPERATOR_EMAIL}</code>), we retain your message and sender address
+        to handle the inquiry. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in answering
+        you). Email correspondence is deleted at most two years after the matter is closed, subject
+        to statutory retention obligations.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>5. No analytics, no trackers, no cookies</h2>
+      <p>
+        This site sets no cookies, loads no external scripts (no Google Analytics, Plausible,
+        Fathom, no Cloudflare fronting, no GitHub embeds), and measures no traffic. A consent banner
+        under TTDSG §25 is therefore not required.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>6. RSS subscription</h2>
+      <p>
+        Our blog and changelog feeds are static XML files. We cannot tell who subscribes; no
+        personal data is collected.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>7. Your rights</h2>
+      <p>
+        You have the right, at any time, to access (Art. 15), rectification (Art. 16), erasure (Art.
+        17), restriction of processing (Art. 18), data portability (Art. 20), and objection (Art.
+        21) regarding your personal data held by us. Please contact <code>{OPERATOR_EMAIL}</code>.
+      </p>
+      <p>
+        You also have the right to lodge a complaint with a supervisory authority. The competent
+        authority is the <strong
+          >Berliner Beauftragte für Datenschutz und Informationsfreiheit</strong
+        >
+        (<a href="https://www.datenschutz-berlin.de/">datenschutz-berlin.de</a>).
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>8. Changes</h2>
+      <p>
+        We update this notice when technical or legal circumstances require it. The current version
+        is always available at <code>/privacy</code>.
+      </p>
+    </div>
+
+    <p class="footnote">Last updated: {new Date().toISOString().slice(0, 10)}.</p>
+  </section>
+</Marketing>
+
+<style>
+  section.legal {
+    max-width: 760px;
+  }
+  h1 {
+    margin-bottom: 24px;
+  }
+  .block {
+    margin-top: 40px;
+  }
+  .block h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .block p {
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .block p:last-child {
+    margin-bottom: 0;
+  }
+  .block p strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .block p a,
+  .sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .block p a:hover,
+  .sub a:hover {
+    text-decoration: underline;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  p.footnote {
+    margin-top: 56px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+  }
+</style>

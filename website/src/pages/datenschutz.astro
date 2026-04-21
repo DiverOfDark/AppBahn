@@ -1,0 +1,168 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { OPERATOR_EMAIL } from '../config'
+---
+
+<Marketing
+  title="Datenschutz — AppBahn"
+  description="Datenschutzerklärung nach DSGVO Art. 13/14. AppBahn sammelt keine Tracking-Daten, hostet Schriften selbst und setzt keine Cookies."
+>
+  <section class="legal">
+    <div class="kicker">— Datenschutz</div>
+    <h1>Datenschutzerklärung</h1>
+    <p class="sub">
+      Diese Seite ist statisch. Wir setzen keine Cookies, laden keine Drittanbieter-Scripts und
+      betreiben keine Analyse. Was trotzdem an Daten anfällt, steht hier vollständig drin.
+      <a href="/privacy/">English version</a>.
+    </p>
+
+    <div class="block">
+      <h2>1. Verantwortlicher</h2>
+      <p>
+        Verantwortlich im Sinne der DSGVO Art. 4(7):<br />
+        <strong>Kirill Orlov</strong><br />
+        Meinekestr. 21<br />
+        10719 Berlin<br />
+        Deutschland<br />
+        E-Mail: <a href={`mailto:${OPERATOR_EMAIL}`}><code>{OPERATOR_EMAIL}</code></a>
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>2. Hosting (GitHub Pages)</h2>
+      <p>
+        Diese Website wird statisch über <strong>GitHub Pages</strong> ausgeliefert, betrieben durch die
+        GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf verarbeitet
+        GitHub technisch notwendige Zugriffsdaten (IP-Adresse, Zeitstempel, abgerufene URL, Referrer,
+        User-Agent). Rechtsgrundlage: Art. 6(1)(f) DSGVO (berechtigtes Interesse an Bereitstellung und
+        Sicherheit des Dienstes).
+      </p>
+      <p>
+        Die Übermittlung in die USA erfolgt auf Basis des EU-U.S. Data Privacy Framework (GitHub ist
+        DPF-zertifiziert) sowie EU-Standardvertragsklauseln. Für Art, Umfang und Aufbewahrungsdauer
+        der Logdaten gilt die GitHub-Datenschutzerklärung (<a
+          href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+          >docs.github.com</a
+        >).
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>3. Keine CDN-Fronten, keine Drittanbieter-Schriften</h2>
+      <p>
+        Wir hosten alle Schriften (Geist, Inter, JetBrains Mono) selbst unter <code>/fonts/</code>
+        auf derselben Domain. Es findet keine Übertragung an Google, jsdelivr, Cloudflare oder andere
+        Dritte statt. Diese Entscheidung folgt dem Urteil LG München I vom 20.01.2022 (Az. 3 O 17493/20).
+        GitHub Pages liefert die Seite direkt aus; ein zusätzliches CDN wird nicht zwischengeschaltet.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>4. E-Mail-Kontakt</h2>
+      <p>
+        Wenn Sie uns per E-Mail kontaktieren (<code>{OPERATOR_EMAIL}</code>), speichern wir Ihre
+        Nachricht inklusive Absenderadresse zur Bearbeitung der Anfrage. Rechtsgrundlage: Art.
+        6(1)(f) DSGVO (berechtigtes Interesse an der Beantwortung Ihrer Anfrage). Wir löschen
+        E-Mail-Korrespondenz spätestens zwei Jahre nach Abschluss des Anliegens, sofern keine
+        gesetzlichen Aufbewahrungspflichten dem entgegenstehen.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>5. Keine Analyse, keine Tracker, keine Cookies</h2>
+      <p>
+        Diese Website setzt keine Cookies, lädt keine externen Scripts (keine Google Analytics,
+        Plausible, Fathom, kein Cloudflare-Fronting, keine GitHub-Embeds) und misst keine
+        Reichweite. Ein Einwilligungsbanner nach TTDSG §25 ist daher nicht erforderlich.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>6. RSS-Abonnement</h2>
+      <p>
+        Unsere Blog- und Changelog-Feeds werden als statische XML-Dateien ausgeliefert. Wir können
+        nicht nachvollziehen, wer sie abonniert hat; es werden keine personenbezogenen Daten
+        erhoben.
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>7. Ihre Rechte</h2>
+      <p>
+        Sie haben jederzeit das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art.
+        17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie
+        Widerspruch (Art. 21) hinsichtlich Ihrer bei uns gespeicherten personenbezogenen Daten.
+        Bitte wenden Sie sich dafür an <code>{OPERATOR_EMAIL}</code>.
+      </p>
+      <p>
+        Darüber hinaus steht Ihnen ein Beschwerderecht bei einer Aufsichtsbehörde zu. Zuständig ist
+        die <strong>Berliner Beauftragte für Datenschutz und Informationsfreiheit</strong>
+        (<a href="https://www.datenschutz-berlin.de/">datenschutz-berlin.de</a>).
+      </p>
+    </div>
+
+    <div class="block">
+      <h2>8. Änderungen dieser Erklärung</h2>
+      <p>
+        Wir passen diese Erklärung an, sobald technische oder rechtliche Entwicklungen es erfordern.
+        Die jeweils aktuelle Fassung ist unter <code>/datenschutz</code> abrufbar.
+      </p>
+    </div>
+
+    <p class="footnote">Stand: {new Date().toISOString().slice(0, 10)}.</p>
+  </section>
+</Marketing>
+
+<style>
+  section.legal {
+    max-width: 760px;
+  }
+  h1 {
+    margin-bottom: 24px;
+  }
+  .block {
+    margin-top: 40px;
+  }
+  .block h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .block p {
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .block p:last-child {
+    margin-bottom: 0;
+  }
+  .block p strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .block p a,
+  .sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .block p a:hover,
+  .sub a:hover {
+    text-decoration: underline;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  p.footnote {
+    margin-top: 56px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+  }
+</style>

@@ -1,0 +1,285 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { REPO_URL } from '../../config'
+
+const guarantees = [
+  {
+    idx: '01 · DATA RESIDENCY',
+    title: 'Your region, your rules',
+    body: 'Workloads run on Kubernetes clusters you already operate. Frankfurt, Virginia, Singapore, or the rack in your own DC — the platform is where you put the cluster.',
+  },
+  {
+    idx: '02 · EU SOVEREIGNTY',
+    title: 'No US cloud dependency',
+    body: 'AppBahn ships as an operator. No managed control plane, no vendor side-channel, no Schrems II exposure from the platform itself. You pick the hyperscaler, or you avoid them.',
+  },
+  {
+    idx: '03 · OPEN SOURCE',
+    title: 'ELv2, source-available',
+    body: 'The platform source is on GitHub under ELv2. Fork it, audit it, run it offline. No license server, no phone-home.',
+  },
+]
+
+const roadmap = [
+  {
+    label: 'Encryption at rest & in transit',
+    state: 'done',
+    note: 'TLS via cert-manager, storage encryption delegated to cluster',
+  },
+  {
+    label: 'RBAC + OIDC group mapping',
+    state: 'done',
+    note: 'Keycloak, Okta, Microsoft Entra ID, Google Workspace',
+  },
+  { label: 'Append-only audit log', state: 'planned', note: 'Exportable to external SIEM.' },
+  { label: 'SOC 2 Type I attestation', state: 'planned', note: 'Targeted for later' },
+  { label: 'ISO 27001 alignment', state: 'planned', note: 'Post-1.0' },
+  {
+    label: 'BSI C5 self-assessment',
+    state: 'planned',
+    note: 'Post-1.0, German regulated-industry readiness',
+  },
+]
+
+const posture = [
+  { k: 'Where workloads run', v: 'Your Kubernetes cluster. Any conformant distribution.' },
+  { k: 'Where control plane runs', v: 'Same cluster. No SaaS control plane.' },
+  { k: 'Where customer data goes', v: 'Nowhere we operate. We do not host anything.' },
+  { k: 'Phone-home telemetry', v: 'None. No license server, no usage beacon.' },
+  {
+    k: 'Vendor access to clusters',
+    v: 'None by default. Support debugs against logs you send us.',
+  },
+  { k: 'Auth model', v: 'OIDC (your IdP), local users, short-lived deploy tokens.' },
+]
+---
+
+<Marketing
+  title="AppBahn for CTOs — Self-hosted PaaS, your infrastructure"
+  description="Data residency, EU sovereignty, and an open compliance roadmap. AppBahn runs on your Kubernetes cluster, so your regulator-ready workloads stay regulator-ready."
+>
+  <section class="hero">
+    <div class="kicker">For engineering leaders</div>
+    <h1>
+      Give your teams Vercel DX. Give your auditor nothing to escalate.
+      <em>// Platform on your cluster. Data in your region. Audit trail you control.</em>
+    </h1>
+    <p class="sub">
+      AppBahn is a self-hosted Platform-as-a-Service for engineering organisations that cannot — or
+      will not — hand their workloads to a US SaaS. The platform runs on your Kubernetes cluster. We
+      are not in the data path.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn s" href={REPO_URL}>Star on GitHub</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Guarantees</div>
+    <h2>Three properties that do not depend on trusting us.</h2>
+    <div class="grid-3">
+      {
+        guarantees.map((g) => (
+          <div class="card">
+            <div class="idx">{g.idx}</div>
+            <h3>{g.title}</h3>
+            <p>{g.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Security posture</div>
+    <h2>Stated plainly.</h2>
+    <p class="sub">
+      The short version, before the compliance roadmap. Everything below is verifiable against the
+      open-source distribution.
+    </p>
+    <table class="posture">
+      {
+        posture.map((row) => (
+          <tr>
+            <th>{row.k}</th>
+            <td>{row.v}</td>
+          </tr>
+        ))
+      }
+    </table>
+  </section>
+
+  <section>
+    <div class="kicker">— Compliance roadmap</div>
+    <h2>What is shipped. What is planned.</h2>
+    <p class="sub">
+      Stated as project intent, not as a paid tier. Every item below lands in the open-source
+      distribution.
+    </p>
+    <div class="roadmap">
+      {
+        roadmap.map((r) => (
+          <div class={`row ${r.state}`}>
+            <span class={`state ${r.state}`}>{r.state === 'done' ? 'SHIPPED' : 'PLANNED'}</span>
+            <span class="label">{r.label}</span>
+            <span class="note">{r.note}</span>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="kicker">— Evaluate it</div>
+    <h2>Run it in your sandbox first.</h2>
+    <p class="sub">
+      Install the operator on a throwaway cluster, deploy a Docker image, walk the audit log, try to
+      break the RBAC model. The install takes ten minutes.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/docs/getting-started/">Read the docs</a>
+      <a class="btn g" href={REPO_URL}>Star on GitHub →</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .card {
+    background: var(--bg-surface);
+    padding: 32px 28px;
+  }
+  .card .idx {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+    margin: 0;
+  }
+
+  table.posture {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+  table.posture th,
+  table.posture td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.posture tr:last-child th,
+  table.posture tr:last-child td {
+    border-bottom: none;
+  }
+  table.posture th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    width: 32%;
+    background: var(--bg-base);
+  }
+  table.posture td {
+    color: var(--text-primary);
+    font-weight: 300;
+    font-size: 14px;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--accent);
+    background: oklch(80% 0.16 80 / 0.08);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  .roadmap {
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+  .roadmap .row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 110px 1fr 1.4fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .roadmap .row:last-child {
+    border-bottom: none;
+  }
+  .roadmap .state {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .roadmap .state.done {
+    background: oklch(70% 0.14 145 / 0.12);
+    color: var(--status-ready);
+  }
+  .roadmap .state.planned {
+    background: var(--bg-base);
+    color: var(--text-tertiary);
+  }
+  .roadmap .label {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .roadmap .note {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  section.close {
+    border-top: 1px solid var(--border);
+    padding-top: 96px;
+  }
+
+  @media (max-width: 960px) {
+    .grid-3 {
+      grid-template-columns: 1fr;
+    }
+    .roadmap .row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+</style>

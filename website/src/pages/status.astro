@@ -1,0 +1,133 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+
+const systems = [
+  { name: 'Website', host: 'appbahn.eu', state: 'ok' },
+  { name: 'Documentation', host: 'appbahn.eu/docs', state: 'ok' },
+  { name: 'Container images', host: 'ghcr.io/diverofdark/appbahn', state: 'ok' },
+  { name: 'Helm chart releases', host: 'GitHub Releases', state: 'ok' },
+  { name: 'Source repository', host: 'github.com/diverofdark/appbahn', state: 'ok' },
+]
+---
+
+<Marketing
+  title="Status — AppBahn"
+  description="Status of AppBahn open-source infrastructure: website, docs, install script, container images, Helm chart releases."
+>
+  <section class="hero">
+    <div class="kicker">— Status</div>
+    <h1>OSS infrastructure · operational.</h1>
+    <p class="sub">
+      AppBahn does not operate a managed cloud. This page tracks the open-source distribution
+      surface: the website, documentation, and release artefacts. If your own AppBahn cluster is
+      degraded, look at your cluster.
+    </p>
+    <p class="footnote">
+      Last checked: {new Date().toISOString().replace('T', ' · ').slice(0, 19)} UTC. Checks run manually
+      while the next-release observability pipeline is being built.
+    </p>
+  </section>
+
+  <section>
+    <div class="kicker">— Current status</div>
+    <h2>By surface.</h2>
+    <div class="sys">
+      {
+        systems.map((s) => (
+          <div class="row">
+            <div class="n">
+              {s.name}
+              <span>{s.host}</span>
+            </div>
+            <div class={`st ${s.state}`}>
+              <span class="dot" />
+              Operational
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">— Incidents</div>
+    <h2>None recorded.</h2>
+    <p class="sub">
+      We publish post-incident notes on the <a href="/blog/">blog</a> for any downtime that affects download
+      or documentation surfaces. For the current state of your own AppBahn cluster, use
+      <code>kubectl</code> and the console.
+    </p>
+  </section>
+</Marketing>
+
+<style>
+  .footnote {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+    margin-top: 20px;
+  }
+  .sys {
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--bg-surface);
+    overflow: hidden;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 20px;
+  }
+  .row:last-child {
+    border-bottom: none;
+  }
+  .n {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .n span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .st {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .st.ok {
+    color: var(--status-ready);
+  }
+  .st .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  section p.sub a,
+  section p.sub code {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  section p.sub code {
+    font-family: var(--font-mono);
+    background: oklch(80% 0.16 80 / 0.08);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 0.88em;
+  }
+</style>

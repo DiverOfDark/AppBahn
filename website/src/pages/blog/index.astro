@@ -1,0 +1,126 @@
+---
+import Marketing from '../../layouts/Marketing.astro'
+import { getCollection } from 'astro:content'
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+)
+
+const fmt = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' })
+---
+
+<Marketing
+  title="Blog — AppBahn"
+  description="Engineering writing from the AppBahn team. Architecture decisions, platform-engineering notes, post-mortems."
+>
+  <section class="hero">
+    <div class="kicker">— Blog</div>
+    <h1>Engineering writing.</h1>
+    <p class="sub">
+      Architecture decisions, platform-engineering notes, and the occasional retrospective.
+      Subscribe by RSS — we do not operate a newsletter.
+    </p>
+    <div class="actions">
+      <a class="btn p" href="/blog/rss.xml">RSS feed</a>
+      <a class="btn s" href="https://github.com/diverofdark/appbahn">GitHub</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="posts">
+      {
+        posts.length === 0 && (
+          <p class="empty">No posts yet. Check back soon, or subscribe via RSS.</p>
+        )
+      }
+      {
+        posts.map((p) => (
+          <article class="post">
+            <div class="meta">
+              <time datetime={p.data.date.toISOString()}>{fmt.format(p.data.date)}</time>
+              {p.data.tags.length > 0 && <span class="tags">{p.data.tags.join(' · ')}</span>}
+            </div>
+            <h2>
+              <a href={`/blog/${p.id}/`}>{p.data.title}</a>
+            </h2>
+            <p class="summary">{p.data.summary}</p>
+            <a class="read" href={`/blog/${p.id}/`}>
+              Read →
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero .actions {
+    margin-top: 36px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .posts {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+  .empty {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  .post {
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  .post:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .meta .tags {
+    color: var(--accent);
+  }
+  .post h2 {
+    font-size: 26px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .post h2 a {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .post h2 a:hover {
+    color: var(--accent);
+  }
+  .post .summary {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    margin-bottom: 16px;
+    max-width: 760px;
+  }
+  .post .read {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+  }
+  .post .read:hover {
+    text-decoration: underline;
+  }
+</style>
