@@ -1,4 +1,4 @@
-package eu.appbahn.shared.tunnel;
+package eu.appbahn.tunnel.wire;
 
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;

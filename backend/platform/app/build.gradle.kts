@@ -81,8 +81,6 @@ dependencies {
     implementation(project(":platform:common"))
     implementation(project(":platform:workspace"))
     implementation(project(":platform:resource"))
-    implementation(project(":platform:git"))
-    implementation(project(":platform:observability"))
     implementation(project(":platform:user"))
     implementation(project(":platform:tunnel"))
 

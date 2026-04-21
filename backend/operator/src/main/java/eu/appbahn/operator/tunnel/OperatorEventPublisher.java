@@ -1,7 +1,6 @@
 package eu.appbahn.operator.tunnel;
 
 import eu.appbahn.shared.crd.ResourceCrd;
-import eu.appbahn.shared.tunnel.ResourceWireMapper;
 import eu.appbahn.tunnel.v1.FullResourceSyncChunk;
 import eu.appbahn.tunnel.v1.OperatorEvent;
 import eu.appbahn.tunnel.v1.PushEventsAck;
@@ -9,6 +8,7 @@ import eu.appbahn.tunnel.v1.PushEventsRequest;
 import eu.appbahn.tunnel.v1.ResourceDeletedBatch;
 import eu.appbahn.tunnel.v1.ResourceSyncBatch;
 import eu.appbahn.tunnel.v1.ResourceSyncItem;
+import eu.appbahn.tunnel.wire.ResourceWireMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

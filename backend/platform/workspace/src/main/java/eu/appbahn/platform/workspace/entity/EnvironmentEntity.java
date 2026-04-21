@@ -28,7 +28,7 @@ public class EnvironmentEntity extends BaseEntity {
     private String description;
 
     @Column(name = "target_cluster", nullable = false)
-    private String targetCluster = "local";
+    private String targetCluster;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

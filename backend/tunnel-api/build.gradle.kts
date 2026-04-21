@@ -27,8 +27,11 @@ protobuf {
 }
 
 dependencies {
+    implementation(project(":shared"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.fabric8.kubernetes.client)
     implementation(libs.protobuf.java)
     implementation(libs.protobuf.java.util)
 

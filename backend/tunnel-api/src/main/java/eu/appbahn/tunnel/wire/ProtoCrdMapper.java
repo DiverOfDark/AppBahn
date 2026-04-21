@@ -1,4 +1,4 @@
-package eu.appbahn.shared.tunnel;
+package eu.appbahn.tunnel.wire;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

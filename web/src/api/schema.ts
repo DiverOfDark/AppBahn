@@ -1340,6 +1340,12 @@ export interface components {
       name: string
       projectSlug: string
       description?: string
+      /**
+       * @description Name of the target cluster. When omitted, the platform auto-picks
+       *     the sole approved cluster; returns 400 if zero or more than one
+       *     approved cluster is registered.
+       */
+      targetCluster?: string
     }
     UpdateEnvironmentRequest: {
       name?: string

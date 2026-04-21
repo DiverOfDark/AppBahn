@@ -1,4 +1,4 @@
-package eu.appbahn.shared.tunnel;
+package eu.appbahn.tunnel.wire;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;

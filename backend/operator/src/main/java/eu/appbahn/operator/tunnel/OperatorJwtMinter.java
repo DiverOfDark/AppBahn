@@ -1,7 +1,7 @@
 package eu.appbahn.operator.tunnel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.shared.tunnel.OperatorJwt;
+import eu.appbahn.tunnel.wire.OperatorJwt;
 import java.time.Duration;
 import org.springframework.stereotype.Service;
 

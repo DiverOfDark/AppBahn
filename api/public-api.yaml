@@ -2952,6 +2952,14 @@ components:
           type: string
         description:
           type: string
+        targetCluster:
+          type: string
+          description: |
+            Name of the target cluster. When omitted, the platform auto-picks
+            the sole approved cluster; returns 400 if zero or more than one
+            approved cluster is registered.
+          minLength: 1
+          maxLength: 63
 
     UpdateEnvironmentRequest:
       type: object
