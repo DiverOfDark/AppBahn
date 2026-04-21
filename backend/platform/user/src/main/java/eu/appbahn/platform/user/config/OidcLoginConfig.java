@@ -31,11 +31,11 @@ import tools.jackson.databind.ObjectMapper;
 public class OidcLoginConfig {
 
     @Bean("oidcHttpSecurityCustomizer")
-    public Customizer<HttpSecurity> oidcHttpSecurityCustomizer() {
+    public Customizer<HttpSecurity> oidcHttpSecurityCustomizer(ObjectMapper objectMapper) {
         return http -> {
             try {
-                http.oauth2Login(oauth2 -> oauth2.authorizationEndpoint(authz ->
-                                authz.authorizationRequestRepository(new CookieAuthorizationRequestRepository()))
+                http.oauth2Login(oauth2 -> oauth2.authorizationEndpoint(authz -> authz.authorizationRequestRepository(
+                                new CookieAuthorizationRequestRepository(objectMapper)))
                         .successHandler((request, response, authentication) -> {
                             if (authentication instanceof OAuth2AuthenticationToken oauthToken
                                     && oauthToken.getPrincipal() instanceof OidcUser oidcUser) {
@@ -57,7 +57,12 @@ public class OidcLoginConfig {
 
         private static final String COOKIE_NAME = "oauth2_auth_request";
         private static final int COOKIE_MAX_AGE = 300;
-        private static final ObjectMapper MAPPER = new ObjectMapper();
+
+        private final ObjectMapper mapper;
+
+        CookieAuthorizationRequestRepository(ObjectMapper mapper) {
+            this.mapper = mapper;
+        }
 
         @Override
         public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
@@ -117,7 +122,7 @@ public class OidcLoginConfig {
                 map.put("scopes", req.getScopes());
                 map.put("authorizationRequestUri", req.getAuthorizationRequestUri());
                 map.put("attributes", req.getAttributes());
-                return MAPPER.writeValueAsString(map);
+                return mapper.writeValueAsString(map);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize authorization request", e);
             }
@@ -127,7 +132,7 @@ public class OidcLoginConfig {
         private OAuth2AuthorizationRequest deserialize(String json) {
             if (json == null) return null;
             try {
-                var map = MAPPER.readValue(json, new TypeReference<LinkedHashMap<String, Object>>() {});
+                var map = mapper.readValue(json, new TypeReference<LinkedHashMap<String, Object>>() {});
                 var builder = OAuth2AuthorizationRequest.authorizationCode()
                         .authorizationUri((String) map.get("authorizationUri"))
                         .clientId((String) map.get("clientId"))

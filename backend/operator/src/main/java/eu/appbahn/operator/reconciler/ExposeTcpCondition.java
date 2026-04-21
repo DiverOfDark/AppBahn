@@ -13,6 +13,9 @@ public class ExposeTcpCondition implements Condition<Service, ResourceCrd> {
             DependentResource<Service, ResourceCrd> dependentResource,
             ResourceCrd primary,
             Context<ResourceCrd> context) {
+        if (primary.getSpec() == null) {
+            return false;
+        }
         var config = primary.getSpec().getConfig();
         return config != null && config.hasTcpPort();
     }

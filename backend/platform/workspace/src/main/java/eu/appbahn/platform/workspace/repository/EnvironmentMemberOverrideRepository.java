@@ -1,6 +1,7 @@
 package eu.appbahn.platform.workspace.repository;
 
 import eu.appbahn.platform.workspace.entity.EnvironmentMemberOverrideEntity;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +11,6 @@ public interface EnvironmentMemberOverrideRepository
                 EnvironmentMemberOverrideEntity, EnvironmentMemberOverrideEntity.EnvironmentMemberOverrideId> {
 
     Optional<EnvironmentMemberOverrideEntity> findByEnvironmentIdAndUserId(UUID environmentId, UUID userId);
+
+    List<EnvironmentMemberOverrideEntity> findByEnvironmentId(UUID environmentId);
 }

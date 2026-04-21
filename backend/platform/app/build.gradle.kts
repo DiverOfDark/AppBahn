@@ -84,6 +84,7 @@ dependencies {
     implementation(project(":platform:git"))
     implementation(project(":platform:observability"))
     implementation(project(":platform:user"))
+    implementation(project(":platform:tunnel"))
 
     implementation(libs.spring.boot.starter.web) {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
@@ -95,6 +96,11 @@ dependencies {
 
     runtimeOnly(libs.postgresql)
 
+    testImplementation(project(":tunnel-api"))
+    testImplementation(libs.protobuf.java)
+    testImplementation(libs.protobuf.java.util)
+    testImplementation(libs.awaitility)
+    testImplementation(libs.okhttp)
     testImplementation(libs.fabric8.kubernetes.client)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.oauth2.resource.server)

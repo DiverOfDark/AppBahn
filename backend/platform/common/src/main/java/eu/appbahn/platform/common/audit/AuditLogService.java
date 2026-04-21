@@ -25,12 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuditLogService {
 
     private static final Logger log = LoggerFactory.getLogger(AuditLogService.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final AuditLogRepository repository;
+    private final ObjectMapper objectMapper;
 
-    public AuditLogService(AuditLogRepository repository) {
+    public AuditLogService(AuditLogRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -118,7 +119,7 @@ public class AuditLogService {
             return null;
         }
         try {
-            return MAPPER.readValue(json, new TypeReference<Map<String, Object>>() {});
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
         } catch (JsonProcessingException e) {
             log.warn("Failed to parse JSON: {}", e.getMessage());
             return null;
@@ -127,7 +128,7 @@ public class AuditLogService {
 
     private String toJson(Object obj) {
         try {
-            return MAPPER.writeValueAsString(obj);
+            return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             return "{}";
         }

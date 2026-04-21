@@ -12,12 +12,12 @@ metadata:
   labels:
     {{- include "appbahn.platform.labels" . | nindent 4 }}
 rules:
+  # Read the operator's keypair Secret for tunnel auto-approval — same namespace as the
+  # platform pod when running single-cluster.
   - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-  - apiGroups: ["appbahn.eu"]
-    resources: ["resources", "resources/status"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    resources: ["secrets"]
+    resourceNames: ["appbahn-operator-key"]
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

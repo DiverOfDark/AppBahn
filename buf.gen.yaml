@@ -1,0 +1,7 @@
+version: v2
+# Java message codegen is handled by the com.google.protobuf Gradle plugin in
+# backend/tunnel-api/, which gives us reliable offline codegen via a Maven-Central-
+# resolved protoc. This file is kept so `buf lint` and `buf breaking` (run by the
+# build.buf Gradle plugin) have a well-formed config, and so future additions —
+# e.g. a TypeScript client for the web app — can be wired in one place.
+plugins: []

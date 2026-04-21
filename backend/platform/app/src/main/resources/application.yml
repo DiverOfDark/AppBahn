@@ -5,6 +5,15 @@ server:
       max: 50
 
 spring:
+  # Disable async request timeout — the operator tunnel's SubscribeCommands stream is
+  # long-lived (holds the HTTP response open to push commands). Default 30s timeout
+  # would tear it down and operators would need to reconnect every 30s for nothing.
+  mvc:
+    async:
+      request-timeout: -1
+  threads:
+    virtual:
+      enabled: true
   application:
     name: appbahn-platform
   datasource:

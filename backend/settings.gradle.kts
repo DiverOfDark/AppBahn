@@ -33,6 +33,7 @@ dependencyResolutionManagement {
 
 // --- Subprojects ---
 include("shared")
+include("tunnel-api")
 
 include("platform:api-spec")
 include("platform:common")
@@ -41,6 +42,7 @@ include("platform:resource")
 include("platform:git")
 include("platform:observability")
 include("platform:user")
+include("platform:tunnel")
 include("platform:app")
 
 include("operator")

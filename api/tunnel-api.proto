@@ -1,0 +1,519 @@
+// AppBahn operator ↔ platform tunnel.
+//
+// Five RPCs:
+//   - SubscribeCommands (server-stream)   platform → operator: imperative commands
+//   - PushEvents        (unary)           operator → platform: batched status events
+//   - Heartbeat         (unary)           operator → platform: liveness + JWT refresh
+//   - AckCommand        (unary)           operator → platform: ack for a previously-sent command
+//   - Goodbye           (unary)           operator → platform: graceful shutdown
+//
+// Auth: every RPC carries an `Authorization: Bearer <JWT>` header. The JWT is signed
+// by the operator's RSA private key; the platform stores the matching public key in
+// `cluster.public_key` and verifies per-RPC.
+
+syntax = "proto3";
+
+package appbahn.tunnel.v1;
+
+import "google/protobuf/empty.proto";
+
+option java_package = "eu.appbahn.tunnel.v1";
+option java_multiple_files = true;
+option java_outer_classname = "OperatorTunnelProto";
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+service OperatorTunnel {
+  // The only RPC the operator can call BEFORE it has a JWT — the platform
+  // verifier whitelists this method. UPSERTs the cluster row by name, runs
+  // auto-approval against the operator's published public key. Idempotent:
+  // operator sends it on every startup.
+  rpc RegisterCluster(RegisterClusterRequest) returns (RegisterClusterAck);
+
+  // The only stateful RPC: opened once per leader session by the operator. The
+  // platform replica that receives this call registers itself in
+  // `cluster_session.subscribing_replica_id` and starts draining `pending_command`
+  // for the originating cluster. The first frame is always a `HelloAck`.
+  rpc SubscribeCommands(SubscribeCommandsRequest) returns (stream PlatformMessage);
+
+  // Unary, stateless — any platform replica handles it by writing directly to Postgres.
+  rpc PushEvents(PushEventsRequest) returns (PushEventsAck);
+
+  // Unary, stateless. The replica handling the ack performs the final
+  // `UPDATE pending_command … WHERE correlation_id = ?` and, on non-OK status,
+  // sets the matching `resource_cache` row to ERROR.
+  rpc AckCommand(AckCommandRequest) returns (google.protobuf.Empty);
+
+  // Unary, stateless. Operator graceful shutdown — platform clears
+  // `cluster_session` immediately rather than waiting for heartbeat to lapse.
+  rpc Goodbye(GoodbyeRequest) returns (GoodbyeAck);
+}
+
+// ---------------------------------------------------------------------------
+// RegisterCluster
+// ---------------------------------------------------------------------------
+
+message RegisterClusterRequest {
+  string cluster_name = 1;
+  // Operator's RSA public key in PEM. The platform stores this on the cluster
+  // row and uses it to verify all subsequent JWTs from this operator.
+  string public_key = 2;
+  string operator_version = 3;
+  string operator_instance_id = 4;
+}
+
+message RegisterClusterAck {
+  string cluster_name = 1;
+  // ClusterStatus enum string: PENDING / APPROVED / REVOKED.
+  string status = 2;
+  // SHA-256 of the public key, hex-encoded. Operator can sanity-check the
+  // platform stored what it sent.
+  string public_key_fingerprint = 3;
+}
+
+// ---------------------------------------------------------------------------
+// SubscribeCommands
+// ---------------------------------------------------------------------------
+
+message SubscribeCommandsRequest {
+  // Operator metadata included in the subscription handshake.
+  string cluster_name = 1;
+  string operator_instance_id = 2;
+  string operator_version = 3;
+
+  // Resume tokens — platform uses these to skip snapshot pushes the operator
+  // already has. Zero = no prior state.
+  uint64 last_admin_config_revision = 4;
+  uint64 last_quota_rbac_revision = 5;
+}
+
+// Frame emitted on the SubscribeCommands server-stream.
+message PlatformMessage {
+  oneof message {
+    HelloAck hello_ack = 1;
+    AdminConfigPush admin_config_push = 2;
+    QuotaRbacCachePush quota_rbac_cache_push = 3;
+    ApplyResource apply_resource = 4;
+    DeleteResource delete_resource = 5;
+    // 6 was TriggerFullResync, retired — operator drives periodic full sync locally.
+    ApplyNamespace apply_namespace = 7;
+    DeleteNamespace delete_namespace = 8;
+  }
+}
+
+message HelloAck {
+  // Session identifier for this subscription. Operator echoes it on events/heartbeat
+  // so the platform can reject stale frames if a new session has started.
+  string session_id = 1;
+
+  // Initial snapshots so the admission webhook is never in a "no data" state.
+  AdminConfigPush admin_config = 2;
+  QuotaRbacCachePush quota_rbac = 3;
+}
+
+message AdminConfigPush {
+  uint64 revision = 1;
+  AdminConfigSnapshot snapshot = 2;
+}
+
+message AdminConfigSnapshot {
+  string base_domain = 1;
+  string registry_url = 2;
+  string registry_repository_prefix = 3;
+  string namespace_prefix = 4;
+}
+
+message QuotaRbacCachePush {
+  uint64 revision = 1;
+  QuotaRbacSnapshot snapshot = 2;
+}
+
+message QuotaRbacSnapshot {
+  repeated EnvironmentEntry environments = 1;
+
+  // OIDC groups that grant platform-admin role (matches the platform's
+  // `platform.admin-groups` setting). Any user whose claimed groups include one of
+  // these bypasses per-env RBAC + quota checks.
+  repeated string platform_admin_groups = 2;
+
+  message EnvironmentEntry {
+    string slug = 1;
+    string namespace = 2;
+    // Env-level resource-count cap. 0 means "no cap at this level"; admission then
+    // defers to parent-level enforcement (platform-side QuotaService catches project
+    // and workspace caps on the REST path). v1 admission enforces env-level maxResources
+    // only — CPU/memory/storage dimensions stay on the platform-side REST path.
+    uint32 max_resources = 3;
+    uint32 current_resources = 4;
+    // OIDC subjects (sub claim) resolved to role >= EDITOR on this environment
+    // through direct workspace membership + project/env member overrides.
+    repeated string allowed_user_subjects = 5;
+    // OIDC groups mapped to role >= EDITOR on this environment's workspace.
+    // The webhook matches these against the user's claimed groups.
+    repeated string allowed_oidc_groups = 6;
+  }
+}
+
+message ApplyResource {
+  string correlation_id = 1;
+  // K8s namespace the CR lives in. Not part of the user-facing Resource model
+  // (it's derived from environment_slug + namespace_prefix) but the operator
+  // needs it explicit so it can validate against its admission-snapshot before
+  // touching etcd.
+  string namespace = 2;
+  // The user-facing Resource definition; mirrors OpenAPI `Resource` field-by-field.
+  Resource resource = 3;
+  // Spec-internal identifiers and toggles that don't appear in the OpenAPI Resource
+  // (the platform stores UUIDs in resource_cache; the operator surfaces them as
+  // labels for cross-referencing on the cluster side).
+  string environment_id = 4;
+  string project_id = 5;
+  string workspace_id = 6;
+  optional bool stopped = 7;
+  string deployment_revision = 8;
+  string expected_resource_version = 9;
+}
+
+message DeleteResource {
+  string correlation_id = 1;
+  string namespace = 2;
+  string resource_slug = 3;
+}
+
+// Create-or-update a namespace owned by AppBahn. Operator applies the labels
+// (managed-by + environment-slug) using server-side apply, so re-sending the
+// same command is a no-op once the namespace exists.
+message ApplyNamespace {
+  string correlation_id = 1;
+  string namespace = 2;
+  string environment_slug = 3;
+}
+
+// Delete an AppBahn-owned namespace. Operator's K8s call returns immediately;
+// actual removal is async (K8s drains contained resources first).
+message DeleteNamespace {
+  string correlation_id = 1;
+  string namespace = 2;
+}
+
+// ---------------------------------------------------------------------------
+// PushEvents
+// ---------------------------------------------------------------------------
+
+message PushEventsRequest {
+  string cluster_name = 1;
+  string session_id = 2;
+  repeated OperatorEvent events = 3;
+}
+
+message PushEventsAck {
+  // Echoed so the operator can sanity-check it landed on a platform replica.
+  uint32 accepted_count = 1;
+}
+
+message OperatorEvent {
+  oneof event {
+    ResourceSyncBatch resource_sync_batch = 1;
+    ResourceDeletedBatch resource_deleted_batch = 2;
+    FullResourceSyncChunk full_resource_sync_chunk = 3;
+    ResourceTypeSyncChunk resource_type_sync_chunk = 4;
+    DeploymentStatusUpdate deployment_status_update = 5;
+    AdmissionCacheMissReport admission_cache_miss_report = 6;
+    AdmissionApproved admission_approved = 7;
+  }
+}
+
+message ResourceSyncBatch {
+  repeated ResourceSyncItem items = 1;
+}
+
+// Operator-emitted snapshot of one resource. The `Resource` payload mirrors the
+// platform's user-facing Resource model 1:1; K8s metadata (generation,
+// resource_version) ride alongside as envelope fields.
+message ResourceSyncItem {
+  Resource resource = 1;
+  int64 generation = 2;
+  string resource_version = 3;
+}
+
+message ResourceDeletedBatch {
+  repeated string resource_slugs = 1;
+}
+
+message FullResourceSyncChunk {
+  string sync_session_id = 1;
+  uint32 chunk_index = 2;
+  repeated ResourceSyncItem items = 3;
+  bool complete = 4;
+}
+
+message ResourceTypeSyncChunk {
+  string sync_session_id = 1;
+  uint32 chunk_index = 2;
+  repeated string available_types = 3;
+  bool complete = 4;
+}
+
+message DeploymentStatusUpdate {
+  string deployment_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message AdmissionCacheMissReport {
+  string namespace = 1;
+  string user_oidc_subject = 2;
+  string reason = 3;
+}
+
+message AdmissionApproved {
+  // The admitted resource as a ResourceSyncItem — identical shape to a post-admission
+  // sync so the platform can seed resource_cache before the reconciler's watch fires.
+  ResourceSyncItem item = 1;
+}
+
+// ---------------------------------------------------------------------------
+// AckCommand / Goodbye
+// ---------------------------------------------------------------------------
+
+message AckCommandRequest {
+  string correlation_id = 1;
+  CommandResponse response = 2;
+}
+
+message CommandResponse {
+  Status status = 1;
+  string message = 2;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_OK = 1;
+    STATUS_INVALID_ARGUMENT = 2;
+    STATUS_CONFLICT = 3;
+    STATUS_NOT_FOUND = 4;
+    STATUS_INTERNAL_ERROR = 5;
+    // Platform-side verdict: the command sat in pending_command past its
+    // expires_at without an AckCommand from the operator. Written by the
+    // timeout sweeper (not by the operator).
+    STATUS_TIMEOUT = 6;
+  }
+}
+
+message GoodbyeRequest {
+  string cluster_name = 1;
+  string session_id = 2;
+  string reason = 3;
+}
+
+message GoodbyeAck {}
+
+// ---------------------------------------------------------------------------
+// Typed CRD-spec shapes the tunnel carries. Mirror `eu.appbahn.shared.crd.*`
+// field-by-field. Polymorphic types (Source, BuildConfig) use proto `oneof` —
+// round-tripping through Jackson's @JsonTypeInfo layout is handled by an
+// explicit per-variant mapper (`ProtoCrdMapper`).
+// ---------------------------------------------------------------------------
+
+// Mirrors the OpenAPI `Resource` schema (api/public-api.yaml). The same shape
+// flows in both directions on the tunnel: ApplyResource wraps a Resource the
+// platform wants applied; ResourceSyncItem wraps a Resource the operator
+// just observed in K8s. Status fields are populated only by the operator side.
+message Resource {
+  string slug = 1;
+  string name = 2;
+  string type = 3;
+  string environment_slug = 4;
+  ResourceConfig config = 5;
+  repeated ResourceLink links = 6;
+  // ResourcePhase enum as a string: PENDING / READY / RESTARTING / DEGRADED / ERROR / STOPPED.
+  string status = 7;
+  ResourceStatusDetail status_detail = 8;
+  string last_synced_at = 9;  // ISO-8601 (Jackson JavaTimeModule default)
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message ResourceLink {
+  string resource = 1;
+  string secret = 2;
+  map<string, string> env = 3;
+}
+
+message ResourceConfig {
+  Source source = 1;
+  Hosting hosting = 2;
+  Networking networking = 3;
+  HealthCheck health_check = 4;
+  map<string, string> env = 5;
+  string run_mode = 6;
+}
+
+message Hosting {
+  string cpu = 1;     // io.fabric8 Quantity toString() (e.g. "500m", "2")
+  string memory = 2;  // Quantity (e.g. "512Mi", "2Gi")
+  optional int32 min_replicas = 3;
+  optional int32 max_replicas = 4;
+}
+
+message Networking {
+  repeated PortConfig ports = 1;
+}
+
+message PortConfig {
+  optional int32 port = 1;
+  // ExposeMode enum: INGRESS / TCP / NONE. Kept as string to match Jackson.
+  string expose = 2;
+  string domain = 3;
+}
+
+message HealthCheck {
+  Probe readiness = 1;
+  Probe liveness = 2;
+  Probe startup = 3;
+}
+
+message Probe {
+  HttpGetAction http_get = 1;
+  TcpSocketAction tcp_socket = 2;
+  ExecAction exec = 3;
+  optional int32 initial_delay_seconds = 4;
+  optional int32 period_seconds = 5;
+  optional int32 failure_threshold = 6;
+}
+
+message HttpGetAction {
+  string path = 1;
+  optional int32 port = 2;
+}
+
+message TcpSocketAction {
+  optional int32 port = 1;
+}
+
+message ExecAction {
+  repeated string command = 1;
+}
+
+// Source is polymorphic in CRD-land (DockerSource/GitSource/PromotionSource).
+// Common fields (poll_interval, webhook_enabled) sit alongside the oneof carrying
+// the variant payload.
+message Source {
+  string poll_interval = 1;
+  optional bool webhook_enabled = 2;
+  oneof variant {
+    DockerSource docker = 3;
+    GitSource git = 4;
+    PromotionSource promotion = 5;
+  }
+}
+
+message DockerSource {
+  string image = 1;
+  string tag = 2;
+  string registry_url = 3;
+  string credential_ref = 4;
+}
+
+message GitSource {
+  string url = 1;
+  string branch = 2;
+  string path = 3;
+  SourceAuth auth = 4;
+  BuildConfig build_config = 5;
+}
+
+message PromotionSource {
+  string source_environment = 1;
+  string source_resource = 2;
+  optional bool auto_promote = 3;
+}
+
+message SourceAuth {
+  // SourceAuthType enum: NONE / BASIC / SSH_KEY. Kept as string.
+  string type = 1;
+  string credential_ref = 2;
+}
+
+// BuildConfig is similarly polymorphic.
+message BuildConfig {
+  oneof variant {
+    BuildpackBuildConfig buildpack = 1;
+    RailpackBuildConfig railpack = 2;
+    DockerfileBuildConfig dockerfile = 3;
+    PeelboxBuildConfig peelbox = 4;
+  }
+}
+
+message BuildpackBuildConfig {
+  string builder = 1;
+  map<string, string> build_vars = 2;
+}
+
+message RailpackBuildConfig {
+  string provider = 1;
+  map<string, string> build_vars = 2;
+}
+
+message DockerfileBuildConfig {
+  string path = 1;
+  string target = 2;
+  map<string, string> build_args = 3;
+}
+
+// PeelboxBuildConfig.universalBuild is `List<Object>` in the CRD — intentionally
+// lossy on the wire until a concrete schema emerges. The empty message is enough
+// to discriminate.
+message PeelboxBuildConfig {}
+
+message ResourceStatusDetail {
+  // ResourcePhase enum: PENDING / READY / RESTARTING / DEGRADED / ERROR / STOPPED
+  string phase = 1;
+  string message = 2;
+  optional int64 observed_generation = 3;
+  ReplicaStatus replicas = 4;
+  repeated ResourceCondition conditions = 5;
+  repeated CustomDomainStatus custom_domains = 6;
+  repeated LinkStatus links = 7;
+  string primary_deployment_id = 8;
+  string primary_image = 9;
+  string last_deployment_time = 10;  // Instant, ISO-8601 (Jackson JavaTimeModule default)
+  string last_sync_time = 11;
+  string latest_deployment_id = 12;
+  // DeploymentStatus enum: QUEUED / AWAITING_APPROVAL / BUILDING / COPYING_IMAGE /
+  // DEPLOYING / SUCCEEDED / FAILED / REJECTED.
+  string latest_deployment_status = 13;
+  optional bool sync_failed = 14;
+}
+
+message ReplicaStatus {
+  int32 desired = 1;
+  int32 ready = 2;
+  int32 updated = 3;
+  int32 available = 4;
+}
+
+message ResourceCondition {
+  string type = 1;
+  string status = 2;
+  string last_update_time = 3;
+  string reason = 4;
+  string message = 5;
+}
+
+message CustomDomainStatus {
+  string domain = 1;
+  int32 port = 2;
+  // DomainStatus enum as string.
+  string status = 3;
+  string dns_cname = 4;
+  string tls_issuer = 5;
+  string tls_expires_at = 6;
+}
+
+message LinkStatus {
+  string resource = 1;
+  string status = 2;
+  string last_sync_time = 3;
+}

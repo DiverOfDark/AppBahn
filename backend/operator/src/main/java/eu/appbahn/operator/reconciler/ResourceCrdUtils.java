@@ -8,6 +8,9 @@ final class ResourceCrdUtils {
     private ResourceCrdUtils() {}
 
     static boolean hasEnvVars(ResourceCrd primary) {
+        if (primary.getSpec() == null) {
+            return false;
+        }
         var config = primary.getSpec().getConfig();
         if (config != null && config.getEnv() != null && !config.getEnv().isEmpty()) {
             return true;

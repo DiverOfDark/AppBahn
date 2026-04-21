@@ -1,7 +1,6 @@
 plugins {
     java
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.git.properties)
 }
 
@@ -14,44 +13,9 @@ gitProperties {
     failOnNoGitDirectory = false
 }
 
-val internalSpecFile = rootProject.layout.projectDirectory.file("../api/internal-api.yaml")
-val generatedDir = layout.buildDirectory.dir("generated/internal-client")
-
-openApiGenerate {
-    generatorName.set("java")
-    inputSpec.set(internalSpecFile.asFile.absolutePath)
-    outputDir.set(generatedDir.map { it.asFile.absolutePath })
-    apiPackage.set("eu.appbahn.operator.client.api")
-    modelPackage.set("eu.appbahn.operator.client.model")
-    invokerPackage.set("eu.appbahn.operator.client")
-    configOptions.set(mapOf(
-        "library" to "native",
-        "dateLibrary" to "java8",
-        "serializationLibrary" to "jackson",
-        "openApiNullable" to "false",
-        "useJakartaEe" to "true",
-    ))
-    schemaMappings.set(mapOf(
-        "LinkConfig" to "eu.appbahn.shared.crd.ResourceSpec.ResourceLink",
-        "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
-        "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatus",
-    ))
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir(generatedDir.map { it.dir("src/main/java") })
-        }
-    }
-}
-
-tasks.named("compileJava") {
-    dependsOn("openApiGenerate")
-}
-
 dependencies {
     implementation(project(":shared"))
+    implementation(project(":tunnel-api"))
 
     implementation(libs.spring.boot.starter.web) {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
@@ -59,11 +23,11 @@ dependencies {
     implementation(libs.spring.boot.starter.jetty)
     implementation(libs.spring.boot.starter.actuator)
     runtimeOnly(libs.micrometer.registry.prometheus)
-    implementation(libs.spring.boot.starter.oauth2.client)
     implementation(libs.josdk.spring.boot.starter)
     implementation(libs.fabric8.kubernetes.client)
-
-    // Generated client dependencies
+    implementation(libs.okhttp)
+    implementation(libs.protobuf.java)
+    implementation(libs.protobuf.java.util)
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 

@@ -40,6 +40,7 @@ public class EnvironmentService {
     private final EnvironmentMemberOverrideRepository environmentOverrideRepository;
     private final PermissionService permissionService;
     private final NamespaceService namespaceService;
+    private final NamespaceCrdClient namespaceCrdClient;
     private final AuditLogService auditLogService;
     private final ObjectMapper objectMapper;
 
@@ -49,6 +50,7 @@ public class EnvironmentService {
             EnvironmentMemberOverrideRepository environmentOverrideRepository,
             PermissionService permissionService,
             NamespaceService namespaceService,
+            NamespaceCrdClient namespaceCrdClient,
             AuditLogService auditLogService,
             ObjectMapper objectMapper) {
         this.environmentRepository = environmentRepository;
@@ -56,6 +58,7 @@ public class EnvironmentService {
         this.environmentOverrideRepository = environmentOverrideRepository;
         this.permissionService = permissionService;
         this.namespaceService = namespaceService;
+        this.namespaceCrdClient = namespaceCrdClient;
         this.auditLogService = auditLogService;
         this.objectMapper = objectMapper;
     }
@@ -76,7 +79,7 @@ public class EnvironmentService {
         }
         environmentRepository.save(entity);
 
-        namespaceService.createNamespace(entity.getSlug());
+        namespaceCrdClient.apply(entity.getSlug(), namespaceService.computeNamespace(entity.getSlug()));
 
         auditLogService.log(
                 ctx,
@@ -149,8 +152,8 @@ public class EnvironmentService {
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
 
-        // Cascades to every resource in the namespace.
-        namespaceService.deleteNamespace(entity.getSlug());
+        // Cascades to every resource in the namespace (K8s drains contained resources first).
+        namespaceCrdClient.delete(namespaceService.computeNamespace(entity.getSlug()));
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);
         auditLogService.log(
