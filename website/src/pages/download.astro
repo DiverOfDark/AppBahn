@@ -1,0 +1,287 @@
+---
+import Marketing from '../layouts/Marketing.astro'
+import { REPO_URL } from '../config'
+import fs from 'node:fs'
+import path from 'node:path'
+
+const versionPath = path.join(process.cwd(), 'public', 'download', 'version.txt')
+let version: string | null = null
+try {
+  const raw = fs.readFileSync(versionPath, 'utf-8').trim()
+  if (raw.length > 0) version = raw
+} catch {
+  version = null
+}
+
+const platforms = [
+  { os: 'linux', arch: 'amd64', label: 'Linux', chip: 'x86_64', ext: 'tar.gz' },
+  { os: 'linux', arch: 'arm64', label: 'Linux', chip: 'ARM64', ext: 'tar.gz' },
+  { os: 'darwin', arch: 'amd64', label: 'macOS', chip: 'Intel', ext: 'tar.gz' },
+  { os: 'darwin', arch: 'arm64', label: 'macOS', chip: 'Apple Silicon', ext: 'tar.gz' },
+  { os: 'windows', arch: 'amd64', label: 'Windows', chip: 'x86_64', ext: 'zip' },
+  { os: 'windows', arch: 'arm64', label: 'Windows', chip: 'ARM64', ext: 'zip' },
+]
+
+const oneLiner = 'curl -fsSL https://appbahn.eu/download/install.sh | bash'
+const pinnedOneLiner = version
+  ? `curl -fsSL https://appbahn.eu/download/install.sh | bash -s -- --version ${version}`
+  : null
+---
+
+<Marketing
+  title="Download — AppBahn CLI"
+  description="Install the AppBahn CLI directly from appbahn.eu. Pre-built binaries for Linux, macOS, and Windows on x86_64 and ARM64. No GitHub account required."
+>
+  <section class="hero">
+    <div class="kicker">— Install</div>
+    <h1>AppBahn CLI</h1>
+    <p class="sub">
+      One binary. Six platforms. Hosted on appbahn.eu — no GitHub account, no rate limits, no
+      detours. Verify the release with the published SHA-256 checksums before you run it.
+    </p>
+    {
+      version ? (
+        <p class="version-line">
+          Current release <code>{version}</code>
+        </p>
+      ) : (
+        <p class="version-line">
+          Binaries are staged during release. Until the first release, install from
+          <a href={REPO_URL}> source</a>.
+        </p>
+      )
+    }
+  </section>
+
+  <section class="oneliner">
+    <div class="kicker">— One-liner</div>
+    <h2>Install the latest release</h2>
+    <pre class="cmd"><code>{oneLiner}</code></pre>
+    <p class="note">
+      The installer detects your OS and architecture, downloads the matching archive, verifies the
+      SHA-256 checksum against <code>checksums.txt</code>, and installs to <code
+        >/usr/local/bin/appbahn</code
+      >. Override with <code>APPBAHN_INSTALL_DIR=~/.local/bin</code> or pass <code
+        >--install-dir</code
+      >.
+    </p>
+    {
+      pinnedOneLiner && (
+        <>
+          <h3 class="pin-h">Pin to a specific version</h3>
+          <pre class="cmd">
+            <code>{pinnedOneLiner}</code>
+          </pre>
+        </>
+      )
+    }
+  </section>
+
+  {
+    version && (
+      <section class="direct">
+        <div class="kicker">— Direct downloads</div>
+        <h2>Archives · version {version}</h2>
+        <p class="sub">
+          Signed SHA-256 sums are in{' '}
+          <a href="/download/checksums.txt">
+            <code>checksums.txt</code>
+          </a>
+          . Extract the archive and drop the <code>appbahn</code> binary anywhere on your{' '}
+          <code>PATH</code>.
+        </p>
+        <div class="grid">
+          {platforms.map((p) => {
+            const name = `appbahn_${version}_${p.os}_${p.arch}.${p.ext}`
+            return (
+              <a class="tile" href={`/download/${name}`}>
+                <div class="tile-hdr">
+                  <span class="os">{p.label}</span>
+                  <span class="chip">{p.chip}</span>
+                </div>
+                <div class="tile-name">{name}</div>
+                <div class="tile-ext">{p.ext}</div>
+              </a>
+            )
+          })}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="docker">
+    <div class="kicker">— Container image</div>
+    <h2>Run the CLI as a container</h2>
+    <p class="sub">
+      The CLI is also published as a distroless container on GHCR. Useful for CI pipelines that
+      already have a Docker runtime.
+    </p>
+    <pre
+      class="cmd"><code>docker run --rm ghcr.io/diverofdark/appbahn/cli:latest version</code></pre>
+  </section>
+
+  <section class="src">
+    <div class="kicker">— Build from source</div>
+    <h2>Go 1.25 · one command</h2>
+    <p class="sub">
+      If you prefer to build the binary yourself — for air-gapped clusters, reproducibility, or just
+      peace of mind — clone the repository and compile with the Go toolchain.
+    </p>
+    <pre class="cmd"><code>go install github.com/diverofdark/appbahn/cli@latest</code></pre>
+    <p class="note">
+      Source lives in the <a href={REPO_URL}>public mirror</a> under <code>cli/</code>. The
+      repository is ELv2 licensed.
+    </p>
+  </section>
+</Marketing>
+
+<style>
+  .hero .version-line {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 20px;
+  }
+  .hero .version-line code {
+    color: var(--accent);
+    background: oklch(80% 0.16 80 / 0.08);
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-left: 4px;
+  }
+  .hero .version-line a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .hero .version-line a:hover {
+    text-decoration: underline;
+  }
+
+  section.oneliner,
+  section.direct,
+  section.docker,
+  section.src {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  pre.cmd {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 18px 22px;
+    color: var(--text-primary);
+    overflow-x: auto;
+    margin: 18px 0 0;
+  }
+  pre.cmd code {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .note {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-top: 16px;
+    max-width: 760px;
+  }
+  .note code,
+  .sub code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  .sub a,
+  .note a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .sub a:hover,
+  .note a:hover {
+    text-decoration: underline;
+  }
+
+  .pin-h {
+    margin-top: 36px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 36px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  .tile {
+    background: var(--bg-surface);
+    padding: 24px 22px;
+    text-decoration: none;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease;
+  }
+  .tile:hover {
+    background: var(--bg-raised);
+  }
+  .tile-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .tile .os {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .tile .chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    background: oklch(80% 0.16 80 / 0.08);
+    color: var(--accent);
+  }
+  .tile-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    word-break: break-all;
+  }
+  .tile-ext {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

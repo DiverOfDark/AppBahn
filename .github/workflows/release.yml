@@ -122,9 +122,19 @@ jobs:
           workdir: cli
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload CLI binaries for website
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-binaries
+          path: |
+            cli/dist/*.tar.gz
+            cli/dist/*.zip
+            cli/dist/checksums.txt
+          if-no-files-found: error
 
   deploy-pages:
-    if: github.repository == 'diverofdark/appbahn' && github.ref == 'refs/heads/master'
+    if: github.repository == 'diverofdark/appbahn' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
+    needs: [publish-cli]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -134,6 +144,25 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-binaries
+          path: website/public/download/
+      - name: Stage CLI installer + version manifest
+        run: |
+          cp cli/scripts/install.sh website/public/download/install.sh
+          chmod +x website/public/download/install.sh
+          cd website/public/download
+          archive=$(ls appbahn_*_linux_amd64.tar.gz 2>/dev/null | head -n 1)
+          if [ -z "$archive" ]; then
+            echo "No linux_amd64 archive found in website/public/download/" >&2
+            ls -la
+            exit 1
+          fi
+          version=$(echo "$archive" | sed -E 's/^appbahn_(.+)_linux_amd64\.tar\.gz$/\1/')
+          printf '%s\n' "$version" > version.txt
+          echo "Staged CLI version ${version}"
+          ls -la
       - uses: actions/setup-node@v6
         with:
           node-version: "22"

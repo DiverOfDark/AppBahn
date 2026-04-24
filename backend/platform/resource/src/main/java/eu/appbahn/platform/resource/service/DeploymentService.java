@@ -1,5 +1,7 @@
 package eu.appbahn.platform.resource.service;
 
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.Deployment;
 import eu.appbahn.platform.api.model.PagedDeploymentResponse;
 import eu.appbahn.platform.api.model.TriggerDeploymentRequest;
@@ -16,7 +18,6 @@ import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.model.MemberRole;
 import jakarta.persistence.EntityManager;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,13 +125,14 @@ public class DeploymentService {
             log.info("Updated CRD deploymentRevision for resource {}", resourceSlug);
         }
 
-        auditLogService.log(
-                ctx,
-                "deployment.triggered",
-                "deployment",
-                entity.getId().toString(),
-                workspaceId,
-                Map.of("resourceSlug", Map.of("old", "", "new", resourceSlug)));
+        auditLogService
+                .audit(ctx, AuditAction.DEPLOYMENT_TRIGGERED)
+                .target(AuditTargetType.DEPLOYMENT, entity.getId().toString())
+                .inWorkspace(workspaceId)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .change("resourceSlug", "", resourceSlug)
+                .save();
 
         log.info("Triggered deployment {} for resource {}", entity.getId(), resourceSlug);
 

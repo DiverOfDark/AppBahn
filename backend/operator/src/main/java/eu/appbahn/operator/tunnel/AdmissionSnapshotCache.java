@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 /**
  * Caches the latest {@link QuotaRbacSnapshot} the platform pushed. The admission webhook
  * consults this for fail-closed allow/deny decisions: unknown namespace, user not authorised
- * on the env, env resource-count quota exceeded. Revision is content-addressed (SHA-256
- * prefix of the snapshot bytes), so a push with the same revision is a no-op; any different
- * revision is accepted — ordering is given by the stream itself.
+ * on the env, per-dimension quota exceeded at env/project/workspace scope. Revision is
+ * content-addressed (SHA-256 prefix of the snapshot bytes), so a push with the same revision
+ * is a no-op; any different revision is accepted — ordering is given by the stream itself.
  */
 @Service
 public class AdmissionSnapshotCache {
@@ -29,7 +29,12 @@ public class AdmissionSnapshotCache {
             return;
         }
         current.set(new Snapshot(revision, snapshot));
-        log.info("Updated admission snapshot: revision={}, envs={}", revision, snapshot.getEnvironmentsCount());
+        log.info(
+                "Updated admission snapshot: revision={}, envs={}, projects={}, workspaces={}",
+                revision,
+                snapshot.getEnvironmentsCount(),
+                snapshot.getProjectsCount(),
+                snapshot.getWorkspacesCount());
     }
 
     public boolean hasSnapshot() {
@@ -54,6 +59,48 @@ public class AdmissionSnapshotCache {
         return snapshot.payload().getEnvironmentsList().stream()
                 .filter(e -> namespace.equals(e.getNamespace()))
                 .findFirst();
+    }
+
+    public Optional<QuotaRbacSnapshot.ProjectEntry> projectEntry(String projectSlug) {
+        Snapshot snapshot = current.get();
+        if (snapshot == null || projectSlug == null || projectSlug.isEmpty()) {
+            return Optional.empty();
+        }
+        return snapshot.payload().getProjectsList().stream()
+                .filter(p -> projectSlug.equals(p.getSlug()))
+                .findFirst();
+    }
+
+    public Optional<QuotaRbacSnapshot.WorkspaceEntry> workspaceEntry(String workspaceSlug) {
+        Snapshot snapshot = current.get();
+        if (snapshot == null || workspaceSlug == null || workspaceSlug.isEmpty()) {
+            return Optional.empty();
+        }
+        return snapshot.payload().getWorkspacesList().stream()
+                .filter(w -> workspaceSlug.equals(w.getSlug()))
+                .findFirst();
+    }
+
+    /** All env entries whose {@code project_slug} matches — used for per-project rollup sums. */
+    public List<QuotaRbacSnapshot.EnvironmentEntry> envEntriesInProject(String projectSlug) {
+        Snapshot snapshot = current.get();
+        if (snapshot == null || projectSlug == null || projectSlug.isEmpty()) {
+            return List.of();
+        }
+        return snapshot.payload().getEnvironmentsList().stream()
+                .filter(e -> projectSlug.equals(e.getProjectSlug()))
+                .toList();
+    }
+
+    /** All env entries whose {@code workspace_slug} matches — used for per-workspace rollup sums. */
+    public List<QuotaRbacSnapshot.EnvironmentEntry> envEntriesInWorkspace(String workspaceSlug) {
+        Snapshot snapshot = current.get();
+        if (snapshot == null || workspaceSlug == null || workspaceSlug.isEmpty()) {
+            return List.of();
+        }
+        return snapshot.payload().getEnvironmentsList().stream()
+                .filter(e -> workspaceSlug.equals(e.getWorkspaceSlug()))
+                .toList();
     }
 
     public List<String> platformAdminGroups() {

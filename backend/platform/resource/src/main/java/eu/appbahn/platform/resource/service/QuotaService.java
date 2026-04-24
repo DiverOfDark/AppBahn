@@ -1,9 +1,6 @@
 package eu.appbahn.platform.resource.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.platform.api.model.Quota;
 import eu.appbahn.platform.common.exception.QuotaExceededException;
-import eu.appbahn.platform.common.util.JsonUtil;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -23,7 +20,6 @@ public class QuotaService {
     private static final Logger log = LoggerFactory.getLogger(QuotaService.class);
 
     private final EntityManager entityManager;
-    private final ObjectMapper objectMapper;
 
     private final int defaultMaxResources;
     private final double defaultMaxCpuCores;
@@ -36,7 +32,10 @@ public class QuotaService {
      *
      * Returns rows: [cpu_str, memory_str, replicas, max_replicas, resource_slug,
      *                resource_env_id, resource_proj_id,
-     *                target_env_quota, target_proj_id, target_proj_quota, target_ws_quota]
+     *                env_max_resources, env_max_cpu_cores, env_max_memory_mb,
+     *                target_proj_id,
+     *                proj_max_resources, proj_max_cpu_cores, proj_max_memory_mb,
+     *                ws_max_resources, ws_max_cpu_cores, ws_max_memory_mb]
      *
      * LEFT JOIN ensures we get at least one row (with nulls for resource columns) even when
      * the workspace has no resources at all.
@@ -49,10 +48,16 @@ public class QuotaService {
                    rc.slug                                                  AS resource_slug,
                    e_res.id                                                 AS resource_env_id,
                    p_res.id                                                 AS resource_proj_id,
-                   e_target.quota                                           AS target_env_quota,
+                   (e_target.quota ->> 'maxResources')::INTEGER             AS env_max_resources,
+                   (e_target.quota ->> 'maxCpuCores')::DOUBLE PRECISION     AS env_max_cpu_cores,
+                   (e_target.quota ->> 'maxMemoryMb')::INTEGER              AS env_max_memory_mb,
                    p_target.id                                              AS target_proj_id,
-                   p_target.quota                                           AS target_proj_quota,
-                   w.quota                                                  AS target_ws_quota
+                   (p_target.quota ->> 'maxResources')::INTEGER             AS proj_max_resources,
+                   (p_target.quota ->> 'maxCpuCores')::DOUBLE PRECISION     AS proj_max_cpu_cores,
+                   (p_target.quota ->> 'maxMemoryMb')::INTEGER              AS proj_max_memory_mb,
+                   (w.quota ->> 'maxResources')::INTEGER                    AS ws_max_resources,
+                   (w.quota ->> 'maxCpuCores')::DOUBLE PRECISION            AS ws_max_cpu_cores,
+                   (w.quota ->> 'maxMemoryMb')::INTEGER                     AS ws_max_memory_mb
             FROM environment e_target
             JOIN project p_target ON e_target.project_id = p_target.id
             JOIN workspace w       ON p_target.workspace_id = w.id
@@ -64,12 +69,10 @@ public class QuotaService {
 
     public QuotaService(
             EntityManager entityManager,
-            ObjectMapper objectMapper,
             @Value("${platform.quota.default-max-resources:50}") int defaultMaxResources,
             @Value("${platform.quota.default-max-cpu-cores:16.0}") double defaultMaxCpuCores,
             @Value("${platform.quota.default-max-memory-mb:32768}") int defaultMaxMemoryMb) {
         this.entityManager = entityManager;
-        this.objectMapper = objectMapper;
         this.defaultMaxResources = defaultMaxResources;
         this.defaultMaxCpuCores = defaultMaxCpuCores;
         this.defaultMaxMemoryMb = defaultMaxMemoryMb;
@@ -103,12 +106,11 @@ public class QuotaService {
             return;
         }
 
-        // First row carries hierarchy quotas + IDs (same across all rows).
         Object[] first = rows.get(0);
-        String envQuota = (String) first[7];
-        UUID targetProjId = (UUID) first[8];
-        String projQuota = (String) first[9];
-        String wsQuota = (String) first[10];
+        var envLimits = limitsAt(first, 7);
+        UUID targetProjId = (UUID) first[10];
+        var projLimits = limitsAt(first, 11);
+        var wsLimits = limitsAt(first, 14);
 
         var envUsage = new Usage(0, 0, 0);
         var projUsage = new Usage(0, 0, 0);
@@ -148,26 +150,32 @@ public class QuotaService {
         projUsage = projUsage.add(1, newUsage.cpu, newUsage.memory);
         wsUsage = wsUsage.add(1, newUsage.cpu, newUsage.memory);
 
-        checkQuotaLevel(envQuota, envUsage, "environment");
-        checkQuotaLevel(projQuota, projUsage, "project");
-        checkQuotaLevel(wsQuota, wsUsage, "workspace");
+        checkQuotaLevel(envLimits, envUsage, "environment");
+        checkQuotaLevel(projLimits, projUsage, "project");
+        checkQuotaLevel(wsLimits, wsUsage, "workspace");
         checkPlatformDefaults(envUsage.count, envUsage.cpu, envUsage.memory);
     }
 
-    private void checkQuotaLevel(String quotaJson, Usage usage, String level) {
-        if (quotaJson == null || quotaJson.isBlank()) {
-            return;
-        }
-        Quota quota = JsonUtil.parseJson(objectMapper, quotaJson, Quota.class);
+    private static QuotaLimits limitsAt(Object[] row, int offset) {
+        return new QuotaLimits((Integer) row[offset], toDouble(row[offset + 1]), (Integer) row[offset + 2]);
+    }
 
-        if (quota.getMaxResources() != null && usage.count > quota.getMaxResources()) {
-            throw new QuotaExceededException("maxResources", quota.getMaxResources(), level);
+    private static Double toDouble(Object value) {
+        if (value == null) return null;
+        if (value instanceof Double d) return d;
+        if (value instanceof Number n) return n.doubleValue();
+        throw new IllegalStateException("Unexpected numeric type: " + value.getClass());
+    }
+
+    private void checkQuotaLevel(QuotaLimits limits, Usage usage, String level) {
+        if (limits.maxResources != null && usage.count > limits.maxResources) {
+            throw new QuotaExceededException("maxResources", limits.maxResources, level);
         }
-        if (quota.getMaxCpuCores() != null && usage.cpu > quota.getMaxCpuCores()) {
-            throw new QuotaExceededException("maxCpuCores", quota.getMaxCpuCores(), level);
+        if (limits.maxCpuCores != null && usage.cpu > limits.maxCpuCores) {
+            throw new QuotaExceededException("maxCpuCores", limits.maxCpuCores, level);
         }
-        if (quota.getMaxMemoryMb() != null && usage.memory > quota.getMaxMemoryMb()) {
-            throw new QuotaExceededException("maxMemoryMb", quota.getMaxMemoryMb(), level);
+        if (limits.maxMemoryMb != null && usage.memory > limits.maxMemoryMb) {
+            throw new QuotaExceededException("maxMemoryMb", limits.maxMemoryMb, level);
         }
     }
 
@@ -182,6 +190,8 @@ public class QuotaService {
             throw new QuotaExceededException("maxMemoryMb", defaultMaxMemoryMb, "platform");
         }
     }
+
+    private record QuotaLimits(Integer maxResources, Double maxCpuCores, Integer maxMemoryMb) {}
 
     private record Usage(int count, double cpu, int memory) {
         Usage add(int count, double cpu, int memory) {

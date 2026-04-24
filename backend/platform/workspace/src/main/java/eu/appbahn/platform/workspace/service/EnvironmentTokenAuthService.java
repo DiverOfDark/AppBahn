@@ -1,5 +1,6 @@
 package eu.appbahn.platform.workspace.service;
 
+import eu.appbahn.platform.api.model.AuditActorSource;
 import eu.appbahn.platform.common.security.AppBahnAuthenticationToken;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.workspace.entity.EnvironmentTokenEntity;
@@ -38,8 +39,7 @@ public class EnvironmentTokenAuthService {
         token.setLastUsedAt(Instant.now());
         tokenRepository.save(token);
 
-        // actor_source="token" per spec — userId/email null.
-        var ctx = new AuthContext(null, null, List.of(), false);
+        var ctx = new AuthContext(null, null, List.of(), false, AuditActorSource.TOKEN, token.getId());
         return Optional.of(new AppBahnAuthenticationToken(ctx));
     }
 }

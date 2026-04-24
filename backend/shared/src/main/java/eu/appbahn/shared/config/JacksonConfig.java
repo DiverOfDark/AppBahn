@@ -30,6 +30,15 @@ public class JacksonConfig {
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
+        return shared();
+    }
+
+    /**
+     * Builds a fresh {@link ObjectMapper} with the same configuration as the Spring-managed bean.
+     * Callers outside the Spring context (unit tests, non-Boot configurations) must use this
+     * instead of {@code new ObjectMapper()} so Jackson configuration stays in one place.
+     */
+    public static ObjectMapper shared() {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(new QuantityJacksonModule())

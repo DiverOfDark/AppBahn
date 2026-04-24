@@ -16,6 +16,7 @@ syntax = "proto3";
 package appbahn.tunnel.v1;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 option java_package = "eu.appbahn.tunnel.v1";
 option java_multiple_files = true;
@@ -138,21 +139,58 @@ message QuotaRbacSnapshot {
   // these bypasses per-env RBAC + quota checks.
   repeated string platform_admin_groups = 2;
 
+  // Project + workspace entries carry quota limits only. The admission webhook
+  // computes current usage at those scopes by summing EnvironmentEntry.current
+  // fields of the entries whose `project_slug` / `workspace_slug` matches.
+  repeated ProjectEntry projects = 3;
+  repeated WorkspaceEntry workspaces = 4;
+
+  // Five-dimension quota snapshot, used for both caps (limits side) and
+  // aggregated usage (current side). CPU encoded in millicores (1 core = 1000
+  // millicores) so the wire type stays integral.
+  message QuotaDimensions {
+    uint32 resources = 1;
+    uint32 cpu_millicores = 2;
+    uint32 memory_mb = 3;
+    uint32 storage_gb = 4;
+    uint32 replicas = 5;
+  }
+
   message EnvironmentEntry {
     string slug = 1;
     string namespace = 2;
-    // Env-level resource-count cap. 0 means "no cap at this level"; admission then
-    // defers to parent-level enforcement (platform-side QuotaService catches project
-    // and workspace caps on the REST path). v1 admission enforces env-level maxResources
-    // only — CPU/memory/storage dimensions stay on the platform-side REST path.
-    uint32 max_resources = 3;
-    uint32 current_resources = 4;
+    // Per-dimension caps. A dimension of 0 at this level means "no cap here";
+    // the admission webhook skips it (fail-open). The REST path in QuotaService
+    // is still authoritative — admission is parity enforcement for
+    // kubectl-direct applies that bypass the platform API.
+    QuotaDimensions limits = 3;
+    // Per-env current usage (sum over resource_cache rows in this env, replicas
+    // multiplier already applied). The webhook rolls up to project/workspace
+    // scopes by summing entries with matching parent slugs.
+    QuotaDimensions current = 4;
     // OIDC subjects (sub claim) resolved to role >= EDITOR on this environment
     // through direct workspace membership + project/env member overrides.
     repeated string allowed_user_subjects = 5;
     // OIDC groups mapped to role >= EDITOR on this environment's workspace.
     // The webhook matches these against the user's claimed groups.
     repeated string allowed_oidc_groups = 6;
+    // Parent refs — let the webhook aggregate up without a separate lookup.
+    string project_slug = 7;
+    string workspace_slug = 8;
+  }
+
+  // Limits-only — the webhook computes current usage by summing EnvironmentEntry
+  // current dimensions for envs whose project_slug matches.
+  message ProjectEntry {
+    string slug = 1;
+    string workspace_slug = 2;
+    QuotaDimensions limits = 3;
+  }
+
+  // Limits-only — see ProjectEntry.
+  message WorkspaceEntry {
+    string slug = 1;
+    QuotaDimensions limits = 2;
   }
 }
 
@@ -222,7 +260,36 @@ message OperatorEvent {
     DeploymentStatusUpdate deployment_status_update = 5;
     AdmissionCacheMissReport admission_cache_miss_report = 6;
     AdmissionApproved admission_approved = 7;
+    AuditLogEvent audit_log = 8;
   }
+}
+
+// Operator-originated audit entries (kubectl / GitOps apply/delete). The
+// operator's admission webhook resolves the K8s user against the pushed RBAC
+// snapshot, then pushes one event per allowed or denied admission decision.
+// event_id is operator-assigned UUIDv7; platform uses it as audit_log.id and
+// deduplicates on tunnel re-delivery via INSERT ... ON CONFLICT DO NOTHING.
+message AuditLogEvent {
+  string event_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string actor_id = 3;
+  string actor_email = 4;
+  AuditActorSource actor_source = 5;
+  AuditAction action = 6;
+  AuditTargetType target_type = 7;
+  string target_slug = 8;
+  AuditDecision decision = 9;
+  string denial_reason = 10;
+  string workspace_id = 11;
+  string project_id = 12;
+  string environment_id = 13;
+  repeated AuditFieldChangeProto changes = 14;
+}
+
+message AuditFieldChangeProto {
+  string field = 1;
+  string old_value = 2;
+  string new_value = 3;
 }
 
 message ResourceSyncBatch {
@@ -516,4 +583,75 @@ message LinkStatus {
   string resource = 1;
   string status = 2;
   string last_sync_time = 3;
+}
+
+// ---------------------------------------------------------------------------
+// Audit log enums (mirrored in api/public-api.yaml; a mapper in :tunnel-api
+// bridges the two at the platform boundary; a drift-guard test fails the
+// build if the two lists diverge).
+// ---------------------------------------------------------------------------
+
+enum AuditAction {
+  AUDIT_ACTION_UNSPECIFIED = 0;
+  AUDIT_ACTION_DEPLOYMENT_TRIGGERED = 1;
+  AUDIT_ACTION_ENVIRONMENT_APPROVAL_GATES_UPDATED = 2;
+  AUDIT_ACTION_ENVIRONMENT_CREATED = 3;
+  AUDIT_ACTION_ENVIRONMENT_DELETED = 4;
+  AUDIT_ACTION_ENVIRONMENT_QUOTA_UPDATED = 5;
+  AUDIT_ACTION_ENVIRONMENT_REGISTRY_UPDATED = 6;
+  AUDIT_ACTION_ENVIRONMENT_ROLE_OVERRIDE_REMOVED = 7;
+  AUDIT_ACTION_ENVIRONMENT_ROLE_OVERRIDE_SET = 8;
+  AUDIT_ACTION_ENVIRONMENT_TARGET_CLUSTER_UPDATED = 9;
+  AUDIT_ACTION_ENVIRONMENT_TOKEN_CREATED = 10;
+  AUDIT_ACTION_ENVIRONMENT_TOKEN_DELETED = 11;
+  AUDIT_ACTION_ENVIRONMENT_UPDATED = 12;
+  AUDIT_ACTION_GROUP_MAPPING_CREATED = 13;
+  AUDIT_ACTION_GROUP_MAPPING_DELETED = 14;
+  AUDIT_ACTION_GROUP_MAPPING_UPDATED = 15;
+  AUDIT_ACTION_MEMBER_ADDED = 16;
+  AUDIT_ACTION_MEMBER_INVITED = 17;
+  AUDIT_ACTION_MEMBER_REMOVED = 18;
+  AUDIT_ACTION_MEMBER_UPDATED = 19;
+  AUDIT_ACTION_PROJECT_CREATED = 20;
+  AUDIT_ACTION_PROJECT_DELETED = 21;
+  AUDIT_ACTION_PROJECT_QUOTA_UPDATED = 22;
+  AUDIT_ACTION_PROJECT_REGISTRY_UPDATED = 23;
+  AUDIT_ACTION_PROJECT_ROLE_OVERRIDE_REMOVED = 24;
+  AUDIT_ACTION_PROJECT_ROLE_OVERRIDE_SET = 25;
+  AUDIT_ACTION_PROJECT_UPDATED = 26;
+  AUDIT_ACTION_RESOURCE_CREATED = 27;
+  AUDIT_ACTION_RESOURCE_DELETED = 28;
+  AUDIT_ACTION_RESOURCE_RESTARTED = 29;
+  AUDIT_ACTION_RESOURCE_STARTED = 30;
+  AUDIT_ACTION_RESOURCE_STOPPED = 31;
+  AUDIT_ACTION_RESOURCE_UPDATED = 32;
+  AUDIT_ACTION_WORKSPACE_CREATED = 33;
+  AUDIT_ACTION_WORKSPACE_DELETED = 34;
+  AUDIT_ACTION_WORKSPACE_QUOTA_UPDATED = 35;
+  AUDIT_ACTION_WORKSPACE_REGISTRY_UPDATED = 36;
+  AUDIT_ACTION_WORKSPACE_SECURITY_UPDATED = 37;
+  AUDIT_ACTION_WORKSPACE_UPDATED = 38;
+}
+
+enum AuditTargetType {
+  AUDIT_TARGET_TYPE_UNSPECIFIED = 0;
+  AUDIT_TARGET_TYPE_WORKSPACE = 1;
+  AUDIT_TARGET_TYPE_PROJECT = 2;
+  AUDIT_TARGET_TYPE_ENVIRONMENT = 3;
+  AUDIT_TARGET_TYPE_RESOURCE = 4;
+  AUDIT_TARGET_TYPE_DEPLOYMENT = 5;
+}
+
+enum AuditActorSource {
+  AUDIT_ACTOR_SOURCE_UNSPECIFIED = 0;
+  AUDIT_ACTOR_SOURCE_API = 1;
+  AUDIT_ACTOR_SOURCE_TOKEN = 2;
+  AUDIT_ACTOR_SOURCE_KUBECTL = 3;
+  AUDIT_ACTOR_SOURCE_SYSTEM = 4;
+}
+
+enum AuditDecision {
+  AUDIT_DECISION_UNSPECIFIED = 0;
+  AUDIT_DECISION_ALLOWED = 1;
+  AUDIT_DECISION_DENIED = 2;
 }

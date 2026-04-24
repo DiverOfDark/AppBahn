@@ -1,6 +1,7 @@
 package eu.appbahn.platform.workspace.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateProjectRequest;
 import eu.appbahn.platform.api.model.PagedProjectResponse;
 import eu.appbahn.platform.api.model.Project;
@@ -13,7 +14,6 @@ import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
-import eu.appbahn.platform.common.util.JsonUtil;
 import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.platform.workspace.entity.ProjectMemberOverrideEntity;
@@ -25,7 +25,6 @@ import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -41,7 +40,6 @@ public class ProjectService {
     private final ProjectMemberOverrideRepository projectOverrideRepository;
     private final PermissionService permissionService;
     private final AuditLogService auditLogService;
-    private final ObjectMapper objectMapper;
 
     public ProjectService(
             ProjectRepository projectRepository,
@@ -49,15 +47,13 @@ public class ProjectService {
             EnvironmentRepository environmentRepository,
             ProjectMemberOverrideRepository projectOverrideRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService,
-            ObjectMapper objectMapper) {
+            AuditLogService auditLogService) {
         this.projectRepository = projectRepository;
         this.workspaceRepository = workspaceRepository;
         this.environmentRepository = environmentRepository;
         this.projectOverrideRepository = projectOverrideRepository;
         this.permissionService = permissionService;
         this.auditLogService = auditLogService;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -73,13 +69,13 @@ public class ProjectService {
         entity.setSlug(SlugGenerator.generate(req.getName()));
         projectRepository.save(entity);
 
-        auditLogService.log(
-                ctx,
-                "project.created",
-                "project",
-                entity.getSlug(),
-                workspace.getId(),
-                Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_CREATED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(workspace.getId())
+                .inProject(entity.getId())
+                .change("name", "", entity.getName())
+                .save();
 
         return EntityMapper.toApi(entity, workspace.getSlug());
     }
@@ -121,13 +117,13 @@ public class ProjectService {
         }
         projectRepository.save(entity);
 
-        auditLogService.log(
-                ctx,
-                "project.updated",
-                "project",
-                entity.getSlug(),
-                entity.getWorkspaceId(),
-                Map.of("name", Map.of("old", oldName, "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_UPDATED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .change("name", oldName, entity.getName())
+                .save();
 
         String workspaceSlug = workspaceRepository
                 .findById(entity.getWorkspaceId())
@@ -151,7 +147,12 @@ public class ProjectService {
 
         projectRepository.delete(entity);
 
-        auditLogService.log(ctx, "project.deleted", "project", entity.getSlug(), entity.getWorkspaceId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_DELETED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .save();
     }
 
     // --- Role overrides ---
@@ -183,13 +184,14 @@ public class ProjectService {
         override.setRole(req.getRole().getValue());
         projectOverrideRepository.save(override);
 
-        auditLogService.log(
-                ctx,
-                "project.role_override.set",
-                "project",
-                entity.getSlug(),
-                entity.getWorkspaceId(),
-                Map.of("userId", userId.toString(), "role", req.getRole().getValue()));
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_ROLE_OVERRIDE_SET)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .detail("userId", userId.toString())
+                .detail("role", req.getRole().getValue())
+                .save();
     }
 
     @Transactional
@@ -204,8 +206,12 @@ public class ProjectService {
                 .orElseThrow(() -> new NotFoundException("Role override not found"));
         projectOverrideRepository.delete(override);
 
-        auditLogService.log(
-                ctx, "project.role_override.removed", "project", entity.getSlug(), entity.getWorkspaceId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_ROLE_OVERRIDE_REMOVED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .save();
     }
 
     // --- Settings ---
@@ -215,7 +221,7 @@ public class ProjectService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.VIEWER);
-        return JsonUtil.parseJson(objectMapper, entity.getQuota(), Quota.class);
+        return entity.getQuota() != null ? entity.getQuota() : new Quota();
     }
 
     @Transactional
@@ -224,9 +230,14 @@ public class ProjectService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setQuota(JsonUtil.toJson(objectMapper, quota));
+        entity.setQuota(quota);
         projectRepository.save(entity);
-        auditLogService.log(ctx, "project.quota.updated", "project", entity.getSlug(), entity.getWorkspaceId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_QUOTA_UPDATED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .save();
         return quota;
     }
 
@@ -236,10 +247,14 @@ public class ProjectService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + slug));
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setRegistry(JsonUtil.toJson(objectMapper, registryConfig));
+        entity.setRegistry(registryConfig);
         projectRepository.save(entity);
-        auditLogService.log(
-                ctx, "project.registry.updated", "project", entity.getSlug(), entity.getWorkspaceId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.PROJECT_REGISTRY_UPDATED)
+                .target(AuditTargetType.PROJECT, entity.getSlug())
+                .inWorkspace(entity.getWorkspaceId())
+                .inProject(entity.getId())
+                .save();
         String workspaceSlug = workspaceRepository
                 .findById(entity.getWorkspaceId())
                 .map(WorkspaceEntity::getSlug)

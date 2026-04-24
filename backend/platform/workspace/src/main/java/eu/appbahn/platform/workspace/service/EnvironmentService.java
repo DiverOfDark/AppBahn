@@ -1,7 +1,8 @@
 package eu.appbahn.platform.workspace.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.model.ApprovalGatesConfig;
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateEnvironmentRequest;
 import eu.appbahn.platform.api.model.Environment;
 import eu.appbahn.platform.api.model.PagedEnvironmentResponse;
@@ -14,7 +15,6 @@ import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
-import eu.appbahn.platform.common.util.JsonUtil;
 import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.EnvironmentMemberOverrideEntity;
@@ -25,7 +25,6 @@ import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,6 @@ public class EnvironmentService {
     private final NamespaceCrdClient namespaceCrdClient;
     private final TargetClusterResolver targetClusterResolver;
     private final AuditLogService auditLogService;
-    private final ObjectMapper objectMapper;
 
     public EnvironmentService(
             EnvironmentRepository environmentRepository,
@@ -53,8 +51,7 @@ public class EnvironmentService {
             NamespaceService namespaceService,
             NamespaceCrdClient namespaceCrdClient,
             TargetClusterResolver targetClusterResolver,
-            AuditLogService auditLogService,
-            ObjectMapper objectMapper) {
+            AuditLogService auditLogService) {
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
         this.environmentOverrideRepository = environmentOverrideRepository;
@@ -63,7 +60,6 @@ public class EnvironmentService {
         this.namespaceCrdClient = namespaceCrdClient;
         this.targetClusterResolver = targetClusterResolver;
         this.auditLogService = auditLogService;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -87,13 +83,14 @@ public class EnvironmentService {
 
         namespaceCrdClient.apply(entity.getSlug(), namespaceService.computeNamespace(entity.getSlug()));
 
-        auditLogService.log(
-                ctx,
-                "environment.created",
-                "environment",
-                entity.getSlug(),
-                project.getWorkspaceId(),
-                Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_CREATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(project.getWorkspaceId())
+                .inProject(project.getId())
+                .inEnvironment(entity.getId())
+                .change("name", "", entity.getName())
+                .save();
 
         return EntityMapper.toApi(entity, project.getSlug());
     }
@@ -139,13 +136,14 @@ public class EnvironmentService {
         environmentRepository.save(entity);
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);
-        auditLogService.log(
-                ctx,
-                "environment.updated",
-                "environment",
-                entity.getSlug(),
-                project != null ? project.getWorkspaceId() : null,
-                Map.of("name", Map.of("old", oldName, "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_UPDATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(project != null ? project.getWorkspaceId() : null)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .change("name", oldName, entity.getName())
+                .save();
 
         String projectSlug = project != null ? project.getSlug() : null;
         return EntityMapper.toApi(entity, projectSlug);
@@ -162,13 +160,13 @@ public class EnvironmentService {
         namespaceCrdClient.delete(namespaceService.computeNamespace(entity.getSlug()));
 
         var project = projectRepository.findById(entity.getProjectId()).orElse(null);
-        auditLogService.log(
-                ctx,
-                "environment.deleted",
-                "environment",
-                entity.getSlug(),
-                project != null ? project.getWorkspaceId() : null,
-                null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_DELETED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(project != null ? project.getWorkspaceId() : null)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
 
         environmentRepository.delete(entity);
     }
@@ -206,13 +204,15 @@ public class EnvironmentService {
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(
-                ctx,
-                "environment.role_override.set",
-                "environment",
-                entity.getSlug(),
-                workspaceId,
-                Map.of("userId", userId.toString(), "role", req.getRole().getValue()));
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_ROLE_OVERRIDE_SET)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .detail("userId", userId.toString())
+                .detail("role", req.getRole().getValue())
+                .save();
     }
 
     @Transactional
@@ -231,8 +231,13 @@ public class EnvironmentService {
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(
-                ctx, "environment.role_override.removed", "environment", entity.getSlug(), workspaceId, null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_ROLE_OVERRIDE_REMOVED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
     }
 
     // --- Settings ---
@@ -242,7 +247,7 @@ public class EnvironmentService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.VIEWER);
-        return JsonUtil.parseJson(objectMapper, entity.getQuota(), Quota.class);
+        return entity.getQuota() != null ? entity.getQuota() : new Quota();
     }
 
     @Transactional
@@ -251,14 +256,20 @@ public class EnvironmentService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setQuota(JsonUtil.toJson(objectMapper, quota));
+        entity.setQuota(quota);
         environmentRepository.save(entity);
 
         UUID workspaceId = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(ctx, "environment.quota.updated", "environment", entity.getSlug(), workspaceId, null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_QUOTA_UPDATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
         return quota;
     }
 
@@ -268,14 +279,20 @@ public class EnvironmentService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setRegistry(JsonUtil.toJson(objectMapper, registryConfig));
+        entity.setRegistry(registryConfig);
         environmentRepository.save(entity);
 
         UUID workspaceId = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(ctx, "environment.registry.updated", "environment", entity.getSlug(), workspaceId, null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_REGISTRY_UPDATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
         String projectSlug = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getSlug)
@@ -289,15 +306,20 @@ public class EnvironmentService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setApprovalGates(JsonUtil.toJson(objectMapper, approvalGatesConfig));
+        entity.setApprovalGates(approvalGatesConfig);
         environmentRepository.save(entity);
 
         UUID workspaceId = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(
-                ctx, "environment.approval_gates.updated", "environment", entity.getSlug(), workspaceId, null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_APPROVAL_GATES_UPDATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
         String projectSlug = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getSlug)
@@ -318,8 +340,13 @@ public class EnvironmentService {
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getWorkspaceId)
                 .orElse(null);
-        auditLogService.log(
-                ctx, "environment.target_cluster.updated", "environment", entity.getSlug(), workspaceId, null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_TARGET_CLUSTER_UPDATED)
+                .target(AuditTargetType.ENVIRONMENT, entity.getSlug())
+                .inWorkspace(workspaceId)
+                .inProject(entity.getProjectId())
+                .inEnvironment(entity.getId())
+                .save();
         String projectSlug = projectRepository
                 .findById(entity.getProjectId())
                 .map(ProjectEntity::getSlug)

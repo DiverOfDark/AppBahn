@@ -1,5 +1,7 @@
 package eu.appbahn.platform.workspace.service;
 
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateGroupMappingRequest;
 import eu.appbahn.platform.api.model.OidcGroupMapping;
 import eu.appbahn.platform.api.model.UpdateGroupMappingRequest;
@@ -12,7 +14,6 @@ import eu.appbahn.platform.workspace.repository.OidcGroupMappingRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -56,13 +57,13 @@ public class GroupMappingService {
         entity.setRole(req.getRole().getValue());
         mappingRepository.save(entity);
 
-        auditLogService.log(
-                ctx,
-                "group_mapping.created",
-                "workspace",
-                ws.getSlug(),
-                ws.getId(),
-                Map.of("oidcGroup", req.getOidcGroup(), "role", req.getRole().getValue()));
+        auditLogService
+                .audit(ctx, AuditAction.GROUP_MAPPING_CREATED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .detail("oidcGroup", req.getOidcGroup())
+                .detail("role", req.getRole().getValue())
+                .save();
 
         return toApi(entity);
     }
@@ -81,13 +82,12 @@ public class GroupMappingService {
         }
         mappingRepository.save(entity);
 
-        auditLogService.log(
-                ctx,
-                "group_mapping.updated",
-                "workspace",
-                ws.getSlug(),
-                ws.getId(),
-                Map.of("mappingId", mappingId.toString()));
+        auditLogService
+                .audit(ctx, AuditAction.GROUP_MAPPING_UPDATED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .detail("mappingId", mappingId.toString())
+                .save();
 
         return toApi(entity);
     }
@@ -102,7 +102,11 @@ public class GroupMappingService {
                 .orElseThrow(() -> new NotFoundException("Group mapping not found"));
         mappingRepository.delete(entity);
 
-        auditLogService.log(ctx, "group_mapping.deleted", "workspace", ws.getSlug(), ws.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.GROUP_MAPPING_DELETED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .save();
     }
 
     private OidcGroupMapping toApi(OidcGroupMappingEntity entity) {
