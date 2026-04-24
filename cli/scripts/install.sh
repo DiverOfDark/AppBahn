@@ -1,15 +1,37 @@
 #!/usr/bin/env bash
-# AppBahn CLI installer
-# Usage:  curl -fsSL https://appbahn.eu/install.sh | bash
+# AppBahn CLI installer.
+#
+# Fetches the current release from appbahn.eu and installs it into /usr/local/bin.
+# All binaries are served from the public website — no GitHub API calls.
+#
+# Usage:
+#   curl -fsSL https://appbahn.eu/download/install.sh | bash
+#   curl -fsSL https://appbahn.eu/download/install.sh | bash -s -- --version 0.3.0
+#
+# Environment overrides:
+#   APPBAHN_VERSION       pin a specific version (e.g. 0.3.0); defaults to latest
+#   APPBAHN_INSTALL_DIR   target directory (default: /usr/local/bin)
+#   APPBAHN_DOWNLOAD_BASE base URL for artifacts (default: https://appbahn.eu/download)
+
 set -euo pipefail
 
-REPO="diverofdark/appbahn"
-INSTALL_DIR="/usr/local/bin"
+DOWNLOAD_BASE="${APPBAHN_DOWNLOAD_BASE:-https://appbahn.eu/download}"
+INSTALL_DIR="${APPBAHN_INSTALL_DIR:-/usr/local/bin}"
+VERSION="${APPBAHN_VERSION:-}"
 BINARY="appbahn"
 
-# ---------------------------------------------------------------------------
-# Detect OS
-# ---------------------------------------------------------------------------
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --version) VERSION="$2"; shift 2 ;;
+    --install-dir) INSTALL_DIR="$2"; shift 2 ;;
+    --base-url) DOWNLOAD_BASE="$2"; shift 2 ;;
+    -h|--help)
+      sed -n '2,12p' "$0"
+      exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+
 detect_os() {
   local os
   os="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -21,9 +43,6 @@ detect_os() {
   esac
 }
 
-# ---------------------------------------------------------------------------
-# Detect architecture
-# ---------------------------------------------------------------------------
 detect_arch() {
   local arch
   arch="$(uname -m)"
@@ -34,26 +53,35 @@ detect_arch() {
   esac
 }
 
-# ---------------------------------------------------------------------------
-# Fetch latest release tag from GitHub
-# ---------------------------------------------------------------------------
-latest_version() {
-  curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-    | grep '"tag_name"' \
-    | sed -E 's/.*"tag_name":\s*"([^"]+)".*/\1/'
+resolve_version() {
+  if [ -n "$VERSION" ]; then
+    echo "${VERSION#v}"
+    return
+  fi
+  curl -fsSL "${DOWNLOAD_BASE}/version.txt" | tr -d '[:space:]'
 }
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-main() {
-  local os arch version url tmp_dir archive ext
+sha256_of() {
+  local file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo ""
+  fi
+}
 
+main() {
+  local os arch version url tmp_dir archive ext expected actual
   os="$(detect_os)"
   arch="$(detect_arch)"
-  version="$(latest_version)"
+  version="$(resolve_version)"
 
-  echo "Installing AppBahn CLI ${version} (${os}/${arch}) ..."
+  if [ -z "$version" ]; then
+    echo "Failed to resolve AppBahn CLI version from ${DOWNLOAD_BASE}/version.txt" >&2
+    exit 1
+  fi
 
   if [ "$os" = "windows" ]; then
     ext="zip"
@@ -61,33 +89,48 @@ main() {
     ext="tar.gz"
   fi
 
-  archive="${BINARY}_${version#v}_${os}_${arch}.${ext}"
-  url="https://github.com/${REPO}/releases/download/${version}/${archive}"
+  archive="${BINARY}_${version}_${os}_${arch}.${ext}"
+  url="${DOWNLOAD_BASE}/${archive}"
 
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf "$tmp_dir"' EXIT
 
-  echo "Downloading ${url} ..."
+  echo "Installing AppBahn CLI ${version} (${os}/${arch})..."
+  echo "Downloading ${url}..."
   curl -fsSL -o "${tmp_dir}/${archive}" "${url}"
 
-  echo "Extracting ..."
+  echo "Verifying checksum..."
+  curl -fsSL -o "${tmp_dir}/checksums.txt" "${DOWNLOAD_BASE}/checksums.txt"
+  expected="$(awk -v f="${archive}" '$2 == f {print $1}' "${tmp_dir}/checksums.txt")"
+  if [ -z "$expected" ]; then
+    echo "Checksum for ${archive} not found in checksums.txt" >&2
+    exit 1
+  fi
+  actual="$(sha256_of "${tmp_dir}/${archive}")"
+  if [ -z "$actual" ]; then
+    echo "Warning: no sha256 tool found; skipping checksum verification." >&2
+  elif [ "$actual" != "$expected" ]; then
+    echo "Checksum mismatch for ${archive}" >&2
+    echo "  expected: ${expected}" >&2
+    echo "  actual:   ${actual}" >&2
+    exit 1
+  fi
+
+  echo "Extracting..."
   if [ "$ext" = "zip" ]; then
     unzip -q "${tmp_dir}/${archive}" -d "${tmp_dir}"
   else
     tar -xzf "${tmp_dir}/${archive}" -C "${tmp_dir}"
   fi
 
-  echo "Installing to ${INSTALL_DIR}/${BINARY} ..."
+  echo "Installing to ${INSTALL_DIR}/${BINARY}..."
   if [ -w "${INSTALL_DIR}" ]; then
-    cp "${tmp_dir}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
-    chmod +x "${INSTALL_DIR}/${BINARY}"
+    install -m 0755 "${tmp_dir}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
   else
-    sudo cp "${tmp_dir}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
-    sudo chmod +x "${INSTALL_DIR}/${BINARY}"
+    sudo install -m 0755 "${tmp_dir}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
   fi
 
-  echo "AppBahn CLI ${version} installed successfully!"
-  echo "Run 'appbahn version' to verify."
+  echo "AppBahn CLI ${version} installed. Run 'appbahn version' to verify."
 }
 
 main "$@"

@@ -12,15 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface AuditLogRepository extends JpaRepository<AuditLogEntity, AuditLogEntity.AuditLogId> {
 
-    @Query(
-            value = "SELECT * FROM audit_log WHERE context @> CAST(:filter AS jsonb) ORDER BY timestamp DESC",
-            countQuery = "SELECT count(*) FROM audit_log WHERE context @> CAST(:filter AS jsonb)",
-            nativeQuery = true)
-    Page<AuditLogEntity> findByContextContaining(String filter, Pageable pageable);
-
     @Query(value = """
             SELECT * FROM audit_log
-            WHERE (CAST(:workspaceId AS text) IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
+            WHERE (CAST(:workspaceId AS uuid) IS NULL OR workspace_id = CAST(:workspaceId AS uuid))
               AND (CAST(:action AS text) IS NULL OR action = :action)
               AND (CAST(:targetType AS text) IS NULL OR target_type = :targetType)
               AND (CAST(:actorId AS uuid) IS NULL OR actor_id = :actorId)
@@ -28,7 +22,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLogEntity, AuditL
               AND (CAST(:toTs AS timestamptz) IS NULL OR timestamp <= :toTs)
             """, countQuery = """
             SELECT count(*) FROM audit_log
-            WHERE (CAST(:workspaceId AS text) IS NULL OR context @> CAST('{"workspaceId":"' || :workspaceId || '"}' AS jsonb))
+            WHERE (CAST(:workspaceId AS uuid) IS NULL OR workspace_id = CAST(:workspaceId AS uuid))
               AND (CAST(:action AS text) IS NULL OR action = :action)
               AND (CAST(:targetType AS text) IS NULL OR target_type = :targetType)
               AND (CAST(:actorId AS uuid) IS NULL OR actor_id = :actorId)

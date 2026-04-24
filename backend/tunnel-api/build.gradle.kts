@@ -28,6 +28,7 @@ protobuf {
 
 dependencies {
     implementation(project(":shared"))
+    implementation(project(":platform:api-spec"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)

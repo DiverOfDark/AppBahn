@@ -1,6 +1,7 @@
 package eu.appbahn.platform.workspace.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateWorkspaceRequest;
 import eu.appbahn.platform.api.model.PagedWorkspaceResponse;
 import eu.appbahn.platform.api.model.Quota;
@@ -12,7 +13,6 @@ import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
-import eu.appbahn.platform.common.util.JsonUtil;
 import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
 import eu.appbahn.platform.workspace.entity.WorkspaceMemberEntity;
@@ -22,7 +22,6 @@ import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -37,21 +36,18 @@ public class WorkspaceService {
     private final ProjectRepository projectRepository;
     private final PermissionService permissionService;
     private final AuditLogService auditLogService;
-    private final ObjectMapper objectMapper;
 
     public WorkspaceService(
             WorkspaceRepository workspaceRepository,
             WorkspaceMemberRepository memberRepository,
             ProjectRepository projectRepository,
             PermissionService permissionService,
-            AuditLogService auditLogService,
-            ObjectMapper objectMapper) {
+            AuditLogService auditLogService) {
         this.workspaceRepository = workspaceRepository;
         this.memberRepository = memberRepository;
         this.projectRepository = projectRepository;
         this.permissionService = permissionService;
         this.auditLogService = auditLogService;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -67,13 +63,12 @@ public class WorkspaceService {
         member.setRole(MemberRole.OWNER.name());
         memberRepository.save(member);
 
-        auditLogService.log(
-                ctx,
-                "workspace.created",
-                "workspace",
-                entity.getSlug(),
-                entity.getId(),
-                Map.of("name", Map.of("old", (Object) "", "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_CREATED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .change("name", "", entity.getName())
+                .save();
 
         return EntityMapper.toApi(entity);
     }
@@ -127,13 +122,12 @@ public class WorkspaceService {
         }
         workspaceRepository.save(entity);
 
-        auditLogService.log(
-                ctx,
-                "workspace.updated",
-                "workspace",
-                entity.getSlug(),
-                entity.getId(),
-                Map.of("name", Map.of("old", (Object) oldName, "new", entity.getName())));
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_UPDATED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .change("name", oldName, entity.getName())
+                .save();
 
         return EntityMapper.toApi(entity);
     }
@@ -153,7 +147,11 @@ public class WorkspaceService {
 
         workspaceRepository.delete(entity);
 
-        auditLogService.log(ctx, "workspace.deleted", "workspace", entity.getSlug(), entity.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_DELETED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .save();
     }
 
     // --- Settings ---
@@ -163,7 +161,7 @@ public class WorkspaceService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.VIEWER);
-        return JsonUtil.parseJson(objectMapper, entity.getQuota(), Quota.class);
+        return entity.getQuota() != null ? entity.getQuota() : new Quota();
     }
 
     @Transactional
@@ -172,9 +170,13 @@ public class WorkspaceService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setQuota(JsonUtil.toJson(objectMapper, quota));
+        entity.setQuota(quota);
         workspaceRepository.save(entity);
-        auditLogService.log(ctx, "workspace.quota.updated", "workspace", entity.getSlug(), entity.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_QUOTA_UPDATED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .save();
         return quota;
     }
 
@@ -196,7 +198,11 @@ public class WorkspaceService {
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.ADMIN);
         entity.setRuntimeClassName(settings.getRuntimeClassName());
         workspaceRepository.save(entity);
-        auditLogService.log(ctx, "workspace.security.updated", "workspace", entity.getSlug(), entity.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_SECURITY_UPDATED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .save();
         return settings;
     }
 
@@ -206,9 +212,13 @@ public class WorkspaceService {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
         permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.ADMIN);
-        entity.setRegistry(JsonUtil.toJson(objectMapper, registryConfig));
+        entity.setRegistry(registryConfig);
         workspaceRepository.save(entity);
-        auditLogService.log(ctx, "workspace.registry.updated", "workspace", entity.getSlug(), entity.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.WORKSPACE_REGISTRY_UPDATED)
+                .target(AuditTargetType.WORKSPACE, entity.getSlug())
+                .inWorkspace(entity.getId())
+                .save();
         return EntityMapper.toApi(entity);
     }
 

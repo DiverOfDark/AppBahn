@@ -5,6 +5,7 @@ import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.command.FullSyncChunkBufferEntity;
 import eu.appbahn.platform.tunnel.command.FullSyncChunkBufferRepository;
 import eu.appbahn.tunnel.v1.AdmissionCacheMissReport;
+import eu.appbahn.tunnel.v1.AuditLogEvent;
 import eu.appbahn.tunnel.v1.FullResourceSyncChunk;
 import eu.appbahn.tunnel.v1.OperatorEvent;
 import eu.appbahn.tunnel.v1.PushEventsRequest;
@@ -39,16 +40,19 @@ public class PushEventsHandler {
     private final TunnelEventMapper mapper;
     private final FullSyncChunkBufferRepository chunkBuffer;
     private final ClusterRepository clusterRepository;
+    private final AuditLogWriterService auditLogWriter;
 
     public PushEventsHandler(
             ResourceSyncService resourceSyncService,
             TunnelEventMapper mapper,
             FullSyncChunkBufferRepository chunkBuffer,
-            ClusterRepository clusterRepository) {
+            ClusterRepository clusterRepository,
+            AuditLogWriterService auditLogWriter) {
         this.resourceSyncService = resourceSyncService;
         this.mapper = mapper;
         this.chunkBuffer = chunkBuffer;
         this.clusterRepository = clusterRepository;
+        this.auditLogWriter = auditLogWriter;
     }
 
     @Transactional
@@ -76,6 +80,7 @@ public class PushEventsHandler {
             }
             case ADMISSION_CACHE_MISS_REPORT ->
                 handleAdmissionCacheMiss(clusterName, event.getAdmissionCacheMissReport());
+            case AUDIT_LOG -> handleAuditLog(event.getAuditLog());
             case RESOURCE_TYPE_SYNC_CHUNK, DEPLOYMENT_STATUS_UPDATE, EVENT_NOT_SET -> {
                 // Handlers land in a follow-up — resource-type sync and deployment-status
                 // updates feed features (CRD discovery, deploy pipelines) that this sprint
@@ -102,6 +107,10 @@ public class PushEventsHandler {
             cluster.setLastAdmissionMissAt(Instant.now());
             clusterRepository.save(cluster);
         });
+    }
+
+    private void handleAuditLog(AuditLogEvent event) {
+        auditLogWriter.writeFromOperator(event);
     }
 
     private void handleSyncBatch(String clusterName, ResourceSyncBatch batch) {

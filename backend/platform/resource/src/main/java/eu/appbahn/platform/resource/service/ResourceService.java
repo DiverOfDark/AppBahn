@@ -1,7 +1,10 @@
 package eu.appbahn.platform.resource.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateResourceRequest;
 import eu.appbahn.platform.api.model.PagedResourceResponse;
 import eu.appbahn.platform.api.model.Resource;
@@ -33,7 +36,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +60,7 @@ public class ResourceService {
     private final LicenseService licenseService;
     private final NamespaceService namespaceService;
     private final ResourceCrdClient crdClient;
+    private final ResourceCrdLookup crdLookup;
     private final ObjectMapper objectMapper;
     private final String baseDomain;
 
@@ -73,6 +76,7 @@ public class ResourceService {
             LicenseService licenseService,
             NamespaceService namespaceService,
             ResourceCrdClient crdClient,
+            ResourceCrdLookup crdLookup,
             ObjectMapper objectMapper,
             @org.springframework.beans.factory.annotation.Value("${platform.base-domain:appbahn.local}")
                     String baseDomain) {
@@ -87,6 +91,7 @@ public class ResourceService {
         this.licenseService = licenseService;
         this.namespaceService = namespaceService;
         this.crdClient = crdClient;
+        this.crdLookup = crdLookup;
         this.objectMapper = objectMapper;
         this.baseDomain = baseDomain;
     }
@@ -145,15 +150,15 @@ public class ResourceService {
                 slug,
                 crd.getMetadata().getNamespace());
 
-        auditLogService.log(
-                ctx,
-                "resource.created",
-                "resource",
-                slug,
-                workspaceId,
-                Map.of(
-                        "name", Map.of("old", "", "new", req.getName()),
-                        "type", Map.of("old", "", "new", req.getType())));
+        auditLogService
+                .audit(ctx, AuditAction.RESOURCE_CREATED)
+                .target(AuditTargetType.RESOURCE, slug)
+                .inWorkspace(workspaceId)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .change("name", "", req.getName())
+                .change("type", "", req.getType())
+                .save();
 
         var response = new ResourceCreatedResponse();
         response.setSlug(slug);
@@ -220,7 +225,7 @@ public class ResourceService {
             mergedLinks = req.getLinks();
         }
 
-        var existingCrd = getCrd(slug, env.getSlug());
+        var existingCrd = crdLookup.get(slug, env.getSlug());
         if (existingCrd != null) {
             if (req.getName() != null) {
                 existingCrd.getSpec().setName(req.getName());
@@ -253,19 +258,23 @@ public class ResourceService {
         }
         resourceCacheRepository.save(entity);
 
-        var diff = new java.util.HashMap<String, Object>();
+        var auditBuilder = auditLogService
+                .audit(ctx, AuditAction.RESOURCE_UPDATED)
+                .target(AuditTargetType.RESOURCE, slug)
+                .inWorkspace(workspaceId)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId());
         if (req.getName() != null && !req.getName().equals(oldName)) {
-            diff.put("name", Map.of("old", oldName, "new", req.getName()));
+            auditBuilder.change("name", oldName, req.getName());
         }
         if (mergedConfig != null) {
-            diff.put(
-                    "config",
-                    Map.of("old", objectMapper.valueToTree(oldConfig), "new", objectMapper.valueToTree(mergedConfig)));
+            auditBuilder.change("config", toJsonString(oldConfig), toJsonString(mergedConfig));
         }
         if (mergedLinks != null) {
-            diff.put("links", Map.of("old", oldLinks != null ? oldLinks : List.of(), "new", mergedLinks));
+            auditBuilder.change(
+                    "links", toJsonString(oldLinks != null ? oldLinks : List.of()), toJsonString(mergedLinks));
         }
-        auditLogService.log(ctx, "resource.updated", "resource", slug, workspaceId, diff.isEmpty() ? null : diff);
+        auditBuilder.save();
 
         return ResourceEntityMapper.toApi(entity, env.getSlug(), objectMapper);
     }
@@ -292,82 +301,14 @@ public class ResourceService {
         crdClient.delete(slug, namespace);
         log.info("Deleted Resource CRD: {} in namespace {}", slug, namespace);
 
-        auditLogService.log(
-                ctx,
-                "resource.deleted",
-                "resource",
-                slug,
-                workspaceId,
-                Map.of("deploymentsDeleted", Map.of("old", deploymentCount, "new", 0)));
-    }
-
-    @Transactional
-    public void stop(String slug, AuthContext ctx) {
-        var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
-        var env = resolved.env();
-        UUID workspaceId = resolved.workspaceId();
-
-        // Gate on spec.stopped — authoritative; cache status is a proxy that breaks mid-transition.
-        var existingCrd = getCrd(slug, env.getSlug());
-        if (existingCrd == null) {
-            throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
-        }
-        if (Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
-            return;
-        }
-        existingCrd.getSpec().setStopped(true);
-        crdClient.update(existingCrd);
-        log.info("Stopped Resource CRD: {}", slug);
-
-        auditLogService.log(ctx, "resource.stopped", "resource", slug, workspaceId, null);
-    }
-
-    @Transactional
-    public void start(String slug, AuthContext ctx) {
-        var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
-        var env = resolved.env();
-        UUID workspaceId = resolved.workspaceId();
-
-        var existingCrd = getCrd(slug, env.getSlug());
-        if (existingCrd == null) {
-            throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
-        }
-        if (!Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
-            return;
-        }
-        existingCrd.getSpec().setStopped(false);
-        crdClient.update(existingCrd);
-        log.info("Started Resource CRD: {}", slug);
-
-        auditLogService.log(ctx, "resource.started", "resource", slug, workspaceId, null);
-    }
-
-    @Transactional
-    public void restart(String slug, AuthContext ctx) {
-        var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
-        var entity = resolved.entity();
-        var env = resolved.env();
-        UUID workspaceId = resolved.workspaceId();
-
-        if (eu.appbahn.shared.crd.ResourcePhase.READY != entity.getStatus()) {
-            throw new ConflictException("Resource must be READY to restart, current status: " + entity.getStatus());
-        }
-
-        var existingCrd = getCrd(slug, env.getSlug());
-        if (existingCrd == null) {
-            throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
-        }
-        existingCrd.getSpec().setDeploymentRevision(UUID.randomUUID().toString());
-        crdClient.update(existingCrd);
-        log.info("Restarted Resource CRD: {}", slug);
-
-        auditLogService.log(ctx, "resource.restarted", "resource", slug, workspaceId, null);
-    }
-
-    @Nullable
-    private ResourceCrd getCrd(String slug, String envSlug) {
-        String namespace = namespaceService.computeNamespace(envSlug);
-        return crdClient.get(slug, namespace);
+        auditLogService
+                .audit(ctx, AuditAction.RESOURCE_DELETED)
+                .target(AuditTargetType.RESOURCE, slug)
+                .inWorkspace(workspaceId)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .change("deploymentsDeleted", deploymentCount, 0)
+                .save();
     }
 
     /**
@@ -402,6 +343,14 @@ public class ResourceService {
                     throw new ValidationException("Linked resource not found: " + slug);
                 }
             }
+        }
+    }
+
+    private String toJsonString(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            return String.valueOf(value);
         }
     }
 }

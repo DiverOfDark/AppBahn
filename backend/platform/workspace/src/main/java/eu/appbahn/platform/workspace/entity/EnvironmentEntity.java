@@ -1,5 +1,8 @@
 package eu.appbahn.platform.workspace.entity;
 
+import eu.appbahn.platform.api.model.ApprovalGatesConfig;
+import eu.appbahn.platform.api.model.Quota;
+import eu.appbahn.platform.api.model.RegistryConfig;
 import eu.appbahn.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,13 +35,13 @@ public class EnvironmentEntity extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String quota;
+    private Quota quota;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String registry;
+    private RegistryConfig registry;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "approval_gates", columnDefinition = "jsonb")
-    private String approvalGates;
+    private ApprovalGatesConfig approvalGates;
 }

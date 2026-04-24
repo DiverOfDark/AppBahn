@@ -3685,6 +3685,20 @@ components:
           enum: [OWNER, ADMIN, EDITOR, VIEWER]
 
     # ── Notification Webhook ──────────────────────────────────────────────────
+    WebhookEvent:
+      type: string
+      description: Platform event a notification webhook may subscribe to.
+      enum:
+        - deployment.succeeded
+        - deployment.failed
+        - deployment.awaiting_approval
+        - resource.error
+        - resource.degraded
+        - resource.ready
+        - build.started
+        - exposure.created
+        - quota.warning
+
     NotificationWebhook:
       type: object
       properties:
@@ -3701,7 +3715,7 @@ components:
         events:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/WebhookEvent'
         createdBy:
           type: string
           format: uuid
@@ -3717,7 +3731,7 @@ components:
         events:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/WebhookEvent'
 
     UpdateNotificationWebhookRequest:
       type: object
@@ -3729,7 +3743,7 @@ components:
         events:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/WebhookEvent'
 
     WebhookDelivery:
       type: object
@@ -3903,6 +3917,89 @@ components:
           type: boolean
 
     # ── Audit Log ─────────────────────────────────────────────────────────────
+    AuditAction:
+      type: string
+      description: Discrete platform mutation that may appear in the audit log.
+      enum:
+        - DEPLOYMENT_TRIGGERED
+        - ENVIRONMENT_APPROVAL_GATES_UPDATED
+        - ENVIRONMENT_CREATED
+        - ENVIRONMENT_DELETED
+        - ENVIRONMENT_QUOTA_UPDATED
+        - ENVIRONMENT_REGISTRY_UPDATED
+        - ENVIRONMENT_ROLE_OVERRIDE_REMOVED
+        - ENVIRONMENT_ROLE_OVERRIDE_SET
+        - ENVIRONMENT_TARGET_CLUSTER_UPDATED
+        - ENVIRONMENT_TOKEN_CREATED
+        - ENVIRONMENT_TOKEN_DELETED
+        - ENVIRONMENT_UPDATED
+        - GROUP_MAPPING_CREATED
+        - GROUP_MAPPING_DELETED
+        - GROUP_MAPPING_UPDATED
+        - MEMBER_ADDED
+        - MEMBER_INVITED
+        - MEMBER_REMOVED
+        - MEMBER_UPDATED
+        - PROJECT_CREATED
+        - PROJECT_DELETED
+        - PROJECT_QUOTA_UPDATED
+        - PROJECT_REGISTRY_UPDATED
+        - PROJECT_ROLE_OVERRIDE_REMOVED
+        - PROJECT_ROLE_OVERRIDE_SET
+        - PROJECT_UPDATED
+        - RESOURCE_CREATED
+        - RESOURCE_DELETED
+        - RESOURCE_RESTARTED
+        - RESOURCE_STARTED
+        - RESOURCE_STOPPED
+        - RESOURCE_UPDATED
+        - WORKSPACE_CREATED
+        - WORKSPACE_DELETED
+        - WORKSPACE_QUOTA_UPDATED
+        - WORKSPACE_REGISTRY_UPDATED
+        - WORKSPACE_SECURITY_UPDATED
+        - WORKSPACE_UPDATED
+
+    AuditTargetType:
+      type: string
+      description: Entity class the audit entry is attached to.
+      enum:
+        - WORKSPACE
+        - PROJECT
+        - ENVIRONMENT
+        - RESOURCE
+        - DEPLOYMENT
+
+    AuditActorSource:
+      type: string
+      description: Channel through which the actor reached the platform.
+      enum:
+        - API
+        - TOKEN
+        - KUBECTL
+        - SYSTEM
+
+    AuditDecision:
+      type: string
+      description: Outcome of an admission-gated audit entry. API-path entries are always ALLOWED; kubectl-path entries carry the admission webhook's verdict.
+      enum:
+        - ALLOWED
+        - DENIED
+
+    AuditFieldChange:
+      type: object
+      description: Before/after value pair for a single audited field. Values are always rendered as strings for uniform presentation.
+      required: [field]
+      properties:
+        field:
+          type: string
+        oldValue:
+          type: string
+          nullable: true
+        newValue:
+          type: string
+          nullable: true
+
     AuditLogEntry:
       type: object
       properties:
@@ -3917,18 +4014,45 @@ components:
           format: uuid
         actorEmail:
           type: string
+        actorTokenId:
+          type: string
+          format: uuid
+          nullable: true
         actorSource:
-          type: string
+          $ref: '#/components/schemas/AuditActorSource'
         action:
-          type: string
+          $ref: '#/components/schemas/AuditAction'
         targetType:
-          type: string
+          $ref: '#/components/schemas/AuditTargetType'
         targetId:
           type: string
-        context:
+        workspaceId:
+          type: string
+          format: uuid
+          nullable: true
+        projectId:
+          type: string
+          format: uuid
+          nullable: true
+        environmentId:
+          type: string
+          format: uuid
+          nullable: true
+        decision:
+          $ref: '#/components/schemas/AuditDecision'
+        denialReason:
+          type: string
+          nullable: true
+        changes:
+          type: array
+          description: Field-level before/after diffs, for mutations that track a named field change.
+          items:
+            $ref: '#/components/schemas/AuditFieldChange'
+        details:
           type: object
-        diff:
-          type: object
+          description: Flat key/value metadata specific to the action (e.g. invited email, granted role, token name).
+          additionalProperties:
+            type: string
         requestId:
           type: string
 

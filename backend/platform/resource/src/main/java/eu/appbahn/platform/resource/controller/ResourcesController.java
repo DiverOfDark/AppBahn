@@ -12,6 +12,7 @@ import eu.appbahn.platform.api.model.TriggerDeploymentResponse;
 import eu.appbahn.platform.api.model.UpdateResourceRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.ResourceLifecycleService;
 import eu.appbahn.platform.resource.service.ResourceService;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResourcesController implements ResourcesApi {
 
     private final ResourceService resourceService;
+    private final ResourceLifecycleService lifecycleService;
     private final DeploymentService deploymentService;
 
-    public ResourcesController(ResourceService resourceService, DeploymentService deploymentService) {
+    public ResourcesController(
+            ResourceService resourceService,
+            ResourceLifecycleService lifecycleService,
+            DeploymentService deploymentService) {
         this.resourceService = resourceService;
+        this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
     }
 
@@ -59,19 +65,19 @@ public class ResourcesController implements ResourcesApi {
 
     @Override
     public ResponseEntity<Void> stopResource(String slug) {
-        resourceService.stop(slug, AuthContextHolder.get());
+        lifecycleService.stop(slug, AuthContextHolder.get());
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<Void> startResource(String slug) {
-        resourceService.start(slug, AuthContextHolder.get());
+        lifecycleService.start(slug, AuthContextHolder.get());
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<Void> restartResource(String slug) {
-        resourceService.restart(slug, AuthContextHolder.get());
+        lifecycleService.restart(slug, AuthContextHolder.get());
         return ResponseEntity.noContent().build();
     }
 

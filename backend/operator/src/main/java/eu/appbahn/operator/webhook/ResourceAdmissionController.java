@@ -35,15 +35,16 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>Namespace not present in the snapshot → deny + cache-miss report.</li>
  *   <li>User not authorised on the target env (not in {@code allowed_user_subjects}, no
  *       group intersecting {@code allowed_oidc_groups} and not a platform admin) → deny.</li>
- *   <li>Env-level {@code max_resources} would be exceeded → deny.</li>
+ *   <li>Any quota dimension (resources / cpu / memory) would be exceeded at env, project,
+ *       or workspace scope → deny. Dimensions whose limit is 0 at a given scope are skipped
+ *       (fail-open); storage + replicas are always fail-open (no CR-side source yet).</li>
  *   <li>Otherwise allow, and emit an {@link AdmissionApproved} event so the platform seeds
  *       {@code resource_cache} with a PENDING row before the reconciler's watch fires
  *       (fast read-after-write for {@code kubectl apply}).</li>
  * </ul>
  * The operator's own ServiceAccount — resolved at startup via {@link OperatorIdentity} from the
  * projected token's {@code sub} claim — and users whose OIDC groups include a platform-admin
- * group bypass per-env RBAC + quota checks. CPU/memory/storage/replicas quota dimensions
- * remain on the platform-side REST path.
+ * group bypass per-env RBAC + quota checks.
  */
 @RestController
 public class ResourceAdmissionController {
@@ -54,16 +55,22 @@ public class ResourceAdmissionController {
     private final OperatorEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
     private final OperatorIdentity operatorIdentity;
+    private final AuditEventEmitter auditEventEmitter;
+    private final SelfChangeFingerprint selfChangeFingerprint;
 
     public ResourceAdmissionController(
             AdmissionSnapshotCache admissionCache,
             OperatorEventPublisher eventPublisher,
             ObjectMapper objectMapper,
-            OperatorIdentity operatorIdentity) {
+            OperatorIdentity operatorIdentity,
+            AuditEventEmitter auditEventEmitter,
+            SelfChangeFingerprint selfChangeFingerprint) {
         this.admissionCache = admissionCache;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
         this.operatorIdentity = operatorIdentity;
+        this.auditEventEmitter = auditEventEmitter;
+        this.selfChangeFingerprint = selfChangeFingerprint;
     }
 
     @PostMapping(
@@ -79,9 +86,18 @@ public class ResourceAdmissionController {
                 request.getNamespace(),
                 request.getName());
 
+        String user = request.getUserInfo() != null ? request.getUserInfo().getUsername() : null;
+        List<String> groups =
+                request.getUserInfo() != null && request.getUserInfo().getGroups() != null
+                        ? request.getUserInfo().getGroups()
+                        : List.of();
+        boolean isOperatorSelf = isOperatorSelf(user);
+        boolean isDryRun = Boolean.TRUE.equals(request.getDryRun());
+
         if ("DELETE".equalsIgnoreCase(request.getOperation())) {
             // K8s runs the webhook on DELETE too; no need to validate — the operator will
             // process the tombstone via its reconciler regardless.
+            maybeEmitAllowAudit(request, request.getName(), isOperatorSelf, isDryRun);
             return allow(request.getUid());
         }
 
@@ -90,6 +106,7 @@ public class ResourceAdmissionController {
         // those would deadlock: no reconciler → no snapshot → no admission.
         boolean isCreate = "CREATE".equalsIgnoreCase(request.getOperation());
         if (!isCreate) {
+            maybeEmitAllowAudit(request, request.getName(), isOperatorSelf, isDryRun);
             return allow(request.getUid());
         }
 
@@ -98,13 +115,7 @@ public class ResourceAdmissionController {
         // already validated the env existed + quota fit when it enqueued ApplyResource,
         // so we trust the operator's own ServiceAccount call unconditionally. We still
         // emit AdmissionApproved when we do happen to know the env (cache refreshed).
-        String user = request.getUserInfo() != null ? request.getUserInfo().getUsername() : null;
-        List<String> groups =
-                request.getUserInfo() != null && request.getUserInfo().getGroups() != null
-                        ? request.getUserInfo().getGroups()
-                        : List.of();
-        String operatorUser = operatorIdentity.username().orElse(null);
-        if (operatorUser != null && operatorUser.equals(user)) {
+        if (isOperatorSelf) {
             Optional<String> envSlug = admissionCache.environmentSlugForNamespace(request.getNamespace());
             if (envSlug.isPresent()) {
                 AdmissionReview response = allow(request.getUid());
@@ -119,40 +130,110 @@ public class ResourceAdmissionController {
 
         if (!admissionCache.hasSnapshot()) {
             emitCacheMiss(request, "no snapshot");
-            return deny(request.getUid(), "operator has no admission snapshot yet; reconnect the tunnel and retry");
+            return denyWithAudit(
+                    request,
+                    request.getName(),
+                    "operator has no admission snapshot yet; reconnect the tunnel and retry",
+                    isDryRun);
         }
 
         Optional<QuotaRbacSnapshot.EnvironmentEntry> entryOpt =
                 admissionCache.entryForNamespace(request.getNamespace());
         if (entryOpt.isEmpty()) {
             emitCacheMiss(request, "namespace not in snapshot");
-            return deny(request.getUid(), "namespace " + request.getNamespace() + " not known to the platform");
+            return denyWithAudit(
+                    request,
+                    request.getName(),
+                    "namespace " + request.getNamespace() + " not known to the platform",
+                    isDryRun);
         }
         QuotaRbacSnapshot.EnvironmentEntry entry = entryOpt.get();
 
         if (!isPlatformAdmin(groups) && !isAuthorisedForEnv(user, groups, entry)) {
             emitCacheMiss(request, "user not authorised for env");
-            return deny(
-                    request.getUid(),
+            return denyWithAudit(
+                    request,
+                    request.getName(),
                     "user " + (user == null ? "<anonymous>" : user) + " is not authorised to apply resources in "
-                            + entry.getSlug());
-        }
-
-        if (entry.getMaxResources() > 0 && entry.getCurrentResources() >= entry.getMaxResources()) {
-            return deny(
-                    request.getUid(),
-                    "environment " + entry.getSlug() + " resource quota exceeded (" + entry.getCurrentResources() + "/"
-                            + entry.getMaxResources() + ")");
+                            + entry.getSlug(),
+                    isDryRun);
         }
 
         ResourceCrd crd = parseObject(request.getObject());
         if (crd == null) {
-            return deny(request.getUid(), "admission request missing or unparseable `object`");
+            return denyWithAudit(
+                    request, request.getName(), "admission request missing or unparseable `object`", isDryRun);
+        }
+
+        var incoming = QuotaEnforcement.incomingFromConfig(
+                crd.getSpec() == null ? null : crd.getSpec().getConfig());
+
+        Optional<QuotaEnforcement.Denial> denial = QuotaEnforcement.checkEnv(entry, incoming);
+        if (denial.isEmpty() && !entry.getProjectSlug().isEmpty()) {
+            var project = admissionCache.projectEntry(entry.getProjectSlug());
+            if (project.isPresent()) {
+                denial = QuotaEnforcement.checkProject(
+                        project.get(), admissionCache.envEntriesInProject(entry.getProjectSlug()), incoming);
+            }
+        }
+        if (denial.isEmpty() && !entry.getWorkspaceSlug().isEmpty()) {
+            var workspace = admissionCache.workspaceEntry(entry.getWorkspaceSlug());
+            if (workspace.isPresent()) {
+                denial = QuotaEnforcement.checkWorkspace(
+                        workspace.get(), admissionCache.envEntriesInWorkspace(entry.getWorkspaceSlug()), incoming);
+            }
+        }
+        if (denial.isPresent()) {
+            return denyWithAudit(request, request.getName(), denial.get().message(), isDryRun);
         }
 
         AdmissionReview response = allow(request.getUid());
         emitApproved(entry.getSlug(), crd);
+        maybeEmitAllowAudit(request, request.getName(), false, isDryRun);
         return response;
+    }
+
+    private boolean isOperatorSelf(String user) {
+        String operatorUser = operatorIdentity.username().orElse(null);
+        return operatorUser != null && operatorUser.equals(user);
+    }
+
+    /** Emit audit for allowed admissions unless filtered by a loop guard. */
+    private void maybeEmitAllowAudit(
+            AdmissionRequest request, String targetSlug, boolean isOperatorSelf, boolean isDryRun) {
+        if (isOperatorSelf || isDryRun) {
+            return;
+        }
+        // Layer 3: belt-and-suspenders self-change guard. The resourceVersion on the incoming
+        // object is the pre-change version; we compare it against what the operator last wrote.
+        String rv = resourceVersionOf(request);
+        if (rv != null && selfChangeFingerprint.isSelfChange(request.getNamespace(), request.getName(), rv)) {
+            return;
+        }
+        auditEventEmitter.emitAllow(request, targetSlug);
+    }
+
+    /** Deny + emit the deny audit in one shot. */
+    private AdmissionReview denyWithAudit(
+            AdmissionRequest request, String targetSlug, String reason, boolean isDryRun) {
+        if (!isDryRun) {
+            auditEventEmitter.emitDeny(request, targetSlug, reason);
+        }
+        return deny(request.getUid(), reason);
+    }
+
+    /** Best-effort extraction of metadata.resourceVersion from the admission request's object. */
+    private String resourceVersionOf(AdmissionRequest request) {
+        Object obj = request.getObject() != null ? request.getObject() : request.getOldObject();
+        if (!(obj instanceof java.util.Map<?, ?> map)) {
+            return null;
+        }
+        Object metadata = map.get("metadata");
+        if (!(metadata instanceof java.util.Map<?, ?> metaMap)) {
+            return null;
+        }
+        Object rv = metaMap.get("resourceVersion");
+        return rv == null ? null : rv.toString();
     }
 
     private boolean isPlatformAdmin(Collection<String> userGroups) {

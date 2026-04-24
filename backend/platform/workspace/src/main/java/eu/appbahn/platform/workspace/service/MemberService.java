@@ -2,6 +2,8 @@ package eu.appbahn.platform.workspace.service;
 
 import eu.appbahn.platform.api.model.AddMemberRequest;
 import eu.appbahn.platform.api.model.AddMemberResponse;
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.UpdateMemberRequest;
 import eu.appbahn.platform.api.model.WorkspaceMember;
 import eu.appbahn.platform.common.audit.AuditLogService;
@@ -19,7 +21,6 @@ import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -107,13 +108,13 @@ public class MemberService {
             member.setRole(req.getRole().getValue());
             memberRepository.save(member);
 
-            auditLogService.log(
-                    ctx,
-                    "member.added",
-                    "workspace",
-                    ws.getSlug(),
-                    ws.getId(),
-                    Map.of("email", req.getEmail(), "role", req.getRole().getValue()));
+            auditLogService
+                    .audit(ctx, AuditAction.MEMBER_ADDED)
+                    .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                    .inWorkspace(ws.getId())
+                    .detail("email", req.getEmail())
+                    .detail("role", req.getRole().getValue())
+                    .save();
 
             var resp = new AddMemberResponse();
             resp.setStatus(AddMemberResponse.StatusEnum.ACTIVE);
@@ -126,13 +127,13 @@ public class MemberService {
             invitation.setInvitedBy(ctx.userId());
             pendingInvitationRepository.save(invitation);
 
-            auditLogService.log(
-                    ctx,
-                    "member.invited",
-                    "workspace",
-                    ws.getSlug(),
-                    ws.getId(),
-                    Map.of("email", req.getEmail(), "role", req.getRole().getValue()));
+            auditLogService
+                    .audit(ctx, AuditAction.MEMBER_INVITED)
+                    .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                    .inWorkspace(ws.getId())
+                    .detail("email", req.getEmail())
+                    .detail("role", req.getRole().getValue())
+                    .save();
 
             var resp = new AddMemberResponse();
             resp.setStatus(AddMemberResponse.StatusEnum.PENDING);
@@ -153,13 +154,12 @@ public class MemberService {
         member.setRole(req.getRole().getValue());
         memberRepository.save(member);
 
-        auditLogService.log(
-                ctx,
-                "member.updated",
-                "workspace",
-                ws.getSlug(),
-                ws.getId(),
-                Map.of("role", Map.of("old", oldRole, "new", req.getRole().getValue())));
+        auditLogService
+                .audit(ctx, AuditAction.MEMBER_UPDATED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .change("role", oldRole, req.getRole().getValue())
+                .save();
 
         var dto = new WorkspaceMember();
         dto.setUserId(userId);
@@ -178,7 +178,11 @@ public class MemberService {
                 .orElseThrow(() -> new NotFoundException("Member not found"));
         memberRepository.delete(member);
 
-        auditLogService.log(ctx, "member.removed", "workspace", ws.getSlug(), ws.getId(), null);
+        auditLogService
+                .audit(ctx, AuditAction.MEMBER_REMOVED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .save();
     }
 
     private WorkspaceEntity findWorkspace(String slug) {

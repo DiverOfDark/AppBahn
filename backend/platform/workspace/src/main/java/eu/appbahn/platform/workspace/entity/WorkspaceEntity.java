@@ -1,5 +1,7 @@
 package eu.appbahn.platform.workspace.entity;
 
+import eu.appbahn.platform.api.model.Quota;
+import eu.appbahn.platform.api.model.RegistryConfig;
 import eu.appbahn.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,12 +25,12 @@ public class WorkspaceEntity extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String quota;
+    private Quota quota;
 
     @Column(name = "runtime_class_name")
     private String runtimeClassName;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String registry;
+    private RegistryConfig registry;
 }

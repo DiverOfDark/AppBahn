@@ -1,5 +1,7 @@
 package eu.appbahn.platform.workspace.service;
 
+import eu.appbahn.platform.api.model.AuditAction;
+import eu.appbahn.platform.api.model.AuditTargetType;
 import eu.appbahn.platform.api.model.CreateEnvironmentTokenRequest;
 import eu.appbahn.platform.api.model.CreateEnvironmentTokenResponse;
 import eu.appbahn.platform.api.model.EnvironmentToken;
@@ -106,13 +108,14 @@ public class EnvironmentTokenService {
         tokenRepository.save(entity);
 
         var project = projectRepository.findById(env.getProjectId()).orElse(null);
-        auditLogService.log(
-                ctx,
-                "environment_token.created",
-                "environment",
-                env.getSlug(),
-                project != null ? project.getWorkspaceId() : null,
-                Map.of("tokenName", req.getName()));
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_TOKEN_CREATED)
+                .target(AuditTargetType.ENVIRONMENT, env.getSlug())
+                .inWorkspace(project != null ? project.getWorkspaceId() : null)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .detail("tokenName", req.getName())
+                .save();
 
         var resp = new CreateEnvironmentTokenResponse();
         resp.setId(entity.getId());
@@ -132,13 +135,13 @@ public class EnvironmentTokenService {
         tokenRepository.delete(entity);
 
         var project = projectRepository.findById(env.getProjectId()).orElse(null);
-        auditLogService.log(
-                ctx,
-                "environment_token.deleted",
-                "environment",
-                env.getSlug(),
-                project != null ? project.getWorkspaceId() : null,
-                null);
+        auditLogService
+                .audit(ctx, AuditAction.ENVIRONMENT_TOKEN_DELETED)
+                .target(AuditTargetType.ENVIRONMENT, env.getSlug())
+                .inWorkspace(project != null ? project.getWorkspaceId() : null)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .save();
     }
 
     private EnvironmentToken toApi(EnvironmentTokenEntity entity, Map<UUID, UserEntity> usersById) {

@@ -1,26 +1,30 @@
 package eu.appbahn.platform.tunnel.push;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.common.util.JsonUtil;
+import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.user.entity.UserEntity;
 import eu.appbahn.platform.user.repository.UserRepository;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
+import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentMemberOverrideRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.OidcGroupMappingRepository;
 import eu.appbahn.platform.workspace.repository.ProjectMemberOverrideRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
+import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.tunnel.v1.QuotaRbacCachePush;
 import eu.appbahn.tunnel.v1.QuotaRbacSnapshot;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,16 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Produces a {@link QuotaRbacCachePush} frame carrying everything the operator's admission
- * webhook needs to decide allow/deny locally: env↔namespace mappings, per-env resource-count
- * caps, current resource count, and the RBAC closure (OIDC subjects + groups that resolve to
- * {@link MemberRole#EDITOR} or higher on the environment).
+ * webhook needs to decide allow/deny locally: env↔namespace mappings, per-dimension quota
+ * caps at env/project/workspace levels, per-env current usage (so the webhook can roll up
+ * to project/workspace scopes by summing), and the RBAC closure (OIDC subjects + groups
+ * that resolve to {@link MemberRole#EDITOR} or higher on the environment).
  *
- * <p>Revision is content-addressed: identical snapshot bytes on any replica produce the same
- * revision, so the operator dedupes repeated pushes without cross-replica coordination.
- *
- * <p>v1 scope: env-level {@code maxResources} only. CPU/memory/storage/replicas quota
- * dimensions, and project/workspace-level enforcement at the admission webhook, remain on
- * the platform-side REST path (see {@code QuotaService}).
+ * <p>Revision is content-addressed: identical snapshot bytes on any replica produce the
+ * same revision, so the operator dedupes repeated pushes without cross-replica coordination.
  */
 @Service
 public class QuotaRbacSnapshotBuilder {
@@ -48,6 +49,7 @@ public class QuotaRbacSnapshotBuilder {
 
     private final EnvironmentRepository environmentRepository;
     private final ProjectRepository projectRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final OidcGroupMappingRepository oidcGroupMappingRepository;
     private final ProjectMemberOverrideRepository projectOverrideRepository;
@@ -55,12 +57,12 @@ public class QuotaRbacSnapshotBuilder {
     private final ResourceCacheRepository resourceCacheRepository;
     private final UserRepository userRepository;
     private final NamespaceService namespaceService;
-    private final ObjectMapper objectMapper;
     private final List<String> platformAdminGroups;
 
     public QuotaRbacSnapshotBuilder(
             EnvironmentRepository environmentRepository,
             ProjectRepository projectRepository,
+            WorkspaceRepository workspaceRepository,
             WorkspaceMemberRepository workspaceMemberRepository,
             OidcGroupMappingRepository oidcGroupMappingRepository,
             ProjectMemberOverrideRepository projectOverrideRepository,
@@ -68,10 +70,10 @@ public class QuotaRbacSnapshotBuilder {
             ResourceCacheRepository resourceCacheRepository,
             UserRepository userRepository,
             NamespaceService namespaceService,
-            ObjectMapper objectMapper,
             @Value("${platform.admin-groups:}") String platformAdminGroups) {
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
+        this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
         this.oidcGroupMappingRepository = oidcGroupMappingRepository;
         this.projectOverrideRepository = projectOverrideRepository;
@@ -79,7 +81,6 @@ public class QuotaRbacSnapshotBuilder {
         this.resourceCacheRepository = resourceCacheRepository;
         this.userRepository = userRepository;
         this.namespaceService = namespaceService;
-        this.objectMapper = objectMapper;
         this.platformAdminGroups = splitCsv(platformAdminGroups);
     }
 
@@ -88,11 +89,23 @@ public class QuotaRbacSnapshotBuilder {
         var snapshot = QuotaRbacSnapshot.newBuilder();
         platformAdminGroups.forEach(snapshot::addPlatformAdminGroups);
 
-        environmentRepository.findByTargetCluster(clusterName).stream()
-                // Sort by slug so proto bytes (and the revision hash) are deterministic
-                // across repeated calls and across platform replicas.
+        List<EnvironmentEntity> envs = environmentRepository.findByTargetCluster(clusterName).stream()
                 .sorted(Comparator.comparing(EnvironmentEntity::getSlug))
-                .forEach(env -> snapshot.addEnvironments(buildEntry(env)));
+                .toList();
+
+        Map<UUID, ProjectEntity> projectsById = loadProjects(envs);
+        Map<UUID, WorkspaceEntity> workspacesById = loadWorkspaces(projectsById.values());
+        Map<UUID, EnvUsage> usageByEnvId = loadEnvUsage(envs);
+
+        envs.forEach(env -> snapshot.addEnvironments(buildEnvEntry(env, projectsById, workspacesById, usageByEnvId)));
+
+        projectsById.values().stream()
+                .sorted(Comparator.comparing(ProjectEntity::getSlug))
+                .forEach(project -> snapshot.addProjects(buildProjectEntry(project, workspacesById)));
+
+        workspacesById.values().stream()
+                .sorted(Comparator.comparing(WorkspaceEntity::getSlug))
+                .forEach(ws -> snapshot.addWorkspaces(buildWorkspaceEntry(ws)));
 
         QuotaRbacSnapshot built = snapshot.build();
         return QuotaRbacCachePush.newBuilder()
@@ -101,24 +114,109 @@ public class QuotaRbacSnapshotBuilder {
                 .build();
     }
 
-    private QuotaRbacSnapshot.EnvironmentEntry buildEntry(EnvironmentEntity env) {
+    private Map<UUID, ProjectEntity> loadProjects(List<EnvironmentEntity> envs) {
+        Set<UUID> projectIds =
+                envs.stream().map(EnvironmentEntity::getProjectId).collect(Collectors.toSet());
+        Map<UUID, ProjectEntity> result = new LinkedHashMap<>();
+        projectRepository.findAllById(projectIds).forEach(p -> result.put(p.getId(), p));
+        return result;
+    }
+
+    private Map<UUID, WorkspaceEntity> loadWorkspaces(java.util.Collection<ProjectEntity> projects) {
+        Set<UUID> workspaceIds =
+                projects.stream().map(ProjectEntity::getWorkspaceId).collect(Collectors.toSet());
+        Map<UUID, WorkspaceEntity> result = new LinkedHashMap<>();
+        workspaceRepository.findAllById(workspaceIds).forEach(w -> result.put(w.getId(), w));
+        return result;
+    }
+
+    private Map<UUID, EnvUsage> loadEnvUsage(List<EnvironmentEntity> envs) {
+        Map<UUID, EnvUsage> usage = new HashMap<>();
+        envs.forEach(env -> usage.put(env.getId(), EnvUsage.empty()));
+        if (envs.isEmpty()) {
+            return usage;
+        }
+        List<UUID> envIds = envs.stream().map(EnvironmentEntity::getId).toList();
+        List<ResourceCacheEntity> resources = resourceCacheRepository.findByEnvironmentIdIn(envIds);
+        for (ResourceCacheEntity r : resources) {
+            usage.compute(
+                    r.getEnvironmentId(),
+                    (id, acc) -> EnvUsage.fromConfig(acc == null ? EnvUsage.empty() : acc, r.getConfig()));
+        }
+        return usage;
+    }
+
+    private QuotaRbacSnapshot.EnvironmentEntry buildEnvEntry(
+            EnvironmentEntity env,
+            Map<UUID, ProjectEntity> projectsById,
+            Map<UUID, WorkspaceEntity> workspacesById,
+            Map<UUID, EnvUsage> usageByEnvId) {
+        EnvUsage usage = usageByEnvId.getOrDefault(env.getId(), EnvUsage.empty());
+
         var entry = QuotaRbacSnapshot.EnvironmentEntry.newBuilder()
                 .setSlug(env.getSlug())
                 .setNamespace(namespaceService.computeNamespace(env.getSlug()))
-                .setCurrentResources(
-                        (int) Math.min(Integer.MAX_VALUE, resourceCacheRepository.countByEnvironmentId(env.getId())))
-                .setMaxResources(parseMaxResources(env.getQuota()));
+                .setLimits(dimensionsFromQuota(env.getQuota()))
+                .setCurrent(dimensionsFromUsage(usage));
 
-        ProjectEntity project = projectRepository.findById(env.getProjectId()).orElse(null);
+        ProjectEntity project = projectsById.get(env.getProjectId());
         if (project == null) {
-            // Orphan env — no workspace to resolve RBAC from. Fail-closed: no allowed users/groups.
+            // Orphan env — no workspace to resolve RBAC from. Fail-closed on users/groups,
+            // parent slugs stay empty so the webhook treats them as unknown scopes.
             return entry.build();
+        }
+        entry.setProjectSlug(project.getSlug());
+        WorkspaceEntity workspace = workspacesById.get(project.getWorkspaceId());
+        if (workspace != null) {
+            entry.setWorkspaceSlug(workspace.getSlug());
         }
         UUID workspaceId = project.getWorkspaceId();
 
         resolveAllowedSubjects(env.getId(), project.getId(), workspaceId).forEach(entry::addAllowedUserSubjects);
         resolveAllowedGroups(workspaceId).forEach(entry::addAllowedOidcGroups);
         return entry.build();
+    }
+
+    private QuotaRbacSnapshot.ProjectEntry buildProjectEntry(
+            ProjectEntity project, Map<UUID, WorkspaceEntity> workspacesById) {
+        var builder = QuotaRbacSnapshot.ProjectEntry.newBuilder()
+                .setSlug(project.getSlug())
+                .setLimits(dimensionsFromQuota(project.getQuota()));
+        WorkspaceEntity workspace = workspacesById.get(project.getWorkspaceId());
+        if (workspace != null) {
+            builder.setWorkspaceSlug(workspace.getSlug());
+        }
+        return builder.build();
+    }
+
+    private QuotaRbacSnapshot.WorkspaceEntry buildWorkspaceEntry(WorkspaceEntity workspace) {
+        return QuotaRbacSnapshot.WorkspaceEntry.newBuilder()
+                .setSlug(workspace.getSlug())
+                .setLimits(dimensionsFromQuota(workspace.getQuota()))
+                .build();
+    }
+
+    private static QuotaRbacSnapshot.QuotaDimensions dimensionsFromQuota(Quota quota) {
+        if (quota == null) {
+            return QuotaRbacSnapshot.QuotaDimensions.getDefaultInstance();
+        }
+        // No maxReplicas on the Quota POJO → always 0 (fail-open on the webhook).
+        return QuotaRbacSnapshot.QuotaDimensions.newBuilder()
+                .setResources(asUint(quota.getMaxResources()))
+                .setCpuMillicores(coresToMillicores(quota.getMaxCpuCores()))
+                .setMemoryMb(asUint(quota.getMaxMemoryMb()))
+                .setStorageGb(asUint(quota.getMaxStorageGb()))
+                .build();
+    }
+
+    private static QuotaRbacSnapshot.QuotaDimensions dimensionsFromUsage(EnvUsage usage) {
+        return QuotaRbacSnapshot.QuotaDimensions.newBuilder()
+                .setResources(usage.resources())
+                .setCpuMillicores(usage.cpuMillicores())
+                .setMemoryMb(usage.memoryMb())
+                .setStorageGb(usage.storageGb())
+                .setReplicas(usage.replicas())
+                .build();
     }
 
     /**
@@ -196,20 +294,18 @@ public class QuotaRbacSnapshotBuilder {
                 .collect(Collectors.toList());
     }
 
-    private int parseMaxResources(String quotaJson) {
-        if (quotaJson == null || quotaJson.isBlank()) {
+    private static int asUint(Integer value) {
+        if (value == null || value < 0) {
             return 0;
         }
-        try {
-            Quota quota = JsonUtil.parseJson(objectMapper, quotaJson, Quota.class);
-            Integer max = quota.getMaxResources();
-            return (max == null || max < 0) ? 0 : max;
-        } catch (RuntimeException e) {
-            // Malformed quota JSON is a platform-side data error — fail open on the per-env
-            // cap rather than locking out all kubectl applies. Platform-side REST path still
-            // rejects via QuotaService.
+        return value;
+    }
+
+    private static int coresToMillicores(Double cores) {
+        if (cores == null || cores < 0) {
             return 0;
         }
+        return (int) Math.round(cores * 1000.0);
     }
 
     private static List<String> splitCsv(String csv) {
