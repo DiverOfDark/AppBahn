@@ -1304,6 +1304,10 @@ export interface components {
       config: components['schemas']['ResourceConfig']
       links?: components['schemas']['LinkConfig'][]
     }
+    CredentialRef: {
+      secretName?: string
+      key?: string
+    }
     DockerSource: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -1437,7 +1441,7 @@ export interface components {
     SourceAuth: {
       /** @enum {string} */
       type?: 'none' | 'basic' | 'ssh_key'
-      credentialRef?: string
+      credentialRef?: components['schemas']['CredentialRef']
     }
     SourceConfig:
       | components['schemas']['DockerSource']

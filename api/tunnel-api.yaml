@@ -344,6 +344,13 @@ components:
           type: object
           additionalProperties:
             type: string
+    CredentialRef:
+      type: object
+      properties:
+        secretName:
+          type: string
+        key:
+          type: string
     CustomDomainStatus:
       type: object
       properties:
@@ -895,7 +902,7 @@ components:
           - basic
           - ssh_key
         credentialRef:
-          type: string
+          $ref: "#/components/schemas/CredentialRef"
     SourceConfig:
       discriminator:
         propertyName: type
