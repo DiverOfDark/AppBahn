@@ -77,7 +77,13 @@ public class ResourceLifecycleService {
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        if (!Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
+        // Reconcile against status: spec.stopped can race ahead of the operator under concurrent
+        // stop/start. If the resource is still STOPPED, write spec.stopped=false even when the
+        // spec already shows it — operator reconciliation is idempotent.
+        boolean specSaysStopped = Boolean.TRUE.equals(existingCrd.getSpec().getStopped());
+        boolean statusSaysStopped =
+                existingCrd.getStatus() != null && existingCrd.getStatus().getPhase() == ResourcePhase.STOPPED;
+        if (!specSaysStopped && !statusSaysStopped) {
             return;
         }
         existingCrd.getSpec().setStopped(false);
