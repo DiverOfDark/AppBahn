@@ -13,6 +13,7 @@ import eu.appbahn.shared.crd.ResourceSpec;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
 import eu.appbahn.shared.tunnel.FullSyncPayload;
 import eu.appbahn.shared.tunnel.ResourceSyncPayload;
+import eu.appbahn.shared.util.SlugFormat;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.HashMap;
@@ -58,6 +59,10 @@ public class ResourceSyncService {
     /** {@code preResolvedEnv} skips the lookup when the caller (fullSync) already has it. */
     @Transactional
     public void syncResource(ResourceSyncPayload request, EnvironmentEntity preResolvedEnv) {
+        if (!SlugFormat.isValid(request.slug())) {
+            log.warn("Skipping sync — slug does not match canonical format: {}", request.slug());
+            return;
+        }
         EnvironmentEntity env = preResolvedEnv != null
                 ? preResolvedEnv
                 : environmentRepository.findBySlug(request.environmentSlug()).orElse(null);
@@ -180,6 +185,10 @@ public class ResourceSyncService {
 
     @Transactional
     public void deleteResourceSync(String slug) {
+        if (!SlugFormat.isValid(slug)) {
+            log.warn("Skipping delete — slug does not match canonical format: {}", slug);
+            return;
+        }
         // Idempotent — ResourceService.delete may have already removed the row.
         resourceCacheRepository.deleteBySlugIfExists(slug);
         log.info("Deleted resource from cache: {}", slug);
