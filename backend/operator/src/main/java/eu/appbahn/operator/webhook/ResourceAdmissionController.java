@@ -11,6 +11,7 @@ import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
+import eu.appbahn.shared.util.DeepClone;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.api.model.StatusBuilder;
@@ -268,7 +269,7 @@ public class ResourceAdmissionController {
     private void emitApproved(String envSlug, ResourceCrd crd) {
         try {
             // Work off a deep copy — the caller's CRD must stay pristine.
-            ResourceCrd snapshot = objectMapper.convertValue(crd, ResourceCrd.class);
+            ResourceCrd snapshot = DeepClone.of(crd, objectMapper);
             if (snapshot.getMetadata() == null) {
                 snapshot.setMetadata(new ObjectMeta());
             }

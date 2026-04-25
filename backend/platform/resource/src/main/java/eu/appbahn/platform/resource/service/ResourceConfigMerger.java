@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.shared.crd.*;
+import eu.appbahn.shared.util.DeepClone;
 import io.fabric8.kubernetes.api.model.Quantity;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ final class ResourceConfigMerger {
 
     private static ResourceConfig doMerge(ResourceConfig existing, JsonNode patchNode, ObjectMapper objectMapper)
             throws JsonMappingException {
-        ResourceConfig result = deepCopy(existing);
+        ResourceConfig result = DeepClone.of(existing, objectMapper);
 
         if (patchNode.has("source") && !patchNode.get("source").isNull()) {
             JsonNode sourceNode = patchNode.get("source");
@@ -121,123 +122,11 @@ final class ResourceConfigMerger {
         return a.getNumericalAmount().compareTo(b.getNumericalAmount()) == 0;
     }
 
-    private static ResourceConfig deepCopy(ResourceConfig src) {
-        var copy = new ResourceConfig();
-        if (src.getSource() != null) {
-            copy.setSource(deepCopySource(src.getSource()));
-        }
-        if (src.getHosting() != null) {
-            var h = new ResourceConfig.HostingConfig();
-            h.setCpu(src.getHosting().getCpu());
-            h.setMemory(src.getHosting().getMemory());
-            h.setMinReplicas(src.getHosting().getMinReplicas());
-            h.setMaxReplicas(src.getHosting().getMaxReplicas());
-            copy.setHosting(h);
-        }
-        if (src.getNetworking() != null) {
-            var n = new ResourceConfig.NetworkingConfig();
-            if (src.getNetworking().getPorts() != null) {
-                n.setPorts(src.getNetworking().getPorts().stream()
-                        .map(p -> {
-                            var pc = new ResourceConfig.PortConfig();
-                            pc.setPort(p.getPort());
-                            pc.setExpose(p.getExpose());
-                            pc.setDomain(p.getDomain());
-                            return pc;
-                        })
-                        .collect(java.util.stream.Collectors.toCollection(ArrayList::new)));
-            }
-            copy.setNetworking(n);
-        }
-        if (src.getHealthCheck() != null) {
-            copy.setHealthCheck(deepCopyHealthCheck(src.getHealthCheck()));
-        }
-        if (src.getEnv() != null) {
-            copy.setEnv(new HashMap<>(src.getEnv()));
-        }
-        copy.setRunMode(src.getRunMode());
-        return copy;
-    }
-
     private static String sourceType(Source src) {
         return switch (src) {
             case DockerSource ds -> ds.getType();
             case GitSource gs -> gs.getType();
             case PromotionSource ps -> ps.getType();
         };
-    }
-
-    private static Source deepCopySource(Source src) {
-        return switch (src) {
-            case DockerSource ds -> {
-                var copy = new DockerSource();
-                copy.setType(ds.getType());
-                copy.setPollInterval(ds.getPollInterval());
-                copy.setWebhookEnabled(ds.getWebhookEnabled());
-                copy.setImage(ds.getImage());
-                copy.setTag(ds.getTag());
-                copy.setRegistryUrl(ds.getRegistryUrl());
-                copy.setCredentialRef(ds.getCredentialRef());
-                yield copy;
-            }
-            case GitSource gs -> {
-                var copy = new GitSource();
-                copy.setType(gs.getType());
-                copy.setPollInterval(gs.getPollInterval());
-                copy.setWebhookEnabled(gs.getWebhookEnabled());
-                copy.setUrl(gs.getUrl());
-                copy.setBranch(gs.getBranch());
-                copy.setPath(gs.getPath());
-                copy.setAuth(gs.getAuth());
-                copy.setBuildConfig(gs.getBuildConfig());
-                yield copy;
-            }
-            case PromotionSource ps -> {
-                var copy = new PromotionSource();
-                copy.setType(ps.getType());
-                copy.setPollInterval(ps.getPollInterval());
-                copy.setWebhookEnabled(ps.getWebhookEnabled());
-                copy.setSourceEnvironment(ps.getSourceEnvironment());
-                copy.setSourceResource(ps.getSourceResource());
-                copy.setAutoPromote(ps.getAutoPromote());
-                yield copy;
-            }
-        };
-    }
-
-    private static ResourceConfig.HealthCheckConfig deepCopyHealthCheck(ResourceConfig.HealthCheckConfig src) {
-        var hc = new ResourceConfig.HealthCheckConfig();
-        hc.setReadiness(deepCopyProbe(src.getReadiness()));
-        hc.setLiveness(deepCopyProbe(src.getLiveness()));
-        hc.setStartup(deepCopyProbe(src.getStartup()));
-        return hc;
-    }
-
-    private static ResourceConfig.ProbeConfig deepCopyProbe(ResourceConfig.ProbeConfig src) {
-        if (src == null) return null;
-        var p = new ResourceConfig.ProbeConfig();
-        if (src.getHttpGet() != null) {
-            var h = new ResourceConfig.HttpGetAction();
-            h.setPath(src.getHttpGet().getPath());
-            h.setPort(src.getHttpGet().getPort());
-            p.setHttpGet(h);
-        }
-        if (src.getTcpSocket() != null) {
-            var t = new ResourceConfig.TcpSocketAction();
-            t.setPort(src.getTcpSocket().getPort());
-            p.setTcpSocket(t);
-        }
-        if (src.getExec() != null) {
-            var e = new ResourceConfig.ExecAction();
-            e.setCommand(
-                    src.getExec().getCommand() != null
-                            ? new ArrayList<>(src.getExec().getCommand())
-                            : null);
-            p.setExec(e);
-        }
-        p.setInitialDelaySeconds(src.getInitialDelaySeconds());
-        p.setPeriodSeconds(src.getPeriodSeconds());
-        p.setFailureThreshold(src.getFailureThreshold());
-        return p;
     }
 }
