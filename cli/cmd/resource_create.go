@@ -93,11 +93,12 @@ Example:
 				imageTag = resourceCreateImage[idx+1:]
 			}
 
-			dockerSource := api.NewDockerSource("docker", imageName)
+			dockerSource := api.NewDockerSource("docker")
+			dockerSource.Image = &imageName
 			dockerSource.Tag = &imageTag
 			source := api.DockerSourceAsSourceConfig(dockerSource)
 
-			runMode := "continuous"
+			runMode := "CONTINUOUS"
 			config.Source = &source
 			config.Hosting = hosting
 			config.Networking = networking

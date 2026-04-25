@@ -1,6 +1,6 @@
 package eu.appbahn.operator.tunnel;
 
-import eu.appbahn.tunnel.v1.SubscribeCommandsRequest;
+import eu.appbahn.operator.tunnel.client.model.SubscribeCommandsRequest;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.util.concurrent.TimeUnit;
@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Holds one {@code SubscribeCommands} stream per operator process: a virtual thread opens it,
- * dispatches each {@link eu.appbahn.tunnel.v1.PlatformMessage} to {@link PlatformCommandHandler},
- * and reconnects with bounded exponential backoff on transport failure.
+ * Holds one SSE subscription per operator process: a virtual thread opens it, dispatches
+ * each frame to {@link PlatformCommandHandler}, and reconnects with bounded exponential
+ * backoff on transport failure.
  */
 @Service
 public class SubscribeCommandsBootstrap {
@@ -68,16 +68,15 @@ public class SubscribeCommandsBootstrap {
         long backoffMs = backoffInitialMs;
         while (running.get()) {
             try {
-                // Echo the operator's currently-applied snapshot revisions so the platform
-                // can skip a redundant HelloAck snapshot body when nothing has changed since
-                // the previous connection.
-                var req = SubscribeCommandsRequest.newBuilder()
-                        .setClusterName(config.clusterName())
-                        .setOperatorInstanceId(keyManager.operatorInstanceId().toString())
-                        .setOperatorVersion(System.getProperty("appbahn.version", "dev"))
-                        .setLastQuotaRbacRevision(admissionCache.revision())
-                        .setLastAdminConfigRevision(adminConfigCache.revision())
-                        .build();
+                // Echo the operator's currently-applied snapshot revisions so the platform can
+                // skip a redundant HelloAck snapshot body when nothing has changed since the
+                // previous connection.
+                var req = new SubscribeCommandsRequest();
+                req.setClusterName(config.clusterName());
+                req.setOperatorInstanceId(keyManager.operatorInstanceId().toString());
+                req.setOperatorVersion(System.getProperty("appbahn.version", "dev"));
+                req.setLastQuotaRbacRevision(admissionCache.revision());
+                req.setLastAdminConfigRevision(adminConfigCache.revision());
                 tunnelClient.subscribe(req, commandHandler::handle);
                 backoffMs = backoffInitialMs;
             } catch (Exception e) {

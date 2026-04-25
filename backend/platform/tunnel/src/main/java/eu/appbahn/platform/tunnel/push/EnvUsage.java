@@ -33,7 +33,7 @@ record EnvUsage(int resources, int cpuMillicores, int memoryMb, int storageGb, i
         if (config == null || config.getHosting() == null) {
             return acc.add(0, 0, 0, Labels.DEFAULT_REPLICAS);
         }
-        ResourceConfig.Hosting hosting = config.getHosting();
+        ResourceConfig.HostingConfig hosting = config.getHosting();
         int replicas = hosting.getEffectiveReplicasForQuota() != null
                 ? hosting.getEffectiveReplicasForQuota()
                 : Labels.DEFAULT_REPLICAS;

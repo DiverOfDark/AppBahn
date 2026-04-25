@@ -51,13 +51,16 @@ spring:
 springdoc:
   api-docs:
     path: /api/v1/openapi
+    version: openapi_3_0
   swagger-ui:
     enabled: false
 
 scalar:
   enabled: true
   path: /docs/api
-  url: /api/v1/openapi
+  # Point Scalar at the public group's endpoint — tunnel spec is internal plumbing
+  # and is published in parallel at /api/v1/openapi/tunnel.yaml.
+  url: /api/v1/openapi/public
   pageTitle: AppBahn API Reference
   theme: default
   layout: modern

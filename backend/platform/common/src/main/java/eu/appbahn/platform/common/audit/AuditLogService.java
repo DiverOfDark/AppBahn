@@ -1,9 +1,9 @@
 package eu.appbahn.platform.common.audit;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditFieldChange;
-import eu.appbahn.platform.api.model.AuditLogEntry;
-import eu.appbahn.platform.api.model.PagedAuditLogResponse;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditFieldChange;
+import eu.appbahn.platform.api.AuditLogEntry;
+import eu.appbahn.platform.api.PagedAuditLogResponse;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.common.util.PaginationUtil;
 import java.time.Instant;
@@ -35,9 +35,11 @@ public class AuditLogService {
 
     /** Build an {@link AuditFieldChange}; non-null values are coerced to string for uniform presentation. */
     public static AuditFieldChange change(String field, Object oldValue, Object newValue) {
-        return new AuditFieldChange(field)
-                .oldValue(oldValue != null ? oldValue.toString() : null)
-                .newValue(newValue != null ? newValue.toString() : null);
+        AuditFieldChange c = new AuditFieldChange();
+        c.setField(field);
+        c.setOldValue(oldValue != null ? oldValue.toString() : null);
+        c.setNewValue(newValue != null ? newValue.toString() : null);
+        return c;
     }
 
     public PagedAuditLogResponse query(

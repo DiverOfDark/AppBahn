@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the UpdateGroupMappingRequest type satisfies the MappedNullable interface at compile time
@@ -21,18 +19,15 @@ var _ MappedNullable = &UpdateGroupMappingRequest{}
 
 // UpdateGroupMappingRequest struct for UpdateGroupMappingRequest
 type UpdateGroupMappingRequest struct {
-	Role string `json:"role"`
+	Role *string `json:"role,omitempty"`
 }
-
-type _UpdateGroupMappingRequest UpdateGroupMappingRequest
 
 // NewUpdateGroupMappingRequest instantiates a new UpdateGroupMappingRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateGroupMappingRequest(role string) *UpdateGroupMappingRequest {
+func NewUpdateGroupMappingRequest() *UpdateGroupMappingRequest {
 	this := UpdateGroupMappingRequest{}
-	this.Role = role
 	return &this
 }
 
@@ -44,28 +39,36 @@ func NewUpdateGroupMappingRequestWithDefaults() *UpdateGroupMappingRequest {
 	return &this
 }
 
-// GetRole returns the Role field value
+// GetRole returns the Role field value if set, zero value otherwise.
 func (o *UpdateGroupMappingRequest) GetRole() string {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		var ret string
 		return ret
 	}
-
-	return o.Role
+	return *o.Role
 }
 
-// GetRoleOk returns a tuple with the Role field value
+// GetRoleOk returns a tuple with the Role field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdateGroupMappingRequest) GetRoleOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		return nil, false
 	}
-	return &o.Role, true
+	return o.Role, true
 }
 
-// SetRole sets field value
+// HasRole returns a boolean if a field has been set.
+func (o *UpdateGroupMappingRequest) HasRole() bool {
+	if o != nil && !IsNil(o.Role) {
+		return true
+	}
+
+	return false
+}
+
+// SetRole gets a reference to the given string and assigns it to the Role field.
 func (o *UpdateGroupMappingRequest) SetRole(v string) {
-	o.Role = v
+	o.Role = &v
 }
 
 func (o UpdateGroupMappingRequest) MarshalJSON() ([]byte, error) {
@@ -78,45 +81,10 @@ func (o UpdateGroupMappingRequest) MarshalJSON() ([]byte, error) {
 
 func (o UpdateGroupMappingRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["role"] = o.Role
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
+	}
 	return toSerialize, nil
-}
-
-func (o *UpdateGroupMappingRequest) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"role",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varUpdateGroupMappingRequest := _UpdateGroupMappingRequest{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdateGroupMappingRequest)
-
-	if err != nil {
-		return err
-	}
-
-	*o = UpdateGroupMappingRequest(varUpdateGroupMappingRequest)
-
-	return err
 }
 
 type NullableUpdateGroupMappingRequest struct {

@@ -4,7 +4,7 @@ import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
-import eu.appbahn.shared.crd.ResourceStatus;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -172,16 +172,17 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         return DeleteControl.defaultDelete();
     }
 
-    private ResourceStatus createErrorStatus(ResourceCrd resource, String message) {
-        var status = new ResourceStatus();
+    private ResourceStatusDetail createErrorStatus(ResourceCrd resource, String message) {
+        var status = new ResourceStatusDetail();
         status.setPhase(ResourcePhase.ERROR);
         status.setMessage(message);
         status.setObservedGeneration(resource.getMetadata().getGeneration());
         return status;
     }
 
-    private ResourceStatus deriveStatus(ResourceCrd resource, Deployment k8sDeployment, Context<ResourceCrd> context) {
-        var status = new ResourceStatus();
+    private ResourceStatusDetail deriveStatus(
+            ResourceCrd resource, Deployment k8sDeployment, Context<ResourceCrd> context) {
+        var status = new ResourceStatusDetail();
         status.setObservedGeneration(resource.getMetadata().getGeneration());
         // syncFailed is owned by syncToPlatform, not derived from K8s.
         if (resource.getStatus() != null) {
@@ -218,7 +219,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 status.setPhase(ResourcePhase.PENDING);
                 status.setMessage("Stopping...");
             }
-            var replicas = new ResourceStatus.ReplicaStatus();
+            var replicas = new ResourceStatusDetail.ReplicaStatus();
             replicas.setDesired(desired);
             replicas.setReady(ready);
             replicas.setUpdated(updated);
@@ -237,7 +238,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     prev != null && prev.getMessage() != null
                             ? prev.getMessage()
                             : "Deployment terminally failed; scaled to 0 to stop restart loop");
-            var replicas = new ResourceStatus.ReplicaStatus();
+            var replicas = new ResourceStatusDetail.ReplicaStatus();
             replicas.setDesired(desired);
             replicas.setReady(ready);
             replicas.setUpdated(updated);
@@ -249,7 +250,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             return status;
         }
 
-        var replicas = new ResourceStatus.ReplicaStatus();
+        var replicas = new ResourceStatusDetail.ReplicaStatus();
         replicas.setDesired(desired);
         replicas.setReady(ready);
         replicas.setUpdated(updated);
@@ -262,7 +263,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         if (ingressDomain != null) {
             var ingress = context.getSecondaryResource(Ingress.class).orElse(null);
             if (ingress != null && hasHost(ingress, ingressDomain)) {
-                var cd = new ResourceStatus.CustomDomainStatus();
+                var cd = new ResourceStatusDetail.CustomDomainStatus();
                 cd.setDomain(ingressDomain);
                 cd.setStatus(eu.appbahn.shared.crd.DomainStatus.ACTIVE);
                 status.setCustomDomains(List.of(cd));
@@ -371,7 +372,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         return ingress.getSpec().getRules().stream().anyMatch(rule -> expectedHost.equals(rule.getHost()));
     }
 
-    private static boolean statusEquals(ResourceStatus a, ResourceStatus b) {
+    private static boolean statusEquals(ResourceStatusDetail a, ResourceStatusDetail b) {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return Objects.equals(a.getPhase(), b.getPhase())
@@ -384,7 +385,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && replicasEqual(a.getReplicas(), b.getReplicas());
     }
 
-    private static boolean replicasEqual(ResourceStatus.ReplicaStatus a, ResourceStatus.ReplicaStatus b) {
+    private static boolean replicasEqual(ResourceStatusDetail.ReplicaStatus a, ResourceStatusDetail.ReplicaStatus b) {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return a.getDesired() == b.getDesired()

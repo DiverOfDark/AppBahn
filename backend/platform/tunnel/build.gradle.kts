@@ -9,7 +9,6 @@ tasks.named<Jar>("jar") {
 
 dependencies {
     implementation(project(":shared"))
-    implementation(project(":tunnel-api"))
     implementation(project(":platform:common"))
     implementation(project(":platform:api-spec"))
     implementation(project(":platform:workspace"))
@@ -22,8 +21,6 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.fabric8.kubernetes.client)
-    implementation(libs.protobuf.java)
-    implementation(libs.protobuf.java.util)
     implementation(libs.uuid.creator)
 
     testImplementation(libs.spring.boot.starter.test)

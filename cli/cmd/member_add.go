@@ -38,8 +38,8 @@ Example:
 		}
 
 		req := api.AddMemberRequest{
-			Email: memberAddEmail,
-			Role:  memberAddRole,
+			Email: &memberAddEmail,
+			Role:  &memberAddRole,
 		}
 		resp, _, err := client.WorkspacesAPI.AddWorkspaceMember(ctx, memberAddWorkspace).
 			AddMemberRequest(req).Execute()

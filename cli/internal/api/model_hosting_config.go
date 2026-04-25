@@ -19,14 +19,10 @@ var _ MappedNullable = &HostingConfig{}
 
 // HostingConfig struct for HostingConfig
 type HostingConfig struct {
-	// Kubernetes CPU quantity, e.g. '500m' or '2'
-	Cpu *string `json:"cpu,omitempty"`
-	// Kubernetes memory quantity, e.g. '256Mi' or '1Gi'
-	Memory *string `json:"memory,omitempty"`
-	// Minimum replicas (baseline count); used with maxReplicas for autoscaling
-	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	// Maximum replicas for autoscaling; used for worst-case quota calculation
-	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+	Cpu         *string `json:"cpu,omitempty"`
+	Memory      *string `json:"memory,omitempty"`
+	MinReplicas *int32  `json:"minReplicas,omitempty"`
+	MaxReplicas *int32  `json:"maxReplicas,omitempty"`
 }
 
 // NewHostingConfig instantiates a new HostingConfig object

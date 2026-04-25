@@ -70,8 +70,6 @@ const quota = ref<Quota>({
   maxMemoryMb: undefined,
   maxStorageGb: undefined,
   maxResources: undefined,
-  maxDeploymentResources: undefined,
-  maxDatabaseResources: undefined,
 })
 
 // -- Registry --
@@ -197,7 +195,7 @@ async function inviteMember() {
       params: { path: { slug: wsSlug.value } },
       body: { email: inviteEmail.value.trim(), role: inviteRole.value },
     })
-    if (data?.status === 'pending') {
+    if (data?.status === 'PENDING') {
       inviteResult.value = 'pending'
     }
     showInvite.value = false
@@ -213,8 +211,8 @@ async function inviteMember() {
 
 async function updateMemberRole(userId: string, role: Role) {
   try {
-    await api.PATCH('/workspaces/{slug}/members/{userId}', {
-      params: { path: { slug: wsSlug.value, userId } },
+    await api.PATCH('/workspaces/{slug}/members/{user_id}', {
+      params: { path: { slug: wsSlug.value, user_id: userId } },
       body: { role },
     })
     await fetchMembers()
@@ -225,8 +223,8 @@ async function updateMemberRole(userId: string, role: Role) {
 
 async function removeMember(userId: string) {
   try {
-    await api.DELETE('/workspaces/{slug}/members/{userId}', {
-      params: { path: { slug: wsSlug.value, userId } },
+    await api.DELETE('/workspaces/{slug}/members/{user_id}', {
+      params: { path: { slug: wsSlug.value, user_id: userId } },
     })
     await fetchMembers()
   } catch {
@@ -257,8 +255,8 @@ async function addGroupMapping() {
 
 async function updateMappingRole(mappingId: string, role: Role) {
   try {
-    await api.PATCH('/workspaces/{slug}/group-mappings/{mappingId}', {
-      params: { path: { slug: wsSlug.value, mappingId } },
+    await api.PATCH('/workspaces/{slug}/group-mappings/{mapping_id}', {
+      params: { path: { slug: wsSlug.value, mapping_id: mappingId } },
       body: { role },
     })
     await fetchGroupMappings()
@@ -269,8 +267,8 @@ async function updateMappingRole(mappingId: string, role: Role) {
 
 async function deleteMapping(mappingId: string) {
   try {
-    await api.DELETE('/workspaces/{slug}/group-mappings/{mappingId}', {
-      params: { path: { slug: wsSlug.value, mappingId } },
+    await api.DELETE('/workspaces/{slug}/group-mappings/{mapping_id}', {
+      params: { path: { slug: wsSlug.value, mapping_id: mappingId } },
     })
     await fetchGroupMappings()
   } catch {
@@ -567,24 +565,6 @@ onMounted(fetchTabData)
         <label class="form-label">
           Max Resources
           <input v-model.number="quota.maxResources" class="form-input" type="number" min="0" />
-        </label>
-        <label class="form-label">
-          Max Deployment Resources
-          <input
-            v-model.number="quota.maxDeploymentResources"
-            class="form-input"
-            type="number"
-            min="0"
-          />
-        </label>
-        <label class="form-label">
-          Max Database Resources
-          <input
-            v-model.number="quota.maxDatabaseResources"
-            class="form-input"
-            type="number"
-            min="0"
-          />
         </label>
         <div class="form-actions">
           <button type="submit" class="btn-primary" :disabled="saving">

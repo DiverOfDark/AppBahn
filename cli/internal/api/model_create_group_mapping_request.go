@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the CreateGroupMappingRequest type satisfies the MappedNullable interface at compile time
@@ -21,20 +19,16 @@ var _ MappedNullable = &CreateGroupMappingRequest{}
 
 // CreateGroupMappingRequest struct for CreateGroupMappingRequest
 type CreateGroupMappingRequest struct {
-	OidcGroup string `json:"oidcGroup"`
-	Role      string `json:"role"`
+	OidcGroup *string `json:"oidcGroup,omitempty"`
+	Role      *string `json:"role,omitempty"`
 }
-
-type _CreateGroupMappingRequest CreateGroupMappingRequest
 
 // NewCreateGroupMappingRequest instantiates a new CreateGroupMappingRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateGroupMappingRequest(oidcGroup string, role string) *CreateGroupMappingRequest {
+func NewCreateGroupMappingRequest() *CreateGroupMappingRequest {
 	this := CreateGroupMappingRequest{}
-	this.OidcGroup = oidcGroup
-	this.Role = role
 	return &this
 }
 
@@ -46,52 +40,68 @@ func NewCreateGroupMappingRequestWithDefaults() *CreateGroupMappingRequest {
 	return &this
 }
 
-// GetOidcGroup returns the OidcGroup field value
+// GetOidcGroup returns the OidcGroup field value if set, zero value otherwise.
 func (o *CreateGroupMappingRequest) GetOidcGroup() string {
-	if o == nil {
+	if o == nil || IsNil(o.OidcGroup) {
 		var ret string
 		return ret
 	}
-
-	return o.OidcGroup
+	return *o.OidcGroup
 }
 
-// GetOidcGroupOk returns a tuple with the OidcGroup field value
+// GetOidcGroupOk returns a tuple with the OidcGroup field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *CreateGroupMappingRequest) GetOidcGroupOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.OidcGroup) {
 		return nil, false
 	}
-	return &o.OidcGroup, true
+	return o.OidcGroup, true
 }
 
-// SetOidcGroup sets field value
+// HasOidcGroup returns a boolean if a field has been set.
+func (o *CreateGroupMappingRequest) HasOidcGroup() bool {
+	if o != nil && !IsNil(o.OidcGroup) {
+		return true
+	}
+
+	return false
+}
+
+// SetOidcGroup gets a reference to the given string and assigns it to the OidcGroup field.
 func (o *CreateGroupMappingRequest) SetOidcGroup(v string) {
-	o.OidcGroup = v
+	o.OidcGroup = &v
 }
 
-// GetRole returns the Role field value
+// GetRole returns the Role field value if set, zero value otherwise.
 func (o *CreateGroupMappingRequest) GetRole() string {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		var ret string
 		return ret
 	}
-
-	return o.Role
+	return *o.Role
 }
 
-// GetRoleOk returns a tuple with the Role field value
+// GetRoleOk returns a tuple with the Role field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *CreateGroupMappingRequest) GetRoleOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		return nil, false
 	}
-	return &o.Role, true
+	return o.Role, true
 }
 
-// SetRole sets field value
+// HasRole returns a boolean if a field has been set.
+func (o *CreateGroupMappingRequest) HasRole() bool {
+	if o != nil && !IsNil(o.Role) {
+		return true
+	}
+
+	return false
+}
+
+// SetRole gets a reference to the given string and assigns it to the Role field.
 func (o *CreateGroupMappingRequest) SetRole(v string) {
-	o.Role = v
+	o.Role = &v
 }
 
 func (o CreateGroupMappingRequest) MarshalJSON() ([]byte, error) {
@@ -104,47 +114,13 @@ func (o CreateGroupMappingRequest) MarshalJSON() ([]byte, error) {
 
 func (o CreateGroupMappingRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["oidcGroup"] = o.OidcGroup
-	toSerialize["role"] = o.Role
+	if !IsNil(o.OidcGroup) {
+		toSerialize["oidcGroup"] = o.OidcGroup
+	}
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
+	}
 	return toSerialize, nil
-}
-
-func (o *CreateGroupMappingRequest) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"oidcGroup",
-		"role",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varCreateGroupMappingRequest := _CreateGroupMappingRequest{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varCreateGroupMappingRequest)
-
-	if err != nil {
-		return err
-	}
-
-	*o = CreateGroupMappingRequest(varCreateGroupMappingRequest)
-
-	return err
 }
 
 type NullableCreateGroupMappingRequest struct {

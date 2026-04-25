@@ -1,9 +1,11 @@
 package eu.appbahn.operator.webhook;
 
+import eu.appbahn.operator.tunnel.client.model.EnvironmentEntry;
+import eu.appbahn.operator.tunnel.client.model.ProjectEntry;
+import eu.appbahn.operator.tunnel.client.model.QuotaDimensions;
+import eu.appbahn.operator.tunnel.client.model.WorkspaceEntry;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
-import eu.appbahn.tunnel.v1.QuotaRbacSnapshot;
-import eu.appbahn.tunnel.v1.QuotaRbacSnapshot.QuotaDimensions;
 import io.fabric8.kubernetes.api.model.Quantity;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +14,8 @@ import java.util.Optional;
  * Computes per-dimension quota decisions at env/project/workspace scopes for the admission
  * webhook. Fail-open semantics on every dimension: a limit of {@code 0} (or any dimension
  * whose "incoming" value cannot be derived from the CR) is skipped. The platform-side REST
- * path ({@code QuotaService}) is still authoritative — admission exists to catch kubectl-direct
- * applies that bypass the platform API.
+ * path ({@code QuotaService}) is still authoritative — admission exists to catch
+ * kubectl-direct applies that bypass the platform API.
  */
 final class QuotaEnforcement {
 
@@ -26,22 +28,20 @@ final class QuotaEnforcement {
      * {@link Labels#DEFAULT_REPLICAS}). Storage stays 0 — no CR-side source yet.
      */
     static QuotaDimensions incomingFromConfig(ResourceConfig config) {
+        var d = new QuotaDimensions();
+        d.setResources(1);
         if (config == null || config.getHosting() == null) {
-            return QuotaDimensions.newBuilder()
-                    .setResources(1)
-                    .setReplicas(Labels.DEFAULT_REPLICAS)
-                    .build();
+            d.setReplicas(Labels.DEFAULT_REPLICAS);
+            return d;
         }
-        ResourceConfig.Hosting hosting = config.getHosting();
+        ResourceConfig.HostingConfig hosting = config.getHosting();
         int replicas = hosting.getEffectiveReplicasForQuota() != null
                 ? hosting.getEffectiveReplicasForQuota()
                 : Labels.DEFAULT_REPLICAS;
-        return QuotaDimensions.newBuilder()
-                .setResources(1)
-                .setCpuMillicores(parseCpuMillicores(hosting.getCpu()) * replicas)
-                .setMemoryMb(parseMemoryMb(hosting.getMemory()) * replicas)
-                .setReplicas(replicas)
-                .build();
+        d.setCpuMillicores(parseCpuMillicores(hosting.getCpu()) * replicas);
+        d.setMemoryMb(parseMemoryMb(hosting.getMemory()) * replicas);
+        d.setReplicas(replicas);
+        return d;
     }
 
     /** Reason to send back to kube-apiserver when a dimension trips. */
@@ -60,35 +60,51 @@ final class QuotaEnforcement {
      * Check all enforced dimensions at env scope. The env-level current usage already excludes
      * the CR under admission (it isn't in resource_cache yet), so we add {@code incoming} once.
      */
-    static Optional<Denial> checkEnv(QuotaRbacSnapshot.EnvironmentEntry env, QuotaDimensions incoming) {
-        return firstExceeded("environment", env.getSlug(), env.getCurrent(), incoming, env.getLimits());
+    static Optional<Denial> checkEnv(EnvironmentEntry env, QuotaDimensions incoming) {
+        return firstExceeded(
+                "environment",
+                env.getSlug(),
+                env.getCurrent() == null ? new QuotaDimensions() : env.getCurrent(),
+                incoming,
+                env.getLimits() == null ? new QuotaDimensions() : env.getLimits());
     }
 
     /**
      * Check all enforced dimensions at project scope by summing per-env current usage for envs
-     * whose {@code project_slug} matches. Storage + replicas are not enforced (storage has no
+     * whose {@code projectSlug} matches. Storage + replicas are not enforced (storage has no
      * source on the CR spec yet; replicas is not a first-class Quota dimension on the platform).
      */
     static Optional<Denial> checkProject(
-            QuotaRbacSnapshot.ProjectEntry project,
-            List<QuotaRbacSnapshot.EnvironmentEntry> envsInProject,
-            QuotaDimensions incoming) {
-        return firstExceeded("project", project.getSlug(), sumCurrent(envsInProject), incoming, project.getLimits());
+            ProjectEntry project, List<EnvironmentEntry> envsInProject, QuotaDimensions incoming) {
+        return firstExceeded(
+                "project",
+                project.getSlug(),
+                sumCurrent(envsInProject),
+                incoming,
+                project.getLimits() == null ? new QuotaDimensions() : project.getLimits());
     }
 
     static Optional<Denial> checkWorkspace(
-            QuotaRbacSnapshot.WorkspaceEntry workspace,
-            List<QuotaRbacSnapshot.EnvironmentEntry> envsInWorkspace,
-            QuotaDimensions incoming) {
+            WorkspaceEntry workspace, List<EnvironmentEntry> envsInWorkspace, QuotaDimensions incoming) {
         return firstExceeded(
-                "workspace", workspace.getSlug(), sumCurrent(envsInWorkspace), incoming, workspace.getLimits());
+                "workspace",
+                workspace.getSlug(),
+                sumCurrent(envsInWorkspace),
+                incoming,
+                workspace.getLimits() == null ? new QuotaDimensions() : workspace.getLimits());
     }
 
     private static Optional<Denial> firstExceeded(
             String scope, String slug, QuotaDimensions current, QuotaDimensions incoming, QuotaDimensions limits) {
         // storage + replicas are intentionally omitted: no CR-side source / no Quota field.
         Optional<Denial> hit = check(
-                scope, slug, "resources", "", current.getResources(), incoming.getResources(), limits.getResources());
+                scope,
+                slug,
+                "resources",
+                "",
+                orZero(current.getResources()),
+                orZero(incoming.getResources()),
+                orZero(limits.getResources()));
         if (hit.isPresent()) {
             return hit;
         }
@@ -97,13 +113,20 @@ final class QuotaEnforcement {
                 slug,
                 "cpu",
                 "m",
-                current.getCpuMillicores(),
-                incoming.getCpuMillicores(),
-                limits.getCpuMillicores());
+                orZero(current.getCpuMillicores()),
+                orZero(incoming.getCpuMillicores()),
+                orZero(limits.getCpuMillicores()));
         if (hit.isPresent()) {
             return hit;
         }
-        return check(scope, slug, "memory", "MiB", current.getMemoryMb(), incoming.getMemoryMb(), limits.getMemoryMb());
+        return check(
+                scope,
+                slug,
+                "memory",
+                "MiB",
+                orZero(current.getMemoryMb()),
+                orZero(incoming.getMemoryMb()),
+                orZero(limits.getMemoryMb()));
     }
 
     private static Optional<Denial> check(
@@ -118,7 +141,7 @@ final class QuotaEnforcement {
         return Optional.of(new Denial(scope, slug, dimension, unit, total, limit));
     }
 
-    private static QuotaDimensions sumCurrent(List<QuotaRbacSnapshot.EnvironmentEntry> envs) {
+    private static QuotaDimensions sumCurrent(List<EnvironmentEntry> envs) {
         long resources = 0;
         long cpu = 0;
         long memory = 0;
@@ -126,19 +149,24 @@ final class QuotaEnforcement {
         long replicas = 0;
         for (var e : envs) {
             QuotaDimensions c = e.getCurrent();
-            resources += c.getResources();
-            cpu += c.getCpuMillicores();
-            memory += c.getMemoryMb();
-            storage += c.getStorageGb();
-            replicas += c.getReplicas();
+            if (c == null) continue;
+            resources += orZero(c.getResources());
+            cpu += orZero(c.getCpuMillicores());
+            memory += orZero(c.getMemoryMb());
+            storage += orZero(c.getStorageGb());
+            replicas += orZero(c.getReplicas());
         }
-        return QuotaDimensions.newBuilder()
-                .setResources((int) Math.min(Integer.MAX_VALUE, resources))
-                .setCpuMillicores((int) Math.min(Integer.MAX_VALUE, cpu))
-                .setMemoryMb((int) Math.min(Integer.MAX_VALUE, memory))
-                .setStorageGb((int) Math.min(Integer.MAX_VALUE, storage))
-                .setReplicas((int) Math.min(Integer.MAX_VALUE, replicas))
-                .build();
+        var d = new QuotaDimensions();
+        d.setResources((int) Math.min(Integer.MAX_VALUE, resources));
+        d.setCpuMillicores((int) Math.min(Integer.MAX_VALUE, cpu));
+        d.setMemoryMb((int) Math.min(Integer.MAX_VALUE, memory));
+        d.setStorageGb((int) Math.min(Integer.MAX_VALUE, storage));
+        d.setReplicas((int) Math.min(Integer.MAX_VALUE, replicas));
+        return d;
+    }
+
+    private static int orZero(Integer value) {
+        return value == null ? 0 : value;
     }
 
     private static int parseCpuMillicores(Quantity cpu) {

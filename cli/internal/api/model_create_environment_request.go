@@ -21,9 +21,10 @@ var _ MappedNullable = &CreateEnvironmentRequest{}
 
 // CreateEnvironmentRequest struct for CreateEnvironmentRequest
 type CreateEnvironmentRequest struct {
-	Name        string  `json:"name"`
-	ProjectSlug string  `json:"projectSlug"`
-	Description *string `json:"description,omitempty"`
+	Name          string  `json:"name"`
+	ProjectSlug   string  `json:"projectSlug"`
+	Description   *string `json:"description,omitempty"`
+	TargetCluster *string `json:"targetCluster,omitempty"`
 }
 
 type _CreateEnvironmentRequest CreateEnvironmentRequest
@@ -127,6 +128,38 @@ func (o *CreateEnvironmentRequest) SetDescription(v string) {
 	o.Description = &v
 }
 
+// GetTargetCluster returns the TargetCluster field value if set, zero value otherwise.
+func (o *CreateEnvironmentRequest) GetTargetCluster() string {
+	if o == nil || IsNil(o.TargetCluster) {
+		var ret string
+		return ret
+	}
+	return *o.TargetCluster
+}
+
+// GetTargetClusterOk returns a tuple with the TargetCluster field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateEnvironmentRequest) GetTargetClusterOk() (*string, bool) {
+	if o == nil || IsNil(o.TargetCluster) {
+		return nil, false
+	}
+	return o.TargetCluster, true
+}
+
+// HasTargetCluster returns a boolean if a field has been set.
+func (o *CreateEnvironmentRequest) HasTargetCluster() bool {
+	if o != nil && !IsNil(o.TargetCluster) {
+		return true
+	}
+
+	return false
+}
+
+// SetTargetCluster gets a reference to the given string and assigns it to the TargetCluster field.
+func (o *CreateEnvironmentRequest) SetTargetCluster(v string) {
+	o.TargetCluster = &v
+}
+
 func (o CreateEnvironmentRequest) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -141,6 +174,9 @@ func (o CreateEnvironmentRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize["projectSlug"] = o.ProjectSlug
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.TargetCluster) {
+		toSerialize["targetCluster"] = o.TargetCluster
 	}
 	return toSerialize, nil
 }

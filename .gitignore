@@ -18,3 +18,5 @@ cli/dist/
 
 # Helm values with secrets
 helm/values-production.yaml
+# Allure raw results (run output, not artefacts)
+allure-results/

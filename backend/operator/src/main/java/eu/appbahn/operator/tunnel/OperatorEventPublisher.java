@@ -1,15 +1,13 @@
 package eu.appbahn.operator.tunnel;
 
+import eu.appbahn.operator.tunnel.client.model.FullResourceSyncChunk;
+import eu.appbahn.operator.tunnel.client.model.OperatorEvent;
+import eu.appbahn.operator.tunnel.client.model.PushEventsAck;
+import eu.appbahn.operator.tunnel.client.model.PushEventsRequest;
+import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
+import eu.appbahn.operator.tunnel.client.model.ResourceSyncBatch;
+import eu.appbahn.operator.tunnel.client.model.ResourceSyncItem;
 import eu.appbahn.shared.crd.ResourceCrd;
-import eu.appbahn.tunnel.v1.FullResourceSyncChunk;
-import eu.appbahn.tunnel.v1.OperatorEvent;
-import eu.appbahn.tunnel.v1.PushEventsAck;
-import eu.appbahn.tunnel.v1.PushEventsRequest;
-import eu.appbahn.tunnel.v1.ResourceDeletedBatch;
-import eu.appbahn.tunnel.v1.ResourceSyncBatch;
-import eu.appbahn.tunnel.v1.ResourceSyncItem;
-import eu.appbahn.tunnel.wire.ResourceWireMapper;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,59 +15,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-/**
- * Publishes reconcile batches, deletions and full-sync chunks via {@code PushEvents}.
- */
+/** Publishes reconcile batches, deletions and full-sync chunks via {@link TunnelApiClient#pushEvents}. */
 @Service
 public class OperatorEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(OperatorEventPublisher.class);
     private static final int FULL_SYNC_CHUNK_SIZE = 100;
 
-    private final OperatorTunnelClient tunnelClient;
+    private final TunnelApiClient tunnelApiClient;
     private final OperatorTunnelConfig tunnelConfig;
 
-    public OperatorEventPublisher(OperatorTunnelClient tunnelClient, OperatorTunnelConfig tunnelConfig) {
-        this.tunnelClient = tunnelClient;
+    public OperatorEventPublisher(TunnelApiClient tunnelApiClient, OperatorTunnelConfig tunnelConfig) {
+        this.tunnelApiClient = tunnelApiClient;
         this.tunnelConfig = tunnelConfig;
     }
 
-    /** Emit a single pre-built {@link OperatorEvent}. Used by the admission webhook. */
-    public void emit(OperatorEvent event) throws IOException {
+    /** Emit a single pre-built event. Used by the admission webhook. */
+    public void emit(OperatorEvent event) {
         send(List.of(event));
     }
 
-    public void emitSync(ResourceCrd crd) throws IOException {
-        ResourceSyncItem item = toSyncItem(crd);
-        var event = OperatorEvent.newBuilder()
-                .setResourceSyncBatch(ResourceSyncBatch.newBuilder().addItems(item))
-                .build();
-        send(List.of(event));
+    public void emitSync(ResourceCrd crd) {
+        var batch = new ResourceSyncBatch();
+        batch.getItems().add(toSyncItem(crd));
+        send(List.of(batch));
     }
 
-    public void emitDeleted(String slug) throws IOException {
-        var event = OperatorEvent.newBuilder()
-                .setResourceDeletedBatch(ResourceDeletedBatch.newBuilder().addResourceSlugs(slug))
-                .build();
+    public void emitDeleted(String slug) {
+        var event = new ResourceDeletedBatch();
+        event.getResourceSlugs().add(slug);
         send(List.of(event));
     }
 
     /**
-     * Emit a full set of Resource CRs as one or more {@link FullResourceSyncChunk}s,
-     * the last of which is marked {@code complete=true}. Chunks may land on different
-     * platform replicas — the platform buffers them and commits set-diff on complete.
+     * Emit a full set of Resource CRs as one or more {@link FullResourceSyncChunk}s, the last
+     * of which is marked {@code complete=true}. Chunks may land on different platform
+     * replicas — the platform buffers them and commits the set-diff on complete.
      */
-    public void emitFullSync(List<ResourceCrd> crds) throws IOException {
+    public void emitFullSync(List<ResourceCrd> crds) {
         UUID sessionId = UUID.randomUUID();
         if (crds.isEmpty()) {
-            // Still send a complete=true chunk so the platform prunes stale rows.
-            var event = OperatorEvent.newBuilder()
-                    .setFullResourceSyncChunk(FullResourceSyncChunk.newBuilder()
-                            .setSyncSessionId(sessionId.toString())
-                            .setChunkIndex(0)
-                            .setComplete(true))
-                    .build();
-            send(List.of(event));
+            var chunk = new FullResourceSyncChunk();
+            chunk.setSyncSessionId(sessionId.toString());
+            chunk.setChunkIndex(0);
+            chunk.setComplete(true);
+            send(List.of(chunk));
             return;
         }
 
@@ -78,28 +68,39 @@ public class OperatorEventPublisher {
         for (int i = 0; i < crds.size(); i += FULL_SYNC_CHUNK_SIZE) {
             List<ResourceCrd> slice = crds.subList(i, Math.min(i + FULL_SYNC_CHUNK_SIZE, crds.size()));
             boolean isLast = i + FULL_SYNC_CHUNK_SIZE >= crds.size();
-            var chunk = FullResourceSyncChunk.newBuilder()
-                    .setSyncSessionId(sessionId.toString())
-                    .setChunkIndex(chunkIndex++)
-                    .setComplete(isLast);
+            var chunk = new FullResourceSyncChunk();
+            chunk.setSyncSessionId(sessionId.toString());
+            chunk.setChunkIndex(chunkIndex++);
+            chunk.setComplete(isLast);
             for (ResourceCrd crd : slice) {
-                chunk.addItems(toSyncItem(crd));
+                chunk.getItems().add(toSyncItem(crd));
             }
-            events.add(
-                    OperatorEvent.newBuilder().setFullResourceSyncChunk(chunk).build());
+            events.add(chunk);
         }
         send(events);
     }
 
-    private void send(List<OperatorEvent> events) throws IOException {
-        var req = PushEventsRequest.newBuilder()
-                .setClusterName(tunnelConfig.clusterName())
-                .addAllEvents(events)
-                .build();
-        tunnelClient.unary("PushEvents", req, PushEventsAck.newBuilder());
+    private void send(List<OperatorEvent> events) {
+        var req = new PushEventsRequest();
+        req.setClusterName(tunnelConfig.clusterName());
+        req.setEvents(new ArrayList<>(events));
+        PushEventsAck ack = tunnelApiClient.pushEvents(req);
+        if (ack.getAcceptedCount() != events.size()) {
+            log.warn("Platform accepted {} of {} events — possible data loss", ack.getAcceptedCount(), events.size());
+        }
     }
 
     public ResourceSyncItem toSyncItem(ResourceCrd crd) {
-        return ResourceWireMapper.toSyncItem(crd);
+        var item = new ResourceSyncItem();
+        item.setResource(crd);
+        if (crd.getMetadata() != null) {
+            if (crd.getMetadata().getGeneration() != null) {
+                item.setGeneration(crd.getMetadata().getGeneration());
+            }
+            if (crd.getMetadata().getResourceVersion() != null) {
+                item.setResourceVersion(crd.getMetadata().getResourceVersion());
+            }
+        }
+        return item;
     }
 }

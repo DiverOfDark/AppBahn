@@ -1,6 +1,6 @@
 package eu.appbahn.platform.user.controller;
 
-import eu.appbahn.platform.api.AuthApi;
+import eu.appbahn.platform.api.auth.AuthApi;
 import java.net.URI;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
     @Override
-    public ResponseEntity<Void> authLogin() {
+    public ResponseEntity<Object> authLogin() {
         // Redirect to Spring's OAuth2 authorization endpoint which handles PKCE, state, etc.
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create("/oauth2/authorization/appbahn"))
@@ -26,7 +26,7 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<Void> authCallback(String code, String state) {
+    public ResponseEntity<Object> authCallback(String code, String state) {
         // This path is handled by Spring's OAuth2LoginAuthenticationFilter before
         // it reaches this controller. If we get here, something went wrong.
         return ResponseEntity.badRequest().build();

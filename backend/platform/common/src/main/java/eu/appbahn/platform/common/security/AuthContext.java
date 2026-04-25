@@ -1,6 +1,6 @@
 package eu.appbahn.platform.common.security;
 
-import eu.appbahn.platform.api.model.AuditActorSource;
+import eu.appbahn.platform.api.AuditActorSource;
 import java.util.List;
 import java.util.UUID;
 

@@ -164,8 +164,8 @@ async function createToken() {
 
 async function deleteToken(tokenId: string) {
   try {
-    await api.DELETE('/environments/{slug}/tokens/{tokenId}', {
-      params: { path: { slug: envSlug.value, tokenId } },
+    await api.DELETE('/environments/{slug}/tokens/{token_id}', {
+      params: { path: { slug: envSlug.value, token_id: tokenId } },
     })
     await fetchTokens()
   } catch {

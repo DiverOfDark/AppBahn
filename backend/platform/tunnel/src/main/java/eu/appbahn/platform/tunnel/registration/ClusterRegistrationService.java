@@ -3,7 +3,7 @@ package eu.appbahn.platform.tunnel.registration;
 import eu.appbahn.platform.tunnel.cluster.ClusterEntity;
 import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.cluster.ClusterStatus;
-import eu.appbahn.platform.tunnel.rpc.TunnelConnectException;
+import eu.appbahn.platform.tunnel.rpc.TunnelApiException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -42,7 +42,7 @@ public class ClusterRegistrationService {
         if (cluster.getPublicKey() != null
                 && !cluster.getPublicKey().isBlank()
                 && !keysEqual(cluster.getPublicKey(), request.publicKey())) {
-            throw TunnelConnectException.permissionDenied(
+            throw TunnelApiException.permissionDenied(
                     "cluster " + request.clusterName() + " already registered with a different public key");
         }
 
@@ -53,7 +53,7 @@ public class ClusterRegistrationService {
             try {
                 cluster.setOperatorInstanceId(UUID.fromString(request.operatorInstanceId()));
             } catch (IllegalArgumentException e) {
-                throw TunnelConnectException.invalidArgument("operator_instance_id is not a valid UUID");
+                throw TunnelApiException.invalidArgument("operator_instance_id is not a valid UUID");
             }
         }
 

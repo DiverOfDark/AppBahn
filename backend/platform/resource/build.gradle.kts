@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":platform:api-spec"))
     implementation(project(":platform:workspace"))
     implementation(project(":shared"))
-    implementation(project(":tunnel-api"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)

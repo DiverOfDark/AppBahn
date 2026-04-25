@@ -1,13 +1,13 @@
 package eu.appbahn.platform.workspace.controller;
 
-import eu.appbahn.platform.api.ProjectsApi;
-import eu.appbahn.platform.api.model.CreateProjectRequest;
-import eu.appbahn.platform.api.model.PagedProjectResponse;
-import eu.appbahn.platform.api.model.Project;
-import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.api.model.RegistryConfig;
-import eu.appbahn.platform.api.model.UpdateMemberRequest;
-import eu.appbahn.platform.api.model.UpdateProjectRequest;
+import eu.appbahn.platform.api.Project;
+import eu.appbahn.platform.api.Quota;
+import eu.appbahn.platform.api.RegistryConfig;
+import eu.appbahn.platform.api.UpdateMemberRequest;
+import eu.appbahn.platform.api.project.CreateProjectRequest;
+import eu.appbahn.platform.api.project.PagedProjectResponse;
+import eu.appbahn.platform.api.project.ProjectsApi;
+import eu.appbahn.platform.api.project.UpdateProjectRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.ProjectService;
 import java.util.UUID;

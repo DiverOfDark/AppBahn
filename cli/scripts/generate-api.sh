@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# Generates the Go API client from the OpenAPI spec using openapi-generator.
+# Generates the Go API client from the committed OpenAPI spec using
+# openapi-generator. `api/public-api.yaml` is emitted by springdoc from the
+# platform's `@RestController`s (code-first) via the Gradle
+# `:platform:app:syncOpenApi` task, and its freshness is gated in CI by
+# `:platform:app:verifyOpenApi`.
+#
 # Usage: ./scripts/generate-api.sh
 set -euo pipefail
 
@@ -9,9 +14,13 @@ PROJECT_ROOT="$(dirname "$CLI_DIR")"
 SPEC_FILE="$PROJECT_ROOT/api/public-api.yaml"
 OUTPUT_DIR="$CLI_DIR/internal/api"
 
-# Clean previous generated code (preserve .openapi-generator-ignore if exists)
+# Clean previous generated code (preserve .openapi-generator-ignore and the files
+# it whitelists — currently helpers.go, which provides NewClient + FormatAPIError).
 if [ -d "$OUTPUT_DIR" ]; then
-  find "$OUTPUT_DIR" -type f ! -name '.openapi-generator-ignore' -delete 2>/dev/null || true
+  find "$OUTPUT_DIR" -type f \
+    ! -name '.openapi-generator-ignore' \
+    ! -name 'helpers.go' \
+    -delete 2>/dev/null || true
   find "$OUTPUT_DIR" -type d -empty -delete 2>/dev/null || true
 fi
 

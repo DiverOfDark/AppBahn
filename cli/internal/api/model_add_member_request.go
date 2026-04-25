@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the AddMemberRequest type satisfies the MappedNullable interface at compile time
@@ -21,20 +19,16 @@ var _ MappedNullable = &AddMemberRequest{}
 
 // AddMemberRequest struct for AddMemberRequest
 type AddMemberRequest struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Email *string `json:"email,omitempty"`
+	Role  *string `json:"role,omitempty"`
 }
-
-type _AddMemberRequest AddMemberRequest
 
 // NewAddMemberRequest instantiates a new AddMemberRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewAddMemberRequest(email string, role string) *AddMemberRequest {
+func NewAddMemberRequest() *AddMemberRequest {
 	this := AddMemberRequest{}
-	this.Email = email
-	this.Role = role
 	return &this
 }
 
@@ -46,52 +40,68 @@ func NewAddMemberRequestWithDefaults() *AddMemberRequest {
 	return &this
 }
 
-// GetEmail returns the Email field value
+// GetEmail returns the Email field value if set, zero value otherwise.
 func (o *AddMemberRequest) GetEmail() string {
-	if o == nil {
+	if o == nil || IsNil(o.Email) {
 		var ret string
 		return ret
 	}
-
-	return o.Email
+	return *o.Email
 }
 
-// GetEmailOk returns a tuple with the Email field value
+// GetEmailOk returns a tuple with the Email field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *AddMemberRequest) GetEmailOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Email) {
 		return nil, false
 	}
-	return &o.Email, true
+	return o.Email, true
 }
 
-// SetEmail sets field value
+// HasEmail returns a boolean if a field has been set.
+func (o *AddMemberRequest) HasEmail() bool {
+	if o != nil && !IsNil(o.Email) {
+		return true
+	}
+
+	return false
+}
+
+// SetEmail gets a reference to the given string and assigns it to the Email field.
 func (o *AddMemberRequest) SetEmail(v string) {
-	o.Email = v
+	o.Email = &v
 }
 
-// GetRole returns the Role field value
+// GetRole returns the Role field value if set, zero value otherwise.
 func (o *AddMemberRequest) GetRole() string {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		var ret string
 		return ret
 	}
-
-	return o.Role
+	return *o.Role
 }
 
-// GetRoleOk returns a tuple with the Role field value
+// GetRoleOk returns a tuple with the Role field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *AddMemberRequest) GetRoleOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Role) {
 		return nil, false
 	}
-	return &o.Role, true
+	return o.Role, true
 }
 
-// SetRole sets field value
+// HasRole returns a boolean if a field has been set.
+func (o *AddMemberRequest) HasRole() bool {
+	if o != nil && !IsNil(o.Role) {
+		return true
+	}
+
+	return false
+}
+
+// SetRole gets a reference to the given string and assigns it to the Role field.
 func (o *AddMemberRequest) SetRole(v string) {
-	o.Role = v
+	o.Role = &v
 }
 
 func (o AddMemberRequest) MarshalJSON() ([]byte, error) {
@@ -104,47 +114,13 @@ func (o AddMemberRequest) MarshalJSON() ([]byte, error) {
 
 func (o AddMemberRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["email"] = o.Email
-	toSerialize["role"] = o.Role
+	if !IsNil(o.Email) {
+		toSerialize["email"] = o.Email
+	}
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
+	}
 	return toSerialize, nil
-}
-
-func (o *AddMemberRequest) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"email",
-		"role",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varAddMemberRequest := _AddMemberRequest{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varAddMemberRequest)
-
-	if err != nil {
-		return err
-	}
-
-	*o = AddMemberRequest(varAddMemberRequest)
-
-	return err
 }
 
 type NullableAddMemberRequest struct {

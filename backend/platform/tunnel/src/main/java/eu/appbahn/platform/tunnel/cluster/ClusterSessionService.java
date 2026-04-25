@@ -1,7 +1,6 @@
 package eu.appbahn.platform.tunnel.cluster;
 
-import eu.appbahn.platform.tunnel.rpc.TunnelConnectException;
-import eu.appbahn.tunnel.v1.SubscribeCommandsRequest;
+import eu.appbahn.platform.tunnel.rpc.TunnelApiException;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
  * {@link Transactional} boundary isn't bypassed by self-invocation from the controller.
  *
  * <p>Liveness lives on {@code cluster.last_heartbeat_at} only — session existence plus
- * session_id equality is enough to track ownership, and a zombie session row owned by a
+ * sessionId equality is enough to track ownership, and a zombie session row owned by a
  * crashed replica is detected via the cluster timestamp going stale (only the session
  * holder bumps it).
  */
@@ -28,7 +27,7 @@ public class ClusterSessionService {
     }
 
     @Transactional
-    public void claimSession(String clusterName, UUID sessionId, String replicaId, SubscribeCommandsRequest req) {
+    public void claimSession(String clusterName, UUID sessionId, String replicaId, String operatorInstanceId) {
         ClusterSessionEntity existing = sessions.findById(clusterName).orElse(null);
         if (existing == null) {
             existing = new ClusterSessionEntity();
@@ -37,10 +36,13 @@ public class ClusterSessionService {
         }
         existing.setSubscribingReplicaId(replicaId);
         existing.setSessionId(sessionId);
+        if (operatorInstanceId == null || operatorInstanceId.isBlank()) {
+            throw TunnelApiException.invalidArgument("operatorInstanceId query parameter is required");
+        }
         try {
-            existing.setOperatorInstanceId(UUID.fromString(req.getOperatorInstanceId()));
+            existing.setOperatorInstanceId(UUID.fromString(operatorInstanceId));
         } catch (IllegalArgumentException e) {
-            throw TunnelConnectException.invalidArgument("operator_instance_id is not a valid UUID");
+            throw TunnelApiException.invalidArgument("operatorInstanceId is not a valid UUID");
         }
         sessions.save(existing);
 

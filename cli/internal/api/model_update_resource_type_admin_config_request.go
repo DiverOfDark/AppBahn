@@ -17,14 +17,11 @@ import (
 // checks if the UpdateResourceTypeAdminConfigRequest type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateResourceTypeAdminConfigRequest{}
 
-// UpdateResourceTypeAdminConfigRequest Admin configuration update for a resource type
+// UpdateResourceTypeAdminConfigRequest struct for UpdateResourceTypeAdminConfigRequest
 type UpdateResourceTypeAdminConfigRequest struct {
-	StorageClass         *string           `json:"storageClass,omitempty"`
-	Labels               map[string]string `json:"labels,omitempty"`
-	AdditionalProperties map[string]interface{}
+	StorageClass *string            `json:"storageClass,omitempty"`
+	Labels       *map[string]string `json:"labels,omitempty"`
 }
-
-type _UpdateResourceTypeAdminConfigRequest UpdateResourceTypeAdminConfigRequest
 
 // NewUpdateResourceTypeAdminConfigRequest instantiates a new UpdateResourceTypeAdminConfigRequest object
 // This constructor will assign default values to properties that have it defined,
@@ -81,14 +78,14 @@ func (o *UpdateResourceTypeAdminConfigRequest) GetLabels() map[string]string {
 		var ret map[string]string
 		return ret
 	}
-	return o.Labels
+	return *o.Labels
 }
 
 // GetLabelsOk returns a tuple with the Labels field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UpdateResourceTypeAdminConfigRequest) GetLabelsOk() (map[string]string, bool) {
+func (o *UpdateResourceTypeAdminConfigRequest) GetLabelsOk() (*map[string]string, bool) {
 	if o == nil || IsNil(o.Labels) {
-		return map[string]string{}, false
+		return nil, false
 	}
 	return o.Labels, true
 }
@@ -104,7 +101,7 @@ func (o *UpdateResourceTypeAdminConfigRequest) HasLabels() bool {
 
 // SetLabels gets a reference to the given map[string]string and assigns it to the Labels field.
 func (o *UpdateResourceTypeAdminConfigRequest) SetLabels(v map[string]string) {
-	o.Labels = v
+	o.Labels = &v
 }
 
 func (o UpdateResourceTypeAdminConfigRequest) MarshalJSON() ([]byte, error) {
@@ -123,34 +120,7 @@ func (o UpdateResourceTypeAdminConfigRequest) ToMap() (map[string]interface{}, e
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
 	}
-
-	for key, value := range o.AdditionalProperties {
-		toSerialize[key] = value
-	}
-
 	return toSerialize, nil
-}
-
-func (o *UpdateResourceTypeAdminConfigRequest) UnmarshalJSON(data []byte) (err error) {
-	varUpdateResourceTypeAdminConfigRequest := _UpdateResourceTypeAdminConfigRequest{}
-
-	err = json.Unmarshal(data, &varUpdateResourceTypeAdminConfigRequest)
-
-	if err != nil {
-		return err
-	}
-
-	*o = UpdateResourceTypeAdminConfigRequest(varUpdateResourceTypeAdminConfigRequest)
-
-	additionalProperties := make(map[string]interface{})
-
-	if err = json.Unmarshal(data, &additionalProperties); err == nil {
-		delete(additionalProperties, "storageClass")
-		delete(additionalProperties, "labels")
-		o.AdditionalProperties = additionalProperties
-	}
-
-	return err
 }
 
 type NullableUpdateResourceTypeAdminConfigRequest struct {

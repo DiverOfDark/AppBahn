@@ -1,14 +1,14 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateWorkspaceRequest;
-import eu.appbahn.platform.api.model.PagedWorkspaceResponse;
-import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.api.model.RegistryConfig;
-import eu.appbahn.platform.api.model.SecuritySettings;
-import eu.appbahn.platform.api.model.UpdateWorkspaceRequest;
-import eu.appbahn.platform.api.model.Workspace;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.Quota;
+import eu.appbahn.platform.api.RegistryConfig;
+import eu.appbahn.platform.api.SecuritySettings;
+import eu.appbahn.platform.api.Workspace;
+import eu.appbahn.platform.api.workspace.CreateWorkspaceRequest;
+import eu.appbahn.platform.api.workspace.PagedWorkspaceResponse;
+import eu.appbahn.platform.api.workspace.UpdateWorkspaceRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;

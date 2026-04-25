@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.tunnel.cluster.ClusterEntity;
 import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.cluster.ClusterStatus;
-import eu.appbahn.tunnel.wire.OperatorJwt;
+import eu.appbahn.shared.tunnel.OperatorJwt;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;

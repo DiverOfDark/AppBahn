@@ -139,7 +139,7 @@ async function submit() {
             },
           ],
         },
-        runMode: 'continuous',
+        runMode: 'CONTINUOUS',
       }
     }
     const { error: apiError } = await api.POST('/resources', {

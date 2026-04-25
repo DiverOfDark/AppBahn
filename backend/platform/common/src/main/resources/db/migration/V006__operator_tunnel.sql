@@ -1,8 +1,8 @@
--- V006: Operator tunnel (Sprint 5.5)
+-- V006: Operator tunnel
 --
--- Replaces the /api/v1/internal/* HTTPS + kubeconfig-Secret transport with a single
--- Connect-protocol tunnel. All schema work is forward-only; earlier migrations
--- (V001–V005) are deliberately not touched.
+-- Schema backing the operator ↔ platform tunnel: cluster registration + public key,
+-- session ownership, pending-command queue, full-sync chunk buffer. Forward-only;
+-- earlier migrations (V001–V005) are deliberately not touched.
 
 -- ---------------------------------------------------------------------------
 -- cluster: drop kubeconfig, add tunnel registration + session tracking fields

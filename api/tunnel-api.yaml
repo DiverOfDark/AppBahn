@@ -1,0 +1,1113 @@
+openapi: 3.0.1
+info:
+  title: AppBahn Operator Tunnel API
+  description: Private operator ↔ platform transport. Unary REST + a single SSE stream
+    (commands).
+  version: 1.0.0
+servers:
+- url: /api/tunnel/v1
+paths:
+  /register:
+    post:
+      tags:
+      - Tunnel
+      operationId: registerCluster
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterClusterRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterClusterAck"
+  /goodbye:
+    post:
+      tags:
+      - Tunnel
+      operationId: goodbye
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoodbyeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodbyeAck"
+  /events:
+    post:
+      tags:
+      - Tunnel
+      operationId: pushEvents
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushEventsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushEventsAck"
+  /commands/{correlationId}/ack:
+    post:
+      tags:
+      - Tunnel
+      operationId: ackCommand
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: correlationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AckCommandRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /commands:
+    get:
+      tags:
+      - Tunnel
+      operationId: subscribeCommands
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: clusterName
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: operatorInstanceId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: operatorVersion
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: lastAdminConfigRevision
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      - name: lastQuotaRbacRevision
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/SseEmitter"
+components:
+  schemas:
+    RegisterClusterRequest:
+      required:
+      - clusterName
+      - publicKey
+      type: object
+      properties:
+        clusterName:
+          minLength: 1
+          type: string
+        publicKey:
+          minLength: 1
+          type: string
+        operatorVersion:
+          type: string
+        operatorInstanceId:
+          type: string
+    RegisterClusterAck:
+      type: object
+      properties:
+        clusterName:
+          type: string
+        status:
+          type: string
+        publicKeyFingerprint:
+          type: string
+    GoodbyeRequest:
+      required:
+      - clusterName
+      type: object
+      properties:
+        clusterName:
+          minLength: 1
+          type: string
+        sessionId:
+          type: string
+        reason:
+          type: string
+    GoodbyeAck:
+      type: object
+    AdmissionApproved:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          item:
+            $ref: "#/components/schemas/ResourceSyncItem"
+    AdmissionCacheMissReport:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          namespace:
+            type: string
+          userOidcSubject:
+            type: string
+          reason:
+            type: string
+    AuditAction:
+      type: string
+      enum:
+      - DEPLOYMENT_TRIGGERED
+      - ENVIRONMENT_APPROVAL_GATES_UPDATED
+      - ENVIRONMENT_CREATED
+      - ENVIRONMENT_DELETED
+      - ENVIRONMENT_QUOTA_UPDATED
+      - ENVIRONMENT_REGISTRY_UPDATED
+      - ENVIRONMENT_ROLE_OVERRIDE_REMOVED
+      - ENVIRONMENT_ROLE_OVERRIDE_SET
+      - ENVIRONMENT_TARGET_CLUSTER_UPDATED
+      - ENVIRONMENT_TOKEN_CREATED
+      - ENVIRONMENT_TOKEN_DELETED
+      - ENVIRONMENT_UPDATED
+      - GROUP_MAPPING_CREATED
+      - GROUP_MAPPING_DELETED
+      - GROUP_MAPPING_UPDATED
+      - MEMBER_ADDED
+      - MEMBER_INVITED
+      - MEMBER_REMOVED
+      - MEMBER_UPDATED
+      - PROJECT_CREATED
+      - PROJECT_DELETED
+      - PROJECT_QUOTA_UPDATED
+      - PROJECT_REGISTRY_UPDATED
+      - PROJECT_ROLE_OVERRIDE_REMOVED
+      - PROJECT_ROLE_OVERRIDE_SET
+      - PROJECT_UPDATED
+      - RESOURCE_CREATED
+      - RESOURCE_DELETED
+      - RESOURCE_RESTARTED
+      - RESOURCE_STARTED
+      - RESOURCE_STOPPED
+      - RESOURCE_UPDATED
+      - WORKSPACE_CREATED
+      - WORKSPACE_DELETED
+      - WORKSPACE_QUOTA_UPDATED
+      - WORKSPACE_REGISTRY_UPDATED
+      - WORKSPACE_SECURITY_UPDATED
+      - WORKSPACE_UPDATED
+    AuditActorSource:
+      type: string
+      enum:
+      - API
+      - TOKEN
+      - KUBECTL
+      - SYSTEM
+    AuditDecision:
+      type: string
+      enum:
+      - ALLOWED
+      - DENIED
+    AuditFieldChange:
+      type: object
+      properties:
+        field:
+          type: string
+        oldValue:
+          type: string
+        newValue:
+          type: string
+    AuditLogEvent:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          eventId:
+            type: string
+            format: uuid
+          timestamp:
+            type: string
+            format: date-time
+          actorId:
+            type: string
+            format: uuid
+          actorEmail:
+            type: string
+          actorSource:
+            $ref: "#/components/schemas/AuditActorSource"
+          action:
+            $ref: "#/components/schemas/AuditAction"
+          targetType:
+            $ref: "#/components/schemas/AuditTargetType"
+          targetSlug:
+            type: string
+          decision:
+            $ref: "#/components/schemas/AuditDecision"
+          denialReason:
+            type: string
+          workspaceId:
+            type: string
+            format: uuid
+          projectId:
+            type: string
+            format: uuid
+          environmentId:
+            type: string
+            format: uuid
+          changes:
+            type: array
+            items:
+              $ref: "#/components/schemas/AuditFieldChange"
+    AuditTargetType:
+      type: string
+      enum:
+      - WORKSPACE
+      - PROJECT
+      - ENVIRONMENT
+      - RESOURCE
+      - DEPLOYMENT
+    BuildConfig:
+      discriminator:
+        propertyName: type
+        mapping:
+          peelbox: "#/components/schemas/PeelboxBuildConfig"
+          buildpack: "#/components/schemas/BuildpackBuildConfig"
+          railpack: "#/components/schemas/RailpackBuildConfig"
+          dockerfile: "#/components/schemas/DockerfileBuildConfig"
+      oneOf:
+      - $ref: "#/components/schemas/PeelboxBuildConfig"
+      - $ref: "#/components/schemas/BuildpackBuildConfig"
+      - $ref: "#/components/schemas/RailpackBuildConfig"
+      - $ref: "#/components/schemas/DockerfileBuildConfig"
+    BuildpackBuildConfig:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        builder:
+          type: string
+        buildVars:
+          type: object
+          additionalProperties:
+            type: string
+    CustomDomainStatus:
+      type: object
+      properties:
+        domain:
+          type: string
+        port:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACTIVE
+          - ERROR
+        dnsCname:
+          type: string
+        tlsIssuer:
+          type: string
+        tlsExpiresAt:
+          type: string
+          format: date-time
+    DeploymentStatusUpdate:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          deploymentId:
+            type: string
+          status:
+            type: string
+          message:
+            type: string
+    DockerSource:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        pollInterval:
+          type: string
+        webhookEnabled:
+          type: boolean
+        image:
+          type: string
+        tag:
+          type: string
+        registryUrl:
+          type: string
+        credentialRef:
+          type: string
+    DockerfileBuildConfig:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        path:
+          type: string
+        target:
+          type: string
+        buildArgs:
+          type: object
+          additionalProperties:
+            type: string
+    ExecAction:
+      type: object
+      properties:
+        command:
+          type: array
+          items:
+            type: string
+    FieldsV1:
+      type: object
+    FullResourceSyncChunk:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          syncSessionId:
+            type: string
+          chunkIndex:
+            type: integer
+            format: int32
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceSyncItem"
+          complete:
+            type: boolean
+    GitSource:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        pollInterval:
+          type: string
+        webhookEnabled:
+          type: boolean
+        url:
+          type: string
+        branch:
+          type: string
+        path:
+          type: string
+        auth:
+          $ref: "#/components/schemas/SourceAuth"
+        buildConfig:
+          $ref: "#/components/schemas/BuildConfig"
+    HealthCheckConfig:
+      type: object
+      properties:
+        readiness:
+          $ref: "#/components/schemas/ProbeConfig"
+        liveness:
+          $ref: "#/components/schemas/ProbeConfig"
+        startup:
+          $ref: "#/components/schemas/ProbeConfig"
+    HostingConfig:
+      type: object
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
+        minReplicas:
+          type: integer
+          format: int32
+        maxReplicas:
+          type: integer
+          format: int32
+    HttpGetAction:
+      type: object
+      properties:
+        path:
+          type: string
+        port:
+          type: integer
+          format: int32
+    LinkConfig:
+      type: object
+      properties:
+        resource:
+          type: string
+        secret:
+          type: string
+        env:
+          type: object
+          additionalProperties:
+            type: string
+    LinkStatus:
+      type: object
+      properties:
+        resource:
+          type: string
+        status:
+          type: string
+        lastSyncTime:
+          type: string
+          format: date-time
+    ManagedFieldsEntry:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        fieldsType:
+          type: string
+        fieldsV1:
+          $ref: "#/components/schemas/FieldsV1"
+        manager:
+          type: string
+        operation:
+          type: string
+        subresource:
+          type: string
+        time:
+          type: string
+    NetworkingConfig:
+      type: object
+      properties:
+        ports:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortConfig"
+    ObjectMeta:
+      type: object
+      properties:
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+        creationTimestamp:
+          type: string
+        deletionGracePeriodSeconds:
+          type: integer
+          format: int64
+        deletionTimestamp:
+          type: string
+        finalizers:
+          type: array
+          items:
+            type: string
+        generateName:
+          type: string
+        generation:
+          type: integer
+          format: int64
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        managedFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManagedFieldsEntry"
+        name:
+          type: string
+        namespace:
+          type: string
+        ownerReferences:
+          type: array
+          items:
+            $ref: "#/components/schemas/OwnerReference"
+        resourceVersion:
+          type: string
+        selfLink:
+          type: string
+        uid:
+          type: string
+    OperatorEvent:
+      type: object
+      properties:
+        type:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          resource-sync-batch: "#/components/schemas/ResourceSyncBatch"
+          resource-deleted-batch: "#/components/schemas/ResourceDeletedBatch"
+          full-resource-sync-chunk: "#/components/schemas/FullResourceSyncChunk"
+          resource-type-sync-chunk: "#/components/schemas/ResourceTypeSyncChunk"
+          deployment-status-update: "#/components/schemas/DeploymentStatusUpdate"
+          admission-cache-miss-report: "#/components/schemas/AdmissionCacheMissReport"
+          admission-approved: "#/components/schemas/AdmissionApproved"
+          audit-log: "#/components/schemas/AuditLogEvent"
+    OwnerReference:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        kind:
+          type: string
+        blockOwnerDeletion:
+          type: boolean
+        controller:
+          type: boolean
+        name:
+          type: string
+        uid:
+          type: string
+    PeelboxBuildConfig:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        universalBuild:
+          type: array
+          items:
+            type: object
+    PortConfig:
+      type: object
+      properties:
+        port:
+          type: integer
+          format: int32
+        expose:
+          type: string
+          enum:
+          - none
+          - ingress
+          - tcp
+        domain:
+          type: string
+    ProbeConfig:
+      type: object
+      properties:
+        httpGet:
+          $ref: "#/components/schemas/HttpGetAction"
+        tcpSocket:
+          $ref: "#/components/schemas/TcpSocketAction"
+        exec:
+          $ref: "#/components/schemas/ExecAction"
+        initialDelaySeconds:
+          type: integer
+          format: int32
+        periodSeconds:
+          type: integer
+          format: int32
+        failureThreshold:
+          type: integer
+          format: int32
+    PromotionSource:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        pollInterval:
+          type: string
+        webhookEnabled:
+          type: boolean
+        sourceEnvironment:
+          type: string
+        sourceResource:
+          type: string
+        autoPromote:
+          type: boolean
+    PushEventsRequest:
+      required:
+      - clusterName
+      type: object
+      properties:
+        clusterName:
+          minLength: 1
+          type: string
+        sessionId:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperatorEvent"
+    RailpackBuildConfig:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        provider:
+          type: string
+        buildVars:
+          type: object
+          additionalProperties:
+            type: string
+    ReplicaStatus:
+      type: object
+      properties:
+        desired:
+          type: integer
+          format: int32
+        ready:
+          type: integer
+          format: int32
+        updated:
+          type: integer
+          format: int32
+        available:
+          type: integer
+          format: int32
+    ResourceCondition:
+      type: object
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+        lastUpdateTime:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        message:
+          type: string
+    ResourceConfig:
+      type: object
+      properties:
+        source:
+          $ref: "#/components/schemas/SourceConfig"
+        hosting:
+          $ref: "#/components/schemas/HostingConfig"
+        networking:
+          $ref: "#/components/schemas/NetworkingConfig"
+        healthCheck:
+          $ref: "#/components/schemas/HealthCheckConfig"
+        env:
+          type: object
+          additionalProperties:
+            type: string
+        runMode:
+          type: string
+          enum:
+          - CONTINUOUS
+          - TASK
+    ResourceCrd:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        kind:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/ObjectMeta"
+        spec:
+          $ref: "#/components/schemas/ResourceSpec"
+        status:
+          $ref: "#/components/schemas/ResourceStatusDetail"
+    ResourceDeletedBatch:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          resourceSlugs:
+            type: array
+            items:
+              type: string
+    ResourceSpec:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+        environmentId:
+          type: string
+        projectId:
+          type: string
+        workspaceId:
+          type: string
+        config:
+          $ref: "#/components/schemas/ResourceConfig"
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkConfig"
+        stopped:
+          type: boolean
+        deploymentRevision:
+          type: string
+    ResourceStatusDetail:
+      type: object
+      properties:
+        phase:
+          type: string
+          enum:
+          - PENDING
+          - READY
+          - RESTARTING
+          - DEGRADED
+          - ERROR
+          - STOPPED
+        message:
+          type: string
+        observedGeneration:
+          type: integer
+          format: int64
+        replicas:
+          $ref: "#/components/schemas/ReplicaStatus"
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResourceCondition"
+        customDomains:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomDomainStatus"
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkStatus"
+        primaryDeploymentId:
+          type: string
+        primaryImage:
+          type: string
+        lastDeploymentTime:
+          type: string
+          format: date-time
+        lastSyncTime:
+          type: string
+          format: date-time
+        latestDeploymentId:
+          type: string
+        latestDeploymentStatus:
+          type: string
+          enum:
+          - QUEUED
+          - AWAITING_APPROVAL
+          - BUILDING
+          - COPYING_IMAGE
+          - DEPLOYING
+          - SUCCEEDED
+          - FAILED
+          - REJECTED
+        syncFailed:
+          type: boolean
+    ResourceSyncBatch:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceSyncItem"
+    ResourceSyncItem:
+      type: object
+      properties:
+        resource:
+          $ref: "#/components/schemas/ResourceCrd"
+        generation:
+          type: integer
+          format: int64
+        resourceVersion:
+          type: string
+    ResourceTypeSyncChunk:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          syncSessionId:
+            type: string
+          chunkIndex:
+            type: integer
+            format: int32
+          availableTypes:
+            type: array
+            items:
+              type: string
+          complete:
+            type: boolean
+    SourceAuth:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - none
+          - basic
+          - ssh_key
+        credentialRef:
+          type: string
+    SourceConfig:
+      discriminator:
+        propertyName: type
+        mapping:
+          docker: "#/components/schemas/DockerSource"
+          git: "#/components/schemas/GitSource"
+          promotion: "#/components/schemas/PromotionSource"
+      oneOf:
+      - $ref: "#/components/schemas/DockerSource"
+      - $ref: "#/components/schemas/GitSource"
+      - $ref: "#/components/schemas/PromotionSource"
+    TcpSocketAction:
+      type: object
+      properties:
+        port:
+          type: integer
+          format: int32
+    PushEventsAck:
+      type: object
+      properties:
+        acceptedCount:
+          type: integer
+          format: int32
+    AckCommandRequest:
+      required:
+      - response
+      type: object
+      properties:
+        response:
+          $ref: "#/components/schemas/CommandResponse"
+    CommandResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - OK
+          - INVALID_ARGUMENT
+          - CONFLICT
+          - NOT_FOUND
+          - INTERNAL_ERROR
+          - TIMEOUT
+        message:
+          type: string
+    SseEmitter:
+      type: object
+      properties:
+        timeout:
+          type: integer
+          format: int64
+    AdminConfigPush:
+      type: object
+      properties:
+        revision:
+          type: integer
+          format: int64
+        snapshot:
+          $ref: "#/components/schemas/AdminConfigSnapshot"
+    AdminConfigSnapshot:
+      type: object
+      properties:
+        baseDomain:
+          type: string
+        registryUrl:
+          type: string
+        registryRepositoryPrefix:
+          type: string
+        namespacePrefix:
+          type: string
+    EnvironmentEntry:
+      type: object
+      properties:
+        slug:
+          type: string
+        namespace:
+          type: string
+        limits:
+          $ref: "#/components/schemas/QuotaDimensions"
+        current:
+          $ref: "#/components/schemas/QuotaDimensions"
+        allowedUserSubjects:
+          type: array
+          items:
+            type: string
+        allowedOidcGroups:
+          type: array
+          items:
+            type: string
+        projectSlug:
+          type: string
+        workspaceSlug:
+          type: string
+    HelloAck:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        adminConfig:
+          $ref: "#/components/schemas/AdminConfigPush"
+        quotaRbac:
+          $ref: "#/components/schemas/QuotaRbacCachePush"
+    ProjectEntry:
+      type: object
+      properties:
+        slug:
+          type: string
+        workspaceSlug:
+          type: string
+        limits:
+          $ref: "#/components/schemas/QuotaDimensions"
+    QuotaDimensions:
+      type: object
+      properties:
+        resources:
+          type: integer
+          format: int32
+        cpuMillicores:
+          type: integer
+          format: int32
+        memoryMb:
+          type: integer
+          format: int32
+        storageGb:
+          type: integer
+          format: int32
+        replicas:
+          type: integer
+          format: int32
+    QuotaRbacCachePush:
+      type: object
+      properties:
+        revision:
+          type: integer
+          format: int64
+        snapshot:
+          $ref: "#/components/schemas/QuotaRbacSnapshot"
+    QuotaRbacSnapshot:
+      type: object
+      properties:
+        environments:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnvironmentEntry"
+        platformAdminGroups:
+          type: array
+          items:
+            type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectEntry"
+        workspaces:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceEntry"
+    WorkspaceEntry:
+      type: object
+      properties:
+        slug:
+          type: string
+        limits:
+          $ref: "#/components/schemas/QuotaDimensions"
+    ApplyResource:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resource:
+          $ref: "#/components/schemas/ResourceCrd"
+        expectedResourceVersion:
+          type: string
+    DeleteResource:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resourceSlug:
+          type: string
+    ApplyNamespace:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        environmentSlug:
+          type: string
+    DeleteNamespace:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+    SubscribeCommandsRequest:
+      required:
+      - clusterName
+      type: object
+      properties:
+        clusterName:
+          minLength: 1
+          type: string
+        operatorInstanceId:
+          type: string
+        operatorVersion:
+          type: string
+        lastAdminConfigRevision:
+          type: integer
+          format: int64
+        lastQuotaRbacRevision:
+          type: integer
+          format: int64

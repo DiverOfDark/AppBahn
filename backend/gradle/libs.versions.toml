@@ -12,7 +12,6 @@ uuid-creator = "6.1.1"
 scalar-webmvc = "0.6.24"
 swagger-annotations = "2.2.48"
 jackson-databind-nullable = "0.2.10"
-classgraph = "4.8.184"
 playwright = "1.52.0"
 okhttp = "4.12.0"
 # Allure splits its SDK (allure-junit5, allure-okhttp3) and CLI (allure-commandline)
@@ -25,9 +24,6 @@ node-gradle = "7.1.0"
 gson = "2.10.1"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
-protobuf = "3.25.5"
-protobuf-gradle = "0.9.6"
-buf-gradle = "0.11.0"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -77,13 +73,7 @@ uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-
 # Lombok
 lombok = { module = "org.projectlombok:lombok" }
 
-# Protobuf runtime (for generated message classes in tunnel-api)
-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
-protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
-
 # Testing
-classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql" }
@@ -106,7 +96,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 fabric8-kubernetes-client-bom = { module = "io.fabric8:kubernetes-client-bom", version.ref = "fabric8" }
 allure-junit5 = { module = "io.qameta.allure:allure-junit5", version.ref = "allure" }
-allure-okhttp3 = { module = "io.qameta.allure:allure-okhttp3", version.ref = "allure" }
+allure-attachments = { module = "io.qameta.allure:allure-attachments", version.ref = "allure" }
 allure-commandline = { module = "io.qameta.allure:allure-commandline", version.ref = "allure-cli" }
 littleproxy = { module = "io.github.littleproxy:littleproxy", version.ref = "littleproxy" }
 spring-context = { module = "org.springframework:spring-context" }
@@ -120,5 +110,3 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
-protobuf = { id = "com.google.protobuf", version.ref = "protobuf-gradle" }
-buf = { id = "build.buf", version.ref = "buf-gradle" }

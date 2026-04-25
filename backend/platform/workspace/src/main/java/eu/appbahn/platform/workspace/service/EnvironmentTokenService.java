@@ -1,10 +1,10 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateEnvironmentTokenRequest;
-import eu.appbahn.platform.api.model.CreateEnvironmentTokenResponse;
-import eu.appbahn.platform.api.model.EnvironmentToken;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.EnvironmentToken;
+import eu.appbahn.platform.api.environment.CreateEnvironmentTokenRequest;
+import eu.appbahn.platform.api.environment.CreateEnvironmentTokenResponse;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
@@ -94,7 +94,7 @@ public class EnvironmentTokenService {
         entity.setEnvironmentId(env.getId());
         entity.setName(req.getName());
         entity.setTokenHash(hash);
-        entity.setRole(req.getRole().getValue());
+        entity.setRole(req.getRole().name());
         entity.setCreatedBy(ctx.userId());
 
         if (req.getExpiresInDays() == null || req.getExpiresInDays() < 1) {
@@ -121,7 +121,7 @@ public class EnvironmentTokenService {
         resp.setId(entity.getId());
         resp.setName(entity.getName());
         resp.setToken(rawToken); // Only returned once
-        resp.setRole(CreateEnvironmentTokenResponse.RoleEnum.fromValue(entity.getRole()));
+        resp.setRole(MemberRole.valueOf(entity.getRole()));
         resp.setExpiresAt(entity.getExpiresAt().atOffset(ZoneOffset.UTC));
         return resp;
     }
@@ -148,7 +148,7 @@ public class EnvironmentTokenService {
         var dto = new EnvironmentToken();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
-        dto.setRole(EnvironmentToken.RoleEnum.fromValue(entity.getRole()));
+        dto.setRole(MemberRole.valueOf(entity.getRole()));
         if (entity.getExpiresAt() != null) {
             dto.setExpiresAt(entity.getExpiresAt().atOffset(ZoneOffset.UTC));
         }

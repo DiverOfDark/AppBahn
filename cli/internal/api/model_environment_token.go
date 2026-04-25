@@ -25,9 +25,8 @@ type EnvironmentToken struct {
 	Role       *string    `json:"role,omitempty"`
 	ExpiresAt  *time.Time `json:"expiresAt,omitempty"`
 	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
-	// Email of the user who created the token
-	CreatedBy *string    `json:"createdBy,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	CreatedBy  *string    `json:"createdBy,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 }
 
 // NewEnvironmentToken instantiates a new EnvironmentToken object

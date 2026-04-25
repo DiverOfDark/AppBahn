@@ -19,12 +19,10 @@ var _ MappedNullable = &Quota{}
 
 // Quota struct for Quota
 type Quota struct {
-	MaxCpuCores            *float64 `json:"maxCpuCores,omitempty"`
-	MaxMemoryMb            *int32   `json:"maxMemoryMb,omitempty"`
-	MaxStorageGb           *int32   `json:"maxStorageGb,omitempty"`
-	MaxResources           *int32   `json:"maxResources,omitempty"`
-	MaxDeploymentResources *int32   `json:"maxDeploymentResources,omitempty"`
-	MaxDatabaseResources   *int32   `json:"maxDatabaseResources,omitempty"`
+	MaxCpuCores  *float64 `json:"maxCpuCores,omitempty"`
+	MaxMemoryMb  *int32   `json:"maxMemoryMb,omitempty"`
+	MaxStorageGb *int32   `json:"maxStorageGb,omitempty"`
+	MaxResources *int32   `json:"maxResources,omitempty"`
 }
 
 // NewQuota instantiates a new Quota object
@@ -172,70 +170,6 @@ func (o *Quota) SetMaxResources(v int32) {
 	o.MaxResources = &v
 }
 
-// GetMaxDeploymentResources returns the MaxDeploymentResources field value if set, zero value otherwise.
-func (o *Quota) GetMaxDeploymentResources() int32 {
-	if o == nil || IsNil(o.MaxDeploymentResources) {
-		var ret int32
-		return ret
-	}
-	return *o.MaxDeploymentResources
-}
-
-// GetMaxDeploymentResourcesOk returns a tuple with the MaxDeploymentResources field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *Quota) GetMaxDeploymentResourcesOk() (*int32, bool) {
-	if o == nil || IsNil(o.MaxDeploymentResources) {
-		return nil, false
-	}
-	return o.MaxDeploymentResources, true
-}
-
-// HasMaxDeploymentResources returns a boolean if a field has been set.
-func (o *Quota) HasMaxDeploymentResources() bool {
-	if o != nil && !IsNil(o.MaxDeploymentResources) {
-		return true
-	}
-
-	return false
-}
-
-// SetMaxDeploymentResources gets a reference to the given int32 and assigns it to the MaxDeploymentResources field.
-func (o *Quota) SetMaxDeploymentResources(v int32) {
-	o.MaxDeploymentResources = &v
-}
-
-// GetMaxDatabaseResources returns the MaxDatabaseResources field value if set, zero value otherwise.
-func (o *Quota) GetMaxDatabaseResources() int32 {
-	if o == nil || IsNil(o.MaxDatabaseResources) {
-		var ret int32
-		return ret
-	}
-	return *o.MaxDatabaseResources
-}
-
-// GetMaxDatabaseResourcesOk returns a tuple with the MaxDatabaseResources field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *Quota) GetMaxDatabaseResourcesOk() (*int32, bool) {
-	if o == nil || IsNil(o.MaxDatabaseResources) {
-		return nil, false
-	}
-	return o.MaxDatabaseResources, true
-}
-
-// HasMaxDatabaseResources returns a boolean if a field has been set.
-func (o *Quota) HasMaxDatabaseResources() bool {
-	if o != nil && !IsNil(o.MaxDatabaseResources) {
-		return true
-	}
-
-	return false
-}
-
-// SetMaxDatabaseResources gets a reference to the given int32 and assigns it to the MaxDatabaseResources field.
-func (o *Quota) SetMaxDatabaseResources(v int32) {
-	o.MaxDatabaseResources = &v
-}
-
 func (o Quota) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -257,12 +191,6 @@ func (o Quota) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.MaxResources) {
 		toSerialize["maxResources"] = o.MaxResources
-	}
-	if !IsNil(o.MaxDeploymentResources) {
-		toSerialize["maxDeploymentResources"] = o.MaxDeploymentResources
-	}
-	if !IsNil(o.MaxDatabaseResources) {
-		toSerialize["maxDatabaseResources"] = o.MaxDatabaseResources
 	}
 	return toSerialize, nil
 }

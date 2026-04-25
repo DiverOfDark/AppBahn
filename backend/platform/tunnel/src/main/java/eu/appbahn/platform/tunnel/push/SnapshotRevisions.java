@@ -1,27 +1,38 @@
 package eu.appbahn.platform.tunnel.push;
 
-import com.google.protobuf.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.springframework.stereotype.Component;
 
 /**
- * Derives a stable, content-addressed revision from a protobuf snapshot. Same content on
- * any platform replica → same revision, so the subscribing operator can dedupe repeated
- * pushes without any cross-replica coordination. Caller is responsible for producing a
- * message with deterministic field ordering (e.g. sorting repeated entries) — the proto
- * wire format preserves insertion order.
+ * Content-addressed revision of a snapshot DTO: identical content on any platform replica
+ * yields the same revision, so the subscribing operator dedupes repeated pushes without
+ * cross-replica coordination. Canonicalises by serialising with sorted map keys — the caller
+ * is still responsible for deterministic ordering of repeated fields.
  */
-final class SnapshotRevisions {
+@Component
+class SnapshotRevisions {
 
-    private SnapshotRevisions() {}
+    private final ObjectMapper canonical;
 
-    static long contentRevision(Message snapshot) {
-        byte[] bytes = snapshot.toByteArray();
+    SnapshotRevisions(ObjectMapper mapper) {
+        this.canonical = mapper.copy().configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+    }
+
+    long contentRevision(Object snapshot) {
+        byte[] bytes;
+        try {
+            bytes = canonical.writeValueAsBytes(snapshot);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Could not canonicalise snapshot for revision hash", e);
+        }
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
-            // Mask the sign bit so the resulting long is always positive — proto's
-            // uint64 field would otherwise carry an awkwardly-negative signed long in Java.
+            // Mask the sign bit so the resulting long is always positive — keeps JSON numbers clean.
             return ByteBuffer.wrap(digest, 0, 8).getLong() & Long.MAX_VALUE;
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 unavailable", e);

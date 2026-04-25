@@ -1,6 +1,6 @@
 package eu.appbahn.platform.workspace.entity;
 
-import eu.appbahn.platform.api.model.WebhookEvent;
+import eu.appbahn.platform.api.WebhookEvent;
 import eu.appbahn.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

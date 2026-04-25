@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the LinkConfig type satisfies the MappedNullable interface at compile time
@@ -21,20 +19,17 @@ var _ MappedNullable = &LinkConfig{}
 
 // LinkConfig struct for LinkConfig
 type LinkConfig struct {
-	Resource string            `json:"resource"`
-	Secret   *string           `json:"secret,omitempty"`
-	Env      map[string]string `json:"env,omitempty"`
+	Resource *string            `json:"resource,omitempty"`
+	Secret   *string            `json:"secret,omitempty"`
+	Env      *map[string]string `json:"env,omitempty"`
 }
-
-type _LinkConfig LinkConfig
 
 // NewLinkConfig instantiates a new LinkConfig object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewLinkConfig(resource string) *LinkConfig {
+func NewLinkConfig() *LinkConfig {
 	this := LinkConfig{}
-	this.Resource = resource
 	return &this
 }
 
@@ -46,28 +41,36 @@ func NewLinkConfigWithDefaults() *LinkConfig {
 	return &this
 }
 
-// GetResource returns the Resource field value
+// GetResource returns the Resource field value if set, zero value otherwise.
 func (o *LinkConfig) GetResource() string {
-	if o == nil {
+	if o == nil || IsNil(o.Resource) {
 		var ret string
 		return ret
 	}
-
-	return o.Resource
+	return *o.Resource
 }
 
-// GetResourceOk returns a tuple with the Resource field value
+// GetResourceOk returns a tuple with the Resource field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *LinkConfig) GetResourceOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Resource) {
 		return nil, false
 	}
-	return &o.Resource, true
+	return o.Resource, true
 }
 
-// SetResource sets field value
+// HasResource returns a boolean if a field has been set.
+func (o *LinkConfig) HasResource() bool {
+	if o != nil && !IsNil(o.Resource) {
+		return true
+	}
+
+	return false
+}
+
+// SetResource gets a reference to the given string and assigns it to the Resource field.
 func (o *LinkConfig) SetResource(v string) {
-	o.Resource = v
+	o.Resource = &v
 }
 
 // GetSecret returns the Secret field value if set, zero value otherwise.
@@ -108,14 +111,14 @@ func (o *LinkConfig) GetEnv() map[string]string {
 		var ret map[string]string
 		return ret
 	}
-	return o.Env
+	return *o.Env
 }
 
 // GetEnvOk returns a tuple with the Env field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *LinkConfig) GetEnvOk() (map[string]string, bool) {
+func (o *LinkConfig) GetEnvOk() (*map[string]string, bool) {
 	if o == nil || IsNil(o.Env) {
-		return map[string]string{}, false
+		return nil, false
 	}
 	return o.Env, true
 }
@@ -131,7 +134,7 @@ func (o *LinkConfig) HasEnv() bool {
 
 // SetEnv gets a reference to the given map[string]string and assigns it to the Env field.
 func (o *LinkConfig) SetEnv(v map[string]string) {
-	o.Env = v
+	o.Env = &v
 }
 
 func (o LinkConfig) MarshalJSON() ([]byte, error) {
@@ -144,7 +147,9 @@ func (o LinkConfig) MarshalJSON() ([]byte, error) {
 
 func (o LinkConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["resource"] = o.Resource
+	if !IsNil(o.Resource) {
+		toSerialize["resource"] = o.Resource
+	}
 	if !IsNil(o.Secret) {
 		toSerialize["secret"] = o.Secret
 	}
@@ -152,43 +157,6 @@ func (o LinkConfig) ToMap() (map[string]interface{}, error) {
 		toSerialize["env"] = o.Env
 	}
 	return toSerialize, nil
-}
-
-func (o *LinkConfig) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"resource",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varLinkConfig := _LinkConfig{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varLinkConfig)
-
-	if err != nil {
-		return err
-	}
-
-	*o = LinkConfig(varLinkConfig)
-
-	return err
 }
 
 type NullableLinkConfig struct {

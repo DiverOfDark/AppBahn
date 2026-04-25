@@ -3,7 +3,7 @@ package eu.appbahn.platform.resource.entity;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
-import eu.appbahn.shared.crd.ResourceStatus;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,7 +44,7 @@ public class ResourceCacheEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private List<ResourceSpec.ResourceLink> links = List.of();
+    private List<ResourceSpec.LinkConfig> links = List.of();
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -52,7 +52,7 @@ public class ResourceCacheEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "status_detail", columnDefinition = "jsonb")
-    private ResourceStatus statusDetail;
+    private ResourceStatusDetail statusDetail;
 
     @Column(name = "last_synced_at")
     private Instant lastSyncedAt;

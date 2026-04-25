@@ -21,9 +21,9 @@ var _ MappedNullable = &BuildpackBuildConfig{}
 
 // BuildpackBuildConfig struct for BuildpackBuildConfig
 type BuildpackBuildConfig struct {
-	Type      string            `json:"type"`
-	Builder   *string           `json:"builder,omitempty"`
-	BuildVars map[string]string `json:"buildVars,omitempty"`
+	Type      string             `json:"type"`
+	Builder   *string            `json:"builder,omitempty"`
+	BuildVars *map[string]string `json:"buildVars,omitempty"`
 }
 
 type _BuildpackBuildConfig BuildpackBuildConfig
@@ -108,14 +108,14 @@ func (o *BuildpackBuildConfig) GetBuildVars() map[string]string {
 		var ret map[string]string
 		return ret
 	}
-	return o.BuildVars
+	return *o.BuildVars
 }
 
 // GetBuildVarsOk returns a tuple with the BuildVars field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BuildpackBuildConfig) GetBuildVarsOk() (map[string]string, bool) {
+func (o *BuildpackBuildConfig) GetBuildVarsOk() (*map[string]string, bool) {
 	if o == nil || IsNil(o.BuildVars) {
-		return map[string]string{}, false
+		return nil, false
 	}
 	return o.BuildVars, true
 }
@@ -131,7 +131,7 @@ func (o *BuildpackBuildConfig) HasBuildVars() bool {
 
 // SetBuildVars gets a reference to the given map[string]string and assigns it to the BuildVars field.
 func (o *BuildpackBuildConfig) SetBuildVars(v map[string]string) {
-	o.BuildVars = v
+	o.BuildVars = &v
 }
 
 func (o BuildpackBuildConfig) MarshalJSON() ([]byte, error) {

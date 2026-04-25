@@ -1,9 +1,10 @@
 package eu.appbahn.platform.resource.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.platform.api.model.Deployment;
-import eu.appbahn.platform.api.model.Resource;
-import eu.appbahn.platform.api.model.ResourceTypeInfo;
+import eu.appbahn.platform.api.Deployment;
+import eu.appbahn.platform.api.Resource;
+import eu.appbahn.platform.api.ResourceCategory;
+import eu.appbahn.platform.api.ResourceTypeInfo;
 import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.entity.ResourceTypeDefinitionEntity;
@@ -30,10 +31,7 @@ public final class ResourceEntityMapper {
         if (entity.getLinks() != null && !entity.getLinks().isEmpty()) {
             resource.setLinks(entity.getLinks());
         }
-        resource.setStatus(
-                entity.getStatus() != null
-                        ? Resource.StatusEnum.fromValue(entity.getStatus().name())
-                        : null);
+        resource.setStatus(entity.getStatus());
         resource.setStatusDetail(entity.getStatusDetail());
         resource.setLastSyncedAt(toOffset(entity.getLastSyncedAt()));
         resource.setCreatedAt(toOffset(entity.getCreatedAt()));
@@ -48,13 +46,8 @@ public final class ResourceEntityMapper {
         deployment.setEnvironmentSlug(environmentSlug);
         deployment.setSourceRef(entity.getSourceRef());
         deployment.setImageRef(entity.getImageRef());
-        try {
-            deployment.setTriggeredBy(
-                    Deployment.TriggeredByEnum.valueOf(entity.getTriggeredBy().name()));
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown triggeredBy value '{}' for deployment {}", entity.getTriggeredBy(), entity.getId());
-        }
-        deployment.setStatus(Deployment.StatusEnum.fromValue(entity.getStatus().name()));
+        deployment.setTriggeredBy(entity.getTriggeredBy());
+        deployment.setStatus(entity.getStatus());
         deployment.setIsPrimary(entity.isPrimary());
         deployment.setSourceDeploymentId(entity.getSourceDeploymentId());
         deployment.setCreatedAt(toOffset(entity.getCreatedAt()));
@@ -71,7 +64,15 @@ public final class ResourceEntityMapper {
             info.setDisplayName(definition.getDisplayName());
             info.setDescription(definition.getDescription());
             if (definition.getCategory() != null) {
-                info.setCategory(ResourceTypeInfo.CategoryEnum.fromValue(definition.getCategory()));
+                ResourceCategory category = ResourceCategory.fromValue(definition.getCategory());
+                if (category == null) {
+                    log.warn(
+                            "Unknown resource type category '{}' for type '{}'",
+                            definition.getCategory(),
+                            defEntity.getType());
+                } else {
+                    info.setCategory(category);
+                }
             }
             if (definition.getConfigSchema() != null) {
                 @SuppressWarnings("unchecked")

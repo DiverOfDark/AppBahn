@@ -27,7 +27,7 @@ final class ResourceConfigMerger {
             return;
         }
         String patchType = patchSourceNode.get("type").asText();
-        String existingType = existing.getSource().getType();
+        String existingType = sourceType(existing.getSource());
         if (existingType != null && !existingType.equals(patchType)) {
             throw new ValidationException("Field 'source.type' is immutable and cannot be changed");
         }
@@ -61,20 +61,20 @@ final class ResourceConfigMerger {
             }
         }
         if (patchNode.has("hosting") && !patchNode.get("hosting").isNull()) {
-            if (result.getHosting() == null) result.setHosting(new ResourceConfig.Hosting());
+            if (result.getHosting() == null) result.setHosting(new ResourceConfig.HostingConfig());
             result.setHosting(objectMapper.updateValue(result.getHosting(), patchNode.get("hosting")));
         }
         if (patchNode.has("networking") && !patchNode.get("networking").isNull()) {
-            if (result.getNetworking() == null) result.setNetworking(new ResourceConfig.Networking());
+            if (result.getNetworking() == null) result.setNetworking(new ResourceConfig.NetworkingConfig());
             if (patchNode.get("networking").has("ports")) {
                 result.getNetworking()
                         .setPorts(new ArrayList<>(objectMapper
-                                .convertValue(patchNode.get("networking"), ResourceConfig.Networking.class)
+                                .convertValue(patchNode.get("networking"), ResourceConfig.NetworkingConfig.class)
                                 .getPorts()));
             }
         }
         if (patchNode.has("healthCheck") && !patchNode.get("healthCheck").isNull()) {
-            if (result.getHealthCheck() == null) result.setHealthCheck(new ResourceConfig.HealthCheck());
+            if (result.getHealthCheck() == null) result.setHealthCheck(new ResourceConfig.HealthCheckConfig());
             result.setHealthCheck(objectMapper.updateValue(result.getHealthCheck(), patchNode.get("healthCheck")));
         }
         if (patchNode.has("env") && !patchNode.get("env").isNull()) {
@@ -93,7 +93,7 @@ final class ResourceConfigMerger {
             result.setEnv(merged);
         }
         if (patchNode.has("runMode") && !patchNode.get("runMode").isNull()) {
-            result.setRunMode(patchNode.get("runMode").asText());
+            result.setRunMode(RunMode.valueOf(patchNode.get("runMode").asText()));
         }
         return result;
     }
@@ -127,7 +127,7 @@ final class ResourceConfigMerger {
             copy.setSource(deepCopySource(src.getSource()));
         }
         if (src.getHosting() != null) {
-            var h = new ResourceConfig.Hosting();
+            var h = new ResourceConfig.HostingConfig();
             h.setCpu(src.getHosting().getCpu());
             h.setMemory(src.getHosting().getMemory());
             h.setMinReplicas(src.getHosting().getMinReplicas());
@@ -135,7 +135,7 @@ final class ResourceConfigMerger {
             copy.setHosting(h);
         }
         if (src.getNetworking() != null) {
-            var n = new ResourceConfig.Networking();
+            var n = new ResourceConfig.NetworkingConfig();
             if (src.getNetworking().getPorts() != null) {
                 n.setPorts(src.getNetworking().getPorts().stream()
                         .map(p -> {
@@ -159,52 +159,63 @@ final class ResourceConfigMerger {
         return copy;
     }
 
+    private static String sourceType(Source src) {
+        return switch (src) {
+            case DockerSource ds -> ds.getType();
+            case GitSource gs -> gs.getType();
+            case PromotionSource ps -> ps.getType();
+        };
+    }
+
     private static Source deepCopySource(Source src) {
-        if (src instanceof DockerSource ds) {
-            var copy = new DockerSource();
-            copyBaseFields(src, copy);
-            copy.setImage(ds.getImage());
-            copy.setTag(ds.getTag());
-            copy.setRegistryUrl(ds.getRegistryUrl());
-            copy.setCredentialRef(ds.getCredentialRef());
-            return copy;
-        } else if (src instanceof GitSource gs) {
-            var copy = new GitSource();
-            copyBaseFields(src, copy);
-            copy.setUrl(gs.getUrl());
-            copy.setBranch(gs.getBranch());
-            copy.setPath(gs.getPath());
-            copy.setAuth(gs.getAuth());
-            copy.setBuildConfig(gs.getBuildConfig());
-            return copy;
-        } else if (src instanceof PromotionSource ps) {
-            var copy = new PromotionSource();
-            copyBaseFields(src, copy);
-            copy.setSourceEnvironment(ps.getSourceEnvironment());
-            copy.setSourceResource(ps.getSourceResource());
-            copy.setAutoPromote(ps.getAutoPromote());
-            return copy;
-        }
-        throw new IllegalStateException("Unknown source type: " + src.getClass());
+        return switch (src) {
+            case DockerSource ds -> {
+                var copy = new DockerSource();
+                copy.setType(ds.getType());
+                copy.setPollInterval(ds.getPollInterval());
+                copy.setWebhookEnabled(ds.getWebhookEnabled());
+                copy.setImage(ds.getImage());
+                copy.setTag(ds.getTag());
+                copy.setRegistryUrl(ds.getRegistryUrl());
+                copy.setCredentialRef(ds.getCredentialRef());
+                yield copy;
+            }
+            case GitSource gs -> {
+                var copy = new GitSource();
+                copy.setType(gs.getType());
+                copy.setPollInterval(gs.getPollInterval());
+                copy.setWebhookEnabled(gs.getWebhookEnabled());
+                copy.setUrl(gs.getUrl());
+                copy.setBranch(gs.getBranch());
+                copy.setPath(gs.getPath());
+                copy.setAuth(gs.getAuth());
+                copy.setBuildConfig(gs.getBuildConfig());
+                yield copy;
+            }
+            case PromotionSource ps -> {
+                var copy = new PromotionSource();
+                copy.setType(ps.getType());
+                copy.setPollInterval(ps.getPollInterval());
+                copy.setWebhookEnabled(ps.getWebhookEnabled());
+                copy.setSourceEnvironment(ps.getSourceEnvironment());
+                copy.setSourceResource(ps.getSourceResource());
+                copy.setAutoPromote(ps.getAutoPromote());
+                yield copy;
+            }
+        };
     }
 
-    private static void copyBaseFields(Source src, Source dest) {
-        dest.setType(src.getType());
-        dest.setPollInterval(src.getPollInterval());
-        dest.setWebhookEnabled(src.getWebhookEnabled());
-    }
-
-    private static ResourceConfig.HealthCheck deepCopyHealthCheck(ResourceConfig.HealthCheck src) {
-        var hc = new ResourceConfig.HealthCheck();
+    private static ResourceConfig.HealthCheckConfig deepCopyHealthCheck(ResourceConfig.HealthCheckConfig src) {
+        var hc = new ResourceConfig.HealthCheckConfig();
         hc.setReadiness(deepCopyProbe(src.getReadiness()));
         hc.setLiveness(deepCopyProbe(src.getLiveness()));
         hc.setStartup(deepCopyProbe(src.getStartup()));
         return hc;
     }
 
-    private static ResourceConfig.Probe deepCopyProbe(ResourceConfig.Probe src) {
+    private static ResourceConfig.ProbeConfig deepCopyProbe(ResourceConfig.ProbeConfig src) {
         if (src == null) return null;
-        var p = new ResourceConfig.Probe();
+        var p = new ResourceConfig.ProbeConfig();
         if (src.getHttpGet() != null) {
             var h = new ResourceConfig.HttpGetAction();
             h.setPath(src.getHttpGet().getPath());

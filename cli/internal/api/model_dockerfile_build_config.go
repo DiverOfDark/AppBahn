@@ -21,12 +21,10 @@ var _ MappedNullable = &DockerfileBuildConfig{}
 
 // DockerfileBuildConfig struct for DockerfileBuildConfig
 type DockerfileBuildConfig struct {
-	Type string `json:"type"`
-	// Path to Dockerfile relative to source root
-	Path *string `json:"path,omitempty"`
-	// Multi-stage build target
-	Target    *string           `json:"target,omitempty"`
-	BuildArgs map[string]string `json:"buildArgs,omitempty"`
+	Type      string             `json:"type"`
+	Path      *string            `json:"path,omitempty"`
+	Target    *string            `json:"target,omitempty"`
+	BuildArgs *map[string]string `json:"buildArgs,omitempty"`
 }
 
 type _DockerfileBuildConfig DockerfileBuildConfig
@@ -143,14 +141,14 @@ func (o *DockerfileBuildConfig) GetBuildArgs() map[string]string {
 		var ret map[string]string
 		return ret
 	}
-	return o.BuildArgs
+	return *o.BuildArgs
 }
 
 // GetBuildArgsOk returns a tuple with the BuildArgs field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *DockerfileBuildConfig) GetBuildArgsOk() (map[string]string, bool) {
+func (o *DockerfileBuildConfig) GetBuildArgsOk() (*map[string]string, bool) {
 	if o == nil || IsNil(o.BuildArgs) {
-		return map[string]string{}, false
+		return nil, false
 	}
 	return o.BuildArgs, true
 }
@@ -166,7 +164,7 @@ func (o *DockerfileBuildConfig) HasBuildArgs() bool {
 
 // SetBuildArgs gets a reference to the given map[string]string and assigns it to the BuildArgs field.
 func (o *DockerfileBuildConfig) SetBuildArgs(v map[string]string) {
-	o.BuildArgs = v
+	o.BuildArgs = &v
 }
 
 func (o DockerfileBuildConfig) MarshalJSON() ([]byte, error) {

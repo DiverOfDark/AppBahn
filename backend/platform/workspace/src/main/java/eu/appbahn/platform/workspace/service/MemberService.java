@@ -1,11 +1,12 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AddMemberRequest;
-import eu.appbahn.platform.api.model.AddMemberResponse;
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.UpdateMemberRequest;
-import eu.appbahn.platform.api.model.WorkspaceMember;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.MemberStatus;
+import eu.appbahn.platform.api.UpdateMemberRequest;
+import eu.appbahn.platform.api.WorkspaceMember;
+import eu.appbahn.platform.api.workspace.AddMemberRequest;
+import eu.appbahn.platform.api.workspace.AddMemberResponse;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
@@ -64,8 +65,8 @@ public class MemberService {
         for (var m : members) {
             var dto = new WorkspaceMember();
             dto.setUserId(m.getUserId());
-            dto.setRole(WorkspaceMember.RoleEnum.fromValue(m.getRole()));
-            dto.setStatus(WorkspaceMember.StatusEnum.ACTIVE);
+            dto.setRole(MemberRole.valueOf(m.getRole()));
+            dto.setStatus(MemberStatus.ACTIVE);
             var user = usersById.get(m.getUserId());
             if (user != null) {
                 dto.setEmail(user.getEmail());
@@ -77,8 +78,8 @@ public class MemberService {
         for (var inv : pending) {
             var dto = new WorkspaceMember();
             dto.setEmail(inv.getEmail());
-            dto.setRole(WorkspaceMember.RoleEnum.fromValue(inv.getRole()));
-            dto.setStatus(WorkspaceMember.StatusEnum.PENDING);
+            dto.setRole(MemberRole.valueOf(inv.getRole()));
+            dto.setStatus(MemberStatus.PENDING);
             result.add(dto);
         }
 
@@ -105,7 +106,7 @@ public class MemberService {
             var member = new WorkspaceMemberEntity();
             member.setWorkspaceId(ws.getId());
             member.setUserId(user.getId());
-            member.setRole(req.getRole().getValue());
+            member.setRole(req.getRole().name());
             memberRepository.save(member);
 
             auditLogService
@@ -113,17 +114,17 @@ public class MemberService {
                     .target(AuditTargetType.WORKSPACE, ws.getSlug())
                     .inWorkspace(ws.getId())
                     .detail("email", req.getEmail())
-                    .detail("role", req.getRole().getValue())
+                    .detail("role", req.getRole().name())
                     .save();
 
             var resp = new AddMemberResponse();
-            resp.setStatus(AddMemberResponse.StatusEnum.ACTIVE);
+            resp.setStatus(MemberStatus.ACTIVE);
             return resp;
         } else {
             var invitation = new PendingInvitationEntity();
             invitation.setWorkspaceId(ws.getId());
             invitation.setEmail(req.getEmail());
-            invitation.setRole(req.getRole().getValue());
+            invitation.setRole(req.getRole().name());
             invitation.setInvitedBy(ctx.userId());
             pendingInvitationRepository.save(invitation);
 
@@ -132,11 +133,11 @@ public class MemberService {
                     .target(AuditTargetType.WORKSPACE, ws.getSlug())
                     .inWorkspace(ws.getId())
                     .detail("email", req.getEmail())
-                    .detail("role", req.getRole().getValue())
+                    .detail("role", req.getRole().name())
                     .save();
 
             var resp = new AddMemberResponse();
-            resp.setStatus(AddMemberResponse.StatusEnum.PENDING);
+            resp.setStatus(MemberStatus.PENDING);
             return resp;
         }
     }
@@ -151,19 +152,19 @@ public class MemberService {
                 .orElseThrow(() -> new NotFoundException("Member not found"));
 
         String oldRole = member.getRole();
-        member.setRole(req.getRole().getValue());
+        member.setRole(req.getRole().name());
         memberRepository.save(member);
 
         auditLogService
                 .audit(ctx, AuditAction.MEMBER_UPDATED)
                 .target(AuditTargetType.WORKSPACE, ws.getSlug())
                 .inWorkspace(ws.getId())
-                .change("role", oldRole, req.getRole().getValue())
+                .change("role", oldRole, req.getRole().name())
                 .save();
 
         var dto = new WorkspaceMember();
         dto.setUserId(userId);
-        dto.setRole(WorkspaceMember.RoleEnum.fromValue(member.getRole()));
+        dto.setRole(MemberRole.valueOf(member.getRole()));
         userRepository.findById(userId).ifPresent(u -> dto.setEmail(u.getEmail()));
         return dto;
     }

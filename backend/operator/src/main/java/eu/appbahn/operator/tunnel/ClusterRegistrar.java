@@ -1,16 +1,16 @@
 package eu.appbahn.operator.tunnel;
 
-import eu.appbahn.tunnel.v1.RegisterClusterAck;
-import eu.appbahn.tunnel.v1.RegisterClusterRequest;
+import eu.appbahn.operator.tunnel.client.model.RegisterClusterAck;
+import eu.appbahn.operator.tunnel.client.model.RegisterClusterRequest;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Calls {@code OperatorTunnel/RegisterCluster} at startup and retries with bounded
- * exponential backoff until the platform accepts. Runs on a virtual thread so Spring
- * context init isn't blocked by a slow or unreachable platform.
+ * Calls {@link TunnelApiClient#registerCluster} at startup and retries with bounded exponential
+ * backoff until the platform accepts. Runs on a virtual thread so Spring context init isn't
+ * blocked by a slow or unreachable platform.
  */
 @Service
 public class ClusterRegistrar {
@@ -21,13 +21,13 @@ public class ClusterRegistrar {
 
     private final OperatorKeyManager keyManager;
     private final OperatorTunnelConfig config;
-    private final OperatorTunnelClient tunnelClient;
+    private final TunnelApiClient tunnelApiClient;
 
     public ClusterRegistrar(
-            OperatorKeyManager keyManager, OperatorTunnelConfig config, OperatorTunnelClient tunnelClient) {
+            OperatorKeyManager keyManager, OperatorTunnelConfig config, TunnelApiClient tunnelApiClient) {
         this.keyManager = keyManager;
         this.config = config;
-        this.tunnelClient = tunnelClient;
+        this.tunnelApiClient = tunnelApiClient;
     }
 
     @PostConstruct
@@ -57,14 +57,12 @@ public class ClusterRegistrar {
 
     private boolean attemptRegistration() {
         try {
-            var request = RegisterClusterRequest.newBuilder()
-                    .setClusterName(config.clusterName())
-                    .setPublicKey(keyManager.publicKeyPem())
-                    .setOperatorVersion(System.getProperty("appbahn.version", "dev"))
-                    .setOperatorInstanceId(keyManager.operatorInstanceId().toString())
-                    .build();
-            RegisterClusterAck ack = (RegisterClusterAck)
-                    tunnelClient.unaryUnauthenticated("RegisterCluster", request, RegisterClusterAck.newBuilder());
+            var request = new RegisterClusterRequest();
+            request.setClusterName(config.clusterName());
+            request.setPublicKey(keyManager.publicKeyPem());
+            request.setOperatorVersion(System.getProperty("appbahn.version", "dev"));
+            request.setOperatorInstanceId(keyManager.operatorInstanceId().toString());
+            RegisterClusterAck ack = tunnelApiClient.registerCluster(request);
             log.info(
                     "Cluster registration succeeded: cluster={} status={} fingerprint={}",
                     ack.getClusterName(),

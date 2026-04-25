@@ -49,8 +49,13 @@ Example:
 				imageName = resourceUpdateImage[:idx]
 				imageTag = resourceUpdateImage[idx+1:]
 			}
-			source := api.DockerSource{Image: imageName, Tag: &imageTag}
-			config.Source = &api.SourceConfig{DockerSource: &source}
+			source := api.DockerSource{
+				Type:  "docker",
+				Image: &imageName,
+				Tag:   &imageTag,
+			}
+			resourceSource := api.SourceConfig{DockerSource: &source}
+			config.Source = &resourceSource
 			hasConfig = true
 		}
 

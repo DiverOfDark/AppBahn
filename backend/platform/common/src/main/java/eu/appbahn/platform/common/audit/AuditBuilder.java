@@ -1,9 +1,9 @@
 package eu.appbahn.platform.common.audit;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditDecision;
-import eu.appbahn.platform.api.model.AuditFieldChange;
-import eu.appbahn.platform.api.model.AuditTargetType;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditDecision;
+import eu.appbahn.platform.api.AuditFieldChange;
+import eu.appbahn.platform.api.AuditTargetType;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.shared.util.UuidV7;
 import java.time.Instant;

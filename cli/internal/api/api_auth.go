@@ -21,36 +21,28 @@ import (
 type AuthAPI interface {
 
 	/*
-			AuthCallback OIDC callback
+		AuthCallback Method for AuthCallback
 
-			Receives the authorization code from the OIDC provider, exchanges
-		it for tokens server-side, then redirects the browser to
-		/auth/complete?token={access_token} for the SPA to pick up.
-
-
-			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-			@return ApiAuthCallbackRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiAuthCallbackRequest
 	*/
 	AuthCallback(ctx context.Context) ApiAuthCallbackRequest
 
 	// AuthCallbackExecute executes the request
-	AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Response, error)
+	//  @return map[string]interface{}
+	AuthCallbackExecute(r ApiAuthCallbackRequest) (map[string]interface{}, *http.Response, error)
 
 	/*
-			AuthLogin Initiate OIDC login
+		AuthLogin Method for AuthLogin
 
-			Generates PKCE code verifier/challenge and state, then redirects
-		the browser to the OIDC provider's authorization endpoint.
-		No authentication required.
-
-
-			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-			@return ApiAuthLoginRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiAuthLoginRequest
 	*/
 	AuthLogin(ctx context.Context) ApiAuthLoginRequest
 
 	// AuthLoginExecute executes the request
-	AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response, error)
+	//  @return map[string]interface{}
+	AuthLoginExecute(r ApiAuthLoginRequest) (map[string]interface{}, *http.Response, error)
 }
 
 // AuthAPIService AuthAPI service
@@ -73,16 +65,12 @@ func (r ApiAuthCallbackRequest) State(state string) ApiAuthCallbackRequest {
 	return r
 }
 
-func (r ApiAuthCallbackRequest) Execute() (*http.Response, error) {
+func (r ApiAuthCallbackRequest) Execute() (map[string]interface{}, *http.Response, error) {
 	return r.ApiService.AuthCallbackExecute(r)
 }
 
 /*
-AuthCallback OIDC callback
-
-Receives the authorization code from the OIDC provider, exchanges
-it for tokens server-side, then redirects the browser to
-/auth/complete?token={access_token} for the SPA to pick up.
+AuthCallback Method for AuthCallback
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiAuthCallbackRequest
@@ -95,16 +83,19 @@ func (a *AuthAPIService) AuthCallback(ctx context.Context) ApiAuthCallbackReques
 }
 
 // Execute executes the request
-func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Response, error) {
+//
+//	@return map[string]interface{}
+func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (map[string]interface{}, *http.Response, error) {
 	var (
-		localVarHTTPMethod = http.MethodGet
-		localVarPostBody   interface{}
-		formFiles          []formFile
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthCallback")
 	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/auth/callback"
@@ -112,15 +103,13 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Re
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.code == nil {
-		return nil, reportError("code is required and must be specified")
-	}
-	if r.state == nil {
-		return nil, reportError("state is required and must be specified")
-	}
 
-	parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
-	parameterAddToHeaderOrQuery(localVarQueryParams, "state", r.state, "form", "")
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
+	}
+	if r.state != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "state", r.state, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -140,19 +129,19 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Re
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -160,20 +149,19 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (*http.Re
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
-		return localVarHTTPResponse, newErr
+		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
-	return localVarHTTPResponse, nil
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
 type ApiAuthLoginRequest struct {
@@ -181,16 +169,12 @@ type ApiAuthLoginRequest struct {
 	ApiService AuthAPI
 }
 
-func (r ApiAuthLoginRequest) Execute() (*http.Response, error) {
+func (r ApiAuthLoginRequest) Execute() (map[string]interface{}, *http.Response, error) {
 	return r.ApiService.AuthLoginExecute(r)
 }
 
 /*
-AuthLogin Initiate OIDC login
-
-Generates PKCE code verifier/challenge and state, then redirects
-the browser to the OIDC provider's authorization endpoint.
-No authentication required.
+AuthLogin Method for AuthLogin
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiAuthLoginRequest
@@ -203,16 +187,19 @@ func (a *AuthAPIService) AuthLogin(ctx context.Context) ApiAuthLoginRequest {
 }
 
 // Execute executes the request
-func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response, error) {
+//
+//	@return map[string]interface{}
+func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (map[string]interface{}, *http.Response, error) {
 	var (
-		localVarHTTPMethod = http.MethodGet
-		localVarPostBody   interface{}
-		formFiles          []formFile
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthLogin")
 	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/auth/login"
@@ -231,7 +218,7 @@ func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response
 	}
 
 	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{}
+	localVarHTTPHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
@@ -240,19 +227,19 @@ func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -260,8 +247,17 @@ func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (*http.Response
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		return localVarHTTPResponse, newErr
+		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
-	return localVarHTTPResponse, nil
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }

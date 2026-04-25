@@ -19,13 +19,9 @@ var _ MappedNullable = &PlatformConfigBranding{}
 
 // PlatformConfigBranding struct for PlatformConfigBranding
 type PlatformConfigBranding struct {
-	// Display name shown on login page
-	InstanceName *string `json:"instanceName,omitempty"`
-	// Subtitle shown on login page
-	Tagline *string `json:"tagline,omitempty"`
-	// URL to company logo
-	LogoUrl *string `json:"logoUrl,omitempty"`
-	// Text for the login button
+	InstanceName    *string `json:"instanceName,omitempty"`
+	Tagline         *string `json:"tagline,omitempty"`
+	LogoUrl         *string `json:"logoUrl,omitempty"`
 	LoginButtonText *string `json:"loginButtonText,omitempty"`
 }
 

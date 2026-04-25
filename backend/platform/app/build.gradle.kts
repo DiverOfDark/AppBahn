@@ -75,6 +75,73 @@ tasks.matching { it.name.startsWith("spotless") }.configureEach {
     mustRunAfter(syncWebAssets)
 }
 
+tasks.named<Test>("test") {
+    useJUnitPlatform {
+        excludeTags("openapi-emit")
+    }
+}
+
+// Boots the Spring context via the `openapi-emit`-tagged test and writes the public/tunnel
+// OpenAPI documents to build/generated/{public,tunnel}-api.yaml. The spec is shaped for
+// downstream clients entirely inside OpenApiConfig (Tag annotations on *Api interfaces,
+// @Schema(name=...) on CRD nested classes, path-prefix customiser, Quantity ModelConverter) —
+// no post-processing happens in Gradle any more.
+val dumpOpenApi = tasks.register<Test>("dumpOpenApi") {
+    description = "Dump OpenAPI specs (public + tunnel groups) to build/generated."
+    group = "build"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("openapi-emit")
+    }
+    // Boot the Spring context without the baked-in static web assets: the spec only
+    // describes REST endpoints, so rebuilding the SPA first is both slow and circular
+    // (web type-check depends on api/public-api.yaml, which this task produces).
+    dependsOn(tasks.named("compileTestJava"))
+    outputs.file(layout.buildDirectory.file("generated/public-api.yaml"))
+    outputs.file(layout.buildDirectory.file("generated/tunnel-api.yaml"))
+}
+
+val committedPublicSpec = rootProject.layout.projectDirectory.file("../api/public-api.yaml")
+val committedTunnelSpec = rootProject.layout.projectDirectory.file("../api/tunnel-api.yaml")
+
+tasks.register<Copy>("syncOpenApi") {
+    description = "Copy the dumped OpenAPI specs to the committed api/*.yaml."
+    group = "build"
+    dependsOn(dumpOpenApi)
+    from(layout.buildDirectory.file("generated/public-api.yaml"))
+    from(layout.buildDirectory.file("generated/tunnel-api.yaml"))
+    into(committedPublicSpec.asFile.parentFile)
+}
+
+tasks.register("verifyOpenApi") {
+    description = "Verify api/public-api.yaml and api/tunnel-api.yaml match the dumped OpenAPI output."
+    group = "verification"
+    dependsOn(dumpOpenApi)
+    val dumpedPublic = layout.buildDirectory.file("generated/public-api.yaml")
+    val dumpedTunnel = layout.buildDirectory.file("generated/tunnel-api.yaml")
+    inputs.file(dumpedPublic)
+    inputs.file(dumpedTunnel)
+    inputs.file(committedPublicSpec)
+    inputs.file(committedTunnelSpec)
+    val committedPublic = committedPublicSpec.asFile
+    val committedTunnel = committedTunnelSpec.asFile
+    doLast {
+        listOf(
+            Triple("public", dumpedPublic.get().asFile, committedPublic),
+            Triple("tunnel", dumpedTunnel.get().asFile, committedTunnel),
+        ).forEach { (_, generated, committed) ->
+            if (!committed.exists()) {
+                error("api/${committed.name} missing. Run './gradlew :platform:app:syncOpenApi' to generate it.")
+            }
+            if (generated.readText() != committed.readText()) {
+                error("api/${committed.name} out of sync. Run './gradlew :platform:app:syncOpenApi' to update.")
+            }
+            println("api/${committed.name} is in sync.")
+        }
+    }
+}
+
 dependencies {
     implementation(project(":shared"))
     implementation(project(":platform:api-spec"))
@@ -91,12 +158,11 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.springdoc.openapi.starter)
     implementation(libs.scalar.spring)
+    // Quantity is referenced by the springdoc ModelConverter in OpenApiConfig.
+    implementation(libs.fabric8.kubernetes.client)
 
     runtimeOnly(libs.postgresql)
 
-    testImplementation(project(":tunnel-api"))
-    testImplementation(libs.protobuf.java)
-    testImplementation(libs.protobuf.java.util)
     testImplementation(libs.awaitility)
     testImplementation(libs.okhttp)
     testImplementation(libs.fabric8.kubernetes.client)
@@ -106,6 +172,5 @@ dependencies {
     testImplementation(libs.spring.boot.starter.data.jpa)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit.jupiter)
-    testImplementation(libs.classgraph)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

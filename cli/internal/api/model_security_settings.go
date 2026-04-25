@@ -19,7 +19,6 @@ var _ MappedNullable = &SecuritySettings{}
 
 // SecuritySettings struct for SecuritySettings
 type SecuritySettings struct {
-	// Kubernetes RuntimeClass name for pod isolation (e.g. \"gvisor\", \"kata\"). Null means default (runc).
 	RuntimeClassName *string `json:"runtimeClassName,omitempty"`
 }
 

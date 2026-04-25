@@ -1,13 +1,10 @@
 package eu.appbahn.platform.tunnel.command;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
-import eu.appbahn.tunnel.v1.ApplyNamespace;
-import eu.appbahn.tunnel.v1.ApplyResource;
-import eu.appbahn.tunnel.v1.DeleteNamespace;
-import eu.appbahn.tunnel.v1.DeleteResource;
-import eu.appbahn.tunnel.v1.PlatformMessage;
-import java.nio.charset.StandardCharsets;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.tunnel.ApplyNamespace;
+import eu.appbahn.platform.api.tunnel.ApplyResource;
+import eu.appbahn.platform.api.tunnel.DeleteNamespace;
+import eu.appbahn.platform.api.tunnel.DeleteResource;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -18,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Polls {@code pending_command} for a given cluster, claims rows for the current replica,
- * and converts each to a {@link PlatformMessage} frame ready for serialisation onto an
- * open {@code SubscribeCommands} stream.
+ * and converts each to an SSE-ready frame (event type + body DTO).
+ *
  * <p>The subscriber thread calls {@link #pollBatch(String, String, int)} in a loop. Rows are
  * only claimed (and therefore removed from future poll results) once they've been accepted
  * by the caller — the caller is responsible for writing the frame and bumping
@@ -32,10 +29,11 @@ public class PendingCommandDispatcher {
     private static final Duration CLAIM_STALENESS = Duration.ofSeconds(30);
 
     private final PendingCommandRepository repo;
-    private final JsonFormat.Parser parser = JsonFormat.parser().ignoringUnknownFields();
+    private final ObjectMapper mapper;
 
-    public PendingCommandDispatcher(PendingCommandRepository repo) {
+    public PendingCommandDispatcher(PendingCommandRepository repo, ObjectMapper mapper) {
         this.repo = repo;
+        this.mapper = mapper;
     }
 
     /**
@@ -56,9 +54,9 @@ public class PendingCommandDispatcher {
             row.setClaimedByReplica(replicaId);
             row.setClaimedAt(now);
             repo.save(row);
-            PlatformMessage frame = toFrame(row);
-            if (frame != null) {
-                out.add(new Claimed(row.getId(), row.getCorrelationId(), frame));
+            Claimed claimed = toFrame(row);
+            if (claimed != null) {
+                out.add(claimed);
             }
         }
         return out;
@@ -72,40 +70,35 @@ public class PendingCommandDispatcher {
         });
     }
 
-    private PlatformMessage toFrame(PendingCommandEntity row) {
-        String json = new String(row.getPayload(), StandardCharsets.UTF_8);
+    private Claimed toFrame(PendingCommandEntity row) {
         try {
             return switch (row.getCommandType()) {
                 case CommandTypes.APPLY_RESOURCE -> {
-                    ApplyResource.Builder b = ApplyResource.newBuilder();
-                    parser.merge(json, b);
-                    b.setCorrelationId(row.getCorrelationId().toString());
-                    yield PlatformMessage.newBuilder().setApplyResource(b).build();
+                    ApplyResource body = mapper.readValue(row.getPayload(), ApplyResource.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), ApplyResource.EVENT_NAME, body);
                 }
                 case CommandTypes.DELETE_RESOURCE -> {
-                    DeleteResource.Builder b = DeleteResource.newBuilder();
-                    parser.merge(json, b);
-                    b.setCorrelationId(row.getCorrelationId().toString());
-                    yield PlatformMessage.newBuilder().setDeleteResource(b).build();
+                    DeleteResource body = mapper.readValue(row.getPayload(), DeleteResource.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), DeleteResource.EVENT_NAME, body);
                 }
                 case CommandTypes.APPLY_NAMESPACE -> {
-                    ApplyNamespace.Builder b = ApplyNamespace.newBuilder();
-                    parser.merge(json, b);
-                    b.setCorrelationId(row.getCorrelationId().toString());
-                    yield PlatformMessage.newBuilder().setApplyNamespace(b).build();
+                    ApplyNamespace body = mapper.readValue(row.getPayload(), ApplyNamespace.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), ApplyNamespace.EVENT_NAME, body);
                 }
                 case CommandTypes.DELETE_NAMESPACE -> {
-                    DeleteNamespace.Builder b = DeleteNamespace.newBuilder();
-                    parser.merge(json, b);
-                    b.setCorrelationId(row.getCorrelationId().toString());
-                    yield PlatformMessage.newBuilder().setDeleteNamespace(b).build();
+                    DeleteNamespace body = mapper.readValue(row.getPayload(), DeleteNamespace.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), DeleteNamespace.EVENT_NAME, body);
                 }
                 default -> {
                     log.warn("Unknown pending_command.command_type: {}", row.getCommandType());
                     yield null;
                 }
             };
-        } catch (InvalidProtocolBufferException e) {
+        } catch (Exception e) {
             log.warn(
                     "Failed to parse pending_command payload id={} type={}: {}",
                     row.getId(),
@@ -115,5 +108,10 @@ public class PendingCommandDispatcher {
         }
     }
 
-    public record Claimed(java.util.UUID commandId, java.util.UUID correlationId, PlatformMessage frame) {}
+    /**
+     * One dispatchable command. {@code eventType} is the SSE event-name constant from the
+     * payload DTO (e.g. {@link ApplyResource#EVENT_NAME}); {@code body} is the matching DTO —
+     * the caller serialises it straight onto an SSE frame.
+     */
+    public record Claimed(java.util.UUID commandId, java.util.UUID correlationId, String eventType, Object body) {}
 }

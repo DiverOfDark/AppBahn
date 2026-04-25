@@ -1,10 +1,10 @@
 package eu.appbahn.platform.common.audit;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditActorSource;
-import eu.appbahn.platform.api.model.AuditDecision;
-import eu.appbahn.platform.api.model.AuditFieldChange;
-import eu.appbahn.platform.api.model.AuditTargetType;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditActorSource;
+import eu.appbahn.platform.api.AuditDecision;
+import eu.appbahn.platform.api.AuditFieldChange;
+import eu.appbahn.platform.api.AuditTargetType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
