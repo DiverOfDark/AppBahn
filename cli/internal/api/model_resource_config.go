@@ -23,7 +23,7 @@ type ResourceConfig struct {
 	Hosting     *HostingConfig     `json:"hosting,omitempty"`
 	Networking  *NetworkingConfig  `json:"networking,omitempty"`
 	HealthCheck *HealthCheckConfig `json:"healthCheck,omitempty"`
-	Env         map[string]string  `json:"env,omitempty"`
+	Env         *map[string]string `json:"env,omitempty"`
 	RunMode     *string            `json:"runMode,omitempty"`
 }
 
@@ -178,14 +178,14 @@ func (o *ResourceConfig) GetEnv() map[string]string {
 		var ret map[string]string
 		return ret
 	}
-	return o.Env
+	return *o.Env
 }
 
 // GetEnvOk returns a tuple with the Env field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ResourceConfig) GetEnvOk() (map[string]string, bool) {
+func (o *ResourceConfig) GetEnvOk() (*map[string]string, bool) {
 	if o == nil || IsNil(o.Env) {
-		return map[string]string{}, false
+		return nil, false
 	}
 	return o.Env, true
 }
@@ -201,7 +201,7 @@ func (o *ResourceConfig) HasEnv() bool {
 
 // SetEnv gets a reference to the given map[string]string and assigns it to the Env field.
 func (o *ResourceConfig) SetEnv(v map[string]string) {
-	o.Env = v
+	o.Env = &v
 }
 
 // GetRunMode returns the RunMode field value if set, zero value otherwise.

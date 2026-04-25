@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the SourceAuth type satisfies the MappedNullable interface at compile time
@@ -21,20 +19,16 @@ var _ MappedNullable = &SourceAuth{}
 
 // SourceAuth struct for SourceAuth
 type SourceAuth struct {
-	Type string `json:"type"`
-	// ESO path for credentials
+	Type          *string `json:"type,omitempty"`
 	CredentialRef *string `json:"credentialRef,omitempty"`
 }
-
-type _SourceAuth SourceAuth
 
 // NewSourceAuth instantiates a new SourceAuth object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSourceAuth(type_ string) *SourceAuth {
+func NewSourceAuth() *SourceAuth {
 	this := SourceAuth{}
-	this.Type = type_
 	return &this
 }
 
@@ -46,28 +40,36 @@ func NewSourceAuthWithDefaults() *SourceAuth {
 	return &this
 }
 
-// GetType returns the Type field value
+// GetType returns the Type field value if set, zero value otherwise.
 func (o *SourceAuth) GetType() string {
-	if o == nil {
+	if o == nil || IsNil(o.Type) {
 		var ret string
 		return ret
 	}
-
-	return o.Type
+	return *o.Type
 }
 
-// GetTypeOk returns a tuple with the Type field value
+// GetTypeOk returns a tuple with the Type field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *SourceAuth) GetTypeOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Type) {
 		return nil, false
 	}
-	return &o.Type, true
+	return o.Type, true
 }
 
-// SetType sets field value
+// HasType returns a boolean if a field has been set.
+func (o *SourceAuth) HasType() bool {
+	if o != nil && !IsNil(o.Type) {
+		return true
+	}
+
+	return false
+}
+
+// SetType gets a reference to the given string and assigns it to the Type field.
 func (o *SourceAuth) SetType(v string) {
-	o.Type = v
+	o.Type = &v
 }
 
 // GetCredentialRef returns the CredentialRef field value if set, zero value otherwise.
@@ -112,48 +114,13 @@ func (o SourceAuth) MarshalJSON() ([]byte, error) {
 
 func (o SourceAuth) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["type"] = o.Type
+	if !IsNil(o.Type) {
+		toSerialize["type"] = o.Type
+	}
 	if !IsNil(o.CredentialRef) {
 		toSerialize["credentialRef"] = o.CredentialRef
 	}
 	return toSerialize, nil
-}
-
-func (o *SourceAuth) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"type",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varSourceAuth := _SourceAuth{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varSourceAuth)
-
-	if err != nil {
-		return err
-	}
-
-	*o = SourceAuth(varSourceAuth)
-
-	return err
 }
 
 type NullableSourceAuth struct {

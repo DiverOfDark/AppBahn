@@ -1,6 +1,6 @@
 package eu.appbahn.platform.common.exception;
 
-import eu.appbahn.platform.api.model.ErrorResponse;
+import eu.appbahn.platform.api.ErrorResponse;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

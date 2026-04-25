@@ -1,6 +1,6 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AuditActorSource;
+import eu.appbahn.platform.api.AuditActorSource;
 import eu.appbahn.platform.common.security.AppBahnAuthenticationToken;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.workspace.entity.EnvironmentTokenEntity;

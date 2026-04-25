@@ -19,8 +19,8 @@ var _ MappedNullable = &MetricsSeries{}
 
 // MetricsSeries struct for MetricsSeries
 type MetricsSeries struct {
-	Pod    *string     `json:"pod,omitempty"`
-	Values [][]float32 `json:"values,omitempty"`
+	Pod    *string            `json:"pod,omitempty"`
+	Values []MetricsDataPoint `json:"values,omitempty"`
 }
 
 // NewMetricsSeries instantiates a new MetricsSeries object
@@ -73,9 +73,9 @@ func (o *MetricsSeries) SetPod(v string) {
 }
 
 // GetValues returns the Values field value if set, zero value otherwise.
-func (o *MetricsSeries) GetValues() [][]float32 {
+func (o *MetricsSeries) GetValues() []MetricsDataPoint {
 	if o == nil || IsNil(o.Values) {
-		var ret [][]float32
+		var ret []MetricsDataPoint
 		return ret
 	}
 	return o.Values
@@ -83,7 +83,7 @@ func (o *MetricsSeries) GetValues() [][]float32 {
 
 // GetValuesOk returns a tuple with the Values field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *MetricsSeries) GetValuesOk() ([][]float32, bool) {
+func (o *MetricsSeries) GetValuesOk() ([]MetricsDataPoint, bool) {
 	if o == nil || IsNil(o.Values) {
 		return nil, false
 	}
@@ -99,8 +99,8 @@ func (o *MetricsSeries) HasValues() bool {
 	return false
 }
 
-// SetValues gets a reference to the given [][]float32 and assigns it to the Values field.
-func (o *MetricsSeries) SetValues(v [][]float32) {
+// SetValues gets a reference to the given []MetricsDataPoint and assigns it to the Values field.
+func (o *MetricsSeries) SetValues(v []MetricsDataPoint) {
 	o.Values = v
 }
 

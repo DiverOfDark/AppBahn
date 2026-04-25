@@ -1,6 +1,7 @@
 package eu.appbahn.platform.resource.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.TriggerType;
 import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
@@ -9,9 +10,9 @@ import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceSpec;
-import eu.appbahn.shared.crd.ResourceStatus;
-import eu.appbahn.tunnel.wire.FullSyncPayload;
-import eu.appbahn.tunnel.wire.ResourceSyncPayload;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
+import eu.appbahn.shared.tunnel.FullSyncPayload;
+import eu.appbahn.shared.tunnel.ResourceSyncPayload;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.HashMap;
@@ -70,11 +71,11 @@ public class ResourceSyncService {
 
         ResourceConfig config =
                 request.config() != null ? objectMapper.convertValue(request.config(), ResourceConfig.class) : null;
-        ResourceStatus statusDetail = request.statusDetail() != null
-                ? objectMapper.convertValue(request.statusDetail(), ResourceStatus.class)
+        ResourceStatusDetail statusDetail = request.statusDetail() != null
+                ? objectMapper.convertValue(request.statusDetail(), ResourceStatusDetail.class)
                 : null;
 
-        List<ResourceSpec.ResourceLink> links = request.links() != null ? request.links() : List.of();
+        List<ResourceSpec.LinkConfig> links = request.links() != null ? request.links() : List.of();
 
         var now = Instant.now();
         var existing = resourceCacheRepository.findBySlug(request.slug()).orElse(null);

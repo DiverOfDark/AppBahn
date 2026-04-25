@@ -4,21 +4,15 @@
  */
 
 export interface paths {
-  '/auth/login': {
+  '/workspaces/{slug}/security': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    /**
-     * Initiate OIDC login
-     * @description Generates PKCE code verifier/challenge and state, then redirects
-     *     the browser to the OIDC provider's authorization endpoint.
-     *     No authentication required.
-     */
-    get: operations['authLogin']
-    put?: never
+    get: operations['getWorkspaceSecurity']
+    put: operations['setWorkspaceSecurity']
     post?: never
     delete?: never
     options?: never
@@ -26,21 +20,127 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/auth/callback': {
+  '/workspaces/{slug}/registry': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    /**
-     * OIDC callback
-     * @description Receives the authorization code from the OIDC provider, exchanges
-     *     it for tokens server-side, then redirects the browser to
-     *     /auth/complete?token={access_token} for the SPA to pick up.
-     */
-    get: operations['authCallback']
-    put?: never
+    get?: never
+    put: operations['setWorkspaceRegistry']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/projects/{slug}/registry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setProjectRegistry']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/projects/{slug}/members/{user_id}/role': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setProjectMemberRole']
+    post?: never
+    delete: operations['deleteProjectMemberRole']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/{slug}/target-cluster': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setTargetCluster']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/{slug}/registry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setEnvironmentRegistry']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/{slug}/members/{user_id}/role': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setEnvironmentMemberRole']
+    post?: never
+    delete: operations['deleteEnvironmentMemberRole']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/{slug}/approval-gates': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: operations['setApprovalGates']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/config': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getPlatformConfig']
+    put: operations['setPlatformConfig']
     post?: never
     delete?: never
     options?: never
@@ -55,10 +155,8 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** List workspaces */
     get: operations['listWorkspaces']
     put?: never
-    /** Create workspace */
     post: operations['createWorkspace']
     delete?: never
     options?: never
@@ -66,54 +164,16 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/workspaces/{slug}': {
+  '/workspaces/{slug}/notification-webhooks': {
     parameters: {
       query?: never
       header?: never
       path?: never
       cookie?: never
     }
-    /** Get workspace details */
-    get: operations['getWorkspace']
+    get: operations['listNotificationWebhooks']
     put?: never
-    post?: never
-    /** Delete workspace */
-    delete: operations['deleteWorkspace']
-    options?: never
-    head?: never
-    /** Update workspace */
-    patch: operations['updateWorkspace']
-    trace?: never
-  }
-  '/workspaces/{slug}/registry': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /** Set workspace registry configuration */
-    put: operations['setWorkspaceRegistry']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/workspaces/{slug}/security': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get workspace security settings */
-    get: operations['getWorkspaceSecurity']
-    /** Set workspace security settings */
-    put: operations['setWorkspaceSecurity']
-    post?: never
+    post: operations['createNotificationWebhook']
     delete?: never
     options?: never
     head?: never
@@ -127,33 +187,13 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** List workspace members */
     get: operations['listWorkspaceMembers']
     put?: never
-    /** Add workspace member */
     post: operations['addWorkspaceMember']
     delete?: never
     options?: never
     head?: never
     patch?: never
-    trace?: never
-  }
-  '/workspaces/{slug}/members/{userId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    /** Remove workspace member */
-    delete: operations['removeWorkspaceMember']
-    options?: never
-    head?: never
-    /** Update workspace member role */
-    patch: operations['updateWorkspaceMember']
     trace?: never
   }
   '/workspaces/{slug}/group-mappings': {
@@ -163,10 +203,8 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** List OIDC group mappings */
     get: operations['listGroupMappings']
     put?: never
-    /** Create OIDC group mapping */
     post: operations['createGroupMapping']
     delete?: never
     options?: never
@@ -174,7 +212,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/workspaces/{slug}/group-mappings/{mappingId}': {
+  '/webhooks/{resource_slug}': {
     parameters: {
       query?: never
       header?: never
@@ -183,361 +221,8 @@ export interface paths {
     }
     get?: never
     put?: never
-    post?: never
-    /** Delete OIDC group mapping */
-    delete: operations['deleteGroupMapping']
-    options?: never
-    head?: never
-    /** Update OIDC group mapping */
-    patch: operations['updateGroupMapping']
-    trace?: never
-  }
-  '/workspaces/{slug}/notification-webhooks': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List notification webhooks */
-    get: operations['listNotificationWebhooks']
-    put?: never
-    /** Create notification webhook */
-    post: operations['createNotificationWebhook']
+    post: operations['triggerWebhook']
     delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/workspaces/{slug}/notification-webhooks/{hookId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    /** Delete notification webhook */
-    delete: operations['deleteNotificationWebhook']
-    options?: never
-    head?: never
-    /** Update notification webhook */
-    patch: operations['updateNotificationWebhook']
-    trace?: never
-  }
-  '/workspaces/{slug}/notification-webhooks/{hookId}/deliveries': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List webhook deliveries */
-    get: operations['listWebhookDeliveries']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/workspaces/{slug}/audit-log': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Query workspace audit log */
-    get: operations['getWorkspaceAuditLog']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/workspaces/{slug}/quota': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get workspace quota */
-    get: operations['getWorkspaceQuota']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /** Set workspace quota */
-    patch: operations['setWorkspaceQuota']
-    trace?: never
-  }
-  '/projects': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List projects */
-    get: operations['listProjects']
-    put?: never
-    /** Create project */
-    post: operations['createProject']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/projects/{slug}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get project details */
-    get: operations['getProject']
-    put?: never
-    post?: never
-    /** Delete project */
-    delete: operations['deleteProject']
-    options?: never
-    head?: never
-    /** Update project */
-    patch: operations['updateProject']
-    trace?: never
-  }
-  '/projects/{slug}/registry': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /** Set project registry configuration */
-    put: operations['setProjectRegistry']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/projects/{slug}/quota': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get project quota */
-    get: operations['getProjectQuota']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /** Set project quota */
-    patch: operations['setProjectQuota']
-    trace?: never
-  }
-  '/projects/{slug}/members/{userId}/role': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /**
-     * Set project-level role override
-     * @description Elevate a workspace member's role at the project level.
-     *     The override role must be higher than the workspace role (can only elevate, never restrict).
-     */
-    put: operations['setProjectMemberRole']
-    post?: never
-    /**
-     * Remove project-level role override
-     * @description Reverts the member to their workspace-level role for this project.
-     */
-    delete: operations['deleteProjectMemberRole']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List environments */
-    get: operations['listEnvironments']
-    put?: never
-    /** Create environment */
-    post: operations['createEnvironment']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get environment details */
-    get: operations['getEnvironment']
-    put?: never
-    post?: never
-    /** Delete environment */
-    delete: operations['deleteEnvironment']
-    options?: never
-    head?: never
-    /** Update environment */
-    patch: operations['updateEnvironment']
-    trace?: never
-  }
-  '/environments/{slug}/registry': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /** Set environment registry configuration */
-    put: operations['setEnvironmentRegistry']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}/approval-gates': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /** Set deployment approval gates */
-    put: operations['setApprovalGates']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}/target-cluster': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /** Set target cluster for environment */
-    put: operations['setTargetCluster']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}/tokens': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List environment tokens */
-    get: operations['listEnvironmentTokens']
-    put?: never
-    /** Create environment token */
-    post: operations['createEnvironmentToken']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}/tokens/{tokenId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    /** Delete environment token */
-    delete: operations['deleteEnvironmentToken']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/environments/{slug}/quota': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get environment quota */
-    get: operations['getEnvironmentQuota']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /** Set environment quota */
-    patch: operations['setEnvironmentQuota']
-    trace?: never
-  }
-  '/environments/{slug}/members/{userId}/role': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    /**
-     * Set environment-level role override
-     * @description Elevate a member's role at the environment level.
-     *     The override role must be higher than the inherited project role (can only elevate, never restrict).
-     */
-    put: operations['setEnvironmentMemberRole']
-    post?: never
-    /**
-     * Remove environment-level role override
-     * @description Reverts the member to their inherited project-level role for this environment.
-     */
-    delete: operations['deleteEnvironmentMemberRole']
     options?: never
     head?: never
     patch?: never
@@ -550,235 +235,9 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** List resources */
     get: operations['listResources']
     put?: never
-    /** Create resource */
     post: operations['createResource']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get resource details */
-    get: operations['getResource']
-    put?: never
-    post?: never
-    /** Delete resource */
-    delete: operations['deleteResource']
-    options?: never
-    head?: never
-    /** Update resource (JSON merge patch) */
-    patch: operations['updateResource']
-    trace?: never
-  }
-  '/resources/{slug}/logs': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get resource logs */
-    get: operations['getResourceLogs']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/metrics/cpu': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get CPU metrics */
-    get: operations['getResourceCpuMetrics']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/metrics/ram': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get RAM metrics */
-    get: operations['getResourceRamMetrics']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/metrics/network/inbound': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get network inbound metrics */
-    get: operations['getResourceNetworkInbound']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/metrics/network/outbound': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get network outbound metrics */
-    get: operations['getResourceNetworkOutbound']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List deployments */
-    get: operations['listDeployments']
-    put?: never
-    /** Trigger a new deployment */
-    post: operations['triggerDeployment']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments/{deploymentId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get deployment details */
-    get: operations['getDeployment']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments/{deploymentId}/approve': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Approve a deployment */
-    post: operations['approveDeployment']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments/{deploymentId}/reject': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Reject a deployment */
-    post: operations['rejectDeployment']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments/{deploymentId}/approvals': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get deployment approval status */
-    get: operations['getDeploymentApprovals']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/connection': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get resource connection details */
-    get: operations['getResourceConnection']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/webhook': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get resource webhook configuration */
-    get: operations['getResourceWebhook']
-    put?: never
-    post?: never
     delete?: never
     options?: never
     head?: never
@@ -794,7 +253,6 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Rotate webhook secret */
     post: operations['rotateWebhookSecret']
     delete?: never
     options?: never
@@ -811,7 +269,6 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Stop resource */
     post: operations['stopResource']
     delete?: never
     options?: never
@@ -828,8 +285,23 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Start resource */
     post: operations['startResource']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/rollback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['rollbackResource']
     delete?: never
     options?: never
     head?: never
@@ -845,42 +317,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Restart resource */
     post: operations['restartResource']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/build-cache': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    /** Clear build cache */
-    delete: operations['clearBuildCache']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/rollback': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Rollback resource to a previous deployment */
-    post: operations['rollbackResource']
     delete?: never
     options?: never
     head?: never
@@ -896,8 +333,535 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Create ephemeral port exposure */
     post: operations['createExposure']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/domains': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listDomains']
+    put?: never
+    post: operations['addDomain']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listDeployments']
+    put?: never
+    post: operations['triggerDeployment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments/{deployment_id}/reject': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['rejectDeployment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments/{deployment_id}/approve': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['approveDeployment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/projects': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listProjects']
+    put?: never
+    post: operations['createProject']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/git/validate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['validateGitRepo']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/git/repos': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['listGitRepos']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/git/detect-build': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['startBuildDetection']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listEnvironments']
+    put?: never
+    post: operations['createEnvironment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/{slug}/tokens': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listEnvironmentTokens']
+    put?: never
+    post: operations['createEnvironmentToken']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/network-policies': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listNetworkPolicies']
+    put?: never
+    post: operations['createNetworkPolicy']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/clusters': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listClusters']
+    put?: never
+    post: operations['registerCluster']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/workspaces/{slug}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getWorkspace']
+    put?: never
+    post?: never
+    delete: operations['deleteWorkspace']
+    options?: never
+    head?: never
+    patch: operations['updateWorkspace']
+    trace?: never
+  }
+  '/workspaces/{slug}/quota': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getWorkspaceQuota']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['setWorkspaceQuota']
+    trace?: never
+  }
+  '/workspaces/{slug}/notification-webhooks/{hook_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['deleteNotificationWebhook']
+    options?: never
+    head?: never
+    patch: operations['updateNotificationWebhook']
+    trace?: never
+  }
+  '/workspaces/{slug}/members/{user_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['removeWorkspaceMember']
+    options?: never
+    head?: never
+    patch: operations['updateWorkspaceMember']
+    trace?: never
+  }
+  '/workspaces/{slug}/group-mappings/{mapping_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['deleteGroupMapping']
+    options?: never
+    head?: never
+    patch: operations['updateGroupMapping']
+    trace?: never
+  }
+  '/resources/{slug}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResource']
+    put?: never
+    post?: never
+    delete: operations['deleteResource']
+    options?: never
+    head?: never
+    patch: operations['updateResource']
+    trace?: never
+  }
+  '/projects/{slug}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getProject']
+    put?: never
+    post?: never
+    delete: operations['deleteProject']
+    options?: never
+    head?: never
+    patch: operations['updateProject']
+    trace?: never
+  }
+  '/projects/{slug}/quota': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getProjectQuota']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['setProjectQuota']
+    trace?: never
+  }
+  '/environments/{slug}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getEnvironment']
+    put?: never
+    post?: never
+    delete: operations['deleteEnvironment']
+    options?: never
+    head?: never
+    patch: operations['updateEnvironment']
+    trace?: never
+  }
+  '/environments/{slug}/quota': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getEnvironmentQuota']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['setEnvironmentQuota']
+    trace?: never
+  }
+  '/admin/resource-types/{type}/admin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['updateResourceTypeAdminConfig']
+    trace?: never
+  }
+  '/admin/network-policies/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['deleteNetworkPolicy']
+    options?: never
+    head?: never
+    patch: operations['updateNetworkPolicy']
+    trace?: never
+  }
+  '/admin/clusters/{name}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['deleteCluster']
+    options?: never
+    head?: never
+    patch: operations['updateCluster']
+    trace?: never
+  }
+  '/workspaces/{slug}/notification-webhooks/{hook_id}/deliveries': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listWebhookDeliveries']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/workspaces/{slug}/audit-log': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getWorkspaceAuditLog']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/webhook': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceWebhook']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/metrics/ram': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceRamMetrics']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/metrics/network/outbound': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceNetworkOutbound']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/metrics/network/inbound': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceNetworkInbound']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/metrics/cpu': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceCpuMetrics']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/logs': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceLogs']
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never
@@ -911,8 +875,183 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** List active ephemeral port exposures */
     get: operations['listExposures']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments/{deployment_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getDeployment']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments/{deployment_id}/approvals': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getDeploymentApprovals']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/connection': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceConnection']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resource-types': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listResourceTypes']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/git/detect-build/{job_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getBuildDetectionStatus']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/login': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['authLogin']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/auth/callback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['authCallback']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/users': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listUsers']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/resource-types': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listResourceTypeDefinitions']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/resource-types/{type}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceTypeDefinition']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/admin/audit-log': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getPlatformAuditLog']
     put?: never
     post?: never
     delete?: never
@@ -931,26 +1070,7 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    /** Remove ephemeral exposure */
     delete: operations['deleteExposure']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/domains': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List custom domains */
-    get: operations['listDomains']
-    put?: never
-    /** Add custom domain */
-    post: operations['addDomain']
-    delete?: never
     options?: never
     head?: never
     patch?: never
@@ -966,190 +1086,13 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    /** Remove custom domain */
     delete: operations['removeDomain']
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/resource-types': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List available resource types per cluster */
-    get: operations['listResourceTypes']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/git/repos': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** List git repositories */
-    post: operations['listGitRepos']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/git/validate': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Validate git repository access */
-    post: operations['validateGitRepo']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/git/detect-build': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Start async build config detection */
-    post: operations['startBuildDetection']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/git/detect-build/{jobId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get build detection job status */
-    get: operations['getBuildDetectionStatus']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/webhooks/{resourceSlug}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /** Trigger deployment via webhook */
-    post: operations['triggerWebhook']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/config': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * Get public platform configuration
-     * @description Returns public platform configuration including branding.
-     *     No authentication required — used by the login page.
-     */
-    get: operations['getPlatformConfig']
-    /** Set platform configuration */
-    put: operations['setPlatformConfig']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/users': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List users */
-    get: operations['listUsers']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/audit-log': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Query platform-wide audit log */
-    get: operations['getPlatformAuditLog']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/clusters': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List registered clusters */
-    get: operations['listClusters']
-    put?: never
-    /** Register a new cluster */
-    post: operations['registerCluster']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/clusters/{name}': {
+  '/resources/{slug}/build-cache': {
     parameters: {
       query?: never
       header?: never
@@ -1159,33 +1102,13 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    /** Delete cluster */
-    delete: operations['deleteCluster']
-    options?: never
-    head?: never
-    /** Update cluster */
-    patch: operations['updateCluster']
-    trace?: never
-  }
-  '/admin/network-policies': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List network policies */
-    get: operations['listNetworkPolicies']
-    put?: never
-    /** Create network policy */
-    post: operations['createNetworkPolicy']
-    delete?: never
+    delete: operations['clearBuildCache']
     options?: never
     head?: never
     patch?: never
     trace?: never
   }
-  '/admin/network-policies/{id}': {
+  '/environments/{slug}/tokens/{token_id}': {
     parameters: {
       query?: never
       header?: never
@@ -1195,85 +1118,32 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    /** Delete network policy */
-    delete: operations['deleteNetworkPolicy']
-    options?: never
-    head?: never
-    /** Update network policy */
-    patch: operations['updateNetworkPolicy']
-    trace?: never
-  }
-  '/admin/resource-types': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** List resource type definitions */
-    get: operations['listResourceTypeDefinitions']
-    put?: never
-    post?: never
-    delete?: never
+    delete: operations['deleteEnvironmentToken']
     options?: never
     head?: never
     patch?: never
-    trace?: never
-  }
-  '/admin/resource-types/{type}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get resource type definition */
-    get: operations['getResourceTypeDefinition']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/admin/resource-types/{type}/admin': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    /** Update resource type admin configuration */
-    patch: operations['updateResourceTypeAdminConfig']
     trace?: never
   }
 }
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    PagedResponse: {
-      page?: number
-      size?: number
-      /** Format: int64 */
-      totalElements?: number
-      totalPages?: number
+    SecuritySettings: {
+      runtimeClassName?: string
     }
-    ErrorResponse: {
-      status: number
-      error: string
-      message: string
-      details?: string[]
-      current?: number
-      limit?: number
-      dimension?: string
-      level?: string
+    RegistryConfig: {
+      url?: string
+      credentialRef?: string
+    }
+    Quota: {
+      /** Format: double */
+      maxCpuCores?: number
+      /** Format: int32 */
+      maxMemoryMb?: number
+      /** Format: int32 */
+      maxStorageGb?: number
+      /** Format: int32 */
+      maxResources?: number
     }
     Workspace: {
       /** Format: uuid */
@@ -1288,15 +1158,6 @@ export interface components {
       /** Format: date-time */
       updatedAt?: string
     }
-    CreateWorkspaceRequest: {
-      name: string
-    }
-    UpdateWorkspaceRequest: {
-      name?: string
-    }
-    PagedWorkspaceResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['Workspace'][]
-    }
     Project: {
       /** Format: uuid */
       id?: string
@@ -1310,15 +1171,17 @@ export interface components {
       /** Format: date-time */
       updatedAt?: string
     }
-    CreateProjectRequest: {
-      name: string
-      workspaceSlug: string
+    UpdateMemberRequest: {
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
-    UpdateProjectRequest: {
-      name?: string
+    SetTargetClusterRequest: {
+      clusterName: string
     }
-    PagedProjectResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['Project'][]
+    ApprovalGatesConfig: {
+      enabled?: boolean
+      /** Format: int32 */
+      requiredApprovals?: number
     }
     Environment: {
       /** Format: uuid */
@@ -1336,78 +1199,103 @@ export interface components {
       /** Format: date-time */
       updatedAt?: string
     }
-    CreateEnvironmentRequest: {
+    PlatformConfig: {
+      domain?: string
+      namespacePrefix?: string
+      registry?: components['schemas']['RegistryConfig']
+      branding?: components['schemas']['PlatformConfigBranding']
+      auth?: Record<string, never>
+      defaultQuota?: components['schemas']['Quota']
+      buildConfig?: Record<string, never>
+    }
+    PlatformConfigBranding: {
+      instanceName?: string
+      tagline?: string
+      logoUrl?: string
+      loginButtonText?: string
+    }
+    CreateWorkspaceRequest: {
       name: string
-      projectSlug: string
-      description?: string
-      /**
-       * @description Name of the target cluster. When omitted, the platform auto-picks
-       *     the sole approved cluster; returns 400 if zero or more than one
-       *     approved cluster is registered.
-       */
-      targetCluster?: string
     }
-    UpdateEnvironmentRequest: {
+    CreateNotificationWebhookRequest: {
       name?: string
-      description?: string
+      url?: string
+      events?: (
+        | 'DEPLOYMENT_SUCCEEDED'
+        | 'DEPLOYMENT_FAILED'
+        | 'DEPLOYMENT_AWAITING_APPROVAL'
+        | 'RESOURCE_ERROR'
+        | 'RESOURCE_DEGRADED'
+        | 'RESOURCE_READY'
+        | 'BUILD_STARTED'
+        | 'EXPOSURE_CREATED'
+        | 'QUOTA_WARNING'
+      )[]
     }
-    PagedEnvironmentResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['Environment'][]
-    }
-    ApprovalGatesConfig: {
-      enabled?: boolean
-      requiredApprovals?: number
-    }
-    SetTargetClusterRequest: {
-      clusterName: string
-    }
-    EnvironmentToken: {
+    NotificationWebhook: {
       /** Format: uuid */
       id?: string
+      /** Format: uuid */
+      workspaceId?: string
       name?: string
-      /** @enum {string} */
-      role?: 'EDITOR' | 'VIEWER'
-      /** Format: date-time */
-      expiresAt?: string
-      /** Format: date-time */
-      lastUsedAt?: string
-      /** @description Email of the user who created the token */
+      url?: string
+      events?: (
+        | 'DEPLOYMENT_SUCCEEDED'
+        | 'DEPLOYMENT_FAILED'
+        | 'DEPLOYMENT_AWAITING_APPROVAL'
+        | 'RESOURCE_ERROR'
+        | 'RESOURCE_DEGRADED'
+        | 'RESOURCE_READY'
+        | 'BUILD_STARTED'
+        | 'EXPOSURE_CREATED'
+        | 'QUOTA_WARNING'
+      )[]
+      /** Format: uuid */
       createdBy?: string
-      /** Format: date-time */
-      createdAt?: string
     }
-    CreateEnvironmentTokenRequest: {
-      name: string
+    AddMemberRequest: {
+      email?: string
       /** @enum {string} */
-      role: 'EDITOR' | 'VIEWER'
-      expiresInDays: number
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
-    CreateEnvironmentTokenResponse: {
+    AddMemberResponse: {
+      /** @enum {string} */
+      status?: 'ACTIVE' | 'PENDING'
+    }
+    CreateGroupMappingRequest: {
+      oidcGroup?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+    }
+    OidcGroupMapping: {
       /** Format: uuid */
       id?: string
-      name?: string
-      token?: string
+      oidcGroup?: string
+      /** Format: uuid */
+      workspaceId?: string
       /** @enum {string} */
-      role?: 'EDITOR' | 'VIEWER'
-      /** Format: date-time */
-      expiresAt?: string
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
-    Resource: {
-      slug?: string
-      name?: string
-      type?: string
-      environmentSlug?: string
-      config?: components['schemas']['ResourceConfig']
-      links?: components['schemas']['LinkConfig'][]
-      /** @enum {string} */
-      status?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
-      statusDetail?: components['schemas']['ResourceStatusDetail']
-      /** Format: date-time */
-      lastSyncedAt?: string
-      /** Format: date-time */
-      createdAt?: string
-      /** Format: date-time */
-      updatedAt?: string
+    WebhookTriggerResponse: {
+      changed?: boolean
+      /** Format: uuid */
+      deploymentId?: string
+    }
+    BuildConfig:
+      | components['schemas']['PeelboxBuildConfig']
+      | components['schemas']['BuildpackBuildConfig']
+      | components['schemas']['RailpackBuildConfig']
+      | components['schemas']['DockerfileBuildConfig']
+    BuildpackBuildConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'buildpack'
+      builder?: string
+      buildVars?: {
+        [key: string]: string
+      }
     }
     CreateResourceRequest: {
       name: string
@@ -1416,17 +1304,124 @@ export interface components {
       config: components['schemas']['ResourceConfig']
       links?: components['schemas']['LinkConfig'][]
     }
-    UpdateResourceRequest: {
-      name?: string
-      config?: components['schemas']['ResourceConfig']
-      links?: components['schemas']['LinkConfig'][]
+    DockerSource: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'docker'
+      pollInterval?: string
+      webhookEnabled?: boolean
+      image?: string
+      tag?: string
+      registryUrl?: string
+      credentialRef?: string
     }
-    ResourceCreatedResponse: {
-      slug?: string
-      environmentSlug?: string
+    DockerfileBuildConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'dockerfile'
+      path?: string
+      target?: string
+      buildArgs?: {
+        [key: string]: string
+      }
     }
-    PagedResourceResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['Resource'][]
+    ExecAction: {
+      command?: string[]
+    }
+    GitSource: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'git'
+      pollInterval?: string
+      webhookEnabled?: boolean
+      url?: string
+      branch?: string
+      path?: string
+      auth?: components['schemas']['SourceAuth']
+      buildConfig?: components['schemas']['BuildConfig']
+    }
+    HealthCheckConfig: {
+      readiness?: components['schemas']['ProbeConfig']
+      liveness?: components['schemas']['ProbeConfig']
+      startup?: components['schemas']['ProbeConfig']
+    }
+    HostingConfig: {
+      cpu?: string
+      memory?: string
+      /** Format: int32 */
+      minReplicas?: number
+      /** Format: int32 */
+      maxReplicas?: number
+    }
+    HttpGetAction: {
+      path?: string
+      /** Format: int32 */
+      port?: number
+    }
+    LinkConfig: {
+      resource?: string
+      secret?: string
+      env?: {
+        [key: string]: string
+      }
+    }
+    NetworkingConfig: {
+      ports?: components['schemas']['PortConfig'][]
+    }
+    PeelboxBuildConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'peelbox'
+      universalBuild?: Record<string, never>[]
+    }
+    PortConfig: {
+      /** Format: int32 */
+      port?: number
+      /** @enum {string} */
+      expose?: 'none' | 'ingress' | 'tcp'
+      domain?: string
+    }
+    ProbeConfig: {
+      httpGet?: components['schemas']['HttpGetAction']
+      tcpSocket?: components['schemas']['TcpSocketAction']
+      exec?: components['schemas']['ExecAction']
+      /** Format: int32 */
+      initialDelaySeconds?: number
+      /** Format: int32 */
+      periodSeconds?: number
+      /** Format: int32 */
+      failureThreshold?: number
+    }
+    PromotionSource: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'promotion'
+      pollInterval?: string
+      webhookEnabled?: boolean
+      sourceEnvironment?: string
+      sourceResource?: string
+      autoPromote?: boolean
+    }
+    RailpackBuildConfig: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'railpack'
+      provider?: string
+      buildVars?: {
+        [key: string]: string
+      }
     }
     ResourceConfig: {
       source?: components['schemas']['SourceConfig']
@@ -1437,228 +1432,32 @@ export interface components {
         [key: string]: string
       }
       /** @enum {string} */
-      runMode?: 'continuous' | 'cron'
+      runMode?: 'CONTINUOUS' | 'TASK'
+    }
+    SourceAuth: {
+      /** @enum {string} */
+      type?: 'none' | 'basic' | 'ssh_key'
+      credentialRef?: string
     }
     SourceConfig:
       | components['schemas']['DockerSource']
       | components['schemas']['GitSource']
       | components['schemas']['PromotionSource']
-    SourceBase: {
-      type: string
-      /** @description Polling interval, e.g. '5m'. '0' disables polling. */
-      pollInterval?: string
-      webhookEnabled?: boolean
-    }
-    DockerSource: components['schemas']['SourceBase'] & {
-      image: string
-      tag?: string
-      registryUrl?: string
-      /** @description ESO path for registry credentials */
-      credentialRef?: string
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'docker'
-    }
-    GitSource: components['schemas']['SourceBase'] & {
-      url: string
-      branch: string
-      /** @description Subdirectory within repo */
-      path?: string
-      auth?: components['schemas']['SourceAuth']
-      buildConfig?: components['schemas']['BuildConfig']
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'git'
-    }
-    PromotionSource: components['schemas']['SourceBase'] & {
-      /** @description Slug of the source environment */
-      sourceEnvironment: string
-      /** @description Slug of the source resource */
-      sourceResource: string
-      /** @description Auto-trigger deployment on source success */
-      autoPromote?: boolean
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'promotion'
-    }
-    SourceAuth: {
-      /** @enum {string} */
-      type: 'none' | 'basic' | 'ssh_key'
-      /** @description ESO path for credentials */
-      credentialRef?: string
-    }
-    BuildConfig:
-      | components['schemas']['PeelboxBuildConfig']
-      | components['schemas']['BuildpackBuildConfig']
-      | components['schemas']['RailpackBuildConfig']
-      | components['schemas']['DockerfileBuildConfig']
-    BuildConfigBase: {
-      type: string
-    }
-    PeelboxBuildConfig: components['schemas']['BuildConfigBase'] & {
-      universalBuild?: Record<string, never>[]
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'peelbox'
-    }
-    BuildpackBuildConfig: components['schemas']['BuildConfigBase'] & {
-      builder?: string
-      buildVars?: {
-        [key: string]: string
-      }
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'buildpack'
-    }
-    RailpackBuildConfig: components['schemas']['BuildConfigBase'] & {
-      provider?: string
-      buildVars?: {
-        [key: string]: string
-      }
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'railpack'
-    }
-    DockerfileBuildConfig: components['schemas']['BuildConfigBase'] & {
-      /** @description Path to Dockerfile relative to source root */
-      path?: string
-      /** @description Multi-stage build target */
-      target?: string
-      buildArgs?: {
-        [key: string]: string
-      }
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'dockerfile'
-    }
-    HostingConfig: {
-      /** @description Kubernetes CPU quantity, e.g. '500m' or '2' */
-      cpu?: string
-      /** @description Kubernetes memory quantity, e.g. '256Mi' or '1Gi' */
-      memory?: string
-      /** @description Minimum replicas (baseline count); used with maxReplicas for autoscaling */
-      minReplicas?: number
-      /** @description Maximum replicas for autoscaling; used for worst-case quota calculation */
-      maxReplicas?: number
-    }
-    NetworkingConfig: {
-      ports?: components['schemas']['PortConfig'][]
-    }
-    PortConfig: {
-      port?: number
-      /** @enum {string} */
-      expose?: 'ingress' | 'tcp' | 'none'
-      /** @description Custom domain for this port (only when expose=ingress; auto-generated if omitted) */
-      domain?: string
-    }
-    HealthCheckConfig: {
-      readiness?: components['schemas']['ProbeConfig']
-      liveness?: components['schemas']['ProbeConfig']
-      startup?: components['schemas']['ProbeConfig']
-    }
-    ProbeConfig: {
-      httpGet?: components['schemas']['HttpGetAction']
-      tcpSocket?: components['schemas']['TcpSocketAction']
-      exec?: components['schemas']['ExecAction']
-      initialDelaySeconds?: number
-      periodSeconds?: number
-      failureThreshold?: number
-    }
-    HttpGetAction: {
-      path?: string
-      port?: number
-    }
     TcpSocketAction: {
+      /** Format: int32 */
       port?: number
     }
-    ExecAction: {
-      command?: string[]
+    ResourceCreatedResponse: {
+      slug?: string
+      environmentSlug?: string
     }
-    LinkConfig: {
-      resource: string
-      secret?: string
-      env?: {
-        [key: string]: string
-      }
+    WebhookConfig: {
+      url?: string
+      secretMasked?: string
     }
-    ResourceStatusDetail: {
-      phase?: string
-      message?: string
-      /** Format: int64 */
-      observedGeneration?: number
-      replicas?: components['schemas']['ReplicaStatus']
-      conditions?: components['schemas']['ResourceCondition'][]
-      customDomains?: components['schemas']['CustomDomainStatus'][]
-      links?: components['schemas']['LinkStatus'][]
+    RollbackRequest: {
       /** Format: uuid */
-      primaryDeploymentId?: string
-      primaryImage?: string
-      /** Format: date-time */
-      lastDeploymentTime?: string
-      /** Format: date-time */
-      lastSyncTime?: string
-      /** Format: uuid */
-      latestDeploymentId?: string
-      /** @enum {string} */
-      latestDeploymentStatus?:
-        | 'QUEUED'
-        | 'AWAITING_APPROVAL'
-        | 'BUILDING'
-        | 'COPYING_IMAGE'
-        | 'DEPLOYING'
-        | 'SUCCEEDED'
-        | 'FAILED'
-        | 'REJECTED'
-    }
-    ReplicaStatus: {
-      desired?: number
-      ready?: number
-      updated?: number
-      available?: number
-    }
-    ResourceCondition: {
-      type?: string
-      status?: string
-      /** Format: date-time */
-      lastUpdateTime?: string
-      reason?: string
-      message?: string
-    }
-    CustomDomainStatus: {
-      domain?: string
-      port?: number
-      status?: string
-      dnsCname?: string
-      tlsIssuer?: string
-      /** Format: date-time */
-      tlsExpiresAt?: string
-    }
-    LinkStatus: {
-      resource?: string
-      status?: string
-      /** Format: date-time */
-      lastSyncTime?: string
+      deploymentId: string
     }
     Deployment: {
       /** Format: uuid */
@@ -1687,6 +1486,36 @@ export interface components {
       /** Format: date-time */
       updatedAt?: string
     }
+    CreateExposureRequest: {
+      /** Format: int32 */
+      port: number
+      /** Format: int32 */
+      ttlMinutes: number
+    }
+    ResourceExposure: {
+      /** Format: uuid */
+      id?: string
+      resourceSlug?: string
+      /** Format: int32 */
+      port?: number
+      /** Format: int32 */
+      externalPort?: number
+      /** Format: date-time */
+      expiresAt?: string
+      /** Format: uuid */
+      createdBy?: string
+    }
+    AddDomainRequest: {
+      domain: string
+      /** Format: int32 */
+      port: number
+    }
+    DomainEntry: {
+      domain?: string
+      /** Format: int32 */
+      port?: number
+      status?: string
+    }
     TriggerDeploymentRequest: {
       sourceRef?: string
     }
@@ -1696,241 +1525,15 @@ export interface components {
       /** @enum {string} */
       status: 'QUEUED' | 'DEPLOYING' | 'DUPLICATE'
     }
-    RollbackRequest: {
-      /** Format: uuid */
-      deploymentId: string
-    }
-    PagedDeploymentResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['Deployment'][]
-    }
-    DeploymentApproval: {
-      /** Format: uuid */
-      id?: string
-      /** Format: uuid */
-      deploymentId?: string
-      /** Format: uuid */
-      userId?: string
-      /** @enum {string} */
-      decision?: 'APPROVED' | 'REJECTED'
-      /** Format: date-time */
-      updatedAt?: string
-    }
-    User: {
-      /** Format: uuid */
-      id?: string
-      email?: string
-      oidcSubjectId?: string
-    }
-    PagedUserResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['User'][]
-    }
-    WorkspaceMember: {
-      /** Format: uuid */
-      userId?: string
-      email?: string
-      /** @enum {string} */
-      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-      /** @enum {string} */
-      status?: 'active' | 'pending'
-    }
-    AddMemberRequest: {
-      email: string
-      /** @enum {string} */
-      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-    }
-    AddMemberResponse: {
-      /** @enum {string} */
-      status?: 'active' | 'pending'
-    }
-    UpdateMemberRequest: {
-      /** @enum {string} */
-      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-    }
-    OidcGroupMapping: {
-      /** Format: uuid */
-      id?: string
-      oidcGroup?: string
-      /** Format: uuid */
-      workspaceId?: string
-      /** @enum {string} */
-      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-    }
-    CreateGroupMappingRequest: {
-      oidcGroup: string
-      /** @enum {string} */
-      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-    }
-    UpdateGroupMappingRequest: {
-      /** @enum {string} */
-      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
-    }
-    NotificationWebhook: {
-      /** Format: uuid */
-      id?: string
-      /** Format: uuid */
-      workspaceId?: string
-      name?: string
-      url?: string
-      events?: string[]
-      /** Format: uuid */
-      createdBy?: string
-    }
-    CreateNotificationWebhookRequest: {
+    CreateProjectRequest: {
       name: string
-      url: string
-      events: string[]
-    }
-    UpdateNotificationWebhookRequest: {
-      name?: string
-      url?: string
-      events?: string[]
-    }
-    WebhookDelivery: {
-      /** Format: uuid */
-      id?: string
-      /** Format: uuid */
-      webhookId?: string
-      event?: string
-      status?: string
-      responseCode?: number
-      /** Format: date-time */
-      createdAt?: string
-    }
-    RegistryConfig: {
-      url?: string
-      credentialRef?: string
-    }
-    Quota: {
-      /** Format: double */
-      maxCpuCores?: number
-      maxMemoryMb?: number
-      maxStorageGb?: number
-      maxResources?: number
-      maxDeploymentResources?: number
-      maxDatabaseResources?: number
-    }
-    SecuritySettings: {
-      /** @description Kubernetes RuntimeClass name for pod isolation (e.g. "gvisor", "kata"). Null means default (runc). */
-      runtimeClassName?: string
-    }
-    Cluster: {
-      name?: string
-      description?: string
-      kubeconfigSecret?: string
-      /** Format: date-time */
-      createdAt?: string
-    }
-    CreateClusterRequest: {
-      name: string
-      description?: string
-      kubeconfigSecret: string
-    }
-    UpdateClusterRequest: {
-      description?: string
-    }
-    NetworkPolicy: {
-      /** Format: uuid */
-      id?: string
-      name?: string
-      description?: string
-      /** Format: uuid */
-      workspaceId?: string
-      policy?: Record<string, never>
-    }
-    CreateNetworkPolicyRequest: {
-      name: string
-      description?: string
-      /** Format: uuid */
-      workspaceId?: string
-      policy: Record<string, never>
-    }
-    UpdateNetworkPolicyRequest: {
-      name?: string
-      description?: string
-      policy?: Record<string, never>
-    }
-    ResourceTypeDefinition: {
-      type?: string
-      definition?: Record<string, never>
-      adminConfig?: Record<string, never>
-      /** Format: date-time */
-      lastSyncedAt?: string
-    }
-    /** @description Admin configuration update for a resource type */
-    UpdateResourceTypeAdminConfigRequest: {
-      storageClass?: string
-      labels?: {
-        [key: string]: string
-      }
-    } & {
-      [key: string]: unknown
-    }
-    ResourceTypeInfo: {
-      type?: string
-      displayName?: string
-      description?: string
-      /** @enum {string} */
-      category?: 'deployment' | 'database' | 'storage' | 'messaging'
-      /** @description JSON Schema describing the resource type configuration */
-      configSchema?: {
-        [key: string]: unknown
-      }
-      available?: boolean
-    }
-    AuditLogEntry: {
-      /** Format: uuid */
-      id?: string
-      /** Format: date-time */
-      timestamp?: string
-      /** Format: uuid */
-      actorId?: string
-      actorEmail?: string
-      actorSource?: string
-      action?: string
-      targetType?: string
-      targetId?: string
-      context?: Record<string, never>
-      diff?: Record<string, never>
-      requestId?: string
-    }
-    PagedAuditLogResponse: components['schemas']['PagedResponse'] & {
-      content?: components['schemas']['AuditLogEntry'][]
-    }
-    BuildDetectionJob: {
-      /** Format: uuid */
-      jobId?: string
-      /** @enum {string} */
-      status?: 'RUNNING' | 'SUCCEEDED' | 'FAILED'
-      step?: string
-      message?: string
-      universalBuild?: Record<string, never>[]
-      error?: string
-    }
-    DetectBuildRequest: {
-      url: string
-      branch: string
-      path?: string
-      auth?: components['schemas']['GitAuth']
-    }
-    BuildDetectionJobCreated: {
-      /** Format: uuid */
-      jobId?: string
-    }
-    GitAuthRequest: {
-      url: string
-      auth?: components['schemas']['GitAuth']
+      workspaceSlug: string
     }
     GitAuth: {
-      /** @enum {string} */
-      type: 'none' | 'basic' | 'ssh'
+      type: string
       username?: string
       password?: string
       privateKey?: string
-    }
-    GitRepo: {
-      name?: string
-      url?: string
-      defaultBranch?: string
     }
     ValidateGitRepoRequest: {
       url: string
@@ -1942,14 +1545,350 @@ export interface components {
       message?: string
       branches?: string[]
     }
-    WebhookConfig: {
-      url?: string
-      secretMasked?: string
+    GitAuthRequest: {
+      url: string
+      auth?: components['schemas']['GitAuth']
     }
-    WebhookTriggerResponse: {
-      changed?: boolean
+    GitRepo: {
+      name?: string
+      url?: string
+      defaultBranch?: string
+    }
+    DetectBuildRequest: {
+      url: string
+      branch: string
+      path?: string
+      auth?: components['schemas']['GitAuth']
+    }
+    BuildDetectionJobCreated: {
       /** Format: uuid */
-      deploymentId?: string
+      jobId?: string
+    }
+    CreateEnvironmentRequest: {
+      name: string
+      projectSlug: string
+      description?: string
+      targetCluster?: string
+    }
+    CreateEnvironmentTokenRequest: {
+      name: string
+      /** @enum {string} */
+      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** Format: int32 */
+      expiresInDays: number
+    }
+    CreateEnvironmentTokenResponse: {
+      /** Format: uuid */
+      id?: string
+      name?: string
+      token?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** Format: date-time */
+      expiresAt?: string
+    }
+    CreateNetworkPolicyRequest: {
+      name: string
+      description?: string
+      /** Format: uuid */
+      workspaceId?: string
+      policy: Record<string, never>
+    }
+    NetworkPolicy: {
+      /** Format: uuid */
+      id?: string
+      name?: string
+      description?: string
+      /** Format: uuid */
+      workspaceId?: string
+      policy?: Record<string, never>
+    }
+    CreateClusterRequest: {
+      name: string
+      description?: string
+      kubeconfigSecret: string
+    }
+    Cluster: {
+      name?: string
+      description?: string
+      kubeconfigSecret?: string
+      /** Format: date-time */
+      createdAt?: string
+    }
+    UpdateWorkspaceRequest: {
+      name?: string
+    }
+    UpdateNotificationWebhookRequest: {
+      name?: string
+      url?: string
+      events?: (
+        | 'DEPLOYMENT_SUCCEEDED'
+        | 'DEPLOYMENT_FAILED'
+        | 'DEPLOYMENT_AWAITING_APPROVAL'
+        | 'RESOURCE_ERROR'
+        | 'RESOURCE_DEGRADED'
+        | 'RESOURCE_READY'
+        | 'BUILD_STARTED'
+        | 'EXPOSURE_CREATED'
+        | 'QUOTA_WARNING'
+      )[]
+    }
+    WorkspaceMember: {
+      /** Format: uuid */
+      userId?: string
+      email?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** @enum {string} */
+      status?: 'ACTIVE' | 'PENDING'
+    }
+    UpdateGroupMappingRequest: {
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+    }
+    UpdateResourceRequest: {
+      name?: string
+      config?: components['schemas']['ResourceConfig']
+      links?: components['schemas']['LinkConfig'][]
+    }
+    CustomDomainStatus: {
+      domain?: string
+      /** Format: int32 */
+      port?: number
+      /** @enum {string} */
+      status?: 'PENDING' | 'ACTIVE' | 'ERROR'
+      dnsCname?: string
+      tlsIssuer?: string
+      /** Format: date-time */
+      tlsExpiresAt?: string
+    }
+    LinkStatus: {
+      resource?: string
+      status?: string
+      /** Format: date-time */
+      lastSyncTime?: string
+    }
+    ReplicaStatus: {
+      /** Format: int32 */
+      desired?: number
+      /** Format: int32 */
+      ready?: number
+      /** Format: int32 */
+      updated?: number
+      /** Format: int32 */
+      available?: number
+    }
+    Resource: {
+      slug?: string
+      name?: string
+      type?: string
+      environmentSlug?: string
+      config?: components['schemas']['ResourceConfig']
+      links?: components['schemas']['LinkConfig'][]
+      /** @enum {string} */
+      status?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
+      statusDetail?: components['schemas']['ResourceStatusDetail']
+      /** Format: date-time */
+      lastSyncedAt?: string
+      /** Format: date-time */
+      createdAt?: string
+      /** Format: date-time */
+      updatedAt?: string
+    }
+    ResourceCondition: {
+      type?: string
+      status?: string
+      /** Format: date-time */
+      lastUpdateTime?: string
+      reason?: string
+      message?: string
+    }
+    ResourceStatusDetail: {
+      /** @enum {string} */
+      phase?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
+      message?: string
+      /** Format: int64 */
+      observedGeneration?: number
+      replicas?: components['schemas']['ReplicaStatus']
+      conditions?: components['schemas']['ResourceCondition'][]
+      customDomains?: components['schemas']['CustomDomainStatus'][]
+      links?: components['schemas']['LinkStatus'][]
+      primaryDeploymentId?: string
+      primaryImage?: string
+      /** Format: date-time */
+      lastDeploymentTime?: string
+      /** Format: date-time */
+      lastSyncTime?: string
+      latestDeploymentId?: string
+      /** @enum {string} */
+      latestDeploymentStatus?:
+        | 'QUEUED'
+        | 'AWAITING_APPROVAL'
+        | 'BUILDING'
+        | 'COPYING_IMAGE'
+        | 'DEPLOYING'
+        | 'SUCCEEDED'
+        | 'FAILED'
+        | 'REJECTED'
+      syncFailed?: boolean
+    }
+    UpdateProjectRequest: {
+      name?: string
+    }
+    UpdateEnvironmentRequest: {
+      name?: string
+      description?: string
+    }
+    UpdateResourceTypeAdminConfigRequest: {
+      storageClass?: string
+      labels?: {
+        [key: string]: string
+      }
+    }
+    ResourceTypeDefinition: {
+      type?: string
+      definition?: Record<string, never>
+      adminConfig?: Record<string, never>
+      /** Format: date-time */
+      lastSyncedAt?: string
+    }
+    UpdateNetworkPolicyRequest: {
+      name?: string
+      description?: string
+      policy?: Record<string, never>
+    }
+    UpdateClusterRequest: {
+      description?: string
+    }
+    PagedWorkspaceResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['Workspace'][]
+    }
+    WebhookDelivery: {
+      /** Format: uuid */
+      id?: string
+      /** Format: uuid */
+      webhookId?: string
+      event?: string
+      status?: string
+      /** Format: int32 */
+      responseCode?: number
+      /** Format: date-time */
+      createdAt?: string
+    }
+    /** @enum {string} */
+    AuditAction:
+      | 'DEPLOYMENT_TRIGGERED'
+      | 'ENVIRONMENT_APPROVAL_GATES_UPDATED'
+      | 'ENVIRONMENT_CREATED'
+      | 'ENVIRONMENT_DELETED'
+      | 'ENVIRONMENT_QUOTA_UPDATED'
+      | 'ENVIRONMENT_REGISTRY_UPDATED'
+      | 'ENVIRONMENT_ROLE_OVERRIDE_REMOVED'
+      | 'ENVIRONMENT_ROLE_OVERRIDE_SET'
+      | 'ENVIRONMENT_TARGET_CLUSTER_UPDATED'
+      | 'ENVIRONMENT_TOKEN_CREATED'
+      | 'ENVIRONMENT_TOKEN_DELETED'
+      | 'ENVIRONMENT_UPDATED'
+      | 'GROUP_MAPPING_CREATED'
+      | 'GROUP_MAPPING_DELETED'
+      | 'GROUP_MAPPING_UPDATED'
+      | 'MEMBER_ADDED'
+      | 'MEMBER_INVITED'
+      | 'MEMBER_REMOVED'
+      | 'MEMBER_UPDATED'
+      | 'PROJECT_CREATED'
+      | 'PROJECT_DELETED'
+      | 'PROJECT_QUOTA_UPDATED'
+      | 'PROJECT_REGISTRY_UPDATED'
+      | 'PROJECT_ROLE_OVERRIDE_REMOVED'
+      | 'PROJECT_ROLE_OVERRIDE_SET'
+      | 'PROJECT_UPDATED'
+      | 'RESOURCE_CREATED'
+      | 'RESOURCE_DELETED'
+      | 'RESOURCE_RESTARTED'
+      | 'RESOURCE_STARTED'
+      | 'RESOURCE_STOPPED'
+      | 'RESOURCE_UPDATED'
+      | 'WORKSPACE_CREATED'
+      | 'WORKSPACE_DELETED'
+      | 'WORKSPACE_QUOTA_UPDATED'
+      | 'WORKSPACE_REGISTRY_UPDATED'
+      | 'WORKSPACE_SECURITY_UPDATED'
+      | 'WORKSPACE_UPDATED'
+    /** @enum {string} */
+    AuditActorSource: 'API' | 'TOKEN' | 'KUBECTL' | 'SYSTEM'
+    /** @enum {string} */
+    AuditDecision: 'ALLOWED' | 'DENIED'
+    AuditFieldChange: {
+      field?: string
+      oldValue?: string
+      newValue?: string
+    }
+    AuditLogEntry: {
+      /** Format: uuid */
+      id?: string
+      /** Format: date-time */
+      timestamp?: string
+      /** Format: uuid */
+      actorId?: string
+      actorEmail?: string
+      /** Format: uuid */
+      actorTokenId?: string
+      actorSource?: components['schemas']['AuditActorSource']
+      action?: components['schemas']['AuditAction']
+      targetType?: components['schemas']['AuditTargetType']
+      targetId?: string
+      /** Format: uuid */
+      workspaceId?: string
+      /** Format: uuid */
+      projectId?: string
+      /** Format: uuid */
+      environmentId?: string
+      decision?: components['schemas']['AuditDecision']
+      denialReason?: string
+      changes?: components['schemas']['AuditFieldChange'][]
+      details?: {
+        [key: string]: string
+      }
+      requestId?: string
+    }
+    /** @enum {string} */
+    AuditTargetType: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'RESOURCE' | 'DEPLOYMENT'
+    PagedAuditLogResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['AuditLogEntry'][]
+    }
+    PagedResourceResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['Resource'][]
+    }
+    MetricsDataPoint: {
+      /** Format: double */
+      timestamp?: number
+      /** Format: double */
+      value?: number
     }
     MetricsResponse: {
       series?: components['schemas']['MetricsSeries'][]
@@ -1957,14 +1896,12 @@ export interface components {
       start?: string
       /** Format: date-time */
       end?: string
+      /** Format: int32 */
       step?: number
     }
     MetricsSeries: {
       pod?: string
-      values?: number[][]
-    }
-    LogResponse: {
-      lines?: components['schemas']['LogLine'][]
+      values?: components['schemas']['MetricsDataPoint'][]
     }
     LogLine: {
       /** Format: date-time */
@@ -1973,373 +1910,144 @@ export interface components {
       pod?: string
       container?: string
     }
-    ConnectionResponse: {
-      entries?: components['schemas']['ConnectionEntry'][]
+    LogResponse: {
+      lines?: components['schemas']['LogLine'][]
+    }
+    PagedDeploymentResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['Deployment'][]
+    }
+    DeploymentApproval: {
+      /** Format: uuid */
+      id?: string
+      /** Format: uuid */
+      deploymentId?: string
+      /** Format: uuid */
+      userId?: string
+      decision?: string
+      /** Format: date-time */
+      updatedAt?: string
     }
     ConnectionEntry: {
       key?: string
       value?: string
       secret?: boolean
     }
-    ResourceExposure: {
+    ConnectionResponse: {
+      entries?: components['schemas']['ConnectionEntry'][]
+    }
+    ResourceTypeInfo: {
+      type?: string
+      displayName?: string
+      description?: string
+      /** @enum {string} */
+      category?: 'deployment' | 'database' | 'storage' | 'messaging'
+      configSchema?: Record<string, never>
+      available?: boolean
+    }
+    PagedProjectResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['Project'][]
+    }
+    BuildDetectionJob: {
+      /** Format: uuid */
+      jobId?: string
+      status?: string
+      step?: string
+      message?: string
+      universalBuild?: Record<string, never>[]
+      error?: string
+    }
+    PagedEnvironmentResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['Environment'][]
+    }
+    EnvironmentToken: {
       /** Format: uuid */
       id?: string
-      resourceSlug?: string
-      port?: number
-      externalPort?: number
+      name?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
       /** Format: date-time */
       expiresAt?: string
-      /** Format: uuid */
+      /** Format: date-time */
+      lastUsedAt?: string
       createdBy?: string
+      /** Format: date-time */
+      createdAt?: string
     }
-    CreateExposureRequest: {
-      port: number
-      ttlMinutes: number
+    PagedUserResponse: {
+      /** Format: int32 */
+      page?: number
+      /** Format: int32 */
+      size?: number
+      /** Format: int64 */
+      totalElements?: number
+      /** Format: int32 */
+      totalPages?: number
+      content?: components['schemas']['User'][]
     }
-    DomainEntry: {
-      domain?: string
-      port?: number
-      /** @enum {string} */
-      status?: 'PENDING' | 'ACTIVE' | 'ERROR'
+    User: {
+      /** Format: uuid */
+      id?: string
+      email?: string
+      oidcSubjectId?: string
     }
-    AddDomainRequest: {
-      domain: string
-      port: number
-    }
-    PlatformConfig: {
-      domain?: string
-      /**
-       * @description Kubernetes namespace prefix used for environments
-       * @example abp
-       */
-      namespacePrefix?: string
-      registry?: components['schemas']['RegistryConfig']
-      branding?: {
-        /**
-         * @description Display name shown on login page
-         * @example ACME Corp Platform
-         */
-        instanceName?: string
-        /**
-         * @description Subtitle shown on login page
-         * @example Deploy and manage your applications
-         */
-        tagline?: string
-        /**
-         * @description URL to company logo
-         * @example https://acme.org/logo.svg
-         */
-        logoUrl?: string
-        /**
-         * @description Text for the login button
-         * @example Log in with SSO
-         */
-        loginButtonText?: string
-      }
-      auth?: Record<string, never>
-      defaultQuota?: components['schemas']['Quota']
-      buildConfig?: Record<string, never>
+    ErrorResponse: {
+      /** Format: int32 */
+      status: number
+      error: string
+      message: string
+      details?: string[]
+      /** Format: int32 */
+      current?: number
+      /** Format: int32 */
+      limit?: number
+      dimension?: string
+      level?: string
     }
   }
-  responses: {
-    /** @description Bad request */
-    BadRequest: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Unauthorized */
-    Unauthorized: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Forbidden */
-    Forbidden: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Not found */
-    NotFound: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Conflict */
-    Conflict: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Unprocessable entity */
-    UnprocessableEntity: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-    /** @description Resource limit reached */
-    PaymentRequired: {
-      headers: {
-        [name: string]: unknown
-      }
-      content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-  }
-  parameters: {
-    SlugPath: string
-    /** @description Start time (ISO 8601 or relative e.g. -1h, -24h, -7d) */
-    MetricsStart: string
-    /** @description End time (ISO 8601 or 'now') */
-    MetricsEnd: string
-    /** @description Resolution in seconds */
-    MetricsStep: number
-    /** @description Filter by pod name */
-    MetricsPod: string
-  }
+  responses: never
+  parameters: never
   requestBodies: never
   headers: never
   pathItems: never
 }
 export type $defs = Record<string, never>
 export interface operations {
-  authLogin: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Redirect to OIDC authorization endpoint */
-      302: {
-        headers: {
-          Location?: string
-          [name: string]: unknown
-        }
-        content?: never
-      }
-    }
-  }
-  authCallback: {
-    parameters: {
-      query: {
-        code: string
-        state: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Redirect to SPA with token */
-      302: {
-        headers: {
-          Location?: string
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      400: components['responses']['BadRequest']
-    }
-  }
-  listWorkspaces: {
-    parameters: {
-      query?: {
-        page?: number
-        size?: number
-        sort?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged list of workspaces */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedWorkspaceResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-    }
-  }
-  createWorkspace: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateWorkspaceRequest']
-      }
-    }
-    responses: {
-      /** @description Workspace created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Workspace']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      409: components['responses']['Conflict']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  getWorkspace: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Workspace details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Workspace']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteWorkspace: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Workspace deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  updateWorkspace: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateWorkspaceRequest']
-      }
-    }
-    responses: {
-      /** @description Workspace updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Workspace']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  setWorkspaceRegistry: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegistryConfig']
-      }
-    }
-    responses: {
-      /** @description Registry configuration updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Workspace']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
   getWorkspaceSecurity: {
     parameters: {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Security settings */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -2348,9 +2056,6 @@ export interface operations {
           'application/json': components['schemas']['SecuritySettings']
         }
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
   setWorkspaceSecurity: {
@@ -2358,17 +2063,17 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['SecuritySettings']
       }
     }
     responses: {
-      /** @description Security settings updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -2377,591 +2082,32 @@ export interface operations {
           'application/json': components['schemas']['SecuritySettings']
         }
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  listWorkspaceMembers: {
+  setWorkspaceRegistry: {
     parameters: {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
-    requestBody?: never
-    responses: {
-      /** @description List of workspace members */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WorkspaceMember'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  addWorkspaceMember: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
+    requestBody?: {
       content: {
-        'application/json': components['schemas']['AddMemberRequest']
+        'application/json': components['schemas']['RegistryConfig']
       }
     }
     responses: {
-      /** @description Member added or invitation created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['AddMemberResponse']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  removeWorkspaceMember: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Member removed */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  updateWorkspaceMember: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateMemberRequest']
-      }
-    }
-    responses: {
-      /** @description Member updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['WorkspaceMember']
+          'application/json': components['schemas']['Workspace']
         }
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listGroupMappings: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of group mappings */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['OidcGroupMapping'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  createGroupMapping: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateGroupMappingRequest']
-      }
-    }
-    responses: {
-      /** @description Group mapping created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['OidcGroupMapping']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  deleteGroupMapping: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        mappingId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Group mapping deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  updateGroupMapping: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        mappingId: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateGroupMappingRequest']
-      }
-    }
-    responses: {
-      /** @description Group mapping updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['OidcGroupMapping']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listNotificationWebhooks: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of notification webhooks */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NotificationWebhook'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  createNotificationWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateNotificationWebhookRequest']
-      }
-    }
-    responses: {
-      /** @description Notification webhook created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NotificationWebhook']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteNotificationWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        hookId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Notification webhook deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  updateNotificationWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        hookId: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateNotificationWebhookRequest']
-      }
-    }
-    responses: {
-      /** @description Notification webhook updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NotificationWebhook']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listWebhookDeliveries: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        hookId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of webhook deliveries */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WebhookDelivery'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getWorkspaceAuditLog: {
-    parameters: {
-      query?: {
-        page?: number
-        size?: number
-        action?: string
-        targetType?: string
-        actorId?: string
-        from?: string
-        to?: string
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged audit log entries */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedAuditLogResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getWorkspaceQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Workspace quota */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Quota']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  setWorkspaceQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['Quota']
-      }
-    }
-    responses: {
-      /** @description Quota updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Quota']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listProjects: {
-    parameters: {
-      query: {
-        workspaceSlug: string
-        page?: number
-        size?: number
-        sort?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged list of projects */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedProjectResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-    }
-  }
-  createProject: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateProjectRequest']
-      }
-    }
-    responses: {
-      /** @description Project created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Project']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      409: components['responses']['Conflict']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  getProject: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Project details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Project']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteProject: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Project deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  updateProject: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateProjectRequest']
-      }
-    }
-    responses: {
-      /** @description Project updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Project']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
     }
   }
   setProjectRegistry: {
@@ -2969,17 +2115,17 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['RegistryConfig']
       }
     }
     responses: {
-      /** @description Registry configuration updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -2988,65 +2134,6 @@ export interface operations {
           'application/json': components['schemas']['Project']
         }
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getProjectQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Project quota */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Quota']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  setProjectQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['Quota']
-      }
-    }
-    responses: {
-      /** @description Quota updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Quota']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
   setProjectMemberRole: {
@@ -3054,29 +2141,24 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
+        slug: string
+        user_id: string
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['UpdateMemberRequest']
       }
     }
     responses: {
-      /** @description Role override set */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
     }
   }
   deleteProjectMemberRole: {
@@ -3084,217 +2166,20 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
+        slug: string
+        user_id: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Role override removed */
-      204: {
+      /** @description OK */
+      200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listEnvironments: {
-    parameters: {
-      query: {
-        projectSlug: string
-        page?: number
-        size?: number
-        sort?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged list of environments */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedEnvironmentResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-    }
-  }
-  createEnvironment: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateEnvironmentRequest']
-      }
-    }
-    responses: {
-      /** @description Environment created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Environment']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      409: components['responses']['Conflict']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  getEnvironment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Environment details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Environment']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteEnvironment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Environment deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  updateEnvironment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateEnvironmentRequest']
-      }
-    }
-    responses: {
-      /** @description Environment updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Environment']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  setEnvironmentRegistry: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegistryConfig']
-      }
-    }
-    responses: {
-      /** @description Registry configuration updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Environment']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  setApprovalGates: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ApprovalGatesConfig']
-      }
-    }
-    responses: {
-      /** @description Approval gates updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Environment']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
   setTargetCluster: {
@@ -3302,17 +2187,17 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['SetTargetClusterRequest']
       }
     }
     responses: {
-      /** @description Target cluster updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -3321,145 +2206,32 @@ export interface operations {
           'application/json': components['schemas']['Environment']
         }
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  listEnvironmentTokens: {
+  setEnvironmentRegistry: {
     parameters: {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
+        slug: string
       }
       cookie?: never
     }
-    requestBody?: never
-    responses: {
-      /** @description List of environment tokens */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['EnvironmentToken'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  createEnvironmentToken: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
+    requestBody?: {
       content: {
-        'application/json': components['schemas']['CreateEnvironmentTokenRequest']
+        'application/json': components['schemas']['RegistryConfig']
       }
     }
     responses: {
-      /** @description Environment token created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CreateEnvironmentTokenResponse']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  deleteEnvironmentToken: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        tokenId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Token deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getEnvironmentQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Environment quota */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Quota']
+          'application/json': components['schemas']['Environment']
         }
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  setEnvironmentQuota: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['Quota']
-      }
-    }
-    responses: {
-      /** @description Quota updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Quota']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
   setEnvironmentMemberRole: {
@@ -3467,29 +2239,24 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
+        slug: string
+        user_id: string
       }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
         'application/json': components['schemas']['UpdateMemberRequest']
       }
     }
     responses: {
-      /** @description Role override set */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      422: components['responses']['UnprocessableEntity']
     }
   }
   deleteEnvironmentMemberRole: {
@@ -3497,998 +2264,44 @@ export interface operations {
       query?: never
       header?: never
       path: {
-        slug: components['parameters']['SlugPath']
-        userId: string
+        slug: string
+        user_id: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Role override removed */
-      204: {
+      /** @description OK */
+      200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  listResources: {
-    parameters: {
-      query: {
-        environmentSlug: string
-        page?: number
-        size?: number
-        sort?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged list of resources */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedResourceResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-    }
-  }
-  createResource: {
+  setApprovalGates: {
     parameters: {
       query?: never
       header?: never
-      path?: never
+      path: {
+        slug: string
+      }
       cookie?: never
     }
-    requestBody: {
+    requestBody?: {
       content: {
-        'application/json': components['schemas']['CreateResourceRequest']
+        'application/json': components['schemas']['ApprovalGatesConfig']
       }
     }
     responses: {
-      /** @description Resource creation accepted */
-      202: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ResourceCreatedResponse']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      402: components['responses']['PaymentRequired']
-      403: components['responses']['Forbidden']
-      409: components['responses']['Conflict']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  getResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Resource details */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['Resource']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Resource deleted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  updateResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateResourceRequest']
-      }
-    }
-    responses: {
-      /** @description Resource updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Resource']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-      422: components['responses']['UnprocessableEntity']
-    }
-  }
-  getResourceLogs: {
-    parameters: {
-      query?: {
-        deploymentId?: string
-        lines?: number
-        since?: string
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Log output */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['LogResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceCpuMetrics: {
-    parameters: {
-      query?: {
-        /** @description Start time (ISO 8601 or relative e.g. -1h, -24h, -7d) */
-        start?: components['parameters']['MetricsStart']
-        /** @description End time (ISO 8601 or 'now') */
-        end?: components['parameters']['MetricsEnd']
-        /** @description Resolution in seconds */
-        step?: components['parameters']['MetricsStep']
-        /** @description Filter by pod name */
-        pod?: components['parameters']['MetricsPod']
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description CPU metrics */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MetricsResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceRamMetrics: {
-    parameters: {
-      query?: {
-        /** @description Start time (ISO 8601 or relative e.g. -1h, -24h, -7d) */
-        start?: components['parameters']['MetricsStart']
-        /** @description End time (ISO 8601 or 'now') */
-        end?: components['parameters']['MetricsEnd']
-        /** @description Resolution in seconds */
-        step?: components['parameters']['MetricsStep']
-        /** @description Filter by pod name */
-        pod?: components['parameters']['MetricsPod']
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description RAM metrics */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MetricsResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceNetworkInbound: {
-    parameters: {
-      query?: {
-        /** @description Start time (ISO 8601 or relative e.g. -1h, -24h, -7d) */
-        start?: components['parameters']['MetricsStart']
-        /** @description End time (ISO 8601 or 'now') */
-        end?: components['parameters']['MetricsEnd']
-        /** @description Resolution in seconds */
-        step?: components['parameters']['MetricsStep']
-        /** @description Filter by pod name */
-        pod?: components['parameters']['MetricsPod']
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Network inbound metrics */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MetricsResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceNetworkOutbound: {
-    parameters: {
-      query?: {
-        /** @description Start time (ISO 8601 or relative e.g. -1h, -24h, -7d) */
-        start?: components['parameters']['MetricsStart']
-        /** @description End time (ISO 8601 or 'now') */
-        end?: components['parameters']['MetricsEnd']
-        /** @description Resolution in seconds */
-        step?: components['parameters']['MetricsStep']
-        /** @description Filter by pod name */
-        pod?: components['parameters']['MetricsPod']
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Network outbound metrics */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['MetricsResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listDeployments: {
-    parameters: {
-      query?: {
-        page?: number
-        size?: number
-        /** @description Sort field and direction (e.g. createdAt,desc). Defaults to createdAt,desc. */
-        sort?: string
-      }
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Paged list of deployments */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedDeploymentResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  triggerDeployment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TriggerDeploymentRequest']
-      }
-    }
-    responses: {
-      /** @description Deployment accepted */
-      202: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['TriggerDeploymentResponse']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getDeployment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        deploymentId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Deployment details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Deployment']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  approveDeployment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        deploymentId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Deployment approved */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  rejectDeployment: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        deploymentId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Deployment rejected */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  getDeploymentApprovals: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        deploymentId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Deployment approvals */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DeploymentApproval'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceConnection: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Connection details */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ConnectionResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  getResourceWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Webhook configuration */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WebhookConfig']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  rotateWebhookSecret: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Webhook secret rotated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WebhookConfig']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  stopResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Resource stopped */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  startResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Resource started */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  restartResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Resource restarted */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  clearBuildCache: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Build cache cleared */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  rollbackResource: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RollbackRequest']
-      }
-    }
-    responses: {
-      /** @description Rollback deployment created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Deployment']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  createExposure: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateExposureRequest']
-      }
-    }
-    responses: {
-      /** @description Exposure created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ResourceExposure']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listExposures: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of exposures */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ResourceExposure'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  deleteExposure: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        port: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Exposure removed */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listDomains: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of domains */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DomainEntry'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  addDomain: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AddDomainRequest']
-      }
-    }
-    responses: {
-      /** @description Domain added */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['DomainEntry']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-      409: components['responses']['Conflict']
-    }
-  }
-  removeDomain: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        slug: components['parameters']['SlugPath']
-        domain: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Domain removed */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listResourceTypes: {
-    parameters: {
-      query?: {
-        cluster?: string
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of resource types */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ResourceTypeInfo'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-    }
-  }
-  listGitRepos: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['GitAuthRequest']
-      }
-    }
-    responses: {
-      /** @description List of repositories */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['GitRepo'][]
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-    }
-  }
-  validateGitRepo: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ValidateGitRepoRequest']
-      }
-    }
-    responses: {
-      /** @description Validation result */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['GitValidationResult']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-    }
-  }
-  startBuildDetection: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['DetectBuildRequest']
-      }
-    }
-    responses: {
-      /** @description Build detection job started */
-      202: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['BuildDetectionJobCreated']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-    }
-  }
-  getBuildDetectionStatus: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        jobId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Build detection job status */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['BuildDetectionJob']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      404: components['responses']['NotFound']
-    }
-  }
-  triggerWebhook: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        resourceSlug: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Webhook processed */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['WebhookTriggerResponse']
-        }
-      }
-      401: components['responses']['Unauthorized']
-      404: components['responses']['NotFound']
-      /** @description Rate limit exceeded */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
+          'application/json': components['schemas']['Environment']
         }
       }
     }
@@ -4502,7 +2315,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Platform configuration */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -4526,7 +2339,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description Platform configuration updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -4535,9 +2348,1915 @@ export interface operations {
           'application/json': components['schemas']['PlatformConfig']
         }
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
+    }
+  }
+  listWorkspaces: {
+    parameters: {
+      query?: {
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedWorkspaceResponse']
+        }
+      }
+    }
+  }
+  createWorkspace: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateWorkspaceRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Workspace']
+        }
+      }
+    }
+  }
+  listNotificationWebhooks: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NotificationWebhook'][]
+        }
+      }
+    }
+  }
+  createNotificationWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['CreateNotificationWebhookRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NotificationWebhook']
+        }
+      }
+    }
+  }
+  listWorkspaceMembers: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceMember'][]
+        }
+      }
+    }
+  }
+  addWorkspaceMember: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AddMemberRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AddMemberResponse']
+        }
+      }
+    }
+  }
+  listGroupMappings: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['OidcGroupMapping'][]
+        }
+      }
+    }
+  }
+  createGroupMapping: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['CreateGroupMappingRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['OidcGroupMapping']
+        }
+      }
+    }
+  }
+  triggerWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        resource_slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookTriggerResponse']
+        }
+      }
+    }
+  }
+  listResources: {
+    parameters: {
+      query?: {
+        environmentSlug?: string
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedResourceResponse']
+        }
+      }
+    }
+  }
+  createResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateResourceRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceCreatedResponse']
+        }
+      }
+    }
+  }
+  rotateWebhookSecret: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookConfig']
+        }
+      }
+    }
+  }
+  stopResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  startResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  rollbackResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['RollbackRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deployment']
+        }
+      }
+    }
+  }
+  restartResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  createExposure: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['CreateExposureRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceExposure']
+        }
+      }
+    }
+  }
+  listDomains: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DomainEntry'][]
+        }
+      }
+    }
+  }
+  addDomain: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AddDomainRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DomainEntry']
+        }
+      }
+    }
+  }
+  listDeployments: {
+    parameters: {
+      query?: {
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedDeploymentResponse']
+        }
+      }
+    }
+  }
+  triggerDeployment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['TriggerDeploymentRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TriggerDeploymentResponse']
+        }
+      }
+    }
+  }
+  rejectDeployment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  approveDeployment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  listProjects: {
+    parameters: {
+      query?: {
+        workspaceSlug?: string
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedProjectResponse']
+        }
+      }
+    }
+  }
+  createProject: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateProjectRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Project']
+        }
+      }
+    }
+  }
+  validateGitRepo: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ValidateGitRepoRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GitValidationResult']
+        }
+      }
+    }
+  }
+  listGitRepos: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GitAuthRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GitRepo'][]
+        }
+      }
+    }
+  }
+  startBuildDetection: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DetectBuildRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['BuildDetectionJobCreated']
+        }
+      }
+    }
+  }
+  listEnvironments: {
+    parameters: {
+      query?: {
+        projectSlug?: string
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedEnvironmentResponse']
+        }
+      }
+    }
+  }
+  createEnvironment: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateEnvironmentRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Environment']
+        }
+      }
+    }
+  }
+  listEnvironmentTokens: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['EnvironmentToken'][]
+        }
+      }
+    }
+  }
+  createEnvironmentToken: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['CreateEnvironmentTokenRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CreateEnvironmentTokenResponse']
+        }
+      }
+    }
+  }
+  listNetworkPolicies: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NetworkPolicy'][]
+        }
+      }
+    }
+  }
+  createNetworkPolicy: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateNetworkPolicyRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NetworkPolicy']
+        }
+      }
+    }
+  }
+  listClusters: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Cluster'][]
+        }
+      }
+    }
+  }
+  registerCluster: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateClusterRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Cluster']
+        }
+      }
+    }
+  }
+  getWorkspace: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Workspace']
+        }
+      }
+    }
+  }
+  deleteWorkspace: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateWorkspace: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateWorkspaceRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Workspace']
+        }
+      }
+    }
+  }
+  getWorkspaceQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  setWorkspaceQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['Quota']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  deleteNotificationWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        hook_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateNotificationWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        hook_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateNotificationWebhookRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NotificationWebhook']
+        }
+      }
+    }
+  }
+  removeWorkspaceMember: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        user_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateWorkspaceMember: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        user_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateMemberRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceMember']
+        }
+      }
+    }
+  }
+  deleteGroupMapping: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        mapping_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateGroupMapping: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        mapping_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateGroupMappingRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['OidcGroupMapping']
+        }
+      }
+    }
+  }
+  getResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Resource']
+        }
+      }
+    }
+  }
+  deleteResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateResource: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateResourceRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Resource']
+        }
+      }
+    }
+  }
+  getProject: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Project']
+        }
+      }
+    }
+  }
+  deleteProject: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateProject: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateProjectRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Project']
+        }
+      }
+    }
+  }
+  getProjectQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  setProjectQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['Quota']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  getEnvironment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Environment']
+        }
+      }
+    }
+  }
+  deleteEnvironment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateEnvironment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateEnvironmentRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Environment']
+        }
+      }
+    }
+  }
+  getEnvironmentQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  setEnvironmentQuota: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['Quota']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Quota']
+        }
+      }
+    }
+  }
+  updateResourceTypeAdminConfig: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateResourceTypeAdminConfigRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceTypeDefinition']
+        }
+      }
+    }
+  }
+  deleteNetworkPolicy: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateNetworkPolicy: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateNetworkPolicyRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NetworkPolicy']
+        }
+      }
+    }
+  }
+  deleteCluster: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        name: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  updateCluster: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        name: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['UpdateClusterRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Cluster']
+        }
+      }
+    }
+  }
+  listWebhookDeliveries: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        hook_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookDelivery'][]
+        }
+      }
+    }
+  }
+  getWorkspaceAuditLog: {
+    parameters: {
+      query?: {
+        page?: number
+        size?: number
+        action?: string
+        targetType?: string
+        actorId?: string
+        from?: string
+        to?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedAuditLogResponse']
+        }
+      }
+    }
+  }
+  getResourceWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WebhookConfig']
+        }
+      }
+    }
+  }
+  getResourceRamMetrics: {
+    parameters: {
+      query?: {
+        start?: string
+        end?: string
+        step?: number
+        pod?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MetricsResponse']
+        }
+      }
+    }
+  }
+  getResourceNetworkOutbound: {
+    parameters: {
+      query?: {
+        start?: string
+        end?: string
+        step?: number
+        pod?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MetricsResponse']
+        }
+      }
+    }
+  }
+  getResourceNetworkInbound: {
+    parameters: {
+      query?: {
+        start?: string
+        end?: string
+        step?: number
+        pod?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MetricsResponse']
+        }
+      }
+    }
+  }
+  getResourceCpuMetrics: {
+    parameters: {
+      query?: {
+        start?: string
+        end?: string
+        step?: number
+        pod?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MetricsResponse']
+        }
+      }
+    }
+  }
+  getResourceLogs: {
+    parameters: {
+      query?: {
+        deploymentId?: string
+        lines?: number
+        since?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LogResponse']
+        }
+      }
+    }
+  }
+  listExposures: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceExposure'][]
+        }
+      }
+    }
+  }
+  getDeployment: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deployment']
+        }
+      }
+    }
+  }
+  getDeploymentApprovals: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeploymentApproval'][]
+        }
+      }
+    }
+  }
+  getResourceConnection: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ConnectionResponse']
+        }
+      }
+    }
+  }
+  listResourceTypes: {
+    parameters: {
+      query?: {
+        cluster?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceTypeInfo'][]
+        }
+      }
+    }
+  }
+  getBuildDetectionStatus: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        job_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['BuildDetectionJob']
+        }
+      }
+    }
+  }
+  authLogin: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': Record<string, never>
+        }
+      }
+    }
+  }
+  authCallback: {
+    parameters: {
+      query?: {
+        code?: string
+        state?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': Record<string, never>
+        }
+      }
     }
   }
   listUsers: {
@@ -4553,7 +4272,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Paged list of users */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -4562,8 +4281,48 @@ export interface operations {
           'application/json': components['schemas']['PagedUserResponse']
         }
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
+    }
+  }
+  listResourceTypeDefinitions: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceTypeDefinition'][]
+        }
+      }
+    }
+  }
+  getResourceTypeDefinition: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        type: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourceTypeDefinition']
+        }
+      }
     }
   }
   getPlatformAuditLog: {
@@ -4584,7 +4343,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Paged audit log entries */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
@@ -4593,290 +4352,89 @@ export interface operations {
           'application/json': components['schemas']['PagedAuditLogResponse']
         }
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
     }
   }
-  listClusters: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of clusters */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Cluster'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-    }
-  }
-  registerCluster: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateClusterRequest']
-      }
-    }
-    responses: {
-      /** @description Cluster registered */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Cluster']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      409: components['responses']['Conflict']
-    }
-  }
-  deleteCluster: {
+  deleteExposure: {
     parameters: {
       query?: never
       header?: never
       path: {
-        name: string
+        slug: string
+        port: number
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Cluster deleted */
-      204: {
+      /** @description OK */
+      200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  updateCluster: {
+  removeDomain: {
     parameters: {
       query?: never
       header?: never
       path: {
-        name: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateClusterRequest']
-      }
-    }
-    responses: {
-      /** @description Cluster updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Cluster']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listNetworkPolicies: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of network policies */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NetworkPolicy'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-    }
-  }
-  createNetworkPolicy: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateNetworkPolicyRequest']
-      }
-    }
-    responses: {
-      /** @description Network policy created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NetworkPolicy']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-    }
-  }
-  deleteNetworkPolicy: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: string
+        slug: string
+        domain: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Network policy deleted */
-      204: {
+      /** @description OK */
+      200: {
         headers: {
           [name: string]: unknown
         }
         content?: never
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  updateNetworkPolicy: {
+  clearBuildCache: {
     parameters: {
       query?: never
       header?: never
       path: {
-        id: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateNetworkPolicyRequest']
-      }
-    }
-    responses: {
-      /** @description Network policy updated */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['NetworkPolicy']
-        }
-      }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
-    }
-  }
-  listResourceTypeDefinitions: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description List of resource type definitions */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ResourceTypeDefinition'][]
-        }
-      }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-    }
-  }
-  getResourceTypeDefinition: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        type: string
+        slug: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description Resource type definition */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
-        content: {
-          'application/json': components['schemas']['ResourceTypeDefinition']
-        }
+        content?: never
       }
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
-  updateResourceTypeAdminConfig: {
+  deleteEnvironmentToken: {
     parameters: {
       query?: never
       header?: never
       path: {
-        type: string
+        slug: string
+        token_id: string
       }
       cookie?: never
     }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateResourceTypeAdminConfigRequest']
-      }
-    }
+    requestBody?: never
     responses: {
-      /** @description Resource type definition updated */
+      /** @description OK */
       200: {
         headers: {
           [name: string]: unknown
         }
-        content: {
-          'application/json': components['schemas']['ResourceTypeDefinition']
-        }
+        content?: never
       }
-      400: components['responses']['BadRequest']
-      401: components['responses']['Unauthorized']
-      403: components['responses']['Forbidden']
-      404: components['responses']['NotFound']
     }
   }
 }

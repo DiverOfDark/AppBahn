@@ -20,17 +20,23 @@ var _ MappedNullable = &AuditLogEntry{}
 
 // AuditLogEntry struct for AuditLogEntry
 type AuditLogEntry struct {
-	Id          *string                `json:"id,omitempty"`
-	Timestamp   *time.Time             `json:"timestamp,omitempty"`
-	ActorId     *string                `json:"actorId,omitempty"`
-	ActorEmail  *string                `json:"actorEmail,omitempty"`
-	ActorSource *string                `json:"actorSource,omitempty"`
-	Action      *string                `json:"action,omitempty"`
-	TargetType  *string                `json:"targetType,omitempty"`
-	TargetId    *string                `json:"targetId,omitempty"`
-	Context     map[string]interface{} `json:"context,omitempty"`
-	Diff        map[string]interface{} `json:"diff,omitempty"`
-	RequestId   *string                `json:"requestId,omitempty"`
+	Id            *string            `json:"id,omitempty"`
+	Timestamp     *time.Time         `json:"timestamp,omitempty"`
+	ActorId       *string            `json:"actorId,omitempty"`
+	ActorEmail    *string            `json:"actorEmail,omitempty"`
+	ActorTokenId  *string            `json:"actorTokenId,omitempty"`
+	ActorSource   *AuditActorSource  `json:"actorSource,omitempty"`
+	Action        *AuditAction       `json:"action,omitempty"`
+	TargetType    *AuditTargetType   `json:"targetType,omitempty"`
+	TargetId      *string            `json:"targetId,omitempty"`
+	WorkspaceId   *string            `json:"workspaceId,omitempty"`
+	ProjectId     *string            `json:"projectId,omitempty"`
+	EnvironmentId *string            `json:"environmentId,omitempty"`
+	Decision      *AuditDecision     `json:"decision,omitempty"`
+	DenialReason  *string            `json:"denialReason,omitempty"`
+	Changes       []AuditFieldChange `json:"changes,omitempty"`
+	Details       *map[string]string `json:"details,omitempty"`
+	RequestId     *string            `json:"requestId,omitempty"`
 }
 
 // NewAuditLogEntry instantiates a new AuditLogEntry object
@@ -178,10 +184,42 @@ func (o *AuditLogEntry) SetActorEmail(v string) {
 	o.ActorEmail = &v
 }
 
-// GetActorSource returns the ActorSource field value if set, zero value otherwise.
-func (o *AuditLogEntry) GetActorSource() string {
-	if o == nil || IsNil(o.ActorSource) {
+// GetActorTokenId returns the ActorTokenId field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetActorTokenId() string {
+	if o == nil || IsNil(o.ActorTokenId) {
 		var ret string
+		return ret
+	}
+	return *o.ActorTokenId
+}
+
+// GetActorTokenIdOk returns a tuple with the ActorTokenId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetActorTokenIdOk() (*string, bool) {
+	if o == nil || IsNil(o.ActorTokenId) {
+		return nil, false
+	}
+	return o.ActorTokenId, true
+}
+
+// HasActorTokenId returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasActorTokenId() bool {
+	if o != nil && !IsNil(o.ActorTokenId) {
+		return true
+	}
+
+	return false
+}
+
+// SetActorTokenId gets a reference to the given string and assigns it to the ActorTokenId field.
+func (o *AuditLogEntry) SetActorTokenId(v string) {
+	o.ActorTokenId = &v
+}
+
+// GetActorSource returns the ActorSource field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetActorSource() AuditActorSource {
+	if o == nil || IsNil(o.ActorSource) {
+		var ret AuditActorSource
 		return ret
 	}
 	return *o.ActorSource
@@ -189,7 +227,7 @@ func (o *AuditLogEntry) GetActorSource() string {
 
 // GetActorSourceOk returns a tuple with the ActorSource field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLogEntry) GetActorSourceOk() (*string, bool) {
+func (o *AuditLogEntry) GetActorSourceOk() (*AuditActorSource, bool) {
 	if o == nil || IsNil(o.ActorSource) {
 		return nil, false
 	}
@@ -205,15 +243,15 @@ func (o *AuditLogEntry) HasActorSource() bool {
 	return false
 }
 
-// SetActorSource gets a reference to the given string and assigns it to the ActorSource field.
-func (o *AuditLogEntry) SetActorSource(v string) {
+// SetActorSource gets a reference to the given AuditActorSource and assigns it to the ActorSource field.
+func (o *AuditLogEntry) SetActorSource(v AuditActorSource) {
 	o.ActorSource = &v
 }
 
 // GetAction returns the Action field value if set, zero value otherwise.
-func (o *AuditLogEntry) GetAction() string {
+func (o *AuditLogEntry) GetAction() AuditAction {
 	if o == nil || IsNil(o.Action) {
-		var ret string
+		var ret AuditAction
 		return ret
 	}
 	return *o.Action
@@ -221,7 +259,7 @@ func (o *AuditLogEntry) GetAction() string {
 
 // GetActionOk returns a tuple with the Action field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLogEntry) GetActionOk() (*string, bool) {
+func (o *AuditLogEntry) GetActionOk() (*AuditAction, bool) {
 	if o == nil || IsNil(o.Action) {
 		return nil, false
 	}
@@ -237,15 +275,15 @@ func (o *AuditLogEntry) HasAction() bool {
 	return false
 }
 
-// SetAction gets a reference to the given string and assigns it to the Action field.
-func (o *AuditLogEntry) SetAction(v string) {
+// SetAction gets a reference to the given AuditAction and assigns it to the Action field.
+func (o *AuditLogEntry) SetAction(v AuditAction) {
 	o.Action = &v
 }
 
 // GetTargetType returns the TargetType field value if set, zero value otherwise.
-func (o *AuditLogEntry) GetTargetType() string {
+func (o *AuditLogEntry) GetTargetType() AuditTargetType {
 	if o == nil || IsNil(o.TargetType) {
-		var ret string
+		var ret AuditTargetType
 		return ret
 	}
 	return *o.TargetType
@@ -253,7 +291,7 @@ func (o *AuditLogEntry) GetTargetType() string {
 
 // GetTargetTypeOk returns a tuple with the TargetType field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLogEntry) GetTargetTypeOk() (*string, bool) {
+func (o *AuditLogEntry) GetTargetTypeOk() (*AuditTargetType, bool) {
 	if o == nil || IsNil(o.TargetType) {
 		return nil, false
 	}
@@ -269,8 +307,8 @@ func (o *AuditLogEntry) HasTargetType() bool {
 	return false
 }
 
-// SetTargetType gets a reference to the given string and assigns it to the TargetType field.
-func (o *AuditLogEntry) SetTargetType(v string) {
+// SetTargetType gets a reference to the given AuditTargetType and assigns it to the TargetType field.
+func (o *AuditLogEntry) SetTargetType(v AuditTargetType) {
 	o.TargetType = &v
 }
 
@@ -306,68 +344,228 @@ func (o *AuditLogEntry) SetTargetId(v string) {
 	o.TargetId = &v
 }
 
-// GetContext returns the Context field value if set, zero value otherwise.
-func (o *AuditLogEntry) GetContext() map[string]interface{} {
-	if o == nil || IsNil(o.Context) {
-		var ret map[string]interface{}
+// GetWorkspaceId returns the WorkspaceId field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetWorkspaceId() string {
+	if o == nil || IsNil(o.WorkspaceId) {
+		var ret string
 		return ret
 	}
-	return o.Context
+	return *o.WorkspaceId
 }
 
-// GetContextOk returns a tuple with the Context field value if set, nil otherwise
+// GetWorkspaceIdOk returns a tuple with the WorkspaceId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLogEntry) GetContextOk() (map[string]interface{}, bool) {
-	if o == nil || IsNil(o.Context) {
-		return map[string]interface{}{}, false
+func (o *AuditLogEntry) GetWorkspaceIdOk() (*string, bool) {
+	if o == nil || IsNil(o.WorkspaceId) {
+		return nil, false
 	}
-	return o.Context, true
+	return o.WorkspaceId, true
 }
 
-// HasContext returns a boolean if a field has been set.
-func (o *AuditLogEntry) HasContext() bool {
-	if o != nil && !IsNil(o.Context) {
+// HasWorkspaceId returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasWorkspaceId() bool {
+	if o != nil && !IsNil(o.WorkspaceId) {
 		return true
 	}
 
 	return false
 }
 
-// SetContext gets a reference to the given map[string]interface{} and assigns it to the Context field.
-func (o *AuditLogEntry) SetContext(v map[string]interface{}) {
-	o.Context = v
+// SetWorkspaceId gets a reference to the given string and assigns it to the WorkspaceId field.
+func (o *AuditLogEntry) SetWorkspaceId(v string) {
+	o.WorkspaceId = &v
 }
 
-// GetDiff returns the Diff field value if set, zero value otherwise.
-func (o *AuditLogEntry) GetDiff() map[string]interface{} {
-	if o == nil || IsNil(o.Diff) {
-		var ret map[string]interface{}
+// GetProjectId returns the ProjectId field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetProjectId() string {
+	if o == nil || IsNil(o.ProjectId) {
+		var ret string
 		return ret
 	}
-	return o.Diff
+	return *o.ProjectId
 }
 
-// GetDiffOk returns a tuple with the Diff field value if set, nil otherwise
+// GetProjectIdOk returns a tuple with the ProjectId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLogEntry) GetDiffOk() (map[string]interface{}, bool) {
-	if o == nil || IsNil(o.Diff) {
-		return map[string]interface{}{}, false
+func (o *AuditLogEntry) GetProjectIdOk() (*string, bool) {
+	if o == nil || IsNil(o.ProjectId) {
+		return nil, false
 	}
-	return o.Diff, true
+	return o.ProjectId, true
 }
 
-// HasDiff returns a boolean if a field has been set.
-func (o *AuditLogEntry) HasDiff() bool {
-	if o != nil && !IsNil(o.Diff) {
+// HasProjectId returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasProjectId() bool {
+	if o != nil && !IsNil(o.ProjectId) {
 		return true
 	}
 
 	return false
 }
 
-// SetDiff gets a reference to the given map[string]interface{} and assigns it to the Diff field.
-func (o *AuditLogEntry) SetDiff(v map[string]interface{}) {
-	o.Diff = v
+// SetProjectId gets a reference to the given string and assigns it to the ProjectId field.
+func (o *AuditLogEntry) SetProjectId(v string) {
+	o.ProjectId = &v
+}
+
+// GetEnvironmentId returns the EnvironmentId field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetEnvironmentId() string {
+	if o == nil || IsNil(o.EnvironmentId) {
+		var ret string
+		return ret
+	}
+	return *o.EnvironmentId
+}
+
+// GetEnvironmentIdOk returns a tuple with the EnvironmentId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetEnvironmentIdOk() (*string, bool) {
+	if o == nil || IsNil(o.EnvironmentId) {
+		return nil, false
+	}
+	return o.EnvironmentId, true
+}
+
+// HasEnvironmentId returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasEnvironmentId() bool {
+	if o != nil && !IsNil(o.EnvironmentId) {
+		return true
+	}
+
+	return false
+}
+
+// SetEnvironmentId gets a reference to the given string and assigns it to the EnvironmentId field.
+func (o *AuditLogEntry) SetEnvironmentId(v string) {
+	o.EnvironmentId = &v
+}
+
+// GetDecision returns the Decision field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetDecision() AuditDecision {
+	if o == nil || IsNil(o.Decision) {
+		var ret AuditDecision
+		return ret
+	}
+	return *o.Decision
+}
+
+// GetDecisionOk returns a tuple with the Decision field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetDecisionOk() (*AuditDecision, bool) {
+	if o == nil || IsNil(o.Decision) {
+		return nil, false
+	}
+	return o.Decision, true
+}
+
+// HasDecision returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasDecision() bool {
+	if o != nil && !IsNil(o.Decision) {
+		return true
+	}
+
+	return false
+}
+
+// SetDecision gets a reference to the given AuditDecision and assigns it to the Decision field.
+func (o *AuditLogEntry) SetDecision(v AuditDecision) {
+	o.Decision = &v
+}
+
+// GetDenialReason returns the DenialReason field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetDenialReason() string {
+	if o == nil || IsNil(o.DenialReason) {
+		var ret string
+		return ret
+	}
+	return *o.DenialReason
+}
+
+// GetDenialReasonOk returns a tuple with the DenialReason field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetDenialReasonOk() (*string, bool) {
+	if o == nil || IsNil(o.DenialReason) {
+		return nil, false
+	}
+	return o.DenialReason, true
+}
+
+// HasDenialReason returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasDenialReason() bool {
+	if o != nil && !IsNil(o.DenialReason) {
+		return true
+	}
+
+	return false
+}
+
+// SetDenialReason gets a reference to the given string and assigns it to the DenialReason field.
+func (o *AuditLogEntry) SetDenialReason(v string) {
+	o.DenialReason = &v
+}
+
+// GetChanges returns the Changes field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetChanges() []AuditFieldChange {
+	if o == nil || IsNil(o.Changes) {
+		var ret []AuditFieldChange
+		return ret
+	}
+	return o.Changes
+}
+
+// GetChangesOk returns a tuple with the Changes field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetChangesOk() ([]AuditFieldChange, bool) {
+	if o == nil || IsNil(o.Changes) {
+		return nil, false
+	}
+	return o.Changes, true
+}
+
+// HasChanges returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasChanges() bool {
+	if o != nil && !IsNil(o.Changes) {
+		return true
+	}
+
+	return false
+}
+
+// SetChanges gets a reference to the given []AuditFieldChange and assigns it to the Changes field.
+func (o *AuditLogEntry) SetChanges(v []AuditFieldChange) {
+	o.Changes = v
+}
+
+// GetDetails returns the Details field value if set, zero value otherwise.
+func (o *AuditLogEntry) GetDetails() map[string]string {
+	if o == nil || IsNil(o.Details) {
+		var ret map[string]string
+		return ret
+	}
+	return *o.Details
+}
+
+// GetDetailsOk returns a tuple with the Details field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AuditLogEntry) GetDetailsOk() (*map[string]string, bool) {
+	if o == nil || IsNil(o.Details) {
+		return nil, false
+	}
+	return o.Details, true
+}
+
+// HasDetails returns a boolean if a field has been set.
+func (o *AuditLogEntry) HasDetails() bool {
+	if o != nil && !IsNil(o.Details) {
+		return true
+	}
+
+	return false
+}
+
+// SetDetails gets a reference to the given map[string]string and assigns it to the Details field.
+func (o *AuditLogEntry) SetDetails(v map[string]string) {
+	o.Details = &v
 }
 
 // GetRequestId returns the RequestId field value if set, zero value otherwise.
@@ -424,6 +622,9 @@ func (o AuditLogEntry) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ActorEmail) {
 		toSerialize["actorEmail"] = o.ActorEmail
 	}
+	if !IsNil(o.ActorTokenId) {
+		toSerialize["actorTokenId"] = o.ActorTokenId
+	}
 	if !IsNil(o.ActorSource) {
 		toSerialize["actorSource"] = o.ActorSource
 	}
@@ -436,11 +637,26 @@ func (o AuditLogEntry) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.TargetId) {
 		toSerialize["targetId"] = o.TargetId
 	}
-	if !IsNil(o.Context) {
-		toSerialize["context"] = o.Context
+	if !IsNil(o.WorkspaceId) {
+		toSerialize["workspaceId"] = o.WorkspaceId
 	}
-	if !IsNil(o.Diff) {
-		toSerialize["diff"] = o.Diff
+	if !IsNil(o.ProjectId) {
+		toSerialize["projectId"] = o.ProjectId
+	}
+	if !IsNil(o.EnvironmentId) {
+		toSerialize["environmentId"] = o.EnvironmentId
+	}
+	if !IsNil(o.Decision) {
+		toSerialize["decision"] = o.Decision
+	}
+	if !IsNil(o.DenialReason) {
+		toSerialize["denialReason"] = o.DenialReason
+	}
+	if !IsNil(o.Changes) {
+		toSerialize["changes"] = o.Changes
+	}
+	if !IsNil(o.Details) {
+		toSerialize["details"] = o.Details
 	}
 	if !IsNil(o.RequestId) {
 		toSerialize["requestId"] = o.RequestId

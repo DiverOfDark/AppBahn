@@ -1,7 +1,7 @@
 package eu.appbahn.platform.resource.controller;
 
-import eu.appbahn.platform.api.ResourceTypesApi;
-import eu.appbahn.platform.api.model.ResourceTypeInfo;
+import eu.appbahn.platform.api.ResourceTypeInfo;
+import eu.appbahn.platform.api.resourcetype.ResourceTypesApi;
 import eu.appbahn.platform.resource.service.ResourceTypeService;
 import java.util.List;
 import org.springframework.http.ResponseEntity;

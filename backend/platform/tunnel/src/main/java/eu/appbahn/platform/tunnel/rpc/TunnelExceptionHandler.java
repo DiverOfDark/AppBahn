@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(assignableTypes = OperatorTunnelController.class)
 public class TunnelExceptionHandler {
 
-    @ExceptionHandler(TunnelConnectException.class)
-    public ResponseEntity<Map<String, String>> handleConnect(TunnelConnectException e) {
+    @ExceptionHandler(TunnelApiException.class)
+    public ResponseEntity<Map<String, String>> handle(TunnelApiException e) {
         return ResponseEntity.status(e.httpStatus()).body(Map.of("code", e.code(), "message", e.getMessage()));
     }
 

@@ -4,7 +4,7 @@ import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
-import eu.appbahn.shared.crd.ResourceStatus;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvFromSourceBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -197,7 +197,8 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
     }
 
     /** Defaults to tcpSocket on the container port when no action is configured. */
-    private io.fabric8.kubernetes.api.model.Probe buildProbe(ResourceConfig.Probe probeConfig, Integer defaultPort) {
+    private io.fabric8.kubernetes.api.model.Probe buildProbe(
+            ResourceConfig.ProbeConfig probeConfig, Integer defaultPort) {
         var probeBuilder = new io.fabric8.kubernetes.api.model.ProbeBuilder();
 
         if (probeConfig.getHttpGet() != null) {
@@ -246,7 +247,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
     /** ERROR + zero ready replicas observed for the current spec generation. */
     static boolean isCurrentRevisionFailed(ResourceCrd primary) {
-        ResourceStatus status = primary.getStatus();
+        ResourceStatusDetail status = primary.getStatus();
         if (status == null || status.getPhase() != ResourcePhase.ERROR) {
             return false;
         }
@@ -255,7 +256,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         if (observed == null || current == null || !observed.equals(current)) {
             return false;
         }
-        ResourceStatus.ReplicaStatus replicas = status.getReplicas();
+        ResourceStatusDetail.ReplicaStatus replicas = status.getReplicas();
         return replicas == null || replicas.getReady() == 0;
     }
 }

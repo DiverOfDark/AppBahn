@@ -163,15 +163,11 @@ spec:
                         type: array
                     type: object
                   runMode:
+                    enum:
+                    - CONTINUOUS
+                    - TASK
                     type: string
                   source:
-                    properties:
-                      pollInterval:
-                        type: string
-                      type:
-                        type: string
-                      webhookEnabled:
-                        type: boolean
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                 type: object

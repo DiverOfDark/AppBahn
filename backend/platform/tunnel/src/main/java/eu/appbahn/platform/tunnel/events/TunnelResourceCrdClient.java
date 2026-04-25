@@ -1,5 +1,7 @@
 package eu.appbahn.platform.tunnel.events;
 
+import eu.appbahn.platform.api.tunnel.ApplyResource;
+import eu.appbahn.platform.api.tunnel.DeleteResource;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheMapper;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
@@ -16,9 +18,6 @@ import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
-import eu.appbahn.tunnel.v1.ApplyResource;
-import eu.appbahn.tunnel.v1.DeleteResource;
-import eu.appbahn.tunnel.wire.ResourceWireMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -95,10 +94,9 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
     @Transactional
     public void delete(String slug, String namespace) {
         String clusterName = resolveClusterNameForSlug(slug).orElse("local");
-        var cmd = DeleteResource.newBuilder()
-                .setNamespace(namespace)
-                .setResourceSlug(slug)
-                .build();
+        var cmd = new DeleteResource();
+        cmd.setNamespace(namespace);
+        cmd.setResourceSlug(slug);
         enqueue.enqueue(clusterName, CommandTypes.DELETE_RESOURCE, cmd);
     }
 
@@ -130,8 +128,9 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
 
     private void enqueueApply(ResourceCrd crd) {
         String clusterName = resolveClusterNameForCrd(crd);
-        ApplyResource payload =
-                ResourceWireMapper.toApplyResource(crd, crd.getMetadata().getNamespace());
+        var payload = new ApplyResource();
+        payload.setNamespace(crd.getMetadata().getNamespace());
+        payload.setResource(crd);
         enqueue.enqueue(clusterName, CommandTypes.APPLY_RESOURCE, payload);
     }
 

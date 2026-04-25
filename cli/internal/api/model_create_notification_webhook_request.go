@@ -11,9 +11,7 @@ API version: 1.0.0
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // checks if the CreateNotificationWebhookRequest type satisfies the MappedNullable interface at compile time
@@ -21,22 +19,17 @@ var _ MappedNullable = &CreateNotificationWebhookRequest{}
 
 // CreateNotificationWebhookRequest struct for CreateNotificationWebhookRequest
 type CreateNotificationWebhookRequest struct {
-	Name   string   `json:"name"`
-	Url    string   `json:"url"`
-	Events []string `json:"events"`
+	Name   *string  `json:"name,omitempty"`
+	Url    *string  `json:"url,omitempty"`
+	Events []string `json:"events,omitempty"`
 }
-
-type _CreateNotificationWebhookRequest CreateNotificationWebhookRequest
 
 // NewCreateNotificationWebhookRequest instantiates a new CreateNotificationWebhookRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateNotificationWebhookRequest(name string, url string, events []string) *CreateNotificationWebhookRequest {
+func NewCreateNotificationWebhookRequest() *CreateNotificationWebhookRequest {
 	this := CreateNotificationWebhookRequest{}
-	this.Name = name
-	this.Url = url
-	this.Events = events
 	return &this
 }
 
@@ -48,74 +41,98 @@ func NewCreateNotificationWebhookRequestWithDefaults() *CreateNotificationWebhoo
 	return &this
 }
 
-// GetName returns the Name field value
+// GetName returns the Name field value if set, zero value otherwise.
 func (o *CreateNotificationWebhookRequest) GetName() string {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		var ret string
 		return ret
 	}
-
-	return o.Name
+	return *o.Name
 }
 
-// GetNameOk returns a tuple with the Name field value
+// GetNameOk returns a tuple with the Name field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *CreateNotificationWebhookRequest) GetNameOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		return nil, false
 	}
-	return &o.Name, true
+	return o.Name, true
 }
 
-// SetName sets field value
+// HasName returns a boolean if a field has been set.
+func (o *CreateNotificationWebhookRequest) HasName() bool {
+	if o != nil && !IsNil(o.Name) {
+		return true
+	}
+
+	return false
+}
+
+// SetName gets a reference to the given string and assigns it to the Name field.
 func (o *CreateNotificationWebhookRequest) SetName(v string) {
-	o.Name = v
+	o.Name = &v
 }
 
-// GetUrl returns the Url field value
+// GetUrl returns the Url field value if set, zero value otherwise.
 func (o *CreateNotificationWebhookRequest) GetUrl() string {
-	if o == nil {
+	if o == nil || IsNil(o.Url) {
 		var ret string
 		return ret
 	}
-
-	return o.Url
+	return *o.Url
 }
 
-// GetUrlOk returns a tuple with the Url field value
+// GetUrlOk returns a tuple with the Url field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *CreateNotificationWebhookRequest) GetUrlOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Url) {
 		return nil, false
 	}
-	return &o.Url, true
+	return o.Url, true
 }
 
-// SetUrl sets field value
+// HasUrl returns a boolean if a field has been set.
+func (o *CreateNotificationWebhookRequest) HasUrl() bool {
+	if o != nil && !IsNil(o.Url) {
+		return true
+	}
+
+	return false
+}
+
+// SetUrl gets a reference to the given string and assigns it to the Url field.
 func (o *CreateNotificationWebhookRequest) SetUrl(v string) {
-	o.Url = v
+	o.Url = &v
 }
 
-// GetEvents returns the Events field value
+// GetEvents returns the Events field value if set, zero value otherwise.
 func (o *CreateNotificationWebhookRequest) GetEvents() []string {
-	if o == nil {
+	if o == nil || IsNil(o.Events) {
 		var ret []string
 		return ret
 	}
-
 	return o.Events
 }
 
-// GetEventsOk returns a tuple with the Events field value
+// GetEventsOk returns a tuple with the Events field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *CreateNotificationWebhookRequest) GetEventsOk() ([]string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Events) {
 		return nil, false
 	}
 	return o.Events, true
 }
 
-// SetEvents sets field value
+// HasEvents returns a boolean if a field has been set.
+func (o *CreateNotificationWebhookRequest) HasEvents() bool {
+	if o != nil && !IsNil(o.Events) {
+		return true
+	}
+
+	return false
+}
+
+// SetEvents gets a reference to the given []string and assigns it to the Events field.
 func (o *CreateNotificationWebhookRequest) SetEvents(v []string) {
 	o.Events = v
 }
@@ -130,49 +147,16 @@ func (o CreateNotificationWebhookRequest) MarshalJSON() ([]byte, error) {
 
 func (o CreateNotificationWebhookRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["name"] = o.Name
-	toSerialize["url"] = o.Url
-	toSerialize["events"] = o.Events
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Url) {
+		toSerialize["url"] = o.Url
+	}
+	if !IsNil(o.Events) {
+		toSerialize["events"] = o.Events
+	}
 	return toSerialize, nil
-}
-
-func (o *CreateNotificationWebhookRequest) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"name",
-		"url",
-		"events",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err
-	}
-
-	for _, requiredProperty := range requiredProperties {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varCreateNotificationWebhookRequest := _CreateNotificationWebhookRequest{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varCreateNotificationWebhookRequest)
-
-	if err != nil {
-		return err
-	}
-
-	*o = CreateNotificationWebhookRequest(varCreateNotificationWebhookRequest)
-
-	return err
 }
 
 type NullableCreateNotificationWebhookRequest struct {

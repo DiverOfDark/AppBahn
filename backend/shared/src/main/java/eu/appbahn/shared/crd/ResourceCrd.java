@@ -9,4 +9,4 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group("appbahn.eu")
 @Version("v1")
 @Kind("Resource")
-public class ResourceCrd extends CustomResource<ResourceSpec, ResourceStatus> implements Namespaced {}
+public class ResourceCrd extends CustomResource<ResourceSpec, ResourceStatusDetail> implements Namespaced {}

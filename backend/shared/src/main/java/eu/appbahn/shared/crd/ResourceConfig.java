@@ -19,11 +19,11 @@ public class ResourceConfig {
     @PreserveUnknownFields
     private Source source;
 
-    private Hosting hosting;
-    private Networking networking;
-    private HealthCheck healthCheck;
+    private HostingConfig hosting;
+    private NetworkingConfig networking;
+    private HealthCheckConfig healthCheck;
     private Map<String, String> env;
-    private String runMode;
+    private RunMode runMode;
 
     /** Returns all port configs, or empty list if none defined. */
     @JsonIgnore
@@ -83,7 +83,7 @@ public class ResourceConfig {
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Hosting {
+    public static class HostingConfig {
         private Quantity cpu;
         private Quantity memory;
 
@@ -108,7 +108,7 @@ public class ResourceConfig {
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Networking {
+    public static class NetworkingConfig {
         private List<PortConfig> ports;
     }
 
@@ -127,16 +127,16 @@ public class ResourceConfig {
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class HealthCheck {
-        private Probe readiness;
-        private Probe liveness;
-        private Probe startup;
+    public static class HealthCheckConfig {
+        private ProbeConfig readiness;
+        private ProbeConfig liveness;
+        private ProbeConfig startup;
     }
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Probe {
+    public static class ProbeConfig {
         private HttpGetAction httpGet;
         private TcpSocketAction tcpSocket;
         private ExecAction exec;

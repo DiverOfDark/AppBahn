@@ -21,16 +21,12 @@ var _ MappedNullable = &PromotionSource{}
 
 // PromotionSource struct for PromotionSource
 type PromotionSource struct {
-	Type string `json:"type"`
-	// Polling interval, e.g. '5m'. '0' disables polling.
-	PollInterval   *string `json:"pollInterval,omitempty"`
-	WebhookEnabled *bool   `json:"webhookEnabled,omitempty"`
-	// Slug of the source environment
-	SourceEnvironment string `json:"sourceEnvironment"`
-	// Slug of the source resource
-	SourceResource string `json:"sourceResource"`
-	// Auto-trigger deployment on source success
-	AutoPromote *bool `json:"autoPromote,omitempty"`
+	Type              string  `json:"type"`
+	PollInterval      *string `json:"pollInterval,omitempty"`
+	WebhookEnabled    *bool   `json:"webhookEnabled,omitempty"`
+	SourceEnvironment *string `json:"sourceEnvironment,omitempty"`
+	SourceResource    *string `json:"sourceResource,omitempty"`
+	AutoPromote       *bool   `json:"autoPromote,omitempty"`
 }
 
 type _PromotionSource PromotionSource
@@ -39,11 +35,9 @@ type _PromotionSource PromotionSource
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewPromotionSource(type_ string, sourceEnvironment string, sourceResource string) *PromotionSource {
+func NewPromotionSource(type_ string) *PromotionSource {
 	this := PromotionSource{}
 	this.Type = type_
-	this.SourceEnvironment = sourceEnvironment
-	this.SourceResource = sourceResource
 	return &this
 }
 
@@ -143,52 +137,68 @@ func (o *PromotionSource) SetWebhookEnabled(v bool) {
 	o.WebhookEnabled = &v
 }
 
-// GetSourceEnvironment returns the SourceEnvironment field value
+// GetSourceEnvironment returns the SourceEnvironment field value if set, zero value otherwise.
 func (o *PromotionSource) GetSourceEnvironment() string {
-	if o == nil {
+	if o == nil || IsNil(o.SourceEnvironment) {
 		var ret string
 		return ret
 	}
-
-	return o.SourceEnvironment
+	return *o.SourceEnvironment
 }
 
-// GetSourceEnvironmentOk returns a tuple with the SourceEnvironment field value
+// GetSourceEnvironmentOk returns a tuple with the SourceEnvironment field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *PromotionSource) GetSourceEnvironmentOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.SourceEnvironment) {
 		return nil, false
 	}
-	return &o.SourceEnvironment, true
+	return o.SourceEnvironment, true
 }
 
-// SetSourceEnvironment sets field value
+// HasSourceEnvironment returns a boolean if a field has been set.
+func (o *PromotionSource) HasSourceEnvironment() bool {
+	if o != nil && !IsNil(o.SourceEnvironment) {
+		return true
+	}
+
+	return false
+}
+
+// SetSourceEnvironment gets a reference to the given string and assigns it to the SourceEnvironment field.
 func (o *PromotionSource) SetSourceEnvironment(v string) {
-	o.SourceEnvironment = v
+	o.SourceEnvironment = &v
 }
 
-// GetSourceResource returns the SourceResource field value
+// GetSourceResource returns the SourceResource field value if set, zero value otherwise.
 func (o *PromotionSource) GetSourceResource() string {
-	if o == nil {
+	if o == nil || IsNil(o.SourceResource) {
 		var ret string
 		return ret
 	}
-
-	return o.SourceResource
+	return *o.SourceResource
 }
 
-// GetSourceResourceOk returns a tuple with the SourceResource field value
+// GetSourceResourceOk returns a tuple with the SourceResource field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *PromotionSource) GetSourceResourceOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.SourceResource) {
 		return nil, false
 	}
-	return &o.SourceResource, true
+	return o.SourceResource, true
 }
 
-// SetSourceResource sets field value
+// HasSourceResource returns a boolean if a field has been set.
+func (o *PromotionSource) HasSourceResource() bool {
+	if o != nil && !IsNil(o.SourceResource) {
+		return true
+	}
+
+	return false
+}
+
+// SetSourceResource gets a reference to the given string and assigns it to the SourceResource field.
 func (o *PromotionSource) SetSourceResource(v string) {
-	o.SourceResource = v
+	o.SourceResource = &v
 }
 
 // GetAutoPromote returns the AutoPromote field value if set, zero value otherwise.
@@ -240,8 +250,12 @@ func (o PromotionSource) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.WebhookEnabled) {
 		toSerialize["webhookEnabled"] = o.WebhookEnabled
 	}
-	toSerialize["sourceEnvironment"] = o.SourceEnvironment
-	toSerialize["sourceResource"] = o.SourceResource
+	if !IsNil(o.SourceEnvironment) {
+		toSerialize["sourceEnvironment"] = o.SourceEnvironment
+	}
+	if !IsNil(o.SourceResource) {
+		toSerialize["sourceResource"] = o.SourceResource
+	}
 	if !IsNil(o.AutoPromote) {
 		toSerialize["autoPromote"] = o.AutoPromote
 	}
@@ -254,8 +268,6 @@ func (o *PromotionSource) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
-		"sourceEnvironment",
-		"sourceResource",
 	}
 
 	allProperties := make(map[string]interface{})

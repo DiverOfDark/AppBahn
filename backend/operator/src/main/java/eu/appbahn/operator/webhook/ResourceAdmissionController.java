@@ -3,13 +3,15 @@ package eu.appbahn.operator.webhook;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.operator.tunnel.AdmissionSnapshotCache;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
+import eu.appbahn.operator.tunnel.client.model.AdmissionApproved;
+import eu.appbahn.operator.tunnel.client.model.AdmissionCacheMissReport;
+import eu.appbahn.operator.tunnel.client.model.EnvironmentEntry;
+import eu.appbahn.operator.tunnel.client.model.ResourceSyncItem;
+import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
-import eu.appbahn.tunnel.v1.AdmissionApproved;
-import eu.appbahn.tunnel.v1.AdmissionCacheMissReport;
-import eu.appbahn.tunnel.v1.OperatorEvent;
-import eu.appbahn.tunnel.v1.QuotaRbacSnapshot;
-import eu.appbahn.tunnel.v1.ResourceSyncItem;
-import eu.appbahn.tunnel.wire.ResourceWireMapper;
+import eu.appbahn.shared.crd.ResourcePhase;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.api.model.StatusBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
@@ -18,7 +20,9 @@ import io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponseBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReviewBuilder;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,8 +141,7 @@ public class ResourceAdmissionController {
                     isDryRun);
         }
 
-        Optional<QuotaRbacSnapshot.EnvironmentEntry> entryOpt =
-                admissionCache.entryForNamespace(request.getNamespace());
+        Optional<EnvironmentEntry> entryOpt = admissionCache.entryForNamespace(request.getNamespace());
         if (entryOpt.isEmpty()) {
             emitCacheMiss(request, "namespace not in snapshot");
             return denyWithAudit(
@@ -147,7 +150,7 @@ public class ResourceAdmissionController {
                     "namespace " + request.getNamespace() + " not known to the platform",
                     isDryRun);
         }
-        QuotaRbacSnapshot.EnvironmentEntry entry = entryOpt.get();
+        EnvironmentEntry entry = entryOpt.get();
 
         if (!isPlatformAdmin(groups) && !isAuthorisedForEnv(user, groups, entry)) {
             emitCacheMiss(request, "user not authorised for env");
@@ -169,18 +172,20 @@ public class ResourceAdmissionController {
                 crd.getSpec() == null ? null : crd.getSpec().getConfig());
 
         Optional<QuotaEnforcement.Denial> denial = QuotaEnforcement.checkEnv(entry, incoming);
-        if (denial.isEmpty() && !entry.getProjectSlug().isEmpty()) {
-            var project = admissionCache.projectEntry(entry.getProjectSlug());
+        String projectSlug = entry.getProjectSlug();
+        if (denial.isEmpty() && projectSlug != null && !projectSlug.isEmpty()) {
+            var project = admissionCache.projectEntry(projectSlug);
             if (project.isPresent()) {
                 denial = QuotaEnforcement.checkProject(
-                        project.get(), admissionCache.envEntriesInProject(entry.getProjectSlug()), incoming);
+                        project.get(), admissionCache.envEntriesInProject(projectSlug), incoming);
             }
         }
-        if (denial.isEmpty() && !entry.getWorkspaceSlug().isEmpty()) {
-            var workspace = admissionCache.workspaceEntry(entry.getWorkspaceSlug());
+        String workspaceSlug = entry.getWorkspaceSlug();
+        if (denial.isEmpty() && workspaceSlug != null && !workspaceSlug.isEmpty()) {
+            var workspace = admissionCache.workspaceEntry(workspaceSlug);
             if (workspace.isPresent()) {
                 denial = QuotaEnforcement.checkWorkspace(
-                        workspace.get(), admissionCache.envEntriesInWorkspace(entry.getWorkspaceSlug()), incoming);
+                        workspace.get(), admissionCache.envEntriesInWorkspace(workspaceSlug), incoming);
             }
         }
         if (denial.isPresent()) {
@@ -244,15 +249,14 @@ public class ResourceAdmissionController {
         return userGroups.stream().anyMatch(adminGroups::contains);
     }
 
-    private boolean isAuthorisedForEnv(
-            String user, Collection<String> userGroups, QuotaRbacSnapshot.EnvironmentEntry entry) {
-        if (user != null && entry.getAllowedUserSubjectsList().contains(user)) {
+    private boolean isAuthorisedForEnv(String user, Collection<String> userGroups, EnvironmentEntry entry) {
+        if (user != null && entry.getAllowedUserSubjects().contains(user)) {
             return true;
         }
         if (userGroups == null || userGroups.isEmpty()) {
             return false;
         }
-        return userGroups.stream().anyMatch(entry.getAllowedOidcGroupsList()::contains);
+        return userGroups.stream().anyMatch(entry.getAllowedOidcGroups()::contains);
     }
 
     /**
@@ -263,29 +267,38 @@ public class ResourceAdmissionController {
      */
     private void emitApproved(String envSlug, ResourceCrd crd) {
         try {
+            // Work off a deep copy — the caller's CRD must stay pristine.
+            ResourceCrd snapshot = objectMapper.convertValue(crd, ResourceCrd.class);
+            if (snapshot.getMetadata() == null) {
+                snapshot.setMetadata(new ObjectMeta());
+            }
+            // Stamp the env-slug label so downstream doesn't need to resolve it from namespace.
+            if (envSlug != null && !envSlug.isBlank()) {
+                Map<String, String> labels = snapshot.getMetadata().getLabels();
+                if (labels == null) {
+                    labels = new HashMap<>();
+                    snapshot.getMetadata().setLabels(labels);
+                }
+                labels.putIfAbsent(Labels.ENVIRONMENT_SLUG_KEY, envSlug);
+            }
             // Force PENDING — the CR was just admitted, no operator-side status yet.
-            var resource = ResourceWireMapper.toResource(crd, envSlug).toBuilder()
-                    .setStatus("PENDING")
-                    .clearStatusDetail()
-                    .build();
-            long generation = crd.getMetadata() != null && crd.getMetadata().getGeneration() != null
-                    ? crd.getMetadata().getGeneration()
-                    : 0L;
-            String resourceVersion =
-                    crd.getMetadata() != null && crd.getMetadata().getResourceVersion() != null
-                            ? crd.getMetadata().getResourceVersion()
-                            : "";
-            ResourceSyncItem item = ResourceSyncItem.newBuilder()
-                    .setResource(resource)
-                    .setGeneration(generation)
-                    .setResourceVersion(resourceVersion)
-                    .build();
-            OperatorEvent event = OperatorEvent.newBuilder()
-                    .setAdmissionApproved(
-                            AdmissionApproved.newBuilder().setItem(item).build())
-                    .build();
+            ResourceStatusDetail status = new ResourceStatusDetail();
+            status.setPhase(ResourcePhase.PENDING);
+            snapshot.setStatus(status);
+            var item = new ResourceSyncItem();
+            item.setResource(snapshot);
+            if (snapshot.getMetadata() != null) {
+                if (snapshot.getMetadata().getGeneration() != null) {
+                    item.setGeneration(snapshot.getMetadata().getGeneration());
+                }
+                if (snapshot.getMetadata().getResourceVersion() != null) {
+                    item.setResourceVersion(snapshot.getMetadata().getResourceVersion());
+                }
+            }
+            var event = new AdmissionApproved();
+            event.setItem(item);
             eventPublisher.emit(event);
-            log.debug("Emitted AdmissionApproved for {}", resource.getSlug());
+            log.debug("Emitted AdmissionApproved for {}", snapshot.getMetadata().getName());
         } catch (Exception e) {
             log.warn("Failed to emit AdmissionApproved: {}", e.getMessage());
         }
@@ -301,14 +314,11 @@ public class ResourceAdmissionController {
             String user = request.getUserInfo() != null && request.getUserInfo().getUsername() != null
                     ? request.getUserInfo().getUsername()
                     : "";
-            AdmissionCacheMissReport report = AdmissionCacheMissReport.newBuilder()
-                    .setNamespace(request.getNamespace() != null ? request.getNamespace() : "")
-                    .setUserOidcSubject(user)
-                    .setReason(reason)
-                    .build();
-            eventPublisher.emit(OperatorEvent.newBuilder()
-                    .setAdmissionCacheMissReport(report)
-                    .build());
+            var report = new AdmissionCacheMissReport();
+            report.setNamespace(request.getNamespace() != null ? request.getNamespace() : "");
+            report.setUserOidcSubject(user);
+            report.setReason(reason);
+            eventPublisher.emit(report);
         } catch (Exception e) {
             log.debug("Failed to emit AdmissionCacheMissReport: {}", e.getMessage());
         }

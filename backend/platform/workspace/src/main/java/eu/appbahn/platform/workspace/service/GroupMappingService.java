@@ -1,10 +1,10 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateGroupMappingRequest;
-import eu.appbahn.platform.api.model.OidcGroupMapping;
-import eu.appbahn.platform.api.model.UpdateGroupMappingRequest;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.OidcGroupMapping;
+import eu.appbahn.platform.api.workspace.CreateGroupMappingRequest;
+import eu.appbahn.platform.api.workspace.UpdateGroupMappingRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
@@ -54,7 +54,7 @@ public class GroupMappingService {
         var entity = new OidcGroupMappingEntity();
         entity.setWorkspaceId(ws.getId());
         entity.setOidcGroup(req.getOidcGroup());
-        entity.setRole(req.getRole().getValue());
+        entity.setRole(req.getRole().name());
         mappingRepository.save(entity);
 
         auditLogService
@@ -62,7 +62,7 @@ public class GroupMappingService {
                 .target(AuditTargetType.WORKSPACE, ws.getSlug())
                 .inWorkspace(ws.getId())
                 .detail("oidcGroup", req.getOidcGroup())
-                .detail("role", req.getRole().getValue())
+                .detail("role", req.getRole().name())
                 .save();
 
         return toApi(entity);
@@ -78,7 +78,7 @@ public class GroupMappingService {
                 .orElseThrow(() -> new NotFoundException("Group mapping not found"));
 
         if (req.getRole() != null) {
-            entity.setRole(req.getRole().getValue());
+            entity.setRole(req.getRole().name());
         }
         mappingRepository.save(entity);
 
@@ -114,7 +114,7 @@ public class GroupMappingService {
         dto.setId(entity.getId());
         dto.setWorkspaceId(entity.getWorkspaceId());
         dto.setOidcGroup(entity.getOidcGroup());
-        dto.setRole(OidcGroupMapping.RoleEnum.fromValue(entity.getRole()));
+        dto.setRole(MemberRole.valueOf(entity.getRole()));
         return dto;
     }
 

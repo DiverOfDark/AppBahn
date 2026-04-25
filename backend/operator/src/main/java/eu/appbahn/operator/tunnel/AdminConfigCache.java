@@ -1,6 +1,6 @@
 package eu.appbahn.operator.tunnel;
 
-import eu.appbahn.tunnel.v1.AdminConfigSnapshot;
+import eu.appbahn.operator.tunnel.client.model.AdminConfigSnapshot;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;

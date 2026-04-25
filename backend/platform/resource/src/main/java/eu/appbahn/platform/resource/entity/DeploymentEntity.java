@@ -1,6 +1,6 @@
 package eu.appbahn.platform.resource.entity;
 
-import eu.appbahn.platform.resource.service.TriggerType;
+import eu.appbahn.platform.api.TriggerType;
 import eu.appbahn.shared.crd.DeploymentStatus;
 import eu.appbahn.shared.util.UuidV7;
 import jakarta.persistence.Column;

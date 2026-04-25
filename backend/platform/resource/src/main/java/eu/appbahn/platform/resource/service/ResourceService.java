@@ -3,13 +3,13 @@ package eu.appbahn.platform.resource.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateResourceRequest;
-import eu.appbahn.platform.api.model.PagedResourceResponse;
-import eu.appbahn.platform.api.model.Resource;
-import eu.appbahn.platform.api.model.ResourceCreatedResponse;
-import eu.appbahn.platform.api.model.UpdateResourceRequest;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.Resource;
+import eu.appbahn.platform.api.resource.CreateResourceRequest;
+import eu.appbahn.platform.api.resource.PagedResourceResponse;
+import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
+import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
@@ -120,7 +120,7 @@ public class ResourceService {
 
         UUID workspaceId = environmentLookupService.getWorkspaceId(env);
 
-        List<ResourceSpec.ResourceLink> resourceLinks = List.of();
+        List<ResourceSpec.LinkConfig> resourceLinks = List.of();
         if (req.getLinks() != null && !req.getLinks().isEmpty()) {
             validateLinks(req.getLinks(), slug);
             resourceLinks = req.getLinks();
@@ -219,7 +219,7 @@ public class ResourceService {
             }
         }
 
-        List<ResourceSpec.ResourceLink> mergedLinks = null;
+        List<ResourceSpec.LinkConfig> mergedLinks = null;
         if (req.getLinks() != null && !req.getLinks().isEmpty()) {
             validateLinks(req.getLinks(), slug);
             mergedLinks = req.getLinks();
@@ -323,7 +323,7 @@ public class ResourceService {
         }
     }
 
-    private void validateLinks(java.util.List<ResourceSpec.ResourceLink> links, String currentSlug) {
+    private void validateLinks(java.util.List<ResourceSpec.LinkConfig> links, String currentSlug) {
         var slugs = new java.util.ArrayList<String>();
         for (var link : links) {
             if (link.getResource() == null || link.getResource().isBlank()) {

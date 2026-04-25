@@ -47,8 +47,8 @@ AppBahn ships as two deployables inside a single Helm chart:
   native `Deployment`, `Service`, and `Ingress` resources.
 
 Both are packaged as signed container images. The platform and operator
-communicate over a Connect tunnel, so the platform can reach operators behind
-NAT or egress-only firewalls.
+communicate over an HTTPS tunnel (REST + a single Server-Sent Events stream),
+so the platform can reach operators behind NAT or egress-only firewalls.
 
 ## Tech stack
 
@@ -63,18 +63,17 @@ NAT or egress-only firewalls.
 ## Project structure
 
 ```
-api/                   public-api.yaml (OpenAPI) and tunnel-api.proto
-                       (Connect tunnel contract)
+api/                   public-api.yaml + tunnel-api.yaml (both springdoc-emitted
+                       from the platform's @RestControllers)
 backend/
-  shared/              CRD models, slug utilities, shared types
-  tunnel-api/          Connect tunnel proto codegen, wire codec, CRD<->proto mappers
+  shared/              CRD models, slug utilities, OperatorJwt + sync payloads
   platform/
-    api-spec/          OpenAPI code generation (Spring server stubs)
+    api-spec/          Hand-written REST DTOs + API interfaces (code-first)
     app/               Spring Boot entry point, wires all modules
     workspace/         Workspace, project, environment CRUD, quotas
     resource/          Resources, deployments, links
     user/              User management, RBAC, OIDC group mappings
-    tunnel/            Operator tunnel server (Connect RPCs, JWT auth)
+    tunnel/            Operator tunnel server (REST + SSE, JWT auth)
     common/            Auth context, JWT, base persistence, ID generation
   operator/            AppBahn Operator (separate deployable JAR)
 cli/                   CLI tool (Go)
@@ -82,7 +81,6 @@ crds/                  CRD definitions
 helm/                  Helm chart
 web/                   Vue.js 3 SPA (served by the platform JAR)
 website/               appbahn.eu — Astro marketing pages + Starlight docs
-buf.yaml, buf.gen.yaml Proto module metadata
 ```
 
 ## Local development
@@ -110,23 +108,24 @@ cd cli && go build -o appbahn . && ./appbahn version
 cd website && npm install && npm run dev
 ```
 
-## API-first
+## Code-first API
 
-`api/` holds the two interface contracts:
+`api/` holds two OpenAPI specs, both emitted by springdoc from the platform's
+`@RestController`s at build time:
 
-- `public-api.yaml` — OpenAPI spec for the Platform API consumed by the web
-  console and CLI
-- `tunnel-api.proto` — Connect/gRPC protocol for operator-platform
-  communication over the tunnel
+- `public-api.yaml` — user-facing Platform API, consumed by the web console
+  and the CLI
+- `tunnel-api.yaml` — operator ↔ platform transport (REST + a single SSE
+  stream); internal, but specified for clarity
+
+`./gradlew :platform:app:syncOpenApi` regenerates both; CI gates freshness via
+`:platform:app:verifyOpenApi`.
 
 Generated clients:
 
-- **Backend** — Gradle generates Spring server stubs from `public-api.yaml`
 - **Frontend** — npm generates a TypeScript client from `public-api.yaml`
 - **CLI** — `cli/scripts/generate-api.sh` generates a Go client from
   `public-api.yaml`
-- **Tunnel** — `buf` generates Java stubs from `tunnel-api.proto` for both
-  the platform-side server and the operator-side client
 
 Do not hand-craft API calls — always use the generated clients.
 

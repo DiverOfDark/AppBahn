@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.jackson.databind.nullable)
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.swagger.annotations)
 
     implementation(libs.jackson.datatype.jsr310)
 

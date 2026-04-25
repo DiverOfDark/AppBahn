@@ -1,8 +1,8 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.Environment;
-import eu.appbahn.platform.api.model.Project;
-import eu.appbahn.platform.api.model.Workspace;
+import eu.appbahn.platform.api.Environment;
+import eu.appbahn.platform.api.Project;
+import eu.appbahn.platform.api.Workspace;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.platform.workspace.entity.WorkspaceEntity;

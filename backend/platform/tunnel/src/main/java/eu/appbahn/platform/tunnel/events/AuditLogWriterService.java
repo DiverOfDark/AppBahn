@@ -1,9 +1,8 @@
 package eu.appbahn.platform.tunnel.events;
 
+import eu.appbahn.platform.api.tunnel.AuditLogEvent;
 import eu.appbahn.platform.common.audit.AuditLogEntity;
 import eu.appbahn.platform.common.audit.AuditLogRepository;
-import eu.appbahn.tunnel.v1.AuditLogEvent;
-import eu.appbahn.tunnel.wire.AuditEnumMapper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Persists audit entries that originate on the operator side (kubectl / GitOps apply/delete)
  * and arrive via {@code PushEvents}. Tunnel re-delivery is handled by using the operator-
- * assigned {@code event_id} as the row PK and swallowing constraint violations on duplicates.
+ * assigned {@code eventId} as the row PK and swallowing constraint violations on duplicates.
  */
 @Service
 public class AuditLogWriterService {
@@ -50,55 +49,24 @@ public class AuditLogWriterService {
 
     private static AuditLogEntity toEntity(AuditLogEvent event) {
         var entry = new AuditLogEntity();
-        entry.setId(parseUuid(event.getEventId(), UUID.randomUUID()));
-        entry.setTimestamp(toInstant(event));
-        entry.setActorId(parseUuidOrNull(event.getActorId()));
+        entry.setId(event.getEventId() != null ? event.getEventId() : UUID.randomUUID());
+        entry.setTimestamp(event.getTimestamp() != null ? event.getTimestamp().toInstant() : Instant.now());
+        entry.setActorId(event.getActorId());
         entry.setActorEmail(emptyToNull(event.getActorEmail()));
-        entry.setActorSource(AuditEnumMapper.fromProto(event.getActorSource()));
-        entry.setAction(AuditEnumMapper.fromProto(event.getAction()));
-        entry.setTargetType(AuditEnumMapper.fromProto(event.getTargetType()));
+        entry.setActorSource(event.getActorSource());
+        entry.setAction(event.getAction());
+        entry.setTargetType(event.getTargetType());
         entry.setTargetId(event.getTargetSlug());
-        entry.setWorkspaceId(parseUuidOrNull(event.getWorkspaceId()));
-        entry.setProjectId(parseUuidOrNull(event.getProjectId()));
-        entry.setEnvironmentId(parseUuidOrNull(event.getEnvironmentId()));
-        entry.setDecision(AuditEnumMapper.fromProto(event.getDecision()));
+        entry.setWorkspaceId(event.getWorkspaceId());
+        entry.setProjectId(event.getProjectId());
+        entry.setEnvironmentId(event.getEnvironmentId());
+        entry.setDecision(event.getDecision());
         entry.setDenialReason(emptyToNull(event.getDenialReason()));
-        if (!event.getChangesList().isEmpty()) {
-            var changes = new ArrayList<eu.appbahn.platform.api.model.AuditFieldChange>(
-                    event.getChangesList().size());
-            for (var c : event.getChangesList()) {
-                changes.add(new eu.appbahn.platform.api.model.AuditFieldChange(c.getField())
-                        .oldValue(emptyToNull(c.getOldValue()))
-                        .newValue(emptyToNull(c.getNewValue())));
-            }
-            entry.setChanges(changes);
+        if (event.getChanges() != null && !event.getChanges().isEmpty()) {
+            entry.setChanges(new ArrayList<>(event.getChanges()));
         }
         entry.setDetails(new LinkedHashMap<>());
         return entry;
-    }
-
-    private static Instant toInstant(AuditLogEvent event) {
-        if (!event.hasTimestamp()) {
-            return Instant.now();
-        }
-        var ts = event.getTimestamp();
-        return Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos());
-    }
-
-    private static UUID parseUuid(String s, UUID fallback) {
-        try {
-            return s == null || s.isBlank() ? fallback : UUID.fromString(s);
-        } catch (IllegalArgumentException e) {
-            return fallback;
-        }
-    }
-
-    private static UUID parseUuidOrNull(String s) {
-        try {
-            return s == null || s.isBlank() ? null : UUID.fromString(s);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 
     private static String emptyToNull(String s) {

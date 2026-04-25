@@ -23,7 +23,7 @@ import (
 type AdminAPI interface {
 
 	/*
-		CreateNetworkPolicy Create network policy
+		CreateNetworkPolicy Method for CreateNetworkPolicy
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiCreateNetworkPolicyRequest
@@ -35,7 +35,7 @@ type AdminAPI interface {
 	CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
 
 	/*
-		DeleteCluster Delete cluster
+		DeleteCluster Method for DeleteCluster
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param name
@@ -47,7 +47,7 @@ type AdminAPI interface {
 	DeleteClusterExecute(r ApiDeleteClusterRequest) (*http.Response, error)
 
 	/*
-		DeleteNetworkPolicy Delete network policy
+		DeleteNetworkPolicy Method for DeleteNetworkPolicy
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param id
@@ -59,7 +59,7 @@ type AdminAPI interface {
 	DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyRequest) (*http.Response, error)
 
 	/*
-		GetPlatformAuditLog Query platform-wide audit log
+		GetPlatformAuditLog Method for GetPlatformAuditLog
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiGetPlatformAuditLogRequest
@@ -71,14 +71,10 @@ type AdminAPI interface {
 	GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error)
 
 	/*
-			GetPlatformConfig Get public platform configuration
+		GetPlatformConfig Method for GetPlatformConfig
 
-			Returns public platform configuration including branding.
-		No authentication required — used by the login page.
-
-
-			@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-			@return ApiGetPlatformConfigRequest
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiGetPlatformConfigRequest
 	*/
 	GetPlatformConfig(ctx context.Context) ApiGetPlatformConfigRequest
 
@@ -87,7 +83,7 @@ type AdminAPI interface {
 	GetPlatformConfigExecute(r ApiGetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
 
 	/*
-		GetResourceTypeDefinition Get resource type definition
+		GetResourceTypeDefinition Method for GetResourceTypeDefinition
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param type_
@@ -100,7 +96,7 @@ type AdminAPI interface {
 	GetResourceTypeDefinitionExecute(r ApiGetResourceTypeDefinitionRequest) (*ResourceTypeDefinition, *http.Response, error)
 
 	/*
-		ListClusters List registered clusters
+		ListClusters Method for ListClusters
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiListClustersRequest
@@ -112,7 +108,7 @@ type AdminAPI interface {
 	ListClustersExecute(r ApiListClustersRequest) ([]Cluster, *http.Response, error)
 
 	/*
-		ListNetworkPolicies List network policies
+		ListNetworkPolicies Method for ListNetworkPolicies
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiListNetworkPoliciesRequest
@@ -124,7 +120,7 @@ type AdminAPI interface {
 	ListNetworkPoliciesExecute(r ApiListNetworkPoliciesRequest) ([]NetworkPolicy, *http.Response, error)
 
 	/*
-		ListResourceTypeDefinitions List resource type definitions
+		ListResourceTypeDefinitions Method for ListResourceTypeDefinitions
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiListResourceTypeDefinitionsRequest
@@ -136,7 +132,7 @@ type AdminAPI interface {
 	ListResourceTypeDefinitionsExecute(r ApiListResourceTypeDefinitionsRequest) ([]ResourceTypeDefinition, *http.Response, error)
 
 	/*
-		ListUsers List users
+		ListUsers Method for ListUsers
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiListUsersRequest
@@ -148,7 +144,7 @@ type AdminAPI interface {
 	ListUsersExecute(r ApiListUsersRequest) (*PagedUserResponse, *http.Response, error)
 
 	/*
-		RegisterCluster Register a new cluster
+		RegisterCluster Method for RegisterCluster
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiRegisterClusterRequest
@@ -160,7 +156,7 @@ type AdminAPI interface {
 	RegisterClusterExecute(r ApiRegisterClusterRequest) (*Cluster, *http.Response, error)
 
 	/*
-		SetPlatformConfig Set platform configuration
+		SetPlatformConfig Method for SetPlatformConfig
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiSetPlatformConfigRequest
@@ -172,7 +168,7 @@ type AdminAPI interface {
 	SetPlatformConfigExecute(r ApiSetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
 
 	/*
-		UpdateCluster Update cluster
+		UpdateCluster Method for UpdateCluster
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param name
@@ -185,7 +181,7 @@ type AdminAPI interface {
 	UpdateClusterExecute(r ApiUpdateClusterRequest) (*Cluster, *http.Response, error)
 
 	/*
-		UpdateNetworkPolicy Update network policy
+		UpdateNetworkPolicy Method for UpdateNetworkPolicy
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param id
@@ -198,7 +194,7 @@ type AdminAPI interface {
 	UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
 
 	/*
-		UpdateResourceTypeAdminConfig Update resource type admin configuration
+		UpdateResourceTypeAdminConfig Method for UpdateResourceTypeAdminConfig
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@param type_
@@ -230,7 +226,7 @@ func (r ApiCreateNetworkPolicyRequest) Execute() (*NetworkPolicy, *http.Response
 }
 
 /*
-CreateNetworkPolicy Create network policy
+CreateNetworkPolicy Method for CreateNetworkPolicy
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiCreateNetworkPolicyRequest
@@ -308,38 +304,6 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -366,7 +330,7 @@ func (r ApiDeleteClusterRequest) Execute() (*http.Response, error) {
 }
 
 /*
-DeleteCluster Delete cluster
+DeleteCluster Method for DeleteCluster
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param name
@@ -410,7 +374,7 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 	}
 
 	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
+	localVarHTTPHeaderAccepts := []string{}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
@@ -439,38 +403,6 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarHTTPResponse, newErr
 	}
 
@@ -488,7 +420,7 @@ func (r ApiDeleteNetworkPolicyRequest) Execute() (*http.Response, error) {
 }
 
 /*
-DeleteNetworkPolicy Delete network policy
+DeleteNetworkPolicy Method for DeleteNetworkPolicy
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id
@@ -532,7 +464,7 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 	}
 
 	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
+	localVarHTTPHeaderAccepts := []string{}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
@@ -560,38 +492,6 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 		newErr := &GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -657,7 +557,7 @@ func (r ApiGetPlatformAuditLogRequest) Execute() (*PagedAuditLogResponse, *http.
 }
 
 /*
-GetPlatformAuditLog Query platform-wide audit log
+GetPlatformAuditLog Method for GetPlatformAuditLog
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiGetPlatformAuditLogRequest
@@ -693,17 +593,9 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 
 	if r.page != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "page", r.page, "form", "")
-	} else {
-		var defaultValue int32 = 0
-		parameterAddToHeaderOrQuery(localVarQueryParams, "page", defaultValue, "form", "")
-		r.page = &defaultValue
 	}
 	if r.size != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "size", r.size, "form", "")
-	} else {
-		var defaultValue int32 = 20
-		parameterAddToHeaderOrQuery(localVarQueryParams, "size", defaultValue, "form", "")
-		r.size = &defaultValue
 	}
 	if r.action != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "action", r.action, "form", "")
@@ -762,27 +654,6 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -808,10 +679,7 @@ func (r ApiGetPlatformConfigRequest) Execute() (*PlatformConfig, *http.Response,
 }
 
 /*
-GetPlatformConfig Get public platform configuration
-
-Returns public platform configuration including branding.
-No authentication required — used by the login page.
+GetPlatformConfig Method for GetPlatformConfig
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiGetPlatformConfigRequest
@@ -910,7 +778,7 @@ func (r ApiGetResourceTypeDefinitionRequest) Execute() (*ResourceTypeDefinition,
 }
 
 /*
-GetResourceTypeDefinition Get resource type definition
+GetResourceTypeDefinition Method for GetResourceTypeDefinition
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param type_
@@ -986,38 +854,6 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1043,7 +879,7 @@ func (r ApiListClustersRequest) Execute() ([]Cluster, *http.Response, error) {
 }
 
 /*
-ListClusters List registered clusters
+ListClusters Method for ListClusters
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListClustersRequest
@@ -1116,27 +952,6 @@ func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Clust
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1162,7 +977,7 @@ func (r ApiListNetworkPoliciesRequest) Execute() ([]NetworkPolicy, *http.Respons
 }
 
 /*
-ListNetworkPolicies List network policies
+ListNetworkPolicies Method for ListNetworkPolicies
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListNetworkPoliciesRequest
@@ -1235,27 +1050,6 @@ func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesReq
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1281,7 +1075,7 @@ func (r ApiListResourceTypeDefinitionsRequest) Execute() ([]ResourceTypeDefiniti
 }
 
 /*
-ListResourceTypeDefinitions List resource type definitions
+ListResourceTypeDefinitions Method for ListResourceTypeDefinitions
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListResourceTypeDefinitionsRequest
@@ -1354,27 +1148,6 @@ func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTy
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1418,7 +1191,7 @@ func (r ApiListUsersRequest) Execute() (*PagedUserResponse, *http.Response, erro
 }
 
 /*
-ListUsers List users
+ListUsers Method for ListUsers
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListUsersRequest
@@ -1454,17 +1227,9 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 
 	if r.page != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "page", r.page, "form", "")
-	} else {
-		var defaultValue int32 = 0
-		parameterAddToHeaderOrQuery(localVarQueryParams, "page", defaultValue, "form", "")
-		r.page = &defaultValue
 	}
 	if r.size != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "size", r.size, "form", "")
-	} else {
-		var defaultValue int32 = 20
-		parameterAddToHeaderOrQuery(localVarQueryParams, "size", defaultValue, "form", "")
-		r.size = &defaultValue
 	}
 	if r.email != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "email", r.email, "form", "")
@@ -1508,27 +1273,6 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1560,7 +1304,7 @@ func (r ApiRegisterClusterRequest) Execute() (*Cluster, *http.Response, error) {
 }
 
 /*
-RegisterCluster Register a new cluster
+RegisterCluster Method for RegisterCluster
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiRegisterClusterRequest
@@ -1638,49 +1382,6 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 409 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1712,7 +1413,7 @@ func (r ApiSetPlatformConfigRequest) Execute() (*PlatformConfig, *http.Response,
 }
 
 /*
-SetPlatformConfig Set platform configuration
+SetPlatformConfig Method for SetPlatformConfig
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiSetPlatformConfigRequest
@@ -1790,38 +1491,6 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1854,7 +1523,7 @@ func (r ApiUpdateClusterRequest) Execute() (*Cluster, *http.Response, error) {
 }
 
 /*
-UpdateCluster Update cluster
+UpdateCluster Method for UpdateCluster
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param name
@@ -1890,9 +1559,6 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.updateClusterRequest == nil {
-		return localVarReturnValue, nil, reportError("updateClusterRequest is required and must be specified")
-	}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -1935,49 +1601,6 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2010,7 +1633,7 @@ func (r ApiUpdateNetworkPolicyRequest) Execute() (*NetworkPolicy, *http.Response
 }
 
 /*
-UpdateNetworkPolicy Update network policy
+UpdateNetworkPolicy Method for UpdateNetworkPolicy
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id
@@ -2046,9 +1669,6 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.updateNetworkPolicyRequest == nil {
-		return localVarReturnValue, nil, reportError("updateNetworkPolicyRequest is required and must be specified")
-	}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -2091,49 +1711,6 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2166,7 +1743,7 @@ func (r ApiUpdateResourceTypeAdminConfigRequest) Execute() (*ResourceTypeDefinit
 }
 
 /*
-UpdateResourceTypeAdminConfig Update resource type admin configuration
+UpdateResourceTypeAdminConfig Method for UpdateResourceTypeAdminConfig
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param type_
@@ -2202,9 +1779,6 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.updateResourceTypeAdminConfigRequest == nil {
-		return localVarReturnValue, nil, reportError("updateResourceTypeAdminConfigRequest is required and must be specified")
-	}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -2246,49 +1820,6 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 		newErr := &GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
-		}
-		if localVarHTTPResponse.StatusCode == 400 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 403 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		if localVarHTTPResponse.StatusCode == 404 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

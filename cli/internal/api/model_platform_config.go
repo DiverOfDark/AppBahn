@@ -19,8 +19,7 @@ var _ MappedNullable = &PlatformConfig{}
 
 // PlatformConfig struct for PlatformConfig
 type PlatformConfig struct {
-	Domain *string `json:"domain,omitempty"`
-	// Kubernetes namespace prefix used for environments
+	Domain          *string                 `json:"domain,omitempty"`
 	NamespacePrefix *string                 `json:"namespacePrefix,omitempty"`
 	Registry        *RegistryConfig         `json:"registry,omitempty"`
 	Branding        *PlatformConfigBranding `json:"branding,omitempty"`

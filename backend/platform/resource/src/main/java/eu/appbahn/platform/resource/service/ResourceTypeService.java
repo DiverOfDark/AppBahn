@@ -1,7 +1,7 @@
 package eu.appbahn.platform.resource.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.platform.api.model.ResourceTypeInfo;
+import eu.appbahn.platform.api.ResourceTypeInfo;
 import eu.appbahn.platform.resource.entity.ResourceTypeAvailabilityEntity;
 import eu.appbahn.platform.resource.repository.ResourceTypeAvailabilityRepository;
 import eu.appbahn.platform.resource.repository.ResourceTypeDefinitionRepository;

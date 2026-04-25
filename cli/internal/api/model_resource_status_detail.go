@@ -33,6 +33,7 @@ type ResourceStatusDetail struct {
 	LastSyncTime           *time.Time           `json:"lastSyncTime,omitempty"`
 	LatestDeploymentId     *string              `json:"latestDeploymentId,omitempty"`
 	LatestDeploymentStatus *string              `json:"latestDeploymentStatus,omitempty"`
+	SyncFailed             *bool                `json:"syncFailed,omitempty"`
 }
 
 // NewResourceStatusDetail instantiates a new ResourceStatusDetail object
@@ -468,6 +469,38 @@ func (o *ResourceStatusDetail) SetLatestDeploymentStatus(v string) {
 	o.LatestDeploymentStatus = &v
 }
 
+// GetSyncFailed returns the SyncFailed field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetSyncFailed() bool {
+	if o == nil || IsNil(o.SyncFailed) {
+		var ret bool
+		return ret
+	}
+	return *o.SyncFailed
+}
+
+// GetSyncFailedOk returns a tuple with the SyncFailed field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetSyncFailedOk() (*bool, bool) {
+	if o == nil || IsNil(o.SyncFailed) {
+		return nil, false
+	}
+	return o.SyncFailed, true
+}
+
+// HasSyncFailed returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasSyncFailed() bool {
+	if o != nil && !IsNil(o.SyncFailed) {
+		return true
+	}
+
+	return false
+}
+
+// SetSyncFailed gets a reference to the given bool and assigns it to the SyncFailed field.
+func (o *ResourceStatusDetail) SetSyncFailed(v bool) {
+	o.SyncFailed = &v
+}
+
 func (o ResourceStatusDetail) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -516,6 +549,9 @@ func (o ResourceStatusDetail) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.LatestDeploymentStatus) {
 		toSerialize["latestDeploymentStatus"] = o.LatestDeploymentStatus
+	}
+	if !IsNil(o.SyncFailed) {
+		toSerialize["syncFailed"] = o.SyncFailed
 	}
 	return toSerialize, nil
 }

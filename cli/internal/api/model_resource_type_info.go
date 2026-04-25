@@ -19,11 +19,10 @@ var _ MappedNullable = &ResourceTypeInfo{}
 
 // ResourceTypeInfo struct for ResourceTypeInfo
 type ResourceTypeInfo struct {
-	Type        *string `json:"type,omitempty"`
-	DisplayName *string `json:"displayName,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Category    *string `json:"category,omitempty"`
-	// JSON Schema describing the resource type configuration
+	Type         *string                `json:"type,omitempty"`
+	DisplayName  *string                `json:"displayName,omitempty"`
+	Description  *string                `json:"description,omitempty"`
+	Category     *string                `json:"category,omitempty"`
 	ConfigSchema map[string]interface{} `json:"configSchema,omitempty"`
 	Available    *bool                  `json:"available,omitempty"`
 }

@@ -21,15 +21,13 @@ var _ MappedNullable = &DockerSource{}
 
 // DockerSource struct for DockerSource
 type DockerSource struct {
-	Type string `json:"type"`
-	// Polling interval, e.g. '5m'. '0' disables polling.
+	Type           string  `json:"type"`
 	PollInterval   *string `json:"pollInterval,omitempty"`
 	WebhookEnabled *bool   `json:"webhookEnabled,omitempty"`
-	Image          string  `json:"image"`
+	Image          *string `json:"image,omitempty"`
 	Tag            *string `json:"tag,omitempty"`
 	RegistryUrl    *string `json:"registryUrl,omitempty"`
-	// ESO path for registry credentials
-	CredentialRef *string `json:"credentialRef,omitempty"`
+	CredentialRef  *string `json:"credentialRef,omitempty"`
 }
 
 type _DockerSource DockerSource
@@ -38,10 +36,9 @@ type _DockerSource DockerSource
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDockerSource(type_ string, image string) *DockerSource {
+func NewDockerSource(type_ string) *DockerSource {
 	this := DockerSource{}
 	this.Type = type_
-	this.Image = image
 	return &this
 }
 
@@ -141,28 +138,36 @@ func (o *DockerSource) SetWebhookEnabled(v bool) {
 	o.WebhookEnabled = &v
 }
 
-// GetImage returns the Image field value
+// GetImage returns the Image field value if set, zero value otherwise.
 func (o *DockerSource) GetImage() string {
-	if o == nil {
+	if o == nil || IsNil(o.Image) {
 		var ret string
 		return ret
 	}
-
-	return o.Image
+	return *o.Image
 }
 
-// GetImageOk returns a tuple with the Image field value
+// GetImageOk returns a tuple with the Image field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *DockerSource) GetImageOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Image) {
 		return nil, false
 	}
-	return &o.Image, true
+	return o.Image, true
 }
 
-// SetImage sets field value
+// HasImage returns a boolean if a field has been set.
+func (o *DockerSource) HasImage() bool {
+	if o != nil && !IsNil(o.Image) {
+		return true
+	}
+
+	return false
+}
+
+// SetImage gets a reference to the given string and assigns it to the Image field.
 func (o *DockerSource) SetImage(v string) {
-	o.Image = v
+	o.Image = &v
 }
 
 // GetTag returns the Tag field value if set, zero value otherwise.
@@ -278,7 +283,9 @@ func (o DockerSource) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.WebhookEnabled) {
 		toSerialize["webhookEnabled"] = o.WebhookEnabled
 	}
-	toSerialize["image"] = o.Image
+	if !IsNil(o.Image) {
+		toSerialize["image"] = o.Image
+	}
 	if !IsNil(o.Tag) {
 		toSerialize["tag"] = o.Tag
 	}
@@ -297,7 +304,6 @@ func (o *DockerSource) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
-		"image",
 	}
 
 	allProperties := make(map[string]interface{})

@@ -1,19 +1,22 @@
 package eu.appbahn.platform.tunnel.events;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.platform.api.tunnel.AdmissionApproved;
+import eu.appbahn.platform.api.tunnel.AdmissionCacheMissReport;
+import eu.appbahn.platform.api.tunnel.AuditLogEvent;
+import eu.appbahn.platform.api.tunnel.FullResourceSyncChunk;
+import eu.appbahn.platform.api.tunnel.OperatorEvent;
+import eu.appbahn.platform.api.tunnel.PushEventsRequest;
+import eu.appbahn.platform.api.tunnel.ResourceDeletedBatch;
+import eu.appbahn.platform.api.tunnel.ResourceSyncBatch;
 import eu.appbahn.platform.resource.service.ResourceSyncService;
 import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.command.FullSyncChunkBufferEntity;
 import eu.appbahn.platform.tunnel.command.FullSyncChunkBufferRepository;
-import eu.appbahn.tunnel.v1.AdmissionCacheMissReport;
-import eu.appbahn.tunnel.v1.AuditLogEvent;
-import eu.appbahn.tunnel.v1.FullResourceSyncChunk;
-import eu.appbahn.tunnel.v1.OperatorEvent;
-import eu.appbahn.tunnel.v1.PushEventsRequest;
-import eu.appbahn.tunnel.v1.ResourceDeletedBatch;
-import eu.appbahn.tunnel.v1.ResourceSyncBatch;
-import eu.appbahn.tunnel.v1.ResourceSyncItem;
-import eu.appbahn.tunnel.wire.FullSyncPayload;
-import eu.appbahn.tunnel.wire.ResourceSyncPayload;
+import eu.appbahn.shared.tunnel.FullSyncPayload;
+import eu.appbahn.shared.tunnel.ResourceSyncPayload;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Dispatches operator-emitted events from {@code PushEvents} to the existing
- * {@link ResourceSyncService} (the upsert/delete/full-sync business logic is unchanged;
- * only the transport moved).
- * <p>{@link FullResourceSyncChunk} events are accumulated in {@link FullSyncChunkBufferEntity}
- * so that chunks landing on different platform replicas still converge into one
- * atomic set-diff commit on the {@code complete=true} chunk.
+ * {@link ResourceSyncService}. Business logic (upsert/delete/full-sync) is unchanged — only
+ * the transport moved. {@link FullResourceSyncChunk} events are buffered so that chunks
+ * landing on different platform replicas still converge into one atomic set-diff commit on
+ * the {@code complete=true} chunk.
  */
 @Service
 public class PushEventsHandler {
@@ -37,56 +39,54 @@ public class PushEventsHandler {
     private static final Logger log = LoggerFactory.getLogger(PushEventsHandler.class);
 
     private final ResourceSyncService resourceSyncService;
-    private final TunnelEventMapper mapper;
+    private final TunnelEventMapper eventMapper;
     private final FullSyncChunkBufferRepository chunkBuffer;
     private final ClusterRepository clusterRepository;
     private final AuditLogWriterService auditLogWriter;
+    private final ObjectMapper jsonMapper;
 
     public PushEventsHandler(
             ResourceSyncService resourceSyncService,
-            TunnelEventMapper mapper,
+            TunnelEventMapper eventMapper,
             FullSyncChunkBufferRepository chunkBuffer,
             ClusterRepository clusterRepository,
-            AuditLogWriterService auditLogWriter) {
+            AuditLogWriterService auditLogWriter,
+            ObjectMapper jsonMapper) {
         this.resourceSyncService = resourceSyncService;
-        this.mapper = mapper;
+        this.eventMapper = eventMapper;
         this.chunkBuffer = chunkBuffer;
         this.clusterRepository = clusterRepository;
         this.auditLogWriter = auditLogWriter;
+        this.jsonMapper = jsonMapper;
     }
 
     @Transactional
     public int handle(PushEventsRequest request) {
         // One tx per PushEvents call: chunk-buffer deletes on full-sync commit and the
-        // admission-miss cluster stamp both need a surrounding transaction (derived delete
-        // queries aren't auto-wrapped, and cross-event atomicity matches 6056fa3's intent
-        // that a failed batch is the operator's problem to retry, not silently half-applied).
-        for (OperatorEvent event : request.getEventsList()) {
+        // admission-miss cluster stamp both need a surrounding transaction, and cross-event
+        // atomicity matches the prior intent — a failed batch is the operator's problem to
+        // retry, not silently half-applied.
+        for (OperatorEvent event : request.getEvents()) {
             dispatch(request.getClusterName(), event);
         }
-        return request.getEventsCount();
+        return request.getEvents().size();
     }
 
     private void dispatch(String clusterName, OperatorEvent event) {
-        switch (event.getEventCase()) {
-            case RESOURCE_SYNC_BATCH -> handleSyncBatch(clusterName, event.getResourceSyncBatch());
-            case RESOURCE_DELETED_BATCH -> handleDeletedBatch(event.getResourceDeletedBatch());
-            case FULL_RESOURCE_SYNC_CHUNK -> handleFullSyncChunk(clusterName, event.getFullResourceSyncChunk());
-            case ADMISSION_APPROVED -> {
+        switch (event) {
+            case ResourceSyncBatch b -> handleSyncBatch(clusterName, b);
+            case ResourceDeletedBatch b -> handleDeletedBatch(b);
+            case FullResourceSyncChunk c -> handleFullSyncChunk(clusterName, c);
+            case AdmissionApproved a -> {
                 // Treat an AdmissionApproved exactly like a sync — it's a fast-path pre-seed
                 // that carries the same payload shape.
-                ResourceSyncItem item = event.getAdmissionApproved().getItem();
-                resourceSyncService.syncResource(mapper.toPayload(item, clusterName));
+                if (a.getItem() != null) {
+                    resourceSyncService.syncResource(eventMapper.toPayload(a.getItem(), clusterName));
+                }
             }
-            case ADMISSION_CACHE_MISS_REPORT ->
-                handleAdmissionCacheMiss(clusterName, event.getAdmissionCacheMissReport());
-            case AUDIT_LOG -> handleAuditLog(event.getAuditLog());
-            case RESOURCE_TYPE_SYNC_CHUNK, DEPLOYMENT_STATUS_UPDATE, EVENT_NOT_SET -> {
-                // Handlers land in a follow-up — resource-type sync and deployment-status
-                // updates feed features (CRD discovery, deploy pipelines) that this sprint
-                // doesn't own yet. Logged at debug so operator-side emission can be verified.
-                log.debug("Unhandled OperatorEvent case: {}", event.getEventCase());
-            }
+            case AdmissionCacheMissReport r -> handleAdmissionCacheMiss(clusterName, r);
+            case AuditLogEvent e -> auditLogWriter.writeFromOperator(e);
+            default -> log.debug("Unhandled OperatorEvent type: {}", event.getType());
         }
     }
 
@@ -109,20 +109,14 @@ public class PushEventsHandler {
         });
     }
 
-    private void handleAuditLog(AuditLogEvent event) {
-        auditLogWriter.writeFromOperator(event);
-    }
-
     private void handleSyncBatch(String clusterName, ResourceSyncBatch batch) {
-        for (ResourceSyncItem item : batch.getItemsList()) {
-            resourceSyncService.syncResource(mapper.toPayload(item, clusterName));
-        }
+        if (batch.getItems() == null) return;
+        batch.getItems().forEach(item -> resourceSyncService.syncResource(eventMapper.toPayload(item, clusterName)));
     }
 
     private void handleDeletedBatch(ResourceDeletedBatch batch) {
-        for (String slug : batch.getResourceSlugsList()) {
-            resourceSyncService.deleteResourceSync(slug);
-        }
+        if (batch.getResourceSlugs() == null) return;
+        batch.getResourceSlugs().forEach(resourceSyncService::deleteResourceSync);
     }
 
     private void handleFullSyncChunk(String clusterName, FullResourceSyncChunk chunk) {
@@ -130,18 +124,24 @@ public class PushEventsHandler {
         try {
             sessionId = UUID.fromString(chunk.getSyncSessionId());
         } catch (IllegalArgumentException e) {
-            log.warn("Full-sync chunk dropped: malformed sync_session_id {}", chunk.getSyncSessionId());
+            log.warn("Full-sync chunk dropped: malformed syncSessionId {}", chunk.getSyncSessionId());
             return;
         }
-        byte[] payload = chunk.toByteArray();
+        byte[] payload;
+        try {
+            payload = jsonMapper.writeValueAsBytes(chunk);
+        } catch (JsonProcessingException e) {
+            log.warn("Full-sync chunk {} could not be re-serialised: {}", chunk.getChunkIndex(), e.getMessage());
+            return;
+        }
 
         var entity = new FullSyncChunkBufferEntity();
-        entity.setId(new FullSyncChunkBufferEntity.Pk(clusterName, sessionId, (int) chunk.getChunkIndex()));
+        entity.setId(new FullSyncChunkBufferEntity.Pk(clusterName, sessionId, chunk.getChunkIndex()));
         entity.setPayload(payload);
         entity.setReceivedAt(Instant.now());
         chunkBuffer.save(entity);
 
-        if (!chunk.getComplete()) {
+        if (!chunk.isComplete()) {
             return;
         }
         commitFullSync(clusterName, sessionId);
@@ -152,9 +152,10 @@ public class PushEventsHandler {
         List<ResourceSyncPayload> resources = new ArrayList<>();
         for (var entity : allChunks) {
             try {
-                FullResourceSyncChunk chunk = FullResourceSyncChunk.parseFrom(entity.getPayload());
-                for (ResourceSyncItem item : chunk.getItemsList()) {
-                    resources.add(mapper.toPayload(item, clusterName));
+                FullResourceSyncChunk chunk = jsonMapper.readValue(
+                        new String(entity.getPayload(), StandardCharsets.UTF_8), FullResourceSyncChunk.class);
+                if (chunk.getItems() != null) {
+                    chunk.getItems().forEach(item -> resources.add(eventMapper.toPayload(item, clusterName)));
                 }
             } catch (Exception e) {
                 log.warn(

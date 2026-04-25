@@ -1,31 +1,32 @@
 package eu.appbahn.operator.tunnel;
 
-import com.google.protobuf.Empty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.operator.tunnel.client.model.AckCommandRequest;
+import eu.appbahn.operator.tunnel.client.model.AdminConfigPush;
+import eu.appbahn.operator.tunnel.client.model.ApplyNamespace;
+import eu.appbahn.operator.tunnel.client.model.ApplyResource;
+import eu.appbahn.operator.tunnel.client.model.CommandResponse;
+import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
+import eu.appbahn.operator.tunnel.client.model.DeleteNamespace;
+import eu.appbahn.operator.tunnel.client.model.DeleteResource;
+import eu.appbahn.operator.tunnel.client.model.HelloAck;
+import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
+import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
-import eu.appbahn.tunnel.v1.AckCommandRequest;
-import eu.appbahn.tunnel.v1.ApplyNamespace;
-import eu.appbahn.tunnel.v1.ApplyResource;
-import eu.appbahn.tunnel.v1.CommandResponse;
-import eu.appbahn.tunnel.v1.DeleteNamespace;
-import eu.appbahn.tunnel.v1.DeleteResource;
-import eu.appbahn.tunnel.v1.OperatorEvent;
-import eu.appbahn.tunnel.v1.PlatformMessage;
-import eu.appbahn.tunnel.v1.ResourceDeletedBatch;
-import eu.appbahn.tunnel.wire.ResourceWireMapper;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Dispatches {@link PlatformMessage}s received from {@code SubscribeCommands} into
- * concrete actions on this cluster. Each command's outcome is reported back via a
- * unary {@code AckCommand} RPC carrying the original {@code correlation_id}.
+ * Dispatches SSE frames received from the tunnel's commands stream into concrete actions
+ * on this cluster. Each command's outcome is reported back via {@link TunnelApiClient#ackCommand}.
  */
 @Service
 public class PlatformCommandHandler {
@@ -33,58 +34,54 @@ public class PlatformCommandHandler {
     private static final Logger log = LoggerFactory.getLogger(PlatformCommandHandler.class);
 
     private final KubernetesClient kubernetesClient;
-    private final OperatorTunnelClient tunnelClient;
+    private final TunnelApiClient tunnelApiClient;
     private final AdmissionSnapshotCache admissionCache;
     private final AdminConfigCache adminConfigCache;
     private final OperatorEventPublisher eventPublisher;
+    private final ObjectMapper mapper;
 
     public PlatformCommandHandler(
             KubernetesClient kubernetesClient,
-            OperatorTunnelClient tunnelClient,
+            TunnelApiClient tunnelApiClient,
             AdmissionSnapshotCache admissionCache,
             AdminConfigCache adminConfigCache,
-            OperatorEventPublisher eventPublisher) {
+            OperatorEventPublisher eventPublisher,
+            ObjectMapper mapper) {
         this.kubernetesClient = kubernetesClient;
-        this.tunnelClient = tunnelClient;
+        this.tunnelApiClient = tunnelApiClient;
         this.admissionCache = admissionCache;
         this.adminConfigCache = adminConfigCache;
         this.eventPublisher = eventPublisher;
+        this.mapper = mapper;
     }
 
-    public void handle(PlatformMessage message) {
+    /** Called from the SSE reader — one frame at a time. {@code event} is the wire SSE event name. */
+    public void handle(String event, String data) {
         try {
-            switch (message.getMessageCase()) {
-                case APPLY_RESOURCE -> handleApply(message.getApplyResource());
-                case DELETE_RESOURCE -> handleDelete(message.getDeleteResource());
-                case APPLY_NAMESPACE -> handleApplyNamespace(message.getApplyNamespace());
-                case DELETE_NAMESPACE -> handleDeleteNamespace(message.getDeleteNamespace());
-                case HELLO_ACK -> {
-                    // The initial snapshots are piggy-backed on HelloAck so the admission webhook
-                    // and admin-config consumers are never in a "no data" state after a successful
-                    // subscription.
-                    var hello = message.getHelloAck();
-                    if (hello.hasQuotaRbac()) {
-                        admissionCache.ingest(
-                                hello.getQuotaRbac().getRevision(),
-                                hello.getQuotaRbac().getSnapshot());
-                    }
-                    if (hello.hasAdminConfig()) {
-                        adminConfigCache.ingest(
-                                hello.getAdminConfig().getRevision(),
-                                hello.getAdminConfig().getSnapshot());
+            switch (event) {
+                case TunnelEventNames.APPLY_RESOURCE -> handleApply(mapper.readValue(data, ApplyResource.class));
+                case TunnelEventNames.DELETE_RESOURCE -> handleDelete(mapper.readValue(data, DeleteResource.class));
+                case TunnelEventNames.APPLY_NAMESPACE ->
+                    handleApplyNamespace(mapper.readValue(data, ApplyNamespace.class));
+                case TunnelEventNames.DELETE_NAMESPACE ->
+                    handleDeleteNamespace(mapper.readValue(data, DeleteNamespace.class));
+                case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
+                case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
+                    var push = mapper.readValue(data, QuotaRbacCachePush.class);
+                    if (push.getSnapshot() != null) {
+                        admissionCache.ingest(push.getRevision(), push.getSnapshot());
                     }
                 }
-                case QUOTA_RBAC_CACHE_PUSH -> {
-                    var push = message.getQuotaRbacCachePush();
-                    admissionCache.ingest(push.getRevision(), push.getSnapshot());
+                case TunnelEventNames.ADMIN_CONFIG_PUSH -> {
+                    var push = mapper.readValue(data, AdminConfigPush.class);
+                    if (push.getSnapshot() != null) {
+                        adminConfigCache.ingest(push.getRevision(), push.getSnapshot());
+                    }
                 }
-                case ADMIN_CONFIG_PUSH -> {
-                    var push = message.getAdminConfigPush();
-                    adminConfigCache.ingest(push.getRevision(), push.getSnapshot());
+                case TunnelEventNames.KEEPALIVE -> {
+                    // No-op; presence of the frame is the only information we need.
                 }
-                case MESSAGE_NOT_SET -> {
-                    log.debug("Unhandled PlatformMessage case: {}", message.getMessageCase());
-                }
+                default -> log.debug("Unhandled tunnel event: {}", event);
             }
         } catch (Exception e) {
             // Catch-all: a single bad command must not tear the stream down.
@@ -92,25 +89,38 @@ public class PlatformCommandHandler {
         }
     }
 
-    private void handleApply(ApplyResource apply) throws IOException {
+    private void handleHelloAck(HelloAck hello) {
+        if (hello.getQuotaRbac() != null && hello.getQuotaRbac().getSnapshot() != null) {
+            admissionCache.ingest(
+                    hello.getQuotaRbac().getRevision(), hello.getQuotaRbac().getSnapshot());
+        }
+        if (hello.getAdminConfig() != null && hello.getAdminConfig().getSnapshot() != null) {
+            adminConfigCache.ingest(
+                    hello.getAdminConfig().getRevision(), hello.getAdminConfig().getSnapshot());
+        }
+    }
+
+    private void handleApply(ApplyResource apply) {
         String correlationId = apply.getCorrelationId();
-        String slug = apply.getResource().getSlug();
+        ResourceCrd crd = buildCrd(apply);
+        String slug = crd.getMetadata() != null && crd.getMetadata().getName() != null
+                ? crd.getMetadata().getName()
+                : "";
         try {
-            ResourceCrd crd = buildCrd(apply);
             kubernetesClient
                     .resources(ResourceCrd.class)
                     .inNamespace(apply.getNamespace())
                     .resource(crd)
                     .serverSideApply();
             log.info("Applied Resource CR {}/{}", apply.getNamespace(), slug);
-            ack(correlationId, CommandResponse.Status.STATUS_OK, "");
+            ack(correlationId, StatusEnum.OK, "");
         } catch (Exception e) {
             log.warn("ApplyResource {} failed: {}", slug, e.getMessage());
-            ack(correlationId, CommandResponse.Status.STATUS_INTERNAL_ERROR, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    private void handleDelete(DeleteResource del) throws IOException {
+    private void handleDelete(DeleteResource del) {
         String correlationId = del.getCorrelationId();
         try {
             kubernetesClient
@@ -119,33 +129,32 @@ public class PlatformCommandHandler {
                     .withName(del.getResourceSlug())
                     .delete();
             log.info("Deleted Resource CR {}/{}", del.getNamespace(), del.getResourceSlug());
-            // Notify the platform directly. JOSDK's cleanup() also emits the same event when the
-            // finalizer is honoured, but if the CR is hard-deleted before JOSDK can add its
-            // finalizer (apply-then-delete race), cleanup() never fires — and the cache row
-            // would only disappear at the next successful full-sync. The platform's
+            // Notify the platform directly. JOSDK's cleanup() also emits the same event when
+            // the finalizer is honoured, but if the CR is hard-deleted before JOSDK can add
+            // its finalizer (apply-then-delete race), cleanup() never fires — and the cache
+            // row would only disappear at the next successful full-sync. The platform's
             // deleteResourceSync is idempotent, so the double-emit is safe.
             try {
-                eventPublisher.emit(OperatorEvent.newBuilder()
-                        .setResourceDeletedBatch(
-                                ResourceDeletedBatch.newBuilder().addResourceSlugs(del.getResourceSlug()))
-                        .build());
+                var event = new ResourceDeletedBatch();
+                event.getResourceSlugs().add(del.getResourceSlug());
+                eventPublisher.emit(event);
             } catch (Exception e) {
                 log.warn("Failed to emit immediate deletion event for {}: {}", del.getResourceSlug(), e.getMessage());
             }
-            ack(correlationId, CommandResponse.Status.STATUS_OK, "");
+            ack(correlationId, StatusEnum.OK, "");
         } catch (Exception e) {
             log.warn("DeleteResource {} failed: {}", del.getResourceSlug(), e.getMessage());
-            ack(correlationId, CommandResponse.Status.STATUS_INTERNAL_ERROR, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    private void handleApplyNamespace(ApplyNamespace cmd) throws IOException {
+    private void handleApplyNamespace(ApplyNamespace cmd) {
         String correlationId = cmd.getCorrelationId();
         try {
             var ns = new NamespaceBuilder()
                     .withNewMetadata()
                     .withName(cmd.getNamespace())
-                    .withLabels(java.util.Map.of(
+                    .withLabels(Map.of(
                             Labels.MANAGED_BY_KEY,
                             Labels.MANAGED_BY_VALUE,
                             Labels.ENVIRONMENT_SLUG_KEY,
@@ -155,46 +164,68 @@ public class PlatformCommandHandler {
             // Server-side apply is idempotent; re-sending the same command is a no-op.
             kubernetesClient.namespaces().resource(ns).serverSideApply();
             log.info("Applied namespace {} for env {}", cmd.getNamespace(), cmd.getEnvironmentSlug());
-            ack(correlationId, CommandResponse.Status.STATUS_OK, "");
+            ack(correlationId, StatusEnum.OK, "");
         } catch (Exception e) {
             log.warn("ApplyNamespace {} failed: {}", cmd.getNamespace(), e.getMessage());
-            ack(correlationId, CommandResponse.Status.STATUS_INTERNAL_ERROR, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 
-    private void handleDeleteNamespace(DeleteNamespace cmd) throws IOException {
+    private void handleDeleteNamespace(DeleteNamespace cmd) {
         String correlationId = cmd.getCorrelationId();
         try {
             kubernetesClient.namespaces().withName(cmd.getNamespace()).delete();
             log.info("Deleted namespace {}", cmd.getNamespace());
-            ack(correlationId, CommandResponse.Status.STATUS_OK, "");
+            ack(correlationId, StatusEnum.OK, "");
         } catch (KubernetesClientException e) {
             if (e.getCode() == HttpURLConnection.HTTP_NOT_FOUND) {
                 log.info("Namespace {} already gone — treating delete as success", cmd.getNamespace());
-                ack(correlationId, CommandResponse.Status.STATUS_OK, "");
+                ack(correlationId, StatusEnum.OK, "");
                 return;
             }
             log.warn("DeleteNamespace {} failed: {}", cmd.getNamespace(), e.getMessage());
-            ack(correlationId, CommandResponse.Status.STATUS_INTERNAL_ERROR, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         } catch (Exception e) {
             log.warn("DeleteNamespace {} failed: {}", cmd.getNamespace(), e.getMessage());
-            ack(correlationId, CommandResponse.Status.STATUS_INTERNAL_ERROR, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
 
+    /**
+     * Stamp the env-slug label onto the metadata if the platform didn't supply it — we resolve
+     * it from the admission-snapshot cache instead. Keeps downstream code (admission webhook,
+     * reconciler) from having to reconstruct the env from the namespace.
+     */
     private ResourceCrd buildCrd(ApplyResource apply) {
-        // If the platform didn't supply an env slug on the wire, fall back to whatever the
-        // admission-snapshot cache has for this namespace.
-        String fallbackEnvSlug =
-                admissionCache.environmentSlugForNamespace(apply.getNamespace()).orElse("");
-        return ResourceWireMapper.toCrd(apply, fallbackEnvSlug);
+        ResourceCrd crd = apply.getResource();
+        if (crd == null) {
+            throw new IllegalStateException(
+                    "ApplyResource has no resource payload for correlation_id " + apply.getCorrelationId());
+        }
+        if (crd.getMetadata() != null
+                && (crd.getMetadata().getLabels() == null
+                        || !crd.getMetadata().getLabels().containsKey(Labels.ENVIRONMENT_SLUG_KEY))) {
+            String fallbackEnvSlug = admissionCache
+                    .environmentSlugForNamespace(apply.getNamespace())
+                    .orElse("");
+            if (!fallbackEnvSlug.isBlank()) {
+                Map<String, String> labels = crd.getMetadata().getLabels();
+                if (labels == null) {
+                    labels = new HashMap<>();
+                    crd.getMetadata().setLabels(labels);
+                }
+                labels.putIfAbsent(Labels.ENVIRONMENT_SLUG_KEY, fallbackEnvSlug);
+            }
+        }
+        return crd;
     }
 
-    private void ack(String correlationId, CommandResponse.Status status, String message) throws IOException {
-        var req = AckCommandRequest.newBuilder()
-                .setCorrelationId(correlationId)
-                .setResponse(CommandResponse.newBuilder().setStatus(status).setMessage(message != null ? message : ""))
-                .build();
-        tunnelClient.unary("AckCommand", req, Empty.newBuilder());
+    private void ack(String correlationId, StatusEnum status, String message) {
+        var req = new AckCommandRequest();
+        var response = new CommandResponse();
+        response.setStatus(status);
+        response.setMessage(message != null ? message : "");
+        req.setResponse(response);
+        tunnelApiClient.ackCommand(correlationId, req);
     }
 }

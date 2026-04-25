@@ -71,108 +71,108 @@ All URIs are relative to */api/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AdminAPI* | [**CreateNetworkPolicy**](docs/AdminAPI.md#createnetworkpolicy) | **Post** /admin/network-policies | Create network policy
-*AdminAPI* | [**DeleteCluster**](docs/AdminAPI.md#deletecluster) | **Delete** /admin/clusters/{name} | Delete cluster
-*AdminAPI* | [**DeleteNetworkPolicy**](docs/AdminAPI.md#deletenetworkpolicy) | **Delete** /admin/network-policies/{id} | Delete network policy
-*AdminAPI* | [**GetPlatformAuditLog**](docs/AdminAPI.md#getplatformauditlog) | **Get** /admin/audit-log | Query platform-wide audit log
-*AdminAPI* | [**GetPlatformConfig**](docs/AdminAPI.md#getplatformconfig) | **Get** /admin/config | Get public platform configuration
-*AdminAPI* | [**GetResourceTypeDefinition**](docs/AdminAPI.md#getresourcetypedefinition) | **Get** /admin/resource-types/{type} | Get resource type definition
-*AdminAPI* | [**ListClusters**](docs/AdminAPI.md#listclusters) | **Get** /admin/clusters | List registered clusters
-*AdminAPI* | [**ListNetworkPolicies**](docs/AdminAPI.md#listnetworkpolicies) | **Get** /admin/network-policies | List network policies
-*AdminAPI* | [**ListResourceTypeDefinitions**](docs/AdminAPI.md#listresourcetypedefinitions) | **Get** /admin/resource-types | List resource type definitions
-*AdminAPI* | [**ListUsers**](docs/AdminAPI.md#listusers) | **Get** /admin/users | List users
-*AdminAPI* | [**RegisterCluster**](docs/AdminAPI.md#registercluster) | **Post** /admin/clusters | Register a new cluster
-*AdminAPI* | [**SetPlatformConfig**](docs/AdminAPI.md#setplatformconfig) | **Put** /admin/config | Set platform configuration
-*AdminAPI* | [**UpdateCluster**](docs/AdminAPI.md#updatecluster) | **Patch** /admin/clusters/{name} | Update cluster
-*AdminAPI* | [**UpdateNetworkPolicy**](docs/AdminAPI.md#updatenetworkpolicy) | **Patch** /admin/network-policies/{id} | Update network policy
-*AdminAPI* | [**UpdateResourceTypeAdminConfig**](docs/AdminAPI.md#updateresourcetypeadminconfig) | **Patch** /admin/resource-types/{type}/admin | Update resource type admin configuration
-*AuthAPI* | [**AuthCallback**](docs/AuthAPI.md#authcallback) | **Get** /auth/callback | OIDC callback
-*AuthAPI* | [**AuthLogin**](docs/AuthAPI.md#authlogin) | **Get** /auth/login | Initiate OIDC login
-*EnvironmentsAPI* | [**CreateEnvironment**](docs/EnvironmentsAPI.md#createenvironment) | **Post** /environments | Create environment
-*EnvironmentsAPI* | [**CreateEnvironmentToken**](docs/EnvironmentsAPI.md#createenvironmenttoken) | **Post** /environments/{slug}/tokens | Create environment token
-*EnvironmentsAPI* | [**DeleteEnvironment**](docs/EnvironmentsAPI.md#deleteenvironment) | **Delete** /environments/{slug} | Delete environment
-*EnvironmentsAPI* | [**DeleteEnvironmentMemberRole**](docs/EnvironmentsAPI.md#deleteenvironmentmemberrole) | **Delete** /environments/{slug}/members/{userId}/role | Remove environment-level role override
-*EnvironmentsAPI* | [**DeleteEnvironmentToken**](docs/EnvironmentsAPI.md#deleteenvironmenttoken) | **Delete** /environments/{slug}/tokens/{tokenId} | Delete environment token
-*EnvironmentsAPI* | [**GetEnvironment**](docs/EnvironmentsAPI.md#getenvironment) | **Get** /environments/{slug} | Get environment details
-*EnvironmentsAPI* | [**GetEnvironmentQuota**](docs/EnvironmentsAPI.md#getenvironmentquota) | **Get** /environments/{slug}/quota | Get environment quota
-*EnvironmentsAPI* | [**ListEnvironmentTokens**](docs/EnvironmentsAPI.md#listenvironmenttokens) | **Get** /environments/{slug}/tokens | List environment tokens
-*EnvironmentsAPI* | [**ListEnvironments**](docs/EnvironmentsAPI.md#listenvironments) | **Get** /environments | List environments
-*EnvironmentsAPI* | [**SetApprovalGates**](docs/EnvironmentsAPI.md#setapprovalgates) | **Put** /environments/{slug}/approval-gates | Set deployment approval gates
-*EnvironmentsAPI* | [**SetEnvironmentMemberRole**](docs/EnvironmentsAPI.md#setenvironmentmemberrole) | **Put** /environments/{slug}/members/{userId}/role | Set environment-level role override
-*EnvironmentsAPI* | [**SetEnvironmentQuota**](docs/EnvironmentsAPI.md#setenvironmentquota) | **Patch** /environments/{slug}/quota | Set environment quota
-*EnvironmentsAPI* | [**SetEnvironmentRegistry**](docs/EnvironmentsAPI.md#setenvironmentregistry) | **Put** /environments/{slug}/registry | Set environment registry configuration
-*EnvironmentsAPI* | [**SetTargetCluster**](docs/EnvironmentsAPI.md#settargetcluster) | **Put** /environments/{slug}/target-cluster | Set target cluster for environment
-*EnvironmentsAPI* | [**UpdateEnvironment**](docs/EnvironmentsAPI.md#updateenvironment) | **Patch** /environments/{slug} | Update environment
-*GitAPI* | [**GetBuildDetectionStatus**](docs/GitAPI.md#getbuilddetectionstatus) | **Get** /git/detect-build/{jobId} | Get build detection job status
-*GitAPI* | [**ListGitRepos**](docs/GitAPI.md#listgitrepos) | **Post** /git/repos | List git repositories
-*GitAPI* | [**StartBuildDetection**](docs/GitAPI.md#startbuilddetection) | **Post** /git/detect-build | Start async build config detection
-*GitAPI* | [**ValidateGitRepo**](docs/GitAPI.md#validategitrepo) | **Post** /git/validate | Validate git repository access
-*ProjectsAPI* | [**CreateProject**](docs/ProjectsAPI.md#createproject) | **Post** /projects | Create project
-*ProjectsAPI* | [**DeleteProject**](docs/ProjectsAPI.md#deleteproject) | **Delete** /projects/{slug} | Delete project
-*ProjectsAPI* | [**DeleteProjectMemberRole**](docs/ProjectsAPI.md#deleteprojectmemberrole) | **Delete** /projects/{slug}/members/{userId}/role | Remove project-level role override
-*ProjectsAPI* | [**GetProject**](docs/ProjectsAPI.md#getproject) | **Get** /projects/{slug} | Get project details
-*ProjectsAPI* | [**GetProjectQuota**](docs/ProjectsAPI.md#getprojectquota) | **Get** /projects/{slug}/quota | Get project quota
-*ProjectsAPI* | [**ListProjects**](docs/ProjectsAPI.md#listprojects) | **Get** /projects | List projects
-*ProjectsAPI* | [**SetProjectMemberRole**](docs/ProjectsAPI.md#setprojectmemberrole) | **Put** /projects/{slug}/members/{userId}/role | Set project-level role override
-*ProjectsAPI* | [**SetProjectQuota**](docs/ProjectsAPI.md#setprojectquota) | **Patch** /projects/{slug}/quota | Set project quota
-*ProjectsAPI* | [**SetProjectRegistry**](docs/ProjectsAPI.md#setprojectregistry) | **Put** /projects/{slug}/registry | Set project registry configuration
-*ProjectsAPI* | [**UpdateProject**](docs/ProjectsAPI.md#updateproject) | **Patch** /projects/{slug} | Update project
-*ResourceTypesAPI* | [**ListResourceTypes**](docs/ResourceTypesAPI.md#listresourcetypes) | **Get** /resource-types | List available resource types per cluster
-*ResourcesAPI* | [**AddDomain**](docs/ResourcesAPI.md#adddomain) | **Post** /resources/{slug}/domains | Add custom domain
-*ResourcesAPI* | [**ApproveDeployment**](docs/ResourcesAPI.md#approvedeployment) | **Post** /resources/{slug}/deployments/{deploymentId}/approve | Approve a deployment
-*ResourcesAPI* | [**ClearBuildCache**](docs/ResourcesAPI.md#clearbuildcache) | **Delete** /resources/{slug}/build-cache | Clear build cache
-*ResourcesAPI* | [**CreateExposure**](docs/ResourcesAPI.md#createexposure) | **Post** /resources/{slug}/expose | Create ephemeral port exposure
-*ResourcesAPI* | [**CreateResource**](docs/ResourcesAPI.md#createresource) | **Post** /resources | Create resource
-*ResourcesAPI* | [**DeleteExposure**](docs/ResourcesAPI.md#deleteexposure) | **Delete** /resources/{slug}/exposures/{port} | Remove ephemeral exposure
-*ResourcesAPI* | [**DeleteResource**](docs/ResourcesAPI.md#deleteresource) | **Delete** /resources/{slug} | Delete resource
-*ResourcesAPI* | [**GetDeployment**](docs/ResourcesAPI.md#getdeployment) | **Get** /resources/{slug}/deployments/{deploymentId} | Get deployment details
-*ResourcesAPI* | [**GetDeploymentApprovals**](docs/ResourcesAPI.md#getdeploymentapprovals) | **Get** /resources/{slug}/deployments/{deploymentId}/approvals | Get deployment approval status
-*ResourcesAPI* | [**GetResource**](docs/ResourcesAPI.md#getresource) | **Get** /resources/{slug} | Get resource details
-*ResourcesAPI* | [**GetResourceConnection**](docs/ResourcesAPI.md#getresourceconnection) | **Get** /resources/{slug}/connection | Get resource connection details
-*ResourcesAPI* | [**GetResourceCpuMetrics**](docs/ResourcesAPI.md#getresourcecpumetrics) | **Get** /resources/{slug}/metrics/cpu | Get CPU metrics
-*ResourcesAPI* | [**GetResourceLogs**](docs/ResourcesAPI.md#getresourcelogs) | **Get** /resources/{slug}/logs | Get resource logs
-*ResourcesAPI* | [**GetResourceNetworkInbound**](docs/ResourcesAPI.md#getresourcenetworkinbound) | **Get** /resources/{slug}/metrics/network/inbound | Get network inbound metrics
-*ResourcesAPI* | [**GetResourceNetworkOutbound**](docs/ResourcesAPI.md#getresourcenetworkoutbound) | **Get** /resources/{slug}/metrics/network/outbound | Get network outbound metrics
-*ResourcesAPI* | [**GetResourceRamMetrics**](docs/ResourcesAPI.md#getresourcerammetrics) | **Get** /resources/{slug}/metrics/ram | Get RAM metrics
-*ResourcesAPI* | [**GetResourceWebhook**](docs/ResourcesAPI.md#getresourcewebhook) | **Get** /resources/{slug}/webhook | Get resource webhook configuration
-*ResourcesAPI* | [**ListDeployments**](docs/ResourcesAPI.md#listdeployments) | **Get** /resources/{slug}/deployments | List deployments
-*ResourcesAPI* | [**ListDomains**](docs/ResourcesAPI.md#listdomains) | **Get** /resources/{slug}/domains | List custom domains
-*ResourcesAPI* | [**ListExposures**](docs/ResourcesAPI.md#listexposures) | **Get** /resources/{slug}/exposures | List active ephemeral port exposures
-*ResourcesAPI* | [**ListResources**](docs/ResourcesAPI.md#listresources) | **Get** /resources | List resources
-*ResourcesAPI* | [**RejectDeployment**](docs/ResourcesAPI.md#rejectdeployment) | **Post** /resources/{slug}/deployments/{deploymentId}/reject | Reject a deployment
-*ResourcesAPI* | [**RemoveDomain**](docs/ResourcesAPI.md#removedomain) | **Delete** /resources/{slug}/domains/{domain} | Remove custom domain
-*ResourcesAPI* | [**RestartResource**](docs/ResourcesAPI.md#restartresource) | **Post** /resources/{slug}/restart | Restart resource
-*ResourcesAPI* | [**RollbackResource**](docs/ResourcesAPI.md#rollbackresource) | **Post** /resources/{slug}/rollback | Rollback resource to a previous deployment
-*ResourcesAPI* | [**RotateWebhookSecret**](docs/ResourcesAPI.md#rotatewebhooksecret) | **Post** /resources/{slug}/webhook/rotate | Rotate webhook secret
-*ResourcesAPI* | [**StartResource**](docs/ResourcesAPI.md#startresource) | **Post** /resources/{slug}/start | Start resource
-*ResourcesAPI* | [**StopResource**](docs/ResourcesAPI.md#stopresource) | **Post** /resources/{slug}/stop | Stop resource
-*ResourcesAPI* | [**TriggerDeployment**](docs/ResourcesAPI.md#triggerdeployment) | **Post** /resources/{slug}/deployments | Trigger a new deployment
-*ResourcesAPI* | [**UpdateResource**](docs/ResourcesAPI.md#updateresource) | **Patch** /resources/{slug} | Update resource (JSON merge patch)
-*WebhooksAPI* | [**TriggerWebhook**](docs/WebhooksAPI.md#triggerwebhook) | **Post** /webhooks/{resourceSlug} | Trigger deployment via webhook
-*WorkspacesAPI* | [**AddWorkspaceMember**](docs/WorkspacesAPI.md#addworkspacemember) | **Post** /workspaces/{slug}/members | Add workspace member
-*WorkspacesAPI* | [**CreateGroupMapping**](docs/WorkspacesAPI.md#creategroupmapping) | **Post** /workspaces/{slug}/group-mappings | Create OIDC group mapping
-*WorkspacesAPI* | [**CreateNotificationWebhook**](docs/WorkspacesAPI.md#createnotificationwebhook) | **Post** /workspaces/{slug}/notification-webhooks | Create notification webhook
-*WorkspacesAPI* | [**CreateWorkspace**](docs/WorkspacesAPI.md#createworkspace) | **Post** /workspaces | Create workspace
-*WorkspacesAPI* | [**DeleteGroupMapping**](docs/WorkspacesAPI.md#deletegroupmapping) | **Delete** /workspaces/{slug}/group-mappings/{mappingId} | Delete OIDC group mapping
-*WorkspacesAPI* | [**DeleteNotificationWebhook**](docs/WorkspacesAPI.md#deletenotificationwebhook) | **Delete** /workspaces/{slug}/notification-webhooks/{hookId} | Delete notification webhook
-*WorkspacesAPI* | [**DeleteWorkspace**](docs/WorkspacesAPI.md#deleteworkspace) | **Delete** /workspaces/{slug} | Delete workspace
-*WorkspacesAPI* | [**GetWorkspace**](docs/WorkspacesAPI.md#getworkspace) | **Get** /workspaces/{slug} | Get workspace details
-*WorkspacesAPI* | [**GetWorkspaceAuditLog**](docs/WorkspacesAPI.md#getworkspaceauditlog) | **Get** /workspaces/{slug}/audit-log | Query workspace audit log
-*WorkspacesAPI* | [**GetWorkspaceQuota**](docs/WorkspacesAPI.md#getworkspacequota) | **Get** /workspaces/{slug}/quota | Get workspace quota
-*WorkspacesAPI* | [**GetWorkspaceSecurity**](docs/WorkspacesAPI.md#getworkspacesecurity) | **Get** /workspaces/{slug}/security | Get workspace security settings
-*WorkspacesAPI* | [**ListGroupMappings**](docs/WorkspacesAPI.md#listgroupmappings) | **Get** /workspaces/{slug}/group-mappings | List OIDC group mappings
-*WorkspacesAPI* | [**ListNotificationWebhooks**](docs/WorkspacesAPI.md#listnotificationwebhooks) | **Get** /workspaces/{slug}/notification-webhooks | List notification webhooks
-*WorkspacesAPI* | [**ListWebhookDeliveries**](docs/WorkspacesAPI.md#listwebhookdeliveries) | **Get** /workspaces/{slug}/notification-webhooks/{hookId}/deliveries | List webhook deliveries
-*WorkspacesAPI* | [**ListWorkspaceMembers**](docs/WorkspacesAPI.md#listworkspacemembers) | **Get** /workspaces/{slug}/members | List workspace members
-*WorkspacesAPI* | [**ListWorkspaces**](docs/WorkspacesAPI.md#listworkspaces) | **Get** /workspaces | List workspaces
-*WorkspacesAPI* | [**RemoveWorkspaceMember**](docs/WorkspacesAPI.md#removeworkspacemember) | **Delete** /workspaces/{slug}/members/{userId} | Remove workspace member
-*WorkspacesAPI* | [**SetWorkspaceQuota**](docs/WorkspacesAPI.md#setworkspacequota) | **Patch** /workspaces/{slug}/quota | Set workspace quota
-*WorkspacesAPI* | [**SetWorkspaceRegistry**](docs/WorkspacesAPI.md#setworkspaceregistry) | **Put** /workspaces/{slug}/registry | Set workspace registry configuration
-*WorkspacesAPI* | [**SetWorkspaceSecurity**](docs/WorkspacesAPI.md#setworkspacesecurity) | **Put** /workspaces/{slug}/security | Set workspace security settings
-*WorkspacesAPI* | [**UpdateGroupMapping**](docs/WorkspacesAPI.md#updategroupmapping) | **Patch** /workspaces/{slug}/group-mappings/{mappingId} | Update OIDC group mapping
-*WorkspacesAPI* | [**UpdateNotificationWebhook**](docs/WorkspacesAPI.md#updatenotificationwebhook) | **Patch** /workspaces/{slug}/notification-webhooks/{hookId} | Update notification webhook
-*WorkspacesAPI* | [**UpdateWorkspace**](docs/WorkspacesAPI.md#updateworkspace) | **Patch** /workspaces/{slug} | Update workspace
-*WorkspacesAPI* | [**UpdateWorkspaceMember**](docs/WorkspacesAPI.md#updateworkspacemember) | **Patch** /workspaces/{slug}/members/{userId} | Update workspace member role
+*AdminAPI* | [**CreateNetworkPolicy**](docs/AdminAPI.md#createnetworkpolicy) | **Post** /admin/network-policies | 
+*AdminAPI* | [**DeleteCluster**](docs/AdminAPI.md#deletecluster) | **Delete** /admin/clusters/{name} | 
+*AdminAPI* | [**DeleteNetworkPolicy**](docs/AdminAPI.md#deletenetworkpolicy) | **Delete** /admin/network-policies/{id} | 
+*AdminAPI* | [**GetPlatformAuditLog**](docs/AdminAPI.md#getplatformauditlog) | **Get** /admin/audit-log | 
+*AdminAPI* | [**GetPlatformConfig**](docs/AdminAPI.md#getplatformconfig) | **Get** /admin/config | 
+*AdminAPI* | [**GetResourceTypeDefinition**](docs/AdminAPI.md#getresourcetypedefinition) | **Get** /admin/resource-types/{type} | 
+*AdminAPI* | [**ListClusters**](docs/AdminAPI.md#listclusters) | **Get** /admin/clusters | 
+*AdminAPI* | [**ListNetworkPolicies**](docs/AdminAPI.md#listnetworkpolicies) | **Get** /admin/network-policies | 
+*AdminAPI* | [**ListResourceTypeDefinitions**](docs/AdminAPI.md#listresourcetypedefinitions) | **Get** /admin/resource-types | 
+*AdminAPI* | [**ListUsers**](docs/AdminAPI.md#listusers) | **Get** /admin/users | 
+*AdminAPI* | [**RegisterCluster**](docs/AdminAPI.md#registercluster) | **Post** /admin/clusters | 
+*AdminAPI* | [**SetPlatformConfig**](docs/AdminAPI.md#setplatformconfig) | **Put** /admin/config | 
+*AdminAPI* | [**UpdateCluster**](docs/AdminAPI.md#updatecluster) | **Patch** /admin/clusters/{name} | 
+*AdminAPI* | [**UpdateNetworkPolicy**](docs/AdminAPI.md#updatenetworkpolicy) | **Patch** /admin/network-policies/{id} | 
+*AdminAPI* | [**UpdateResourceTypeAdminConfig**](docs/AdminAPI.md#updateresourcetypeadminconfig) | **Patch** /admin/resource-types/{type}/admin | 
+*AuthAPI* | [**AuthCallback**](docs/AuthAPI.md#authcallback) | **Get** /auth/callback | 
+*AuthAPI* | [**AuthLogin**](docs/AuthAPI.md#authlogin) | **Get** /auth/login | 
+*EnvironmentsAPI* | [**CreateEnvironment**](docs/EnvironmentsAPI.md#createenvironment) | **Post** /environments | 
+*EnvironmentsAPI* | [**CreateEnvironmentToken**](docs/EnvironmentsAPI.md#createenvironmenttoken) | **Post** /environments/{slug}/tokens | 
+*EnvironmentsAPI* | [**DeleteEnvironment**](docs/EnvironmentsAPI.md#deleteenvironment) | **Delete** /environments/{slug} | 
+*EnvironmentsAPI* | [**DeleteEnvironmentMemberRole**](docs/EnvironmentsAPI.md#deleteenvironmentmemberrole) | **Delete** /environments/{slug}/members/{user_id}/role | 
+*EnvironmentsAPI* | [**DeleteEnvironmentToken**](docs/EnvironmentsAPI.md#deleteenvironmenttoken) | **Delete** /environments/{slug}/tokens/{token_id} | 
+*EnvironmentsAPI* | [**GetEnvironment**](docs/EnvironmentsAPI.md#getenvironment) | **Get** /environments/{slug} | 
+*EnvironmentsAPI* | [**GetEnvironmentQuota**](docs/EnvironmentsAPI.md#getenvironmentquota) | **Get** /environments/{slug}/quota | 
+*EnvironmentsAPI* | [**ListEnvironmentTokens**](docs/EnvironmentsAPI.md#listenvironmenttokens) | **Get** /environments/{slug}/tokens | 
+*EnvironmentsAPI* | [**ListEnvironments**](docs/EnvironmentsAPI.md#listenvironments) | **Get** /environments | 
+*EnvironmentsAPI* | [**SetApprovalGates**](docs/EnvironmentsAPI.md#setapprovalgates) | **Put** /environments/{slug}/approval-gates | 
+*EnvironmentsAPI* | [**SetEnvironmentMemberRole**](docs/EnvironmentsAPI.md#setenvironmentmemberrole) | **Put** /environments/{slug}/members/{user_id}/role | 
+*EnvironmentsAPI* | [**SetEnvironmentQuota**](docs/EnvironmentsAPI.md#setenvironmentquota) | **Patch** /environments/{slug}/quota | 
+*EnvironmentsAPI* | [**SetEnvironmentRegistry**](docs/EnvironmentsAPI.md#setenvironmentregistry) | **Put** /environments/{slug}/registry | 
+*EnvironmentsAPI* | [**SetTargetCluster**](docs/EnvironmentsAPI.md#settargetcluster) | **Put** /environments/{slug}/target-cluster | 
+*EnvironmentsAPI* | [**UpdateEnvironment**](docs/EnvironmentsAPI.md#updateenvironment) | **Patch** /environments/{slug} | 
+*GitAPI* | [**GetBuildDetectionStatus**](docs/GitAPI.md#getbuilddetectionstatus) | **Get** /git/detect-build/{job_id} | 
+*GitAPI* | [**ListGitRepos**](docs/GitAPI.md#listgitrepos) | **Post** /git/repos | 
+*GitAPI* | [**StartBuildDetection**](docs/GitAPI.md#startbuilddetection) | **Post** /git/detect-build | 
+*GitAPI* | [**ValidateGitRepo**](docs/GitAPI.md#validategitrepo) | **Post** /git/validate | 
+*ProjectsAPI* | [**CreateProject**](docs/ProjectsAPI.md#createproject) | **Post** /projects | 
+*ProjectsAPI* | [**DeleteProject**](docs/ProjectsAPI.md#deleteproject) | **Delete** /projects/{slug} | 
+*ProjectsAPI* | [**DeleteProjectMemberRole**](docs/ProjectsAPI.md#deleteprojectmemberrole) | **Delete** /projects/{slug}/members/{user_id}/role | 
+*ProjectsAPI* | [**GetProject**](docs/ProjectsAPI.md#getproject) | **Get** /projects/{slug} | 
+*ProjectsAPI* | [**GetProjectQuota**](docs/ProjectsAPI.md#getprojectquota) | **Get** /projects/{slug}/quota | 
+*ProjectsAPI* | [**ListProjects**](docs/ProjectsAPI.md#listprojects) | **Get** /projects | 
+*ProjectsAPI* | [**SetProjectMemberRole**](docs/ProjectsAPI.md#setprojectmemberrole) | **Put** /projects/{slug}/members/{user_id}/role | 
+*ProjectsAPI* | [**SetProjectQuota**](docs/ProjectsAPI.md#setprojectquota) | **Patch** /projects/{slug}/quota | 
+*ProjectsAPI* | [**SetProjectRegistry**](docs/ProjectsAPI.md#setprojectregistry) | **Put** /projects/{slug}/registry | 
+*ProjectsAPI* | [**UpdateProject**](docs/ProjectsAPI.md#updateproject) | **Patch** /projects/{slug} | 
+*ResourceTypesAPI* | [**ListResourceTypes**](docs/ResourceTypesAPI.md#listresourcetypes) | **Get** /resource-types | 
+*ResourcesAPI* | [**AddDomain**](docs/ResourcesAPI.md#adddomain) | **Post** /resources/{slug}/domains | 
+*ResourcesAPI* | [**ApproveDeployment**](docs/ResourcesAPI.md#approvedeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/approve | 
+*ResourcesAPI* | [**ClearBuildCache**](docs/ResourcesAPI.md#clearbuildcache) | **Delete** /resources/{slug}/build-cache | 
+*ResourcesAPI* | [**CreateExposure**](docs/ResourcesAPI.md#createexposure) | **Post** /resources/{slug}/expose | 
+*ResourcesAPI* | [**CreateResource**](docs/ResourcesAPI.md#createresource) | **Post** /resources | 
+*ResourcesAPI* | [**DeleteExposure**](docs/ResourcesAPI.md#deleteexposure) | **Delete** /resources/{slug}/exposures/{port} | 
+*ResourcesAPI* | [**DeleteResource**](docs/ResourcesAPI.md#deleteresource) | **Delete** /resources/{slug} | 
+*ResourcesAPI* | [**GetDeployment**](docs/ResourcesAPI.md#getdeployment) | **Get** /resources/{slug}/deployments/{deployment_id} | 
+*ResourcesAPI* | [**GetDeploymentApprovals**](docs/ResourcesAPI.md#getdeploymentapprovals) | **Get** /resources/{slug}/deployments/{deployment_id}/approvals | 
+*ResourcesAPI* | [**GetResource**](docs/ResourcesAPI.md#getresource) | **Get** /resources/{slug} | 
+*ResourcesAPI* | [**GetResourceConnection**](docs/ResourcesAPI.md#getresourceconnection) | **Get** /resources/{slug}/connection | 
+*ResourcesAPI* | [**GetResourceCpuMetrics**](docs/ResourcesAPI.md#getresourcecpumetrics) | **Get** /resources/{slug}/metrics/cpu | 
+*ResourcesAPI* | [**GetResourceLogs**](docs/ResourcesAPI.md#getresourcelogs) | **Get** /resources/{slug}/logs | 
+*ResourcesAPI* | [**GetResourceNetworkInbound**](docs/ResourcesAPI.md#getresourcenetworkinbound) | **Get** /resources/{slug}/metrics/network/inbound | 
+*ResourcesAPI* | [**GetResourceNetworkOutbound**](docs/ResourcesAPI.md#getresourcenetworkoutbound) | **Get** /resources/{slug}/metrics/network/outbound | 
+*ResourcesAPI* | [**GetResourceRamMetrics**](docs/ResourcesAPI.md#getresourcerammetrics) | **Get** /resources/{slug}/metrics/ram | 
+*ResourcesAPI* | [**GetResourceWebhook**](docs/ResourcesAPI.md#getresourcewebhook) | **Get** /resources/{slug}/webhook | 
+*ResourcesAPI* | [**ListDeployments**](docs/ResourcesAPI.md#listdeployments) | **Get** /resources/{slug}/deployments | 
+*ResourcesAPI* | [**ListDomains**](docs/ResourcesAPI.md#listdomains) | **Get** /resources/{slug}/domains | 
+*ResourcesAPI* | [**ListExposures**](docs/ResourcesAPI.md#listexposures) | **Get** /resources/{slug}/exposures | 
+*ResourcesAPI* | [**ListResources**](docs/ResourcesAPI.md#listresources) | **Get** /resources | 
+*ResourcesAPI* | [**RejectDeployment**](docs/ResourcesAPI.md#rejectdeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/reject | 
+*ResourcesAPI* | [**RemoveDomain**](docs/ResourcesAPI.md#removedomain) | **Delete** /resources/{slug}/domains/{domain} | 
+*ResourcesAPI* | [**RestartResource**](docs/ResourcesAPI.md#restartresource) | **Post** /resources/{slug}/restart | 
+*ResourcesAPI* | [**RollbackResource**](docs/ResourcesAPI.md#rollbackresource) | **Post** /resources/{slug}/rollback | 
+*ResourcesAPI* | [**RotateWebhookSecret**](docs/ResourcesAPI.md#rotatewebhooksecret) | **Post** /resources/{slug}/webhook/rotate | 
+*ResourcesAPI* | [**StartResource**](docs/ResourcesAPI.md#startresource) | **Post** /resources/{slug}/start | 
+*ResourcesAPI* | [**StopResource**](docs/ResourcesAPI.md#stopresource) | **Post** /resources/{slug}/stop | 
+*ResourcesAPI* | [**TriggerDeployment**](docs/ResourcesAPI.md#triggerdeployment) | **Post** /resources/{slug}/deployments | 
+*ResourcesAPI* | [**UpdateResource**](docs/ResourcesAPI.md#updateresource) | **Patch** /resources/{slug} | 
+*WebhooksAPI* | [**TriggerWebhook**](docs/WebhooksAPI.md#triggerwebhook) | **Post** /webhooks/{resource_slug} | 
+*WorkspacesAPI* | [**AddWorkspaceMember**](docs/WorkspacesAPI.md#addworkspacemember) | **Post** /workspaces/{slug}/members | 
+*WorkspacesAPI* | [**CreateGroupMapping**](docs/WorkspacesAPI.md#creategroupmapping) | **Post** /workspaces/{slug}/group-mappings | 
+*WorkspacesAPI* | [**CreateNotificationWebhook**](docs/WorkspacesAPI.md#createnotificationwebhook) | **Post** /workspaces/{slug}/notification-webhooks | 
+*WorkspacesAPI* | [**CreateWorkspace**](docs/WorkspacesAPI.md#createworkspace) | **Post** /workspaces | 
+*WorkspacesAPI* | [**DeleteGroupMapping**](docs/WorkspacesAPI.md#deletegroupmapping) | **Delete** /workspaces/{slug}/group-mappings/{mapping_id} | 
+*WorkspacesAPI* | [**DeleteNotificationWebhook**](docs/WorkspacesAPI.md#deletenotificationwebhook) | **Delete** /workspaces/{slug}/notification-webhooks/{hook_id} | 
+*WorkspacesAPI* | [**DeleteWorkspace**](docs/WorkspacesAPI.md#deleteworkspace) | **Delete** /workspaces/{slug} | 
+*WorkspacesAPI* | [**GetWorkspace**](docs/WorkspacesAPI.md#getworkspace) | **Get** /workspaces/{slug} | 
+*WorkspacesAPI* | [**GetWorkspaceAuditLog**](docs/WorkspacesAPI.md#getworkspaceauditlog) | **Get** /workspaces/{slug}/audit-log | 
+*WorkspacesAPI* | [**GetWorkspaceQuota**](docs/WorkspacesAPI.md#getworkspacequota) | **Get** /workspaces/{slug}/quota | 
+*WorkspacesAPI* | [**GetWorkspaceSecurity**](docs/WorkspacesAPI.md#getworkspacesecurity) | **Get** /workspaces/{slug}/security | 
+*WorkspacesAPI* | [**ListGroupMappings**](docs/WorkspacesAPI.md#listgroupmappings) | **Get** /workspaces/{slug}/group-mappings | 
+*WorkspacesAPI* | [**ListNotificationWebhooks**](docs/WorkspacesAPI.md#listnotificationwebhooks) | **Get** /workspaces/{slug}/notification-webhooks | 
+*WorkspacesAPI* | [**ListWebhookDeliveries**](docs/WorkspacesAPI.md#listwebhookdeliveries) | **Get** /workspaces/{slug}/notification-webhooks/{hook_id}/deliveries | 
+*WorkspacesAPI* | [**ListWorkspaceMembers**](docs/WorkspacesAPI.md#listworkspacemembers) | **Get** /workspaces/{slug}/members | 
+*WorkspacesAPI* | [**ListWorkspaces**](docs/WorkspacesAPI.md#listworkspaces) | **Get** /workspaces | 
+*WorkspacesAPI* | [**RemoveWorkspaceMember**](docs/WorkspacesAPI.md#removeworkspacemember) | **Delete** /workspaces/{slug}/members/{user_id} | 
+*WorkspacesAPI* | [**SetWorkspaceQuota**](docs/WorkspacesAPI.md#setworkspacequota) | **Patch** /workspaces/{slug}/quota | 
+*WorkspacesAPI* | [**SetWorkspaceRegistry**](docs/WorkspacesAPI.md#setworkspaceregistry) | **Put** /workspaces/{slug}/registry | 
+*WorkspacesAPI* | [**SetWorkspaceSecurity**](docs/WorkspacesAPI.md#setworkspacesecurity) | **Put** /workspaces/{slug}/security | 
+*WorkspacesAPI* | [**UpdateGroupMapping**](docs/WorkspacesAPI.md#updategroupmapping) | **Patch** /workspaces/{slug}/group-mappings/{mapping_id} | 
+*WorkspacesAPI* | [**UpdateNotificationWebhook**](docs/WorkspacesAPI.md#updatenotificationwebhook) | **Patch** /workspaces/{slug}/notification-webhooks/{hook_id} | 
+*WorkspacesAPI* | [**UpdateWorkspace**](docs/WorkspacesAPI.md#updateworkspace) | **Patch** /workspaces/{slug} | 
+*WorkspacesAPI* | [**UpdateWorkspaceMember**](docs/WorkspacesAPI.md#updateworkspacemember) | **Patch** /workspaces/{slug}/members/{user_id} | 
 
 
 ## Documentation For Models
@@ -181,9 +181,13 @@ Class | Method | HTTP request | Description
  - [AddMemberRequest](docs/AddMemberRequest.md)
  - [AddMemberResponse](docs/AddMemberResponse.md)
  - [ApprovalGatesConfig](docs/ApprovalGatesConfig.md)
+ - [AuditAction](docs/AuditAction.md)
+ - [AuditActorSource](docs/AuditActorSource.md)
+ - [AuditDecision](docs/AuditDecision.md)
+ - [AuditFieldChange](docs/AuditFieldChange.md)
  - [AuditLogEntry](docs/AuditLogEntry.md)
+ - [AuditTargetType](docs/AuditTargetType.md)
  - [BuildConfig](docs/BuildConfig.md)
- - [BuildConfigBase](docs/BuildConfigBase.md)
  - [BuildDetectionJob](docs/BuildDetectionJob.md)
  - [BuildDetectionJobCreated](docs/BuildDetectionJobCreated.md)
  - [BuildpackBuildConfig](docs/BuildpackBuildConfig.md)
@@ -224,6 +228,7 @@ Class | Method | HTTP request | Description
  - [LinkStatus](docs/LinkStatus.md)
  - [LogLine](docs/LogLine.md)
  - [LogResponse](docs/LogResponse.md)
+ - [MetricsDataPoint](docs/MetricsDataPoint.md)
  - [MetricsResponse](docs/MetricsResponse.md)
  - [MetricsSeries](docs/MetricsSeries.md)
  - [NetworkPolicy](docs/NetworkPolicy.md)
@@ -235,7 +240,6 @@ Class | Method | HTTP request | Description
  - [PagedEnvironmentResponse](docs/PagedEnvironmentResponse.md)
  - [PagedProjectResponse](docs/PagedProjectResponse.md)
  - [PagedResourceResponse](docs/PagedResourceResponse.md)
- - [PagedResponse](docs/PagedResponse.md)
  - [PagedUserResponse](docs/PagedUserResponse.md)
  - [PagedWorkspaceResponse](docs/PagedWorkspaceResponse.md)
  - [PeelboxBuildConfig](docs/PeelboxBuildConfig.md)
@@ -261,7 +265,6 @@ Class | Method | HTTP request | Description
  - [SecuritySettings](docs/SecuritySettings.md)
  - [SetTargetClusterRequest](docs/SetTargetClusterRequest.md)
  - [SourceAuth](docs/SourceAuth.md)
- - [SourceBase](docs/SourceBase.md)
  - [SourceConfig](docs/SourceConfig.md)
  - [TcpSocketAction](docs/TcpSocketAction.md)
  - [TriggerDeploymentRequest](docs/TriggerDeploymentRequest.md)
@@ -297,27 +300,6 @@ Example
 
 ```go
 auth := context.WithValue(context.Background(), api.ContextAccessToken, "BEARER_TOKEN_STRING")
-r, err := client.Service.Operation(auth, args)
-```
-
-### webhookSecret
-
-- **Type**: API key
-- **API key parameter name**: X-Webhook-Secret
-- **Location**: HTTP header
-
-Note, each API key must be added to a map of `map[string]APIKey` where the key is: webhookSecret and passed in as the auth context for each request.
-
-Example
-
-```go
-auth := context.WithValue(
-		context.Background(),
-		api.ContextAPIKeys,
-		map[string]api.APIKey{
-			"webhookSecret": {Key: "API_KEY_STRING"},
-		},
-	)
 r, err := client.Service.Operation(auth, args)
 ```
 

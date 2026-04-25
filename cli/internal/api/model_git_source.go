@@ -21,16 +21,14 @@ var _ MappedNullable = &GitSource{}
 
 // GitSource struct for GitSource
 type GitSource struct {
-	Type string `json:"type"`
-	// Polling interval, e.g. '5m'. '0' disables polling.
-	PollInterval   *string `json:"pollInterval,omitempty"`
-	WebhookEnabled *bool   `json:"webhookEnabled,omitempty"`
-	Url            string  `json:"url"`
-	Branch         string  `json:"branch"`
-	// Subdirectory within repo
-	Path        *string      `json:"path,omitempty"`
-	Auth        *SourceAuth  `json:"auth,omitempty"`
-	BuildConfig *BuildConfig `json:"buildConfig,omitempty"`
+	Type           string       `json:"type"`
+	PollInterval   *string      `json:"pollInterval,omitempty"`
+	WebhookEnabled *bool        `json:"webhookEnabled,omitempty"`
+	Url            *string      `json:"url,omitempty"`
+	Branch         *string      `json:"branch,omitempty"`
+	Path           *string      `json:"path,omitempty"`
+	Auth           *SourceAuth  `json:"auth,omitempty"`
+	BuildConfig    *BuildConfig `json:"buildConfig,omitempty"`
 }
 
 type _GitSource GitSource
@@ -39,11 +37,9 @@ type _GitSource GitSource
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewGitSource(type_ string, url string, branch string) *GitSource {
+func NewGitSource(type_ string) *GitSource {
 	this := GitSource{}
 	this.Type = type_
-	this.Url = url
-	this.Branch = branch
 	return &this
 }
 
@@ -143,52 +139,68 @@ func (o *GitSource) SetWebhookEnabled(v bool) {
 	o.WebhookEnabled = &v
 }
 
-// GetUrl returns the Url field value
+// GetUrl returns the Url field value if set, zero value otherwise.
 func (o *GitSource) GetUrl() string {
-	if o == nil {
+	if o == nil || IsNil(o.Url) {
 		var ret string
 		return ret
 	}
-
-	return o.Url
+	return *o.Url
 }
 
-// GetUrlOk returns a tuple with the Url field value
+// GetUrlOk returns a tuple with the Url field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *GitSource) GetUrlOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Url) {
 		return nil, false
 	}
-	return &o.Url, true
+	return o.Url, true
 }
 
-// SetUrl sets field value
+// HasUrl returns a boolean if a field has been set.
+func (o *GitSource) HasUrl() bool {
+	if o != nil && !IsNil(o.Url) {
+		return true
+	}
+
+	return false
+}
+
+// SetUrl gets a reference to the given string and assigns it to the Url field.
 func (o *GitSource) SetUrl(v string) {
-	o.Url = v
+	o.Url = &v
 }
 
-// GetBranch returns the Branch field value
+// GetBranch returns the Branch field value if set, zero value otherwise.
 func (o *GitSource) GetBranch() string {
-	if o == nil {
+	if o == nil || IsNil(o.Branch) {
 		var ret string
 		return ret
 	}
-
-	return o.Branch
+	return *o.Branch
 }
 
-// GetBranchOk returns a tuple with the Branch field value
+// GetBranchOk returns a tuple with the Branch field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *GitSource) GetBranchOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Branch) {
 		return nil, false
 	}
-	return &o.Branch, true
+	return o.Branch, true
 }
 
-// SetBranch sets field value
+// HasBranch returns a boolean if a field has been set.
+func (o *GitSource) HasBranch() bool {
+	if o != nil && !IsNil(o.Branch) {
+		return true
+	}
+
+	return false
+}
+
+// SetBranch gets a reference to the given string and assigns it to the Branch field.
 func (o *GitSource) SetBranch(v string) {
-	o.Branch = v
+	o.Branch = &v
 }
 
 // GetPath returns the Path field value if set, zero value otherwise.
@@ -304,8 +316,12 @@ func (o GitSource) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.WebhookEnabled) {
 		toSerialize["webhookEnabled"] = o.WebhookEnabled
 	}
-	toSerialize["url"] = o.Url
-	toSerialize["branch"] = o.Branch
+	if !IsNil(o.Url) {
+		toSerialize["url"] = o.Url
+	}
+	if !IsNil(o.Branch) {
+		toSerialize["branch"] = o.Branch
+	}
 	if !IsNil(o.Path) {
 		toSerialize["path"] = o.Path
 	}
@@ -324,8 +340,6 @@ func (o *GitSource) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
-		"url",
-		"branch",
 	}
 
 	allProperties := make(map[string]interface{})

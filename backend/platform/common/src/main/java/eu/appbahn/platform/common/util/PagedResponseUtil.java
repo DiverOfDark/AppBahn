@@ -1,6 +1,7 @@
 package eu.appbahn.platform.common.util;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.springframework.data.domain.Page;
 
@@ -13,11 +14,11 @@ public final class PagedResponseUtil {
             Page<E> page,
             Function<E, A> mapper,
             R response,
-            java.util.function.BiConsumer<R, List<A>> contentSetter,
-            java.util.function.BiConsumer<R, Integer> pageSetter,
-            java.util.function.BiConsumer<R, Integer> sizeSetter,
-            java.util.function.BiConsumer<R, Long> totalElementsSetter,
-            java.util.function.BiConsumer<R, Integer> totalPagesSetter) {
+            BiConsumer<R, List<A>> contentSetter,
+            BiConsumer<R, Integer> pageSetter,
+            BiConsumer<R, Integer> sizeSetter,
+            BiConsumer<R, Long> totalElementsSetter,
+            BiConsumer<R, Integer> totalPagesSetter) {
         contentSetter.accept(response, page.getContent().stream().map(mapper).toList());
         pageSetter.accept(response, page.getNumber());
         sizeSetter.accept(response, page.getSize());

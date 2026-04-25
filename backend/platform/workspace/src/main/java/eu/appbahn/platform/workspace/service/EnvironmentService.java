@@ -1,16 +1,16 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.ApprovalGatesConfig;
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateEnvironmentRequest;
-import eu.appbahn.platform.api.model.Environment;
-import eu.appbahn.platform.api.model.PagedEnvironmentResponse;
-import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.api.model.RegistryConfig;
-import eu.appbahn.platform.api.model.SetTargetClusterRequest;
-import eu.appbahn.platform.api.model.UpdateEnvironmentRequest;
-import eu.appbahn.platform.api.model.UpdateMemberRequest;
+import eu.appbahn.platform.api.ApprovalGatesConfig;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.Environment;
+import eu.appbahn.platform.api.Quota;
+import eu.appbahn.platform.api.RegistryConfig;
+import eu.appbahn.platform.api.UpdateMemberRequest;
+import eu.appbahn.platform.api.environment.CreateEnvironmentRequest;
+import eu.appbahn.platform.api.environment.PagedEnvironmentResponse;
+import eu.appbahn.platform.api.environment.SetTargetClusterRequest;
+import eu.appbahn.platform.api.environment.UpdateEnvironmentRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
@@ -181,7 +181,7 @@ public class EnvironmentService {
         permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.ADMIN);
 
         // Override can only elevate above inherited project role
-        MemberRole overrideRole = MemberRole.valueOf(req.getRole().getValue());
+        MemberRole overrideRole = req.getRole();
         MemberRole inherited = permissionService.resolveProjectRole(
                 new AuthContext(userId, null, List.of(), false), entity.getProjectId());
         if (inherited != null && overrideRole.ordinal() >= inherited.ordinal()) {
@@ -197,7 +197,7 @@ public class EnvironmentService {
                     o.setUserId(userId);
                     return o;
                 });
-        override.setRole(req.getRole().getValue());
+        override.setRole(req.getRole().name());
         environmentOverrideRepository.save(override);
 
         UUID workspaceId = projectRepository
@@ -211,7 +211,7 @@ public class EnvironmentService {
                 .inProject(entity.getProjectId())
                 .inEnvironment(entity.getId())
                 .detail("userId", userId.toString())
-                .detail("role", req.getRole().getValue())
+                .detail("role", req.getRole().name())
                 .save();
     }
 

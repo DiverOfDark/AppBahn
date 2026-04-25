@@ -21,7 +21,7 @@ import (
 type ResourceTypesAPI interface {
 
 	/*
-		ListResourceTypes List available resource types per cluster
+		ListResourceTypes Method for ListResourceTypes
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 		@return ApiListResourceTypesRequest
@@ -52,7 +52,7 @@ func (r ApiListResourceTypesRequest) Execute() ([]ResourceTypeInfo, *http.Respon
 }
 
 /*
-ListResourceTypes List available resource types per cluster
+ListResourceTypes Method for ListResourceTypes
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListResourceTypesRequest
@@ -127,16 +127,6 @@ func (a *ResourceTypesAPIService) ListResourceTypesExecute(r ApiListResourceType
 		newErr := &GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
-		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ErrorResponse
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

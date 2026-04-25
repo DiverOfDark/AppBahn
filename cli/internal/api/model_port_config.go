@@ -21,7 +21,6 @@ var _ MappedNullable = &PortConfig{}
 type PortConfig struct {
 	Port   *int32  `json:"port,omitempty"`
 	Expose *string `json:"expose,omitempty"`
-	// Custom domain for this port (only when expose=ingress; auto-generated if omitted)
 	Domain *string `json:"domain,omitempty"`
 }
 

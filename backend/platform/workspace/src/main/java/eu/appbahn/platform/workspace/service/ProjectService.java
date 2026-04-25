@@ -1,14 +1,14 @@
 package eu.appbahn.platform.workspace.service;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.CreateProjectRequest;
-import eu.appbahn.platform.api.model.PagedProjectResponse;
-import eu.appbahn.platform.api.model.Project;
-import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.api.model.RegistryConfig;
-import eu.appbahn.platform.api.model.UpdateMemberRequest;
-import eu.appbahn.platform.api.model.UpdateProjectRequest;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.Project;
+import eu.appbahn.platform.api.Quota;
+import eu.appbahn.platform.api.RegistryConfig;
+import eu.appbahn.platform.api.UpdateMemberRequest;
+import eu.appbahn.platform.api.project.CreateProjectRequest;
+import eu.appbahn.platform.api.project.PagedProjectResponse;
+import eu.appbahn.platform.api.project.UpdateProjectRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
@@ -165,7 +165,7 @@ public class ProjectService {
         permissionService.requireProjectRole(ctx, entity.getId(), MemberRole.ADMIN);
 
         // Override can only elevate above inherited workspace role
-        MemberRole overrideRole = MemberRole.valueOf(req.getRole().getValue());
+        MemberRole overrideRole = req.getRole();
         MemberRole inherited = permissionService.resolveWorkspaceRole(
                 new AuthContext(userId, null, List.of(), false), entity.getWorkspaceId());
         if (inherited != null && overrideRole.ordinal() >= inherited.ordinal()) {
@@ -181,7 +181,7 @@ public class ProjectService {
                     o.setUserId(userId);
                     return o;
                 });
-        override.setRole(req.getRole().getValue());
+        override.setRole(req.getRole().name());
         projectOverrideRepository.save(override);
 
         auditLogService
@@ -190,7 +190,7 @@ public class ProjectService {
                 .inWorkspace(entity.getWorkspaceId())
                 .inProject(entity.getId())
                 .detail("userId", userId.toString())
-                .detail("role", req.getRole().getValue())
+                .detail("role", req.getRole().name())
                 .save();
     }
 

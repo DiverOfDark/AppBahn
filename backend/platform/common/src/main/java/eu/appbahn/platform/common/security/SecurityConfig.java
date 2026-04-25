@@ -35,7 +35,7 @@ public class SecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain tunnelSecurityFilterChain(HttpSecurity http) throws Exception {
         var builder = PathPatternRequestMatcher.withDefaults();
-        RequestMatcher tunnel = builder.matcher("/appbahn.tunnel.v1.OperatorTunnel/*");
+        RequestMatcher tunnel = builder.matcher("/api/tunnel/v1/**");
         http.securityMatcher(tunnel)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -58,7 +58,12 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/docs/api/**", "/scalar/**", "/v3/api-docs/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/openapi/**")
+                        .requestMatchers(
+                                "/api/v1/openapi",
+                                "/api/v1/openapi.yaml",
+                                "/api/v1/openapi/**",
+                                "/api/v1/openapi.yaml/**",
+                                "/v3/api-docs/**")
                         .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()

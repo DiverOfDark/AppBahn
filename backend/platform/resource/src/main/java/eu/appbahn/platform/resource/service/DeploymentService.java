@@ -1,11 +1,13 @@
 package eu.appbahn.platform.resource.service;
 
-import eu.appbahn.platform.api.model.AuditAction;
-import eu.appbahn.platform.api.model.AuditTargetType;
-import eu.appbahn.platform.api.model.Deployment;
-import eu.appbahn.platform.api.model.PagedDeploymentResponse;
-import eu.appbahn.platform.api.model.TriggerDeploymentRequest;
-import eu.appbahn.platform.api.model.TriggerDeploymentResponse;
+import eu.appbahn.platform.api.AuditAction;
+import eu.appbahn.platform.api.AuditTargetType;
+import eu.appbahn.platform.api.Deployment;
+import eu.appbahn.platform.api.TriggerType;
+import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
+import eu.appbahn.platform.api.resource.TriggerDeploymentRequest;
+import eu.appbahn.platform.api.resource.TriggerDeploymentResponse;
+import eu.appbahn.platform.api.resource.TriggerDeploymentStatus;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
@@ -89,7 +91,7 @@ public class DeploymentService {
                     && sourceRef.equals(currentPrimary.get().getSourceRef())) {
                 var response = new TriggerDeploymentResponse();
                 response.setDeploymentId(currentPrimary.get().getId());
-                response.setStatus(TriggerDeploymentResponse.StatusEnum.DUPLICATE);
+                response.setStatus(TriggerDeploymentStatus.DUPLICATE);
                 log.info("Deployment skipped for resource {} — sourceRef unchanged: {}", resourceSlug, sourceRef);
                 return response;
             }
@@ -140,8 +142,8 @@ public class DeploymentService {
         response.setDeploymentId(entity.getId());
         response.setStatus(
                 entity.getStatus() == eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING
-                        ? TriggerDeploymentResponse.StatusEnum.DEPLOYING
-                        : TriggerDeploymentResponse.StatusEnum.QUEUED);
+                        ? TriggerDeploymentStatus.DEPLOYING
+                        : TriggerDeploymentStatus.QUEUED);
         return response;
     }
 

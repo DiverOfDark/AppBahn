@@ -1,7 +1,7 @@
 package eu.appbahn.platform.workspace.entity;
 
-import eu.appbahn.platform.api.model.Quota;
-import eu.appbahn.platform.api.model.RegistryConfig;
+import eu.appbahn.platform.api.Quota;
+import eu.appbahn.platform.api.RegistryConfig;
 import eu.appbahn.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

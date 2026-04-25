@@ -32,7 +32,7 @@ public class ResourceSpec {
     private String workspaceId;
 
     private ResourceConfig config;
-    private List<ResourceLink> links;
+    private List<LinkConfig> links;
 
     /** When true, the operator scales the resource to zero */
     private Boolean stopped;
@@ -42,7 +42,7 @@ public class ResourceSpec {
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ResourceLink {
+    public static class LinkConfig {
         private String resource;
         private String secret;
         private Map<String, String> env;

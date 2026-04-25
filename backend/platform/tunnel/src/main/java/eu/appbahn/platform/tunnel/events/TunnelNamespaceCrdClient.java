@@ -1,12 +1,12 @@
 package eu.appbahn.platform.tunnel.events;
 
+import eu.appbahn.platform.api.tunnel.ApplyNamespace;
+import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.tunnel.command.CommandEnqueueService;
 import eu.appbahn.platform.tunnel.command.CommandTypes;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.service.NamespaceCrdClient;
-import eu.appbahn.tunnel.v1.ApplyNamespace;
-import eu.appbahn.tunnel.v1.DeleteNamespace;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +30,9 @@ public class TunnelNamespaceCrdClient implements NamespaceCrdClient {
     @Transactional
     public void apply(String environmentSlug, String namespace) {
         String clusterName = resolveCluster(environmentSlug);
-        var cmd = ApplyNamespace.newBuilder()
-                .setNamespace(namespace)
-                .setEnvironmentSlug(environmentSlug)
-                .build();
+        var cmd = new ApplyNamespace();
+        cmd.setNamespace(namespace);
+        cmd.setEnvironmentSlug(environmentSlug);
         enqueue.enqueue(clusterName, CommandTypes.APPLY_NAMESPACE, cmd);
     }
 
@@ -45,7 +44,8 @@ public class TunnelNamespaceCrdClient implements NamespaceCrdClient {
         // call before calling environmentRepository.delete().
         String envSlug = namespace.contains("-") ? namespace.substring(namespace.indexOf('-') + 1) : namespace;
         String clusterName = resolveCluster(envSlug);
-        var cmd = DeleteNamespace.newBuilder().setNamespace(namespace).build();
+        var cmd = new DeleteNamespace();
+        cmd.setNamespace(namespace);
         enqueue.enqueue(clusterName, CommandTypes.DELETE_NAMESPACE, cmd);
     }
 

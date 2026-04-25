@@ -1,6 +1,6 @@
 package eu.appbahn.platform.resource.entity;
 
-import eu.appbahn.platform.resource.service.TriggerType;
+import eu.appbahn.platform.api.TriggerType;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.shared.Labels;
@@ -9,7 +9,7 @@ import eu.appbahn.shared.crd.DockerSource;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
-import eu.appbahn.shared.crd.ResourceStatus;
+import eu.appbahn.shared.crd.ResourceStatusDetail;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import java.time.Instant;
 import java.util.Map;
@@ -62,7 +62,7 @@ public final class ResourceCacheMapper {
             spec.setStopped(true);
         }
         crd.setSpec(spec);
-        crd.setStatus(row.getStatusDetail() != null ? row.getStatusDetail() : new ResourceStatus());
+        crd.setStatus(row.getStatusDetail() != null ? row.getStatusDetail() : new ResourceStatusDetail());
         return crd;
     }
 
