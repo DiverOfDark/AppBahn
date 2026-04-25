@@ -5,6 +5,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -29,7 +30,9 @@ public class GlobalExceptionHandler {
         response.setError(ex.getErrorCode());
         response.setMessage(ex.getMessage());
         response.setDetails(ex.getDetails());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     @ExceptionHandler(ForbiddenException.class)
@@ -45,6 +48,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(LicenseLimitException.class)
     public ResponseEntity<LicenseLimitResponse> handleLicenseLimit(LicenseLimitException ex) {
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(new LicenseLimitResponse(
                         HttpStatus.PAYMENT_REQUIRED.value(),
                         "resource_limit_reached",
@@ -56,6 +60,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(QuotaExceededException.class)
     public ResponseEntity<QuotaExceededResponse> handleQuotaExceeded(QuotaExceededException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(new QuotaExceededResponse(
                         HttpStatus.UNPROCESSABLE_ENTITY.value(),
                         "quota_exceeded",
@@ -113,6 +118,12 @@ public class GlobalExceptionHandler {
         response.setStatus(status.value());
         response.setError(status.getReasonPhrase());
         response.setMessage(message);
-        return ResponseEntity.status(status).body(response);
+        // Pin Content-Type to JSON: SSE-producing endpoints (e.g. tunnel /commands) preset
+        // the response Content-Type to text/event-stream during request mapping. Without
+        // this override Spring would search for an SSE converter for ErrorResponse, fail
+        // with HttpMessageNotWritableException, and the operator would get an empty 500.
+        return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 }
