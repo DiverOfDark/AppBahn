@@ -205,6 +205,7 @@ Class | Method | HTTP request | Description
  - [CreateProjectRequest](docs/CreateProjectRequest.md)
  - [CreateResourceRequest](docs/CreateResourceRequest.md)
  - [CreateWorkspaceRequest](docs/CreateWorkspaceRequest.md)
+ - [CredentialRef](docs/CredentialRef.md)
  - [CustomDomainStatus](docs/CustomDomainStatus.md)
  - [Deployment](docs/Deployment.md)
  - [DeploymentApproval](docs/DeploymentApproval.md)

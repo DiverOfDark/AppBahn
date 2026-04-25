@@ -10,5 +10,5 @@ import lombok.Data;
 public class SourceAuth {
 
     private SourceAuthType type;
-    private String credentialRef;
+    private CredentialRef credentialRef;
 }

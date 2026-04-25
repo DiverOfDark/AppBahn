@@ -19,8 +19,8 @@ var _ MappedNullable = &SourceAuth{}
 
 // SourceAuth struct for SourceAuth
 type SourceAuth struct {
-	Type          *string `json:"type,omitempty"`
-	CredentialRef *string `json:"credentialRef,omitempty"`
+	Type          *string        `json:"type,omitempty"`
+	CredentialRef *CredentialRef `json:"credentialRef,omitempty"`
 }
 
 // NewSourceAuth instantiates a new SourceAuth object
@@ -73,9 +73,9 @@ func (o *SourceAuth) SetType(v string) {
 }
 
 // GetCredentialRef returns the CredentialRef field value if set, zero value otherwise.
-func (o *SourceAuth) GetCredentialRef() string {
+func (o *SourceAuth) GetCredentialRef() CredentialRef {
 	if o == nil || IsNil(o.CredentialRef) {
-		var ret string
+		var ret CredentialRef
 		return ret
 	}
 	return *o.CredentialRef
@@ -83,7 +83,7 @@ func (o *SourceAuth) GetCredentialRef() string {
 
 // GetCredentialRefOk returns a tuple with the CredentialRef field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SourceAuth) GetCredentialRefOk() (*string, bool) {
+func (o *SourceAuth) GetCredentialRefOk() (*CredentialRef, bool) {
 	if o == nil || IsNil(o.CredentialRef) {
 		return nil, false
 	}
@@ -99,8 +99,8 @@ func (o *SourceAuth) HasCredentialRef() bool {
 	return false
 }
 
-// SetCredentialRef gets a reference to the given string and assigns it to the CredentialRef field.
-func (o *SourceAuth) SetCredentialRef(v string) {
+// SetCredentialRef gets a reference to the given CredentialRef and assigns it to the CredentialRef field.
+func (o *SourceAuth) SetCredentialRef(v CredentialRef) {
 	o.CredentialRef = &v
 }
 

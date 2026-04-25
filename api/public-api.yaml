@@ -2574,6 +2574,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkConfig"
+    CredentialRef:
+      type: object
+      properties:
+        secretName:
+          type: string
+        key:
+          type: string
     DockerSource:
       required:
       - type
@@ -2787,7 +2794,7 @@ components:
           - basic
           - ssh_key
         credentialRef:
-          type: string
+          $ref: "#/components/schemas/CredentialRef"
     SourceConfig:
       discriminator:
         propertyName: type
