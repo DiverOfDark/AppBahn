@@ -21,6 +21,7 @@ import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
+import eu.appbahn.platform.workspace.service.ClusterLivenessProbe;
 import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.platform.workspace.service.PermissionService;
@@ -59,6 +60,7 @@ public class ResourceService {
     private final QuotaService quotaService;
     private final LicenseService licenseService;
     private final NamespaceService namespaceService;
+    private final ClusterLivenessProbe clusterLivenessProbe;
     private final ResourceCrdClient crdClient;
     private final ResourceCrdLookup crdLookup;
     private final ObjectMapper objectMapper;
@@ -75,6 +77,7 @@ public class ResourceService {
             QuotaService quotaService,
             LicenseService licenseService,
             NamespaceService namespaceService,
+            ClusterLivenessProbe clusterLivenessProbe,
             ResourceCrdClient crdClient,
             ResourceCrdLookup crdLookup,
             ObjectMapper objectMapper,
@@ -90,6 +93,7 @@ public class ResourceService {
         this.quotaService = quotaService;
         this.licenseService = licenseService;
         this.namespaceService = namespaceService;
+        this.clusterLivenessProbe = clusterLivenessProbe;
         this.crdClient = crdClient;
         this.crdLookup = crdLookup;
         this.objectMapper = objectMapper;
@@ -114,6 +118,11 @@ public class ResourceService {
         // There's a small soft-overshoot window between this check and the operator's first sync.
         quotaService.checkQuota(env.getId(), null, resourceConfig);
         licenseService.checkLicense();
+
+        // Reject synchronously if the target cluster is unreachable (not approved or stale heartbeat).
+        // Otherwise the CRD lands, the operator never sees it, and the user discovers failure only
+        // after the pending-command sweeper expires the unacked command minutes later.
+        clusterLivenessProbe.requireReachable(env.getTargetCluster());
 
         String slug = SlugGenerator.generate(req.getName());
         assignDomain(resourceConfig, slug);
