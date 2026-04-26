@@ -2,8 +2,6 @@ package eu.appbahn.operator.tunnel;
 
 import eu.appbahn.operator.tunnel.client.model.FullResourceSyncChunk;
 import eu.appbahn.operator.tunnel.client.model.OperatorEvent;
-import eu.appbahn.operator.tunnel.client.model.PushEventsAck;
-import eu.appbahn.operator.tunnel.client.model.PushEventsRequest;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.operator.tunnel.client.model.ResourceSyncBatch;
 import eu.appbahn.operator.tunnel.client.model.ResourceSyncItem;
@@ -11,40 +9,42 @@ import eu.appbahn.shared.crd.ResourceCrd;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-/** Publishes reconcile batches, deletions and full-sync chunks via {@link TunnelApiClient#pushEvents}. */
+/**
+ * Publishes reconcile batches, deletions and full-sync chunks to the platform tunnel.
+ *
+ * <p>All emit methods are non-blocking: they hand the batch to {@link OperatorEventQueue}
+ * which delivers it asynchronously on a virtual-thread drainer with retries and
+ * exponential backoff. This keeps the JOSDK reconcile loop and the admission webhook
+ * decoupled from tunnel latency.
+ */
 @Service
 public class OperatorEventPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(OperatorEventPublisher.class);
     private static final int FULL_SYNC_CHUNK_SIZE = 100;
 
-    private final TunnelApiClient tunnelApiClient;
-    private final OperatorTunnelConfig tunnelConfig;
+    private final OperatorEventQueue queue;
 
-    public OperatorEventPublisher(TunnelApiClient tunnelApiClient, OperatorTunnelConfig tunnelConfig) {
-        this.tunnelApiClient = tunnelApiClient;
-        this.tunnelConfig = tunnelConfig;
+    public OperatorEventPublisher(OperatorEventQueue queue) {
+        this.queue = queue;
     }
 
     /** Emit a single pre-built event. Used by the admission webhook. */
     public void emit(OperatorEvent event) {
-        send(List.of(event));
+        queue.enqueue(List.of(event));
     }
 
     public void emitSync(ResourceCrd crd) {
         var batch = new ResourceSyncBatch();
         batch.getItems().add(toSyncItem(crd));
-        send(List.of(batch));
+        queue.enqueue(List.of(batch));
     }
 
     public void emitDeleted(String slug) {
         var event = new ResourceDeletedBatch();
         event.getResourceSlugs().add(slug);
-        send(List.of(event));
+        queue.enqueue(List.of(event));
     }
 
     /**
@@ -59,7 +59,7 @@ public class OperatorEventPublisher {
             chunk.setSyncSessionId(sessionId.toString());
             chunk.setChunkIndex(0);
             chunk.setComplete(true);
-            send(List.of(chunk));
+            queue.enqueue(List.of(chunk));
             return;
         }
 
@@ -77,17 +77,7 @@ public class OperatorEventPublisher {
             }
             events.add(chunk);
         }
-        send(events);
-    }
-
-    private void send(List<OperatorEvent> events) {
-        var req = new PushEventsRequest();
-        req.setClusterName(tunnelConfig.clusterName());
-        req.setEvents(new ArrayList<>(events));
-        PushEventsAck ack = tunnelApiClient.pushEvents(req);
-        if (ack.getAcceptedCount() != events.size()) {
-            log.warn("Platform accepted {} of {} events — possible data loss", ack.getAcceptedCount(), events.size());
-        }
+        queue.enqueue(events);
     }
 
     public ResourceSyncItem toSyncItem(ResourceCrd crd) {
