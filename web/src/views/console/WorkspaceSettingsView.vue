@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
@@ -73,7 +73,21 @@ const quota = ref<Quota>({
 })
 
 // -- Registry --
-const registry = ref<RegistryConfig>({ url: '', credentialRef: '' })
+const registry = ref<RegistryConfig>({ url: '', credentialRef: { secretName: '', key: '' } })
+
+const credentialSecretName = computed({
+  get: () => registry.value.credentialRef?.secretName ?? '',
+  set: (value: string) => {
+    registry.value.credentialRef = { ...registry.value.credentialRef, secretName: value }
+  },
+})
+
+const credentialSecretKey = computed({
+  get: () => registry.value.credentialRef?.key ?? '',
+  set: (value: string) => {
+    registry.value.credentialRef = { ...registry.value.credentialRef, key: value }
+  },
+})
 
 // -- Security --
 const runtimeClassName = ref('')
@@ -589,12 +603,21 @@ onMounted(fetchTabData)
           />
         </label>
         <label class="form-label">
-          Credential Ref
+          Credential Secret Name
           <input
-            v-model="registry.credentialRef"
+            v-model="credentialSecretName"
             class="form-input"
             type="text"
             placeholder="e.g. registry-secret"
+          />
+        </label>
+        <label class="form-label">
+          Credential Secret Key
+          <input
+            v-model="credentialSecretKey"
+            class="form-input"
+            type="text"
+            placeholder="e.g. .dockerconfigjson"
           />
         </label>
         <div class="form-actions">

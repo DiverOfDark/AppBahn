@@ -12,4 +12,8 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
     // The tunnel DTOs reference shared.crd.ResourceCrd, which extends fabric8's CustomResource.
     implementation(libs.fabric8.kubernetes.client)
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.assertj.core)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
