@@ -312,13 +312,24 @@ public class ResourceService {
     }
 
     /**
-     * Primary domain: {@code {slug}.{baseDomain}}. Per-port domains for additional ingress
-     * ports are planned tech debt; today we only set the primary.
+     * Primary domain (lowest-numbered ingress port): {@code {slug}.{baseDomain}}. Subsequent
+     * ingress ports get {@code {slug}-{port}.{baseDomain}}. User-supplied domains are preserved.
      */
     private void assignDomain(ResourceConfig config, String slug) {
-        for (var port : config.getIngressPorts()) {
-            if (port.getDomain() == null) {
+        var ingressPorts = config.getIngressPorts().stream()
+                .sorted(java.util.Comparator.comparingInt(ResourceConfig.PortConfig::getPort))
+                .toList();
+        boolean primaryAssigned = false;
+        for (var port : ingressPorts) {
+            if (port.getDomain() != null) {
+                primaryAssigned = true;
+                continue;
+            }
+            if (!primaryAssigned) {
                 port.setDomain(slug + "." + baseDomain);
+                primaryAssigned = true;
+            } else {
+                port.setDomain(slug + "-" + port.getPort() + "." + baseDomain);
             }
         }
     }
