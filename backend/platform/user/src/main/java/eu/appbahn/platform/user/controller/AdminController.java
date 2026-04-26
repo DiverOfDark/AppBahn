@@ -15,16 +15,15 @@ import eu.appbahn.platform.api.admin.UpdateNetworkPolicyRequest;
 import eu.appbahn.platform.api.admin.UpdateResourceTypeAdminConfigRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ForbiddenException;
+import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -92,67 +91,67 @@ public class AdminController implements AdminApi {
 
     @Override
     public ResponseEntity<NetworkPolicy> createNetworkPolicy(CreateNetworkPolicyRequest createNetworkPolicyRequest) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<Void> deleteCluster(String name) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<Void> deleteNetworkPolicy(UUID id) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<ResourceTypeDefinition> getResourceTypeDefinition(String type) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<List<Cluster>> listClusters() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<List<NetworkPolicy>> listNetworkPolicies() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<List<ResourceTypeDefinition>> listResourceTypeDefinitions() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<PagedUserResponse> listUsers(Integer page, Integer size, String email) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<Cluster> registerCluster(CreateClusterRequest createClusterRequest) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<PlatformConfig> setPlatformConfig(PlatformConfig platformConfig) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<Cluster> updateCluster(String name, UpdateClusterRequest updateClusterRequest) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<NetworkPolicy> updateNetworkPolicy(UUID id, UpdateNetworkPolicyRequest req) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 
     @Override
     public ResponseEntity<ResourceTypeDefinition> updateResourceTypeAdminConfig(
             String type, UpdateResourceTypeAdminConfigRequest req) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        throw new NotImplementedException();
     }
 }

@@ -40,6 +40,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
+    @ExceptionHandler(NotImplementedException.class)
+    public ResponseEntity<NotImplementedResponse> handleNotImplemented(NotImplementedException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new NotImplementedResponse(NotImplementedException.ERROR_CODE, ex.getMessage()));
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
