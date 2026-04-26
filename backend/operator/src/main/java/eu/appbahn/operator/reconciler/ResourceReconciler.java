@@ -74,17 +74,14 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     /** CrashLoopBackOff is terminal only after this many restarts — gives transient-race startups time to recover. */
     private static final int CRASHLOOP_RESTART_THRESHOLD = 3;
 
+    /** Retry interval after an unexpected reconcile error — informers don't replay platform-sync failures. */
+    private static final long ERROR_RETRY_MINUTES = 1;
+
     private final OperatorEventPublisher eventPublisher;
-    private final long rescheduleSeconds;
     private final Counter syncFailureCounter;
 
-    public ResourceReconciler(
-            OperatorEventPublisher eventPublisher,
-            MeterRegistry meterRegistry,
-            @org.springframework.beans.factory.annotation.Value("${operator.reschedule-seconds:300}")
-                    long rescheduleSeconds) {
+    public ResourceReconciler(OperatorEventPublisher eventPublisher, MeterRegistry meterRegistry) {
         this.eventPublisher = eventPublisher;
-        this.rescheduleSeconds = rescheduleSeconds;
         this.syncFailureCounter = Counter.builder("appbahn.operator.sync.failures")
                 .description("Number of failed platform sync attempts")
                 .register(meterRegistry);
@@ -124,7 +121,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             // reconciling those rather than NPE'ing into an uncaught-error retry loop.
             if (resource.getSpec() == null) {
                 log.debug("Reconcile called with null spec for {}; skipping", name);
-                return UpdateControl.<ResourceCrd>noUpdate().rescheduleAfter(rescheduleSeconds, TimeUnit.SECONDS);
+                return UpdateControl.noUpdate();
             }
             var config = resource.getSpec().getConfig();
             if (config == null
@@ -132,8 +129,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     || dockerSrc.getImage() == null) {
                 resource.setStatus(createErrorStatus(resource, "docker source with image is required"));
                 syncToPlatform(resource);
-                return UpdateControl.<ResourceCrd>patchStatus(resource)
-                        .rescheduleAfter(rescheduleSeconds, TimeUnit.SECONDS);
+                return UpdateControl.patchStatus(resource);
             }
 
             var k8sDeployment = context.getSecondaryResource(Deployment.class).orElse(null);
@@ -141,19 +137,19 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
             if (statusEquals(resource.getStatus(), status)) {
                 log.debug("Status unchanged for {}, skipping update", name);
-                return UpdateControl.<ResourceCrd>noUpdate().rescheduleAfter(rescheduleSeconds, TimeUnit.SECONDS);
+                return UpdateControl.noUpdate();
             }
 
             resource.setStatus(status);
             syncToPlatform(resource);
 
-            return UpdateControl.<ResourceCrd>patchStatus(resource)
-                    .rescheduleAfter(rescheduleSeconds, TimeUnit.SECONDS);
+            return UpdateControl.patchStatus(resource);
         } catch (Exception e) {
             log.error("Error reconciling resource {}: {}", name, e.getMessage(), e);
             resource.setStatus(createErrorStatus(resource, e.getMessage()));
             syncToPlatform(resource);
-            return UpdateControl.<ResourceCrd>patchStatus(resource).rescheduleAfter(1, TimeUnit.MINUTES);
+            return UpdateControl.<ResourceCrd>patchStatus(resource)
+                    .rescheduleAfter(ERROR_RETRY_MINUTES, TimeUnit.MINUTES);
         }
     }
 
