@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
             @Dependent(
                     name = "deployment",
                     type = DeploymentDependentResource.class,
-                    reconcilePrecondition = DockerSourceDefinedCondition.class),
+                    reconcilePrecondition = DeploymentReconcileCondition.class),
             @Dependent(
                     name = "configmap",
                     type = ConfigMapDependentResource.class,
@@ -194,7 +194,22 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             status.setLatestDeploymentId(deploymentRevision);
         }
 
-        if (k8sDeployment == null || k8sDeployment.getStatus() == null) {
+        boolean stopped = Boolean.TRUE.equals(resource.getSpec().getStopped());
+
+        if (k8sDeployment == null) {
+            if (stopped) {
+                status.setPhase(ResourcePhase.STOPPED);
+                status.setMessage("Resource is stopped");
+                return status;
+            }
+            status.setPhase(ResourcePhase.PENDING);
+            status.setMessage("Waiting for deployment");
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
+            }
+            return status;
+        }
+        if (k8sDeployment.getStatus() == null) {
             status.setPhase(ResourcePhase.PENDING);
             status.setMessage("Waiting for deployment");
             if (deploymentRevision != null) {
@@ -211,14 +226,12 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         int updated = depStatus.getUpdatedReplicas() != null ? depStatus.getUpdatedReplicas() : 0;
         int available = depStatus.getAvailableReplicas() != null ? depStatus.getAvailableReplicas() : 0;
 
-        if (Boolean.TRUE.equals(resource.getSpec().getStopped())) {
-            if (ready == 0) {
-                status.setPhase(ResourcePhase.STOPPED);
-                status.setMessage("Resource is stopped");
-            } else {
-                status.setPhase(ResourcePhase.PENDING);
-                status.setMessage("Stopping...");
-            }
+        if (stopped) {
+            // Deployment is still present mid-teardown — JOSDK will delete it, but until then
+            // surface a transitional PENDING/"Stopping..." rather than flipping straight to
+            // STOPPED. The k8sDeployment==null branch above handles the terminal STOPPED state.
+            status.setPhase(ResourcePhase.PENDING);
+            status.setMessage("Stopping...");
             var replicas = new ResourceStatusDetail.ReplicaStatus();
             replicas.setDesired(desired);
             replicas.setReady(ready);

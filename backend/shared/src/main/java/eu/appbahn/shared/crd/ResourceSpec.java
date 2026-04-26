@@ -34,7 +34,7 @@ public class ResourceSpec {
     private ResourceConfig config;
     private List<LinkConfig> links;
 
-    /** When true, the operator scales the resource to zero */
+    /** When true, the operator removes the underlying workload (no Deployment exists). */
     private Boolean stopped;
 
     /** Bumped by platform on each deployment trigger to force K8s pod rollout */
