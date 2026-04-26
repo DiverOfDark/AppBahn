@@ -402,7 +402,7 @@ components:
         registryUrl:
           type: string
         credentialRef:
-          type: string
+          $ref: "#/components/schemas/CredentialRef"
     DockerfileBuildConfig:
       required:
       - type
