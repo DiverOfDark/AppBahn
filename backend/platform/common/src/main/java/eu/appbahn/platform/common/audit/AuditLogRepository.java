@@ -41,5 +41,5 @@ public interface AuditLogRepository extends JpaRepository<AuditLogEntity, AuditL
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM audit_log WHERE timestamp < :cutoff", nativeQuery = true)
-    void deleteByTimestampBefore(Instant cutoff);
+    void deleteByTimestampBefore(@Param("cutoff") Instant cutoff);
 }
