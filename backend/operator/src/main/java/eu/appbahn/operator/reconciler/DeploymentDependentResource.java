@@ -50,9 +50,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         var allPorts = config.getPorts();
         Integer port = config.getLowestPort();
         int replicas;
-        if (Boolean.TRUE.equals(primary.getSpec().getStopped())) {
-            replicas = 0;
-        } else if (isCurrentRevisionFailed(primary)) {
+        if (isCurrentRevisionFailed(primary)) {
             // Stop K8s from crashlooping a terminally-failed revision. Recovery requires a
             // spec edit (bumps generation) or restart (bumps deploymentRevision).
             replicas = 0;
