@@ -204,7 +204,7 @@ public class OperatorTunnelController implements TunnelApi {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
-                emitter.complete();
+                completeQuietly(emitter, clusterName);
             }
         });
         emitter.onCompletion(() -> log.debug("SSE emitter completed for cluster={}", clusterName));
@@ -363,6 +363,21 @@ public class OperatorTunnelController implements TunnelApi {
     private void requireClusterMatch(OperatorJwt jwt, String clusterName) {
         if (!jwt.clusterName().equals(clusterName)) {
             throw TunnelApiException.invalidArgument("clusterName does not match JWT iss");
+        }
+    }
+
+    /**
+     * Closes the emitter, swallowing any exception thrown if the underlying response is no
+     * longer writable (client disconnect, JVM shutdown). Without this, the trailing flush
+     * raises {@code AsyncRequestNotUsableException} which then trips the @ExceptionHandler
+     * machinery — but the response is already SSE-typed, so the JSON ErrorResponse converter
+     * also fails, producing a noisy double-stack on every disconnected stream.
+     */
+    private void completeQuietly(SseEmitter emitter, String clusterName) {
+        try {
+            emitter.complete();
+        } catch (Exception e) {
+            log.debug("SSE emitter complete failed for cluster={}: {}", clusterName, e.getMessage());
         }
     }
 }
