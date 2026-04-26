@@ -1,6 +1,7 @@
 package eu.appbahn.platform;
 
 import eu.appbahn.platform.api.ErrorResponse;
+import eu.appbahn.platform.common.idempotency.IdempotencyConstants;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverter;
@@ -8,17 +9,21 @@ import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
@@ -83,6 +88,8 @@ class OpenApiConfig {
                     openApi.components(components);
                     openApi.addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
                 })
+                .addOperationCustomizer(idempotencyOptOutMarker())
+                .addOpenApiCustomizer(idempotencyKeyHeaderCustomizer())
                 .addOpenApiCustomizer(stripPathPrefixCustomizer("/api/v1/"))
                 .addOpenApiCustomizer(errorResponseSchemaCustomizer())
                 .addOpenApiCustomizer(referencePublicPolymorphicFieldsCustomizer())
@@ -377,6 +384,65 @@ class OpenApiConfig {
             ModelConverters.getInstance()
                     .readAll(new AnnotatedType(ErrorResponse.class))
                     .forEach((name, schema) -> openApi.getComponents().addSchemas(name, schema));
+        };
+    }
+
+    private static final String IDEMPOTENCY_OPT_OUT_EXT = "x-appbahn-idempotency-opt-out";
+
+    /**
+     * Tags operations whose handler bears {@code @IdempotencyOptOut} with a vendor extension.
+     * The header customizer below reads this marker to skip the parameter.
+     */
+    private org.springdoc.core.customizers.OperationCustomizer idempotencyOptOutMarker() {
+        return (operation, handlerMethod) -> {
+            if (handlerMethod.getMethodAnnotation(eu.appbahn.platform.common.idempotency.IdempotencyOptOut.class)
+                    != null) {
+                operation.addExtension(IDEMPOTENCY_OPT_OUT_EXT, Boolean.TRUE);
+            }
+            return operation;
+        };
+    }
+
+    /**
+     * Adds {@code Idempotency-Key} as an optional request header on every mutating operation
+     * (POST/PUT/PATCH/DELETE) — except those tagged by {@link #idempotencyOptOutMarker()}.
+     * The {@link eu.appbahn.platform.common.idempotency.IdempotencyFilter} reads the same
+     * header at runtime; declaring it here keeps generated clients in sync with the server.
+     */
+    private OpenApiCustomizer idempotencyKeyHeaderCustomizer() {
+        return openApi -> {
+            Paths paths = openApi.getPaths();
+            if (paths == null) return;
+            Function<PathItem, Map<String, Operation>> mutatingOps = item -> {
+                Map<String, Operation> ops = new java.util.LinkedHashMap<>();
+                if (item.getPost() != null) ops.put("post", item.getPost());
+                if (item.getPut() != null) ops.put("put", item.getPut());
+                if (item.getPatch() != null) ops.put("patch", item.getPatch());
+                if (item.getDelete() != null) ops.put("delete", item.getDelete());
+                return ops;
+            };
+            for (PathItem item : paths.values()) {
+                for (Operation op : mutatingOps.apply(item).values()) {
+                    if (op.getExtensions() != null
+                            && Boolean.TRUE.equals(op.getExtensions().get(IDEMPOTENCY_OPT_OUT_EXT))) {
+                        op.getExtensions().remove(IDEMPOTENCY_OPT_OUT_EXT);
+                        if (op.getExtensions().isEmpty()) op.setExtensions(null);
+                        continue;
+                    }
+                    Parameter param = new HeaderParameter()
+                            .name(IdempotencyConstants.HEADER_NAME)
+                            .description("Optional dedup key. Same key + same body within "
+                                    + IdempotencyConstants.TTL.toHours()
+                                    + "h returns the cached response.")
+                            .required(false)
+                            .schema(new StringSchema());
+                    if (op.getParameters() == null
+                            || op.getParameters().stream()
+                                    .noneMatch(p -> IdempotencyConstants.HEADER_NAME.equals(p.getName()))) {
+                        op.addParametersItem(param);
+                    }
+                }
+            }
         };
     }
 

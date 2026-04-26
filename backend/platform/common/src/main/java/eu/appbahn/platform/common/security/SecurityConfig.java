@@ -1,5 +1,6 @@
 package eu.appbahn.platform.common.security;
 
+import eu.appbahn.platform.common.idempotency.IdempotencyFilter;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -48,7 +50,8 @@ public class SecurityConfig {
             HttpSecurity http,
             BiFunction<Jwt, List<String>, AuthContext> authContextResolver,
             Function<String, Optional<Authentication>> environmentTokenAuthenticator,
-            @Qualifier("oidcHttpSecurityCustomizer") Optional<Customizer<HttpSecurity>> oidcCustomizer)
+            @Qualifier("oidcHttpSecurityCustomizer") Optional<Customizer<HttpSecurity>> oidcCustomizer,
+            IdempotencyFilter idempotencyFilter)
             throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -89,7 +92,10 @@ public class SecurityConfig {
                         jwt.jwtAuthenticationConverter(new AppBahnJwtAuthenticationConverter(authContextResolver))))
                 .addFilterBefore(
                         new EnvironmentTokenFilter(environmentTokenAuthenticator),
-                        BearerTokenAuthenticationFilter.class);
+                        BearerTokenAuthenticationFilter.class)
+                // After authorization (SecurityContext populated), before the controller — so the
+                // filter can read the authenticated actor and short-circuit replays.
+                .addFilterAfter(idempotencyFilter, AuthorizationFilter.class);
 
         // OAuth2 Login (OIDC authorization code + PKCE)
         oidcCustomizer.ifPresent(customizer -> {
