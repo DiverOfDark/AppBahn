@@ -20,17 +20,19 @@ INSTALL_DIR="${APPBAHN_INSTALL_DIR:-/usr/local/bin}"
 VERSION="${APPBAHN_VERSION:-}"
 BINARY="appbahn"
 
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --version) VERSION="$2"; shift 2 ;;
-    --install-dir) INSTALL_DIR="$2"; shift 2 ;;
-    --base-url) DOWNLOAD_BASE="$2"; shift 2 ;;
-    -h|--help)
-      sed -n '2,12p' "$0"
-      exit 0 ;;
-    *) echo "Unknown argument: $1" >&2; exit 2 ;;
-  esac
-done
+parse_args() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --version) VERSION="$2"; shift 2 ;;
+      --install-dir) INSTALL_DIR="$2"; shift 2 ;;
+      --base-url) DOWNLOAD_BASE="$2"; shift 2 ;;
+      -h|--help)
+        sed -n '2,12p' "${BASH_SOURCE[0]}"
+        exit 0 ;;
+      *) echo "Unknown argument: $1" >&2; exit 2 ;;
+    esac
+  done
+}
 
 detect_os() {
   local os
@@ -72,7 +74,24 @@ sha256_of() {
   fi
 }
 
+archive_extension() {
+  case "$1" in
+    windows) echo "zip" ;;
+    *) echo "tar.gz" ;;
+  esac
+}
+
+archive_name() {
+  local os="$1" arch="$2" version="$3"
+  echo "${BINARY}_${version}_${os}_${arch}.$(archive_extension "$os")"
+}
+
+archive_url() {
+  echo "${DOWNLOAD_BASE}/$(archive_name "$1" "$2" "$3")"
+}
+
 main() {
+  parse_args "$@"
   local os arch version url tmp_dir archive ext expected actual
   os="$(detect_os)"
   arch="$(detect_arch)"
@@ -83,14 +102,9 @@ main() {
     exit 1
   fi
 
-  if [ "$os" = "windows" ]; then
-    ext="zip"
-  else
-    ext="tar.gz"
-  fi
-
-  archive="${BINARY}_${version}_${os}_${arch}.${ext}"
-  url="${DOWNLOAD_BASE}/${archive}"
+  ext="$(archive_extension "$os")"
+  archive="$(archive_name "$os" "$arch" "$version")"
+  url="$(archive_url "$os" "$arch" "$version")"
 
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf "$tmp_dir"' EXIT
@@ -133,4 +147,6 @@ main() {
   echo "AppBahn CLI ${version} installed. Run 'appbahn version' to verify."
 }
 
-main "$@"
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+  main "$@"
+fi
