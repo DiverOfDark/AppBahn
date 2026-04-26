@@ -15,5 +15,5 @@ public final class DockerSource implements Source {
     private String image;
     private String tag;
     private String registryUrl;
-    private String credentialRef;
+    private CredentialRef credentialRef;
 }

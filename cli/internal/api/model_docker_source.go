@@ -21,13 +21,13 @@ var _ MappedNullable = &DockerSource{}
 
 // DockerSource struct for DockerSource
 type DockerSource struct {
-	Type           string  `json:"type"`
-	PollInterval   *string `json:"pollInterval,omitempty"`
-	WebhookEnabled *bool   `json:"webhookEnabled,omitempty"`
-	Image          *string `json:"image,omitempty"`
-	Tag            *string `json:"tag,omitempty"`
-	RegistryUrl    *string `json:"registryUrl,omitempty"`
-	CredentialRef  *string `json:"credentialRef,omitempty"`
+	Type           string         `json:"type"`
+	PollInterval   *string        `json:"pollInterval,omitempty"`
+	WebhookEnabled *bool          `json:"webhookEnabled,omitempty"`
+	Image          *string        `json:"image,omitempty"`
+	Tag            *string        `json:"tag,omitempty"`
+	RegistryUrl    *string        `json:"registryUrl,omitempty"`
+	CredentialRef  *CredentialRef `json:"credentialRef,omitempty"`
 }
 
 type _DockerSource DockerSource
@@ -235,9 +235,9 @@ func (o *DockerSource) SetRegistryUrl(v string) {
 }
 
 // GetCredentialRef returns the CredentialRef field value if set, zero value otherwise.
-func (o *DockerSource) GetCredentialRef() string {
+func (o *DockerSource) GetCredentialRef() CredentialRef {
 	if o == nil || IsNil(o.CredentialRef) {
-		var ret string
+		var ret CredentialRef
 		return ret
 	}
 	return *o.CredentialRef
@@ -245,7 +245,7 @@ func (o *DockerSource) GetCredentialRef() string {
 
 // GetCredentialRefOk returns a tuple with the CredentialRef field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *DockerSource) GetCredentialRefOk() (*string, bool) {
+func (o *DockerSource) GetCredentialRefOk() (*CredentialRef, bool) {
 	if o == nil || IsNil(o.CredentialRef) {
 		return nil, false
 	}
@@ -261,8 +261,8 @@ func (o *DockerSource) HasCredentialRef() bool {
 	return false
 }
 
-// SetCredentialRef gets a reference to the given string and assigns it to the CredentialRef field.
-func (o *DockerSource) SetCredentialRef(v string) {
+// SetCredentialRef gets a reference to the given CredentialRef and assigns it to the CredentialRef field.
+func (o *DockerSource) SetCredentialRef(v CredentialRef) {
 	o.CredentialRef = &v
 }
 

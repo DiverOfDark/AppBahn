@@ -1319,7 +1319,7 @@ export interface components {
       image?: string
       tag?: string
       registryUrl?: string
-      credentialRef?: string
+      credentialRef?: components['schemas']['CredentialRef']
     }
     DockerfileBuildConfig: {
       /**
