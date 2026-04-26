@@ -85,31 +85,28 @@ public class ResourceSyncService {
         var now = Instant.now();
         var existing = resourceCacheRepository.findBySlug(request.slug()).orElse(null);
         boolean isFirstSight = existing == null;
-        if (existing != null) {
-            existing.setName(request.name());
-            existing.setType(request.type());
-            existing.setConfig(config);
-            existing.setLinks(links);
-            existing.setStatus(request.status());
-            existing.setStatusDetail(statusDetail);
-            existing.setLastSyncedAt(now);
-            existing.setUpdatedAt(now);
-            resourceCacheRepository.save(existing);
-        } else {
-            var entity = new ResourceCacheEntity();
-            entity.setSlug(request.slug());
-            entity.setEnvironmentId(env.getId());
-            entity.setName(request.name());
-            entity.setType(request.type());
-            entity.setConfig(config);
-            entity.setLinks(links);
-            entity.setStatus(request.status());
-            entity.setStatusDetail(statusDetail);
-            entity.setLastSyncedAt(now);
+        var entity = existing != null ? existing : new ResourceCacheEntity();
+        entity.setSlug(request.slug());
+        entity.setEnvironmentId(env.getId());
+        entity.setName(request.name());
+        entity.setType(request.type());
+        entity.setConfig(config);
+        entity.setLinks(links);
+        entity.setStatus(request.status());
+        entity.setStatusDetail(statusDetail);
+        entity.setLastSyncedAt(now);
+        if (existing == null) {
             entity.setCreatedAt(request.createdAt() != null ? request.createdAt() : now);
-            entity.setUpdatedAt(now);
-            resourceCacheRepository.save(entity);
         }
+        entity.setUpdatedAt(now);
+        // Detach the loaded entity so the persistence context doesn't try to flush it on tx commit
+        // — the native UPSERT below is authoritative and bypasses Hibernate's @Version check, but
+        // a managed entity would still trigger a stale-version flush after we increment version
+        // in the DB.
+        if (existing != null) {
+            entityManager.detach(existing);
+        }
+        resourceCacheRepository.upsertFromSync(entity, objectMapper);
 
         // First-sight path: a CR we've never seen on the platform side (e.g. direct
         // `kubectl apply` admitted by the operator's webhook). Materialise the initial
