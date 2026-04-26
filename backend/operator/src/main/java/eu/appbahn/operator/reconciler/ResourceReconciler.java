@@ -422,17 +422,23 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && a.getAvailable() == b.getAvailable();
     }
 
+    /**
+     * Hand the resource to the async event queue and return. The queue's drainer pushes to
+     * the platform with retries and exponential backoff, so reconcile latency is decoupled
+     * from tunnel latency. The {@code syncFailed} flag is only set if {@code emitSync} itself
+     * throws — currently a defensive branch, since enqueue overflow drops silently with a WARN.
+     */
     private void syncToPlatform(ResourceCrd resource) {
         try {
             eventPublisher.emitSync(resource);
-            log.debug("Synced resource {} to platform", resource.getMetadata().getName());
+            log.debug("Enqueued sync for resource {}", resource.getMetadata().getName());
             if (resource.getStatus() != null) {
                 resource.getStatus().setSyncFailed(false);
             }
         } catch (Exception e) {
             syncFailureCounter.increment();
             log.warn(
-                    "Failed to sync resource {} to platform: {}",
+                    "Failed to enqueue sync for resource {}: {}",
                     resource.getMetadata().getName(),
                     e.getMessage());
             if (resource.getStatus() != null) {
