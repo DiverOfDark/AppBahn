@@ -31,11 +31,14 @@ import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourceSpec;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +52,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResourceService {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceService.class);
+
+    /**
+     * Slugs carry a 7-char random suffix, so collisions are rare but possible. Retry a small
+     * fixed number of times before surfacing the conflict to the caller.
+     */
+    private static final int MAX_SLUG_ATTEMPTS = 3;
 
     private final ResourceCacheRepository resourceCacheRepository;
     private final DeploymentRepository deploymentRepository;
@@ -124,40 +133,12 @@ public class ResourceService {
         // after the pending-command sweeper expires the unacked command minutes later.
         clusterLivenessProbe.requireReachable(env.getTargetCluster());
 
-        String slug = SlugGenerator.generate(req.getName());
-        assignDomain(resourceConfig, slug);
-
         UUID workspaceId = environmentLookupService.getWorkspaceId(env);
 
-        List<ResourceSpec.LinkConfig> resourceLinks = List.of();
-        if (req.getLinks() != null && !req.getLinks().isEmpty()) {
-            validateLinks(req.getLinks(), slug);
-            resourceLinks = req.getLinks();
-        }
+        List<ResourceSpec.LinkConfig> resourceLinks =
+                (req.getLinks() != null && !req.getLinks().isEmpty()) ? req.getLinks() : List.of();
 
-        var crd = new ResourceCrd();
-        crd.getMetadata().setName(slug);
-        crd.getMetadata().setNamespace(namespaceService.computeNamespace(env.getSlug()));
-        crd.getMetadata().setLabels(Map.of(Labels.ENVIRONMENT_SLUG_KEY, env.getSlug()));
-
-        var spec = new ResourceSpec();
-        spec.setType(req.getType());
-        spec.setName(req.getName());
-        spec.setEnvironmentId(env.getId().toString());
-        spec.setProjectId(env.getProjectId().toString());
-        spec.setWorkspaceId(workspaceId.toString());
-        spec.setConfig(resourceConfig);
-        spec.setLinks(resourceLinks);
-        // Pre-generate a deploymentRevision so the operator's first status sync carries a stable
-        // UUID — ResourceSyncService materialises the matching DeploymentEntity on first sight.
-        spec.setDeploymentRevision(UUID.randomUUID().toString());
-        crd.setSpec(spec);
-
-        crdClient.create(crd);
-        log.info(
-                "Created Resource CRD: {} in namespace {}",
-                slug,
-                crd.getMetadata().getNamespace());
+        String slug = createCrdWithSlugRetry(req, env, workspaceId, resourceConfig, resourceLinks);
 
         auditLogService
                 .audit(ctx, AuditAction.RESOURCE_CREATED)
@@ -318,6 +299,89 @@ public class ResourceService {
                 .inEnvironment(env.getId())
                 .change("deploymentsDeleted", deploymentCount, 0)
                 .save();
+    }
+
+    /**
+     * Builds the CRD with a fresh slug and creates it via {@link ResourceCrdClient}. Retries up to
+     * {@link #MAX_SLUG_ATTEMPTS} times on slug-collision signals (Kubernetes 409 or DB unique
+     * violation on the cache primary key). Returns the slug that ultimately succeeded.
+     */
+    private String createCrdWithSlugRetry(
+            CreateResourceRequest req,
+            eu.appbahn.platform.workspace.entity.EnvironmentEntity env,
+            UUID workspaceId,
+            ResourceConfig resourceConfig,
+            List<ResourceSpec.LinkConfig> resourceLinks) {
+        // Snapshot user-supplied ingress domains before any auto-assignment so a retry doesn't
+        // carry over the previous attempt's slug-based domain into the next one.
+        var userDomains = new HashMap<Integer, String>();
+        for (var port : resourceConfig.getIngressPorts()) {
+            if (port.getDomain() != null) {
+                userDomains.put(port.getPort(), port.getDomain());
+            }
+        }
+
+        for (int attempt = 1; attempt <= MAX_SLUG_ATTEMPTS; attempt++) {
+            for (var port : resourceConfig.getIngressPorts()) {
+                port.setDomain(userDomains.get(port.getPort()));
+            }
+            String candidate = SlugGenerator.generate(req.getName());
+            assignDomain(resourceConfig, candidate);
+            if (!resourceLinks.isEmpty()) {
+                validateLinks(resourceLinks, candidate);
+            }
+
+            var crd = new ResourceCrd();
+            crd.getMetadata().setName(candidate);
+            crd.getMetadata().setNamespace(namespaceService.computeNamespace(env.getSlug()));
+            crd.getMetadata().setLabels(Map.of(Labels.ENVIRONMENT_SLUG_KEY, env.getSlug()));
+
+            var spec = new ResourceSpec();
+            spec.setType(req.getType());
+            spec.setName(req.getName());
+            spec.setEnvironmentId(env.getId().toString());
+            spec.setProjectId(env.getProjectId().toString());
+            spec.setWorkspaceId(workspaceId.toString());
+            spec.setConfig(resourceConfig);
+            spec.setLinks(resourceLinks);
+            // Pre-generate a deploymentRevision so the operator's first status sync carries a stable
+            // UUID — ResourceSyncService materialises the matching DeploymentEntity on first sight.
+            spec.setDeploymentRevision(UUID.randomUUID().toString());
+            crd.setSpec(spec);
+
+            try {
+                crdClient.create(crd);
+                log.info(
+                        "Created Resource CRD: {} in namespace {}",
+                        candidate,
+                        crd.getMetadata().getNamespace());
+                return candidate;
+            } catch (KubernetesClientException e) {
+                if (e.getCode() != 409) {
+                    throw e;
+                }
+                if (attempt < MAX_SLUG_ATTEMPTS) {
+                    log.info("Slug collision on attempt {} (k8s 409): {}, regenerating", attempt, candidate);
+                    continue;
+                }
+                throw slugCollisionExhausted(candidate);
+            } catch (DataIntegrityViolationException e) {
+                if (attempt < MAX_SLUG_ATTEMPTS) {
+                    log.info(
+                            "Slug collision on attempt {} (DB unique violation): {}, regenerating", attempt, candidate);
+                    continue;
+                }
+                throw slugCollisionExhausted(candidate);
+            }
+        }
+        throw new IllegalStateException("Unreachable: slug retry loop exited without success or failure");
+    }
+
+    private ConflictException slugCollisionExhausted(String lastCandidate) {
+        return new ConflictException(
+                "slug_collision",
+                "Could not allocate a unique slug after " + MAX_SLUG_ATTEMPTS + " attempts",
+                List.of(lastCandidate));
     }
 
     /**
