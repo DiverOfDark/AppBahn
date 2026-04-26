@@ -39,6 +39,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -62,6 +69,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -83,6 +97,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -114,6 +135,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -138,6 +166,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -150,6 +185,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -173,6 +215,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -204,6 +253,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -228,6 +284,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -240,6 +303,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -270,6 +340,14 @@ paths:
       tags:
       - Admin
       operationId: setPlatformConfig
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -317,6 +395,14 @@ paths:
       tags:
       - Workspaces
       operationId: createWorkspace
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -358,6 +444,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -402,6 +495,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -444,6 +544,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -465,6 +572,13 @@ paths:
       - name: resource_slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       responses:
@@ -513,6 +627,14 @@ paths:
       tags:
       - Resources
       operationId: createResource
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -537,6 +659,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -555,6 +684,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -569,6 +705,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -581,6 +724,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -606,6 +756,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -618,6 +775,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -660,6 +824,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -719,6 +890,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -748,6 +926,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -768,6 +953,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -810,6 +1002,14 @@ paths:
       tags:
       - Projects
       operationId: createProject
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -828,6 +1028,14 @@ paths:
       tags:
       - Git
       operationId: validateGitRepo
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -846,6 +1054,14 @@ paths:
       tags:
       - Git
       operationId: listGitRepos
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -866,6 +1082,14 @@ paths:
       tags:
       - Git
       operationId: startBuildDetection
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -918,6 +1142,14 @@ paths:
       tags:
       - Environments
       operationId: createEnvironment
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -961,6 +1193,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -991,6 +1230,14 @@ paths:
       tags:
       - Admin
       operationId: createNetworkPolicy
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1022,6 +1269,14 @@ paths:
       tags:
       - Admin
       operationId: registerCluster
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1063,6 +1318,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1074,6 +1336,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -1117,6 +1386,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1146,6 +1422,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1165,6 +1448,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1194,6 +1484,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1213,6 +1510,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1242,6 +1546,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1261,6 +1572,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1301,6 +1619,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1312,6 +1637,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -1354,6 +1686,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1365,6 +1704,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -1407,6 +1753,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1447,6 +1800,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1458,6 +1818,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -1500,6 +1867,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1521,6 +1895,13 @@ paths:
       - name: type
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -1547,6 +1928,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1561,6 +1949,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1584,6 +1979,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -1595,6 +1997,13 @@ paths:
       - name: name
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       requestBody:
@@ -2202,6 +2611,13 @@ paths:
         schema:
           type: integer
           format: int32
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -2221,6 +2637,13 @@ paths:
         required: true
         schema:
           type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -2233,6 +2656,13 @@ paths:
       - name: slug
         in: path
         required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
         schema:
           type: string
       responses:
@@ -2255,6 +2685,13 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK

@@ -2065,7 +2065,10 @@ export interface operations {
   setWorkspaceSecurity: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2091,7 +2094,10 @@ export interface operations {
   setWorkspaceRegistry: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2117,7 +2123,10 @@ export interface operations {
   setProjectRegistry: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2143,7 +2152,10 @@ export interface operations {
   setProjectMemberRole: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -2168,7 +2180,10 @@ export interface operations {
   deleteProjectMemberRole: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -2189,7 +2204,10 @@ export interface operations {
   setTargetCluster: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2215,7 +2233,10 @@ export interface operations {
   setEnvironmentRegistry: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2241,7 +2262,10 @@ export interface operations {
   setEnvironmentMemberRole: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -2266,7 +2290,10 @@ export interface operations {
   deleteEnvironmentMemberRole: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -2287,7 +2314,10 @@ export interface operations {
   setApprovalGates: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2333,7 +2363,10 @@ export interface operations {
   setPlatformConfig: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2381,7 +2414,10 @@ export interface operations {
   createWorkspace: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2427,7 +2463,10 @@ export interface operations {
   createNotificationWebhook: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2475,7 +2514,10 @@ export interface operations {
   addWorkspaceMember: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2523,7 +2565,10 @@ export interface operations {
   createGroupMapping: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2549,7 +2594,10 @@ export interface operations {
   triggerWebhook: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         resource_slug: string
       }
@@ -2596,7 +2644,10 @@ export interface operations {
   createResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2620,7 +2671,10 @@ export interface operations {
   rotateWebhookSecret: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2642,7 +2696,10 @@ export interface operations {
   stopResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2662,7 +2719,10 @@ export interface operations {
   startResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2682,7 +2742,10 @@ export interface operations {
   rollbackResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2708,7 +2771,10 @@ export interface operations {
   restartResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2728,7 +2794,10 @@ export interface operations {
   createExposure: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2776,7 +2845,10 @@ export interface operations {
   addDomain: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2828,7 +2900,10 @@ export interface operations {
   triggerDeployment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -2854,7 +2929,10 @@ export interface operations {
   rejectDeployment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         deployment_id: string
@@ -2875,7 +2953,10 @@ export interface operations {
   approveDeployment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         deployment_id: string
@@ -2921,7 +3002,10 @@ export interface operations {
   createProject: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2945,7 +3029,10 @@ export interface operations {
   validateGitRepo: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2969,7 +3056,10 @@ export interface operations {
   listGitRepos: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -2993,7 +3083,10 @@ export interface operations {
   startBuildDetection: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -3042,7 +3135,10 @@ export interface operations {
   createEnvironment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -3088,7 +3184,10 @@ export interface operations {
   createEnvironmentToken: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3134,7 +3233,10 @@ export interface operations {
   createNetworkPolicy: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -3178,7 +3280,10 @@ export interface operations {
   registerCluster: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path?: never
       cookie?: never
     }
@@ -3224,7 +3329,10 @@ export interface operations {
   deleteWorkspace: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3244,7 +3352,10 @@ export interface operations {
   updateWorkspace: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3292,7 +3403,10 @@ export interface operations {
   setWorkspaceQuota: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3318,7 +3432,10 @@ export interface operations {
   deleteNotificationWebhook: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         hook_id: string
@@ -3339,7 +3456,10 @@ export interface operations {
   updateNotificationWebhook: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         hook_id: string
@@ -3366,7 +3486,10 @@ export interface operations {
   removeWorkspaceMember: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -3387,7 +3510,10 @@ export interface operations {
   updateWorkspaceMember: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         user_id: string
@@ -3414,7 +3540,10 @@ export interface operations {
   deleteGroupMapping: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         mapping_id: string
@@ -3435,7 +3564,10 @@ export interface operations {
   updateGroupMapping: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         mapping_id: string
@@ -3484,7 +3616,10 @@ export interface operations {
   deleteResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3504,7 +3639,10 @@ export interface operations {
   updateResource: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3552,7 +3690,10 @@ export interface operations {
   deleteProject: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3572,7 +3713,10 @@ export interface operations {
   updateProject: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3620,7 +3764,10 @@ export interface operations {
   setProjectQuota: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3668,7 +3815,10 @@ export interface operations {
   deleteEnvironment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3688,7 +3838,10 @@ export interface operations {
   updateEnvironment: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3736,7 +3889,10 @@ export interface operations {
   setEnvironmentQuota: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -3762,7 +3918,10 @@ export interface operations {
   updateResourceTypeAdminConfig: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         type: string
       }
@@ -3788,7 +3947,10 @@ export interface operations {
   deleteNetworkPolicy: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         id: string
       }
@@ -3808,7 +3970,10 @@ export interface operations {
   updateNetworkPolicy: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         id: string
       }
@@ -3834,7 +3999,10 @@ export interface operations {
   deleteCluster: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         name: string
       }
@@ -3854,7 +4022,10 @@ export interface operations {
   updateCluster: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         name: string
       }
@@ -4361,7 +4532,10 @@ export interface operations {
   deleteExposure: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         port: number
@@ -4382,7 +4556,10 @@ export interface operations {
   removeDomain: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         domain: string
@@ -4403,7 +4580,10 @@ export interface operations {
   clearBuildCache: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
       }
@@ -4423,7 +4603,10 @@ export interface operations {
   deleteEnvironmentToken: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
       path: {
         slug: string
         token_id: string
