@@ -43,14 +43,13 @@ public class PendingCommandDispatcher {
     @Transactional
     public List<Claimed> pollBatch(String clusterName, String replicaId, int limit) {
         Instant staleBefore = Instant.now().minus(CLAIM_STALENESS);
-        var candidates = repo.findClaimable(clusterName, staleBefore);
+        var candidates = repo.findClaimable(clusterName, staleBefore, limit);
         if (candidates.isEmpty()) {
             return List.of();
         }
         var out = new java.util.ArrayList<Claimed>();
         Instant now = Instant.now();
         for (var row : candidates) {
-            if (out.size() >= limit) break;
             row.setClaimedByReplica(replicaId);
             row.setClaimedAt(now);
             repo.save(row);

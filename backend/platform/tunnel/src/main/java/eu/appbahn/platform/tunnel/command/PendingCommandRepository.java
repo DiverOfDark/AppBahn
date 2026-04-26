@@ -15,15 +15,19 @@ public interface PendingCommandRepository extends JpaRepository<PendingCommandEn
 
     Optional<PendingCommandEntity> findByCorrelationId(UUID correlationId);
 
-    @Query("""
-            SELECT c FROM PendingCommandEntity c
-             WHERE c.clusterName = :clusterName
-               AND c.ackedAt IS NULL
-               AND (c.claimedByReplica IS NULL OR c.claimedAt < :staleBefore)
-             ORDER BY c.enqueuedAt
-            """)
+    @Query(value = """
+                    SELECT * FROM pending_command
+                     WHERE cluster_name = :clusterName
+                       AND acked_at IS NULL
+                       AND (claimed_by_replica IS NULL OR claimed_at < :staleBefore)
+                     ORDER BY enqueued_at
+                     LIMIT :limit
+                     FOR UPDATE SKIP LOCKED
+                    """, nativeQuery = true)
     List<PendingCommandEntity> findClaimable(
-            @Param("clusterName") String clusterName, @Param("staleBefore") Instant staleBefore);
+            @Param("clusterName") String clusterName,
+            @Param("staleBefore") Instant staleBefore,
+            @Param("limit") int limit);
 
     List<PendingCommandEntity> findByAckedAtIsNullAndExpiresAtBefore(Instant cutoff);
 
