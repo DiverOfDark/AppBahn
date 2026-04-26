@@ -2702,13 +2702,20 @@ components:
       properties:
         runtimeClassName:
           type: string
+    CredentialRef:
+      type: object
+      properties:
+        secretName:
+          type: string
+        key:
+          type: string
     RegistryConfig:
       type: object
       properties:
         url:
           type: string
         credentialRef:
-          type: string
+          $ref: "#/components/schemas/CredentialRef"
     Quota:
       type: object
       properties:
@@ -3011,13 +3018,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkConfig"
-    CredentialRef:
-      type: object
-      properties:
-        secretName:
-          type: string
-        key:
-          type: string
     DockerSource:
       required:
       - type

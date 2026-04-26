@@ -19,8 +19,8 @@ var _ MappedNullable = &RegistryConfig{}
 
 // RegistryConfig struct for RegistryConfig
 type RegistryConfig struct {
-	Url           *string `json:"url,omitempty"`
-	CredentialRef *string `json:"credentialRef,omitempty"`
+	Url           *string        `json:"url,omitempty"`
+	CredentialRef *CredentialRef `json:"credentialRef,omitempty"`
 }
 
 // NewRegistryConfig instantiates a new RegistryConfig object
@@ -73,9 +73,9 @@ func (o *RegistryConfig) SetUrl(v string) {
 }
 
 // GetCredentialRef returns the CredentialRef field value if set, zero value otherwise.
-func (o *RegistryConfig) GetCredentialRef() string {
+func (o *RegistryConfig) GetCredentialRef() CredentialRef {
 	if o == nil || IsNil(o.CredentialRef) {
-		var ret string
+		var ret CredentialRef
 		return ret
 	}
 	return *o.CredentialRef
@@ -83,7 +83,7 @@ func (o *RegistryConfig) GetCredentialRef() string {
 
 // GetCredentialRefOk returns a tuple with the CredentialRef field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RegistryConfig) GetCredentialRefOk() (*string, bool) {
+func (o *RegistryConfig) GetCredentialRefOk() (*CredentialRef, bool) {
 	if o == nil || IsNil(o.CredentialRef) {
 		return nil, false
 	}
@@ -99,8 +99,8 @@ func (o *RegistryConfig) HasCredentialRef() bool {
 	return false
 }
 
-// SetCredentialRef gets a reference to the given string and assigns it to the CredentialRef field.
-func (o *RegistryConfig) SetCredentialRef(v string) {
+// SetCredentialRef gets a reference to the given CredentialRef and assigns it to the CredentialRef field.
+func (o *RegistryConfig) SetCredentialRef(v CredentialRef) {
 	o.CredentialRef = &v
 }
 

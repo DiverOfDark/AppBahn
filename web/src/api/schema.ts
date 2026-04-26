@@ -1131,9 +1131,13 @@ export interface components {
     SecuritySettings: {
       runtimeClassName?: string
     }
+    CredentialRef: {
+      secretName?: string
+      key?: string
+    }
     RegistryConfig: {
       url?: string
-      credentialRef?: string
+      credentialRef?: components['schemas']['CredentialRef']
     }
     Quota: {
       /** Format: double */
@@ -1303,10 +1307,6 @@ export interface components {
       environmentSlug: string
       config: components['schemas']['ResourceConfig']
       links?: components['schemas']['LinkConfig'][]
-    }
-    CredentialRef: {
-      secretName?: string
-      key?: string
     }
     DockerSource: {
       /**
