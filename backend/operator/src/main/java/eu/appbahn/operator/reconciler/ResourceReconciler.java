@@ -270,16 +270,27 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         replicas.setAvailable(available);
         status.setReplicas(replicas);
 
-        // Derive from Ingress secondary, not spec echo.
+        // Surface every ingress host that's actually live on the cluster. Primary first.
         var config = resource.getSpec().getConfig();
-        String ingressDomain = config != null ? config.getIngressDomain() : null;
-        if (ingressDomain != null) {
-            var ingress = context.getSecondaryResource(Ingress.class).orElse(null);
-            if (ingress != null && hasHost(ingress, ingressDomain)) {
-                var cd = new ResourceStatusDetail.CustomDomainStatus();
-                cd.setDomain(ingressDomain);
-                cd.setStatus(eu.appbahn.shared.crd.DomainStatus.ACTIVE);
-                status.setCustomDomains(List.of(cd));
+        var ingressPorts =
+                config != null ? config.getIngressPorts() : List.<eu.appbahn.shared.crd.ResourceConfig.PortConfig>of();
+        if (!ingressPorts.isEmpty()) {
+            var liveHosts = liveIngressHosts(context.getSecondaryResources(Ingress.class));
+            var domains = new java.util.ArrayList<ResourceStatusDetail.CustomDomainStatus>();
+            for (var port : ingressPorts) {
+                String domain = port.getDomain();
+                if (domain != null && liveHosts.contains(domain)) {
+                    var cd = new ResourceStatusDetail.CustomDomainStatus();
+                    cd.setDomain(domain);
+                    if (port.getPort() != null) {
+                        cd.setPort(port.getPort());
+                    }
+                    cd.setStatus(eu.appbahn.shared.crd.DomainStatus.ACTIVE);
+                    domains.add(cd);
+                }
+            }
+            if (!domains.isEmpty()) {
+                status.setCustomDomains(domains);
             }
         }
 
@@ -378,11 +389,19 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                         && "ProgressDeadlineExceeded".equals(c.getReason()));
     }
 
-    private static boolean hasHost(Ingress ingress, String expectedHost) {
-        if (ingress.getSpec() == null || ingress.getSpec().getRules() == null) {
-            return false;
+    private static Set<String> liveIngressHosts(Set<Ingress> ingresses) {
+        var hosts = new java.util.HashSet<String>();
+        for (var ingress : ingresses) {
+            if (ingress.getSpec() == null || ingress.getSpec().getRules() == null) {
+                continue;
+            }
+            for (var rule : ingress.getSpec().getRules()) {
+                if (rule.getHost() != null) {
+                    hosts.add(rule.getHost());
+                }
+            }
         }
-        return ingress.getSpec().getRules().stream().anyMatch(rule -> expectedHost.equals(rule.getHost()));
+        return hosts;
     }
 
     private static boolean statusEquals(ResourceStatusDetail a, ResourceStatusDetail b) {

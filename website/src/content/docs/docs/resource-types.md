@@ -13,22 +13,22 @@ The `deployment` type runs a container image as a Kubernetes Deployment with a S
 
 ### Configuration
 
-| Field                       | Type    | Default      | Description                                                         |
-| --------------------------- | ------- | ------------ | ------------------------------------------------------------------- |
-| `source.type`               | string  | —            | Source type: `docker` or `git`                                      |
-| `source.image`              | string  | —            | Docker image name (e.g., `nginx`, `registry.example.com/app`)       |
-| `source.tag`                | string  | `latest`     | Image tag                                                           |
-| `networking.ports[].port`   | integer | `80`         | Container port to expose                                            |
-| `hosting.cpu`               | string  | `"250m"`     | CPU request in Kubernetes quantity format (e.g., "250m", "1")       |
-| `hosting.memory`            | string  | `"256Mi"`    | Memory request in Kubernetes quantity format (e.g., "256Mi", "1Gi") |
-| `hosting.replicas`          | integer | `1`          | Number of replicas                                                  |
-| `networking.ports[].expose` | string  | `none`       | Exposure mode: `ingress` or `none`                                  |
-| `hosting.domain`            | string  | auto         | Custom domain (defaults to `{slug}.appbahn.local`)                  |
-| `runMode`                   | string  | `continuous` | Run mode: `continuous`                                              |
-| `healthCheck.readiness`     | object  | —            | Readiness probe (see Health Checks below)                           |
-| `healthCheck.liveness`      | object  | —            | Liveness probe (see Health Checks below)                            |
-| `healthCheck.startup`       | object  | —            | Startup probe (see Health Checks below)                             |
-| `env`                       | object  | `{}`         | Environment variables as key-value pairs                            |
+| Field                       | Type    | Default      | Description                                                                                                                         |
+| --------------------------- | ------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `source.type`               | string  | —            | Source type: `docker` or `git`                                                                                                      |
+| `source.image`              | string  | —            | Docker image name (e.g., `nginx`, `registry.example.com/app`)                                                                       |
+| `source.tag`                | string  | `latest`     | Image tag                                                                                                                           |
+| `networking.ports[].port`   | integer | `80`         | Container port to expose                                                                                                            |
+| `hosting.cpu`               | string  | `"250m"`     | CPU request in Kubernetes quantity format (e.g., "250m", "1")                                                                       |
+| `hosting.memory`            | string  | `"256Mi"`    | Memory request in Kubernetes quantity format (e.g., "256Mi", "1Gi")                                                                 |
+| `hosting.replicas`          | integer | `1`          | Number of replicas                                                                                                                  |
+| `networking.ports[].expose` | string  | `none`       | Exposure mode: `ingress` or `none`                                                                                                  |
+| `networking.ports[].domain` | string  | auto         | Per-port domain. Defaults to `{slug}.{baseDomain}` for the first ingress port and `{slug}-{port}.{baseDomain}` for additional ones. |
+| `runMode`                   | string  | `continuous` | Run mode: `continuous`                                                                                                              |
+| `healthCheck.readiness`     | object  | —            | Readiness probe (see Health Checks below)                                                                                           |
+| `healthCheck.liveness`      | object  | —            | Liveness probe (see Health Checks below)                                                                                            |
+| `healthCheck.startup`       | object  | —            | Startup probe (see Health Checks below)                                                                                             |
+| `env`                       | object  | `{}`         | Environment variables as key-value pairs                                                                                            |
 
 ### Example
 
