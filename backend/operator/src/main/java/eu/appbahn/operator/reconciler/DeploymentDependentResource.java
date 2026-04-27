@@ -47,6 +47,10 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
         String image = dockerSource.getImage();
         String tag = dockerSource.getTag() != null ? dockerSource.getTag() : Labels.DEFAULT_IMAGE_TAG;
+        String digest = dockerSource.getDigest();
+        // When the platform has resolved the manifest digest, pin the Pod spec to image@digest so
+        // a moved tag in the upstream registry can't change what runs.
+        String containerImage = (digest != null && !digest.isBlank()) ? image + "@" + digest : image + ":" + tag;
         var allPorts = config.getPorts();
         Integer port = config.getLowestPort();
         int replicas;
@@ -88,8 +92,11 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .withNewSpec()
                 .addNewContainer()
                 .withName(Labels.CONTAINER_NAME)
-                .withImage(image + ":" + tag)
-                .withImagePullPolicy(Labels.DEFAULT_IMAGE_TAG.equals(tag) ? "Always" : "IfNotPresent")
+                .withImage(containerImage)
+                .withImagePullPolicy(
+                        (digest == null || digest.isBlank()) && Labels.DEFAULT_IMAGE_TAG.equals(tag)
+                                ? "Always"
+                                : "IfNotPresent")
                 .withPorts(allPorts.stream()
                         .filter(p -> p.getPort() != null)
                         .map(p -> new ContainerPortBuilder()

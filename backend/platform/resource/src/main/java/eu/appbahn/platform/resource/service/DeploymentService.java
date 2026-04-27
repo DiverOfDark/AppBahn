@@ -38,6 +38,7 @@ public class DeploymentService {
     private final AuditLogService auditLogService;
     private final NamespaceService namespaceService;
     private final ResourceCrdClient crdClient;
+    private final ImageResolver imageResolver;
     private final EntityManager entityManager;
 
     public DeploymentService(
@@ -47,6 +48,7 @@ public class DeploymentService {
             AuditLogService auditLogService,
             NamespaceService namespaceService,
             ResourceCrdClient crdClient,
+            ImageResolver imageResolver,
             EntityManager entityManager) {
         this.deploymentRepository = deploymentRepository;
         this.resourcePermissionHelper = resourcePermissionHelper;
@@ -54,6 +56,7 @@ public class DeploymentService {
         this.auditLogService = auditLogService;
         this.namespaceService = namespaceService;
         this.crdClient = crdClient;
+        this.imageResolver = imageResolver;
         this.entityManager = entityManager;
     }
 
@@ -71,13 +74,22 @@ public class DeploymentService {
                 .getSingleResult();
 
         String imageRef = null;
+        String resolvedDigest = null;
         String sourceRef = req.getSourceRef();
         ResourceConfig resConfig = resource.getConfig();
         if (resConfig != null && resConfig.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSource) {
             String image = dockerSource.getImage();
-            String tag = dockerSource.getTag() != null ? dockerSource.getTag() : "latest";
+            String tag =
+                    dockerSource.getTag() != null ? dockerSource.getTag() : eu.appbahn.shared.Labels.DEFAULT_IMAGE_TAG;
             if (image != null) {
-                imageRef = image + ":" + tag;
+                ResolvedImage resolvedImage = imageResolver.resolve(
+                        image, tag, dockerSource.getRegistryUrl(), dockerSource.getCredentialRef());
+                if (resolvedImage.digest() != null) {
+                    resolvedDigest = resolvedImage.digest();
+                    imageRef = image + "@" + resolvedImage.digest();
+                } else {
+                    imageRef = image + ":" + tag;
+                }
                 if (sourceRef == null) {
                     sourceRef = image + ":" + tag;
                 }
@@ -119,10 +131,18 @@ public class DeploymentService {
         deploymentRepository.save(entity);
 
         // Bumping deploymentRevision flips the pod template annotation, forcing K8s to roll.
+        // Also propagate the resolved digest onto the CRD's DockerSource so the operator pins the
+        // Pod spec to image@sha256:<digest> rather than the floating tag.
         String namespace = namespaceService.computeNamespace(env.getSlug());
         var existingCrd = crdClient.get(resourceSlug, namespace);
         if (existingCrd != null) {
             existingCrd.getSpec().setDeploymentRevision(entity.getId().toString());
+            if (resolvedDigest != null
+                    && existingCrd.getSpec().getConfig() != null
+                    && existingCrd.getSpec().getConfig().getSource()
+                            instanceof eu.appbahn.shared.crd.DockerSource crdDockerSource) {
+                crdDockerSource.setDigest(resolvedDigest);
+            }
             crdClient.update(existingCrd);
             log.info("Updated CRD deploymentRevision for resource {}", resourceSlug);
         }

@@ -1320,6 +1320,7 @@ export interface components {
       tag?: string
       registryUrl?: string
       credentialRef?: components['schemas']['CredentialRef']
+      digest?: string
     }
     DockerfileBuildConfig: {
       /**
