@@ -28,6 +28,7 @@ type DockerSource struct {
 	Tag            *string        `json:"tag,omitempty"`
 	RegistryUrl    *string        `json:"registryUrl,omitempty"`
 	CredentialRef  *CredentialRef `json:"credentialRef,omitempty"`
+	Digest         *string        `json:"digest,omitempty"`
 }
 
 type _DockerSource DockerSource
@@ -266,6 +267,38 @@ func (o *DockerSource) SetCredentialRef(v CredentialRef) {
 	o.CredentialRef = &v
 }
 
+// GetDigest returns the Digest field value if set, zero value otherwise.
+func (o *DockerSource) GetDigest() string {
+	if o == nil || IsNil(o.Digest) {
+		var ret string
+		return ret
+	}
+	return *o.Digest
+}
+
+// GetDigestOk returns a tuple with the Digest field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *DockerSource) GetDigestOk() (*string, bool) {
+	if o == nil || IsNil(o.Digest) {
+		return nil, false
+	}
+	return o.Digest, true
+}
+
+// HasDigest returns a boolean if a field has been set.
+func (o *DockerSource) HasDigest() bool {
+	if o != nil && !IsNil(o.Digest) {
+		return true
+	}
+
+	return false
+}
+
+// SetDigest gets a reference to the given string and assigns it to the Digest field.
+func (o *DockerSource) SetDigest(v string) {
+	o.Digest = &v
+}
+
 func (o DockerSource) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -294,6 +327,9 @@ func (o DockerSource) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.CredentialRef) {
 		toSerialize["credentialRef"] = o.CredentialRef
+	}
+	if !IsNil(o.Digest) {
+		toSerialize["digest"] = o.Digest
 	}
 	return toSerialize, nil
 }

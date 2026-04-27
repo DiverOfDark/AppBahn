@@ -403,6 +403,8 @@ components:
           type: string
         credentialRef:
           $ref: "#/components/schemas/CredentialRef"
+        digest:
+          type: string
     DockerfileBuildConfig:
       required:
       - type

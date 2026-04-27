@@ -16,4 +16,11 @@ public final class DockerSource implements Source {
     private String tag;
     private String registryUrl;
     private CredentialRef credentialRef;
+
+    /**
+     * Resolved manifest digest (e.g. {@code sha256:abc...}) for {@code image:tag} at deployment
+     * creation time. When set, the operator pins the Pod spec to {@code image@digest} so a moved
+     * tag in the upstream registry cannot change what runs.
+     */
+    private String digest;
 }
