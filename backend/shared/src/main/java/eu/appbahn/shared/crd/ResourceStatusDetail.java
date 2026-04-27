@@ -33,6 +33,14 @@ public class ResourceStatusDetail {
     /** True when the last attempt to sync this resource to the platform API failed. */
     private Boolean syncFailed;
 
+    /**
+     * Human-readable explanation of the most recent container failure — e.g.
+     * "container 'app' crash-looped: exit 137 (OOMKilled)". Set whenever a pod
+     * shows a non-OK waiting reason or a previous container terminated with a
+     * non-zero exit code. Cleared once all containers are healthy.
+     */
+    private String lastError;
+
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ReplicaStatus {

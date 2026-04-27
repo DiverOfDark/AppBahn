@@ -857,6 +857,8 @@ components:
           - REJECTED
         syncFailed:
           type: boolean
+        lastError:
+          type: string
     ResourceSyncBatch:
       type: object
       allOf:
