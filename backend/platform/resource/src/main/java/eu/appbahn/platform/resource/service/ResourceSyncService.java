@@ -56,6 +56,30 @@ public class ResourceSyncService {
         syncResource(request, null);
     }
 
+    /**
+     * Tunnel entry point: enforces cluster ownership before applying the sync. The {@code
+     * expectedClusterName} is the JWT-verified cluster from {@link
+     * eu.appbahn.platform.tunnel.auth.OperatorJwtVerifier}. If the resource's environment
+     * is not bound to that cluster, the call throws {@link ClusterOwnershipException} and
+     * nothing is written.
+     */
+    @Transactional
+    public void syncResourceFromCluster(ResourceSyncPayload request, String expectedClusterName) {
+        if (!SlugFormat.isValid(request.slug())) {
+            log.warn("Skipping sync — slug does not match canonical format: {}", request.slug());
+            return;
+        }
+        EnvironmentEntity env =
+                environmentRepository.findBySlug(request.environmentSlug()).orElse(null);
+        if (env == null) {
+            // Same race documented on syncResource: a CR can outlive its env. Skip silently.
+            log.info("Skipping sync for {} — environment {} not found", request.slug(), request.environmentSlug());
+            return;
+        }
+        assertEnvironmentOwnedBy(env, expectedClusterName, request.slug());
+        syncResource(request, env);
+    }
+
     /** {@code preResolvedEnv} skips the lookup when the caller (fullSync) already has it. */
     @Transactional
     public void syncResource(ResourceSyncPayload request, EnvironmentEntity preResolvedEnv) {
@@ -180,6 +204,37 @@ public class ResourceSyncService {
         log.info("Synced resource: {}", request.slug());
     }
 
+    /**
+     * Tunnel entry point for delete events: looks up the cached row and verifies its
+     * environment is owned by {@code expectedClusterName}. Idempotent if the row is
+     * already gone.
+     */
+    @Transactional
+    public void deleteResourceSyncFromCluster(String slug, String expectedClusterName) {
+        if (!SlugFormat.isValid(slug)) {
+            log.warn("Skipping delete — slug does not match canonical format: {}", slug);
+            return;
+        }
+        var existing = resourceCacheRepository.findBySlug(slug).orElse(null);
+        if (existing == null) {
+            return;
+        }
+        var env = environmentRepository.findById(existing.getEnvironmentId()).orElse(null);
+        if (env != null) {
+            assertEnvironmentOwnedBy(env, expectedClusterName, slug);
+        }
+        resourceCacheRepository.deleteBySlugIfExists(slug);
+        log.info("Deleted resource from cache: {}", slug);
+    }
+
+    private void assertEnvironmentOwnedBy(EnvironmentEntity env, String expectedClusterName, String resourceSlug) {
+        if (!expectedClusterName.equals(env.getTargetCluster())) {
+            throw new ClusterOwnershipException(String.format(
+                    "resource %s (env %s) belongs to cluster %s, not %s",
+                    resourceSlug, env.getSlug(), env.getTargetCluster(), expectedClusterName));
+        }
+    }
+
     @Transactional
     public void deleteResourceSync(String slug) {
         if (!SlugFormat.isValid(slug)) {
@@ -189,6 +244,35 @@ public class ResourceSyncService {
         // Idempotent — ResourceService.delete may have already removed the row.
         resourceCacheRepository.deleteBySlugIfExists(slug);
         log.info("Deleted resource from cache: {}", slug);
+    }
+
+    /**
+     * Tunnel entry point for full-sync. Enforces cluster ownership atomically: every row's
+     * environment must belong to {@code expectedClusterName}. If any row mismatches, the
+     * whole payload is rejected with {@link ClusterOwnershipException} — nothing is upserted
+     * and the prune step does not run.
+     */
+    @Transactional
+    public void fullSyncFromCluster(FullSyncPayload request, String expectedClusterName) {
+        List<ResourceSyncPayload> resources = request.resources() != null ? request.resources() : List.of();
+        // Pre-resolve every referenced environment so the ownership assertion fires BEFORE
+        // any upsert and rejects the payload atomically. Missing envs are tolerated (same
+        // CR-outlives-namespace race that fullSync already handles); only mismatched-cluster
+        // rows abort the transaction.
+        Map<String, EnvironmentEntity> envCache = new HashMap<>();
+        for (var res : resources) {
+            EnvironmentEntity env = envCache.computeIfAbsent(
+                    res.environmentSlug(),
+                    slug -> environmentRepository.findBySlug(slug).orElse(null));
+            if (env == null) {
+                continue;
+            }
+            assertEnvironmentOwnedBy(env, expectedClusterName, res.slug());
+        }
+        // Ownership confirmed — delegate to the trusted internal path. Pass the verified
+        // cluster on the payload so prune scopes to its environments.
+        FullSyncPayload trusted = new FullSyncPayload(expectedClusterName, resources);
+        fullSync(trusted);
     }
 
     @Transactional

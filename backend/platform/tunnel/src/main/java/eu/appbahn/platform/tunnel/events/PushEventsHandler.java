@@ -75,13 +75,14 @@ public class PushEventsHandler {
     private void dispatch(String clusterName, OperatorEvent event) {
         switch (event) {
             case ResourceSyncBatch b -> handleSyncBatch(clusterName, b);
-            case ResourceDeletedBatch b -> handleDeletedBatch(b);
+            case ResourceDeletedBatch b -> handleDeletedBatch(clusterName, b);
             case FullResourceSyncChunk c -> handleFullSyncChunk(clusterName, c);
             case AdmissionApproved a -> {
                 // Treat an AdmissionApproved exactly like a sync — it's a fast-path pre-seed
                 // that carries the same payload shape.
                 if (a.getItem() != null) {
-                    resourceSyncService.syncResource(eventMapper.toPayload(a.getItem(), clusterName));
+                    resourceSyncService.syncResourceFromCluster(
+                            eventMapper.toPayload(a.getItem(), clusterName), clusterName);
                 }
             }
             case AdmissionCacheMissReport r -> handleAdmissionCacheMiss(clusterName, r);
@@ -111,12 +112,14 @@ public class PushEventsHandler {
 
     private void handleSyncBatch(String clusterName, ResourceSyncBatch batch) {
         if (batch.getItems() == null) return;
-        batch.getItems().forEach(item -> resourceSyncService.syncResource(eventMapper.toPayload(item, clusterName)));
+        batch.getItems()
+                .forEach(item -> resourceSyncService.syncResourceFromCluster(
+                        eventMapper.toPayload(item, clusterName), clusterName));
     }
 
-    private void handleDeletedBatch(ResourceDeletedBatch batch) {
+    private void handleDeletedBatch(String clusterName, ResourceDeletedBatch batch) {
         if (batch.getResourceSlugs() == null) return;
-        batch.getResourceSlugs().forEach(resourceSyncService::deleteResourceSync);
+        batch.getResourceSlugs().forEach(slug -> resourceSyncService.deleteResourceSyncFromCluster(slug, clusterName));
     }
 
     private void handleFullSyncChunk(String clusterName, FullResourceSyncChunk chunk) {
@@ -164,7 +167,7 @@ public class PushEventsHandler {
                         sessionId);
             }
         }
-        resourceSyncService.fullSync(new FullSyncPayload(clusterName, resources));
+        resourceSyncService.fullSyncFromCluster(new FullSyncPayload(clusterName, resources), clusterName);
         chunkBuffer.deleteByIdClusterNameAndIdSyncSessionId(clusterName, sessionId);
         log.info("Committed full sync {} for cluster {}: {} resources", sessionId, clusterName, resources.size());
     }

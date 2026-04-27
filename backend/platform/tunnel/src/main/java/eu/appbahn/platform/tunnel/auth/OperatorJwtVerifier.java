@@ -19,6 +19,11 @@ import org.springframework.stereotype.Service;
  * RS256 only; cross-replica replay protection is short-window + in-memory, which
  * suffices because JWTs expire in ≤60 seconds and each replica is fronted by the
  * same registration+approval state in Postgres.
+ *
+ * <p>Trust model: per-cluster signing-key. The {@code iss} claim names a cluster, the
+ * platform looks up that cluster's registered public key, and the signature is verified
+ * against ONLY that key — a JWT signed by Cluster A cannot be presented as Cluster B,
+ * even if both clusters are registered.
  */
 @Service
 public class OperatorJwtVerifier {
@@ -66,6 +71,12 @@ public class OperatorJwtVerifier {
         }
         if (cluster.getPublicKey() == null || cluster.getPublicKey().isBlank()) {
             throw new TunnelAuthException("cluster has no public key: " + claims.clusterName());
+        }
+        // Defense-in-depth: the row was fetched by claim's cluster name, so this should
+        // always hold — but if a future repository change broke that invariant a JWT
+        // could end up verified against the wrong cluster's key, so assert explicitly.
+        if (!claims.clusterName().equals(cluster.getName())) {
+            throw new TunnelAuthException("cluster name mismatch between claim and registration");
         }
 
         if (!signed.verifySignature(decodePublicKey(cluster.getPublicKey()))) {
