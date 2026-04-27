@@ -1736,6 +1736,7 @@ export interface components {
         | 'FAILED'
         | 'REJECTED'
       syncFailed?: boolean
+      lastError?: string
     }
     UpdateProjectRequest: {
       name?: string

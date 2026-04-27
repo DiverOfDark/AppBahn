@@ -1,10 +1,12 @@
 package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
+import eu.appbahn.shared.K8sStatusReasons;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
+import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -64,15 +66,12 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
     /** Waiting reasons that will never start successfully — surface them without waiting for progressDeadlineSeconds. */
     private static final Set<String> TERMINAL_WAITING_REASONS = Set.of(
-            "ImagePullBackOff",
-            "ErrImagePull",
-            "InvalidImageName",
-            "CreateContainerConfigError",
-            "CreateContainerError",
-            "RunContainerError");
-
-    /** CrashLoopBackOff is terminal only after this many restarts — gives transient-race startups time to recover. */
-    private static final int CRASHLOOP_RESTART_THRESHOLD = 3;
+            K8sStatusReasons.IMAGE_PULL_BACK_OFF,
+            K8sStatusReasons.ERR_IMAGE_PULL,
+            K8sStatusReasons.INVALID_IMAGE_NAME,
+            K8sStatusReasons.CREATE_CONTAINER_CONFIG_ERROR,
+            K8sStatusReasons.CREATE_CONTAINER_ERROR,
+            K8sStatusReasons.RUN_CONTAINER_ERROR);
 
     /** Retry interval after an unexpected reconcile error — informers don't replay platform-sync failures. */
     private static final long ERROR_RETRY_MINUTES = 1;
@@ -247,6 +246,9 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     prev != null && prev.getMessage() != null
                             ? prev.getMessage()
                             : "Deployment terminally failed; scaled to 0 to stop restart loop");
+            if (prev != null && prev.getLastError() != null) {
+                status.setLastError(prev.getLastError());
+            }
             var replicas = new ResourceStatusDetail.ReplicaStatus();
             replicas.setDesired(desired);
             replicas.setReady(ready);
@@ -290,16 +292,37 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             }
         }
 
-        // Fast-fail pod-level failures instead of waiting ~120s for ProgressDeadlineExceeded.
-        Optional<String> podFailure = detectPodFailure(context.getSecondaryResources(Pod.class));
+        PodInspection inspection = inspectPods(context.getSecondaryResources(Pod.class));
+        if (inspection.lastError != null) {
+            status.setLastError(inspection.lastError);
+        }
+
+        Optional<String> terminalFailure = inspection.terminalFailure;
         boolean conditionRolloutFailed = hasFailedRolloutCondition(depStatus);
-        boolean rolloutFailed = conditionRolloutFailed || podFailure.isPresent();
+        // ImagePullBackOff & friends never recover without a spec edit. CrashLoopBackOff is
+        // reversible (the pod might still come up) but still reported as ERROR with the
+        // crash detail in lastError; phase reverts to READY automatically once the kubelet
+        // stops reporting the waiting reason.
+        boolean rolloutFailed = conditionRolloutFailed || terminalFailure.isPresent();
 
         if (rolloutFailed && ready > 0) {
             status.setPhase(ResourcePhase.DEGRADED);
-            status.setMessage(podFailure
+            status.setMessage(terminalFailure
                     .map(reason -> reason + " (old replicas still serving)")
                     .orElseGet(() -> "Deployment rollout failed but " + ready + " old replica(s) still running"));
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
+            }
+        } else if (rolloutFailed) {
+            status.setPhase(ResourcePhase.ERROR);
+            status.setMessage(terminalFailure.orElse("Deployment rollout failed"));
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
+            }
+        } else if (inspection.crashLoopReason != null) {
+            // STOPPED > ERROR (crash-looping) > READY/DEGRADED/RESTARTING/PENDING.
+            status.setPhase(ResourcePhase.ERROR);
+            status.setMessage(inspection.crashLoopReason);
             if (deploymentRevision != null) {
                 status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
             }
@@ -321,18 +344,10 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
             }
         } else {
-            if (rolloutFailed) {
-                status.setPhase(ResourcePhase.ERROR);
-                status.setMessage(podFailure.orElse("Deployment rollout failed"));
-                if (deploymentRevision != null) {
-                    status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
-                }
-            } else {
-                status.setPhase(ResourcePhase.PENDING);
-                status.setMessage("Waiting for pods to be ready");
-                if (deploymentRevision != null) {
-                    status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
-                }
+            status.setPhase(ResourcePhase.PENDING);
+            status.setMessage("Waiting for pods to be ready");
+            if (deploymentRevision != null) {
+                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
             }
         }
 
@@ -340,11 +355,20 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     }
 
     /**
-     * Inspect pods belonging to this resource for terminal container failures. Returns a formatted
-     * {@code "<reason>: <message>"} on the first bad pod, or empty. Pods mid-deletion are
-     * skipped — their containers enter odd transient states during shutdown.
+     * Walk every container in every non-terminating pod and collect:
+     * <ul>
+     *   <li>{@link PodInspection#terminalFailure} — first pod hitting a {@link #TERMINAL_WAITING_REASONS}
+     *       reason (ImagePullBackOff &amp; friends — never recovers without a spec edit).</li>
+     *   <li>{@link PodInspection#crashLoopReason} — first pod with a container in
+     *       {@code CrashLoopBackOff}, formatted as e.g. "container 'app' crash-looped: exited 137 (OOMKilled)".</li>
+     *   <li>{@link PodInspection#lastError} — most informative human-readable explanation found,
+     *       drawn from waiting reasons or {@code lastState.terminated.exitCode/reason}.</li>
+     * </ul>
      */
-    static Optional<String> detectPodFailure(Set<Pod> pods) {
+    static PodInspection inspectPods(Set<Pod> pods) {
+        Optional<String> terminalFailure = Optional.empty();
+        String crashLoopReason = null;
+        String lastError = null;
         for (Pod pod : pods) {
             if (pod.getMetadata() != null && pod.getMetadata().getDeletionTimestamp() != null) {
                 continue;
@@ -353,27 +377,98 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 continue;
             }
             for (ContainerStatus cs : pod.getStatus().getContainerStatuses()) {
-                if (cs.getState() == null || cs.getState().getWaiting() == null) {
-                    continue;
-                }
-                String reason = cs.getState().getWaiting().getReason();
-                String message = cs.getState().getWaiting().getMessage();
-                if (TERMINAL_WAITING_REASONS.contains(reason)) {
-                    return Optional.of(formatFailure(reason, message));
-                }
-                if ("CrashLoopBackOff".equals(reason)
-                        && cs.getRestartCount() != null
-                        && cs.getRestartCount() >= CRASHLOOP_RESTART_THRESHOLD) {
-                    return Optional.of(formatFailure(reason + " (restarts=" + cs.getRestartCount() + ")", message));
+                String waitingReason = cs.getState() != null && cs.getState().getWaiting() != null
+                        ? cs.getState().getWaiting().getReason()
+                        : null;
+                String waitingMessage = cs.getState() != null && cs.getState().getWaiting() != null
+                        ? cs.getState().getWaiting().getMessage()
+                        : null;
+                String previousTermination = describePreviousTermination(cs);
+
+                if (waitingReason != null) {
+                    if (terminalFailure.isEmpty() && TERMINAL_WAITING_REASONS.contains(waitingReason)) {
+                        terminalFailure = Optional.of(formatFailure(waitingReason, waitingMessage));
+                    }
+                    if (crashLoopReason == null && K8sStatusReasons.CRASH_LOOP_BACK_OFF.equals(waitingReason)) {
+                        crashLoopReason = describeCrashLoop(cs.getName(), previousTermination, waitingMessage);
+                    }
+                    if (lastError == null) {
+                        lastError = describeContainerState(
+                                cs.getName(), waitingReason, waitingMessage, previousTermination);
+                    }
+                } else if (lastError == null && previousTermination != null) {
+                    // Container is currently running but the previous instance exited badly — still
+                    // worth surfacing so the user can see "exited 137 (OOMKilled)" even before the
+                    // next restart trips CrashLoopBackOff.
+                    lastError = "container '" + cs.getName() + "' previously " + previousTermination;
                 }
             }
         }
-        return Optional.empty();
+        return new PodInspection(terminalFailure, crashLoopReason, lastError);
+    }
+
+    private static String describePreviousTermination(ContainerStatus cs) {
+        if (cs.getLastState() == null || cs.getLastState().getTerminated() == null) {
+            return null;
+        }
+        ContainerStateTerminated term = cs.getLastState().getTerminated();
+        Integer code = term.getExitCode();
+        String reason = term.getReason();
+        if (code == null && (reason == null || reason.isBlank())) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder("exited");
+        if (code != null) {
+            sb.append(' ').append(code);
+        }
+        if (reason != null && !reason.isBlank()) {
+            sb.append(" (").append(reason).append(')');
+        }
+        return sb.toString();
+    }
+
+    private static String describeCrashLoop(String container, String previousTermination, String waitingMessage) {
+        StringBuilder sb = new StringBuilder("container '")
+                .append(container != null ? container : "?")
+                .append("' crash-looped");
+        if (previousTermination != null) {
+            sb.append(": ").append(previousTermination);
+        } else if (waitingMessage != null && !waitingMessage.isBlank()) {
+            sb.append(": ").append(waitingMessage);
+        }
+        return sb.toString();
+    }
+
+    private static String describeContainerState(
+            String container, String waitingReason, String waitingMessage, String previousTermination) {
+        if (K8sStatusReasons.CRASH_LOOP_BACK_OFF.equals(waitingReason)) {
+            return describeCrashLoop(container, previousTermination, waitingMessage);
+        }
+        StringBuilder sb = new StringBuilder("container '")
+                .append(container != null ? container : "?")
+                .append("' ")
+                .append(waitingReason);
+        if (waitingMessage != null && !waitingMessage.isBlank()) {
+            sb.append(": ").append(waitingMessage);
+        } else if (previousTermination != null) {
+            sb.append(" (previously ").append(previousTermination).append(')');
+        }
+        return sb.toString();
     }
 
     private static String formatFailure(String reason, String message) {
         return message != null && !message.isBlank() ? reason + ": " + message : reason;
     }
+
+    /**
+     * Result of walking a resource's pods. {@code terminalFailure} reports a
+     * never-recovers waiting reason (ImagePullBackOff &amp; friends).
+     * {@code crashLoopReason} is non-null when any container is currently
+     * {@code CrashLoopBackOff}-ing. {@code lastError} carries the most
+     * informative explanation seen — surfaced in
+     * {@link ResourceStatusDetail#getLastError()} regardless of phase.
+     */
+    record PodInspection(Optional<String> terminalFailure, String crashLoopReason, String lastError) {}
 
     private static boolean hasFailedRolloutCondition(io.fabric8.kubernetes.api.model.apps.DeploymentStatus depStatus) {
         if (depStatus.getConditions() == null) {
@@ -382,7 +477,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         return depStatus.getConditions().stream()
                 .anyMatch(c -> "Progressing".equals(c.getType())
                         && "False".equals(c.getStatus())
-                        && "ProgressDeadlineExceeded".equals(c.getReason()));
+                        && K8sStatusReasons.PROGRESS_DEADLINE_EXCEEDED.equals(c.getReason()));
     }
 
     private static Set<String> liveIngressHosts(Set<Ingress> ingresses) {
@@ -405,6 +500,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         if (a == null || b == null) return false;
         return Objects.equals(a.getPhase(), b.getPhase())
                 && Objects.equals(a.getMessage(), b.getMessage())
+                && Objects.equals(a.getLastError(), b.getLastError())
                 && Objects.equals(a.getObservedGeneration(), b.getObservedGeneration())
                 && Objects.equals(a.getCustomDomains(), b.getCustomDomains())
                 && Objects.equals(a.getLatestDeploymentId(), b.getLatestDeploymentId())

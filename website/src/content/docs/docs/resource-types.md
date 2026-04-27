@@ -63,14 +63,18 @@ The `deployment` type runs a container image as a Kubernetes Deployment with a S
 
 Resources go through these status phases:
 
-| Status       | Description                        |
-| ------------ | ---------------------------------- |
-| `PENDING`    | Resource created, waiting for pods |
-| `READY`      | All replicas are available         |
-| `DEGRADED`   | Some replicas unavailable          |
-| `ERROR`      | No replicas available              |
-| `RESTARTING` | Rolling restart in progress        |
-| `STOPPED`    | Manually stopped                   |
+| Status       | Description                                                                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PENDING`    | Resource created, waiting for pods                                                                                                                  |
+| `READY`      | All replicas are available                                                                                                                          |
+| `DEGRADED`   | Some replicas unavailable                                                                                                                           |
+| `RESTARTING` | Rolling restart in progress                                                                                                                         |
+| `ERROR`      | No replicas available — image pull failed, rollout deadline exceeded, or a container is `CrashLoopBackOff`-ing. `statusDetail.lastError` shows why. |
+| `STOPPED`    | Manually stopped                                                                                                                                    |
+
+When a container crash-loops or its previous instance terminated with a non-zero exit code,
+the latest error is surfaced under `statusDetail.lastError` (for example
+`container 'app' crash-looped: exited 137 (OOMKilled)`).
 
 ### Health Checks
 

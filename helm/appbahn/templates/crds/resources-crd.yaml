@@ -246,6 +246,8 @@ spec:
                 type: array
               lastDeploymentTime:
                 type: string
+              lastError:
+                type: string
               lastSyncTime:
                 type: string
               latestDeploymentId:
