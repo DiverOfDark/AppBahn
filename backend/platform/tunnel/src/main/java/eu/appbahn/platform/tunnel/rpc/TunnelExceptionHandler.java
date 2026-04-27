@@ -1,5 +1,6 @@
 package eu.appbahn.platform.tunnel.rpc;
 
+import eu.appbahn.platform.resource.service.ClusterOwnershipException;
 import eu.appbahn.platform.tunnel.auth.OperatorJwtVerifier;
 import java.util.Map;
 import org.springframework.http.MediaType;
@@ -22,5 +23,12 @@ public class TunnelExceptionHandler {
         return ResponseEntity.status(401)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("code", "unauthenticated", "message", e.getMessage()));
+    }
+
+    @ExceptionHandler(ClusterOwnershipException.class)
+    public ResponseEntity<Map<String, String>> handleOwnership(ClusterOwnershipException e) {
+        return ResponseEntity.status(403)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("code", "permission_denied", "message", e.getMessage()));
     }
 }

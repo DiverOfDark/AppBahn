@@ -22,11 +22,14 @@ import java.util.UUID;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record OperatorJwt(
-        @JsonProperty("iss") String clusterName,
+        @JsonProperty(CLAIM_CLUSTER_NAME) String clusterName,
         @JsonProperty("sub") String operatorInstanceId,
         @JsonProperty("jti") String jti,
         @JsonProperty("iat") long issuedAtEpochSeconds,
         @JsonProperty("exp") long expiresAtEpochSeconds) {
+
+    /** JWT {@code iss} claim — carries the registered cluster name (per-cluster signing-key trust). */
+    public static final String CLAIM_CLUSTER_NAME = "iss";
 
     private static final String ALG = "RS256";
     private static final String TYP = "JWT";
