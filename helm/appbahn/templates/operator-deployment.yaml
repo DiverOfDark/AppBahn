@@ -75,18 +75,21 @@ spec:
               value: {{ .Values.operator.security.allowPrivilegeEscalation | quote }}
             - name: OPERATOR_SECURITY_DROPCAPABILITIES
               value: {{ .Values.operator.security.dropCapabilities | quote }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            {{- toYaml .Values.operator.startupProbe | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: http
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            {{- toYaml .Values.operator.livenessProbe | nindent 12 }}
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: http
-            initialDelaySeconds: 15
-            periodSeconds: 5
+            {{- toYaml .Values.operator.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}
       volumes:

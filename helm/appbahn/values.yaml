@@ -47,6 +47,19 @@ platform:
     limits:
       cpu: "2"
       memory: 1Gi
+  startupProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 60
+    timeoutSeconds: 3
+  livenessProbe:
+    periodSeconds: 10
+    failureThreshold: 3
+    timeoutSeconds: 3
+  readinessProbe:
+    periodSeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 3
   quota:
     maxResources: 50
     maxCpuCores: 16.0
@@ -92,6 +105,19 @@ operator:
     limits:
       cpu: "1"
       memory: 1Gi
+  startupProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 60
+    timeoutSeconds: 3
+  livenessProbe:
+    periodSeconds: 10
+    failureThreshold: 3
+    timeoutSeconds: 3
+  readinessProbe:
+    periodSeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 3
 
 serviceMonitor:
   enabled: false
