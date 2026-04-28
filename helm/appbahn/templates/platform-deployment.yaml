@@ -107,17 +107,20 @@ spec:
             {{- end }}
             - name: PLATFORM_BRANDING_LOGINBUTTONTEXT
               value: {{ .Values.platform.branding.loginButtonText | quote }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            {{- toYaml .Values.platform.startupProbe | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: http
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            {{- toYaml .Values.platform.livenessProbe | nindent 12 }}
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            {{- toYaml .Values.platform.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.platform.resources | nindent 12 }}
