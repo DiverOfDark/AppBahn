@@ -64,6 +64,28 @@ spec:
               value: {{ .Values.operator.fullSyncIntervalMs | quote }}
             - name: OPERATOR_FULLSYNCINITIALDELAYMS
               value: {{ .Values.operator.fullSyncInitialDelayMs | quote }}
+            - name: OPERATOR_BUILD_REGISTRY
+              value: {{ .Values.operator.build.registry | quote }}
+            - name: OPERATOR_BUILD_REGISTRYINSECURE
+              value: {{ .Values.operator.build.registryInsecure | quote }}
+            {{- if .Values.operator.build.registryCredentialsSecret }}
+            - name: OPERATOR_BUILD_REGISTRYCREDENTIALSSECRET
+              value: {{ .Values.operator.build.registryCredentialsSecret | quote }}
+            {{- end }}
+            - name: OPERATOR_BUILD_GITCLONEIMAGE
+              value: {{ .Values.operator.build.gitCloneImage | quote }}
+            - name: OPERATOR_BUILD_ACTIVEDEADLINESECONDS
+              value: {{ .Values.operator.build.activeDeadlineSeconds | quote }}
+            - name: OPERATOR_BUILD_TTLSECONDSAFTERFINISHED
+              value: {{ .Values.operator.build.ttlSecondsAfterFinished | quote }}
+            {{- range $mode, $cfg := .Values.operator.build.builders }}
+            - name: OPERATOR_BUILD_BUILDERS_{{ $mode | upper }}_IMAGE
+              value: {{ $cfg.image | quote }}
+            {{- if $cfg.entrypoint }}
+            - name: OPERATOR_BUILD_BUILDERS_{{ $mode | upper }}_ENTRYPOINT
+              value: {{ join "," $cfg.entrypoint | quote }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.operator.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

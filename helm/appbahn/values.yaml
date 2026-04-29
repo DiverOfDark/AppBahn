@@ -95,6 +95,42 @@ operator:
   platformBaseUrl: ""
   cache:
     refreshInterval: "5m"
+  # Build infrastructure for ImageSource → Build Job pipelines. Each builder image is
+  # helm-overridable so air-gapped installs can swap in mirrored copies. The default
+  # peelbox image bundles Buildkit; the others delegate to upstream tooling.
+  build:
+    # Push target for built images. Cluster-internal in single-cluster installs;
+    # cross-cluster setups expose a real registry (Harbor / ECR / GHCR).
+    registry: "appbahn-registry.appbahn-system.svc:5000"
+    # Whether the registry accepts plain HTTP (no TLS / no client cert). Disable for
+    # production registries with valid TLS.
+    registryInsecure: true
+    # Optional: name of a Secret (in the *Build Job's* namespace) holding registry creds.
+    # If unset, builds run anonymously — works for in-cluster registries only.
+    registryCredentialsSecret: ""
+    # Image used for the init container that clones source. Must include `git` and `sh`.
+    gitCloneImage: "alpine/git:latest"
+    # Hard cap on a single build run. K8s reaps the Job once exceeded.
+    activeDeadlineSeconds: 3600
+    # Job TTL after Complete/Failed. The reconciler reads terminal status before the TTL
+    # fires; long enough to absorb operator restarts.
+    ttlSecondsAfterFinished: 60
+    builders:
+      peelbox:
+        image: "ghcr.io/peelbox/peelbox:0.6"
+        entrypoint: []
+      dockerfile:
+        image: "moby/buildkit:rootless"
+        entrypoint: []
+      buildpack:
+        image: "buildpacksio/pack:0.36"
+        entrypoint: []
+      nixpacks:
+        image: "ghcr.io/railwayapp/nixpacks:latest"
+        entrypoint: []
+      railpack:
+        image: "ghcr.io/railwayapp/railpack:latest"
+        entrypoint: []
   # Additional env vars to inject into the operator container. Use for deployment-specific
   # tweaks that don't justify a first-class helm value (e.g. OIDC provider quirks).
   extraEnv: []

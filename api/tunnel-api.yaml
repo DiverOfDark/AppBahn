@@ -331,6 +331,38 @@ components:
       - $ref: "#/components/schemas/BuildpackBuildConfig"
       - $ref: "#/components/schemas/RailpackBuildConfig"
       - $ref: "#/components/schemas/DockerfileBuildConfig"
+    BuildLifecycleEvent:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          imageSourceName:
+            type: string
+          imageSourceNamespace:
+            type: string
+          deploymentId:
+            type: string
+          lifecycle:
+            type: string
+            enum:
+            - QUEUED
+            - BUILDING
+            - BUILT
+            - FAILED
+            - ACTIVATING
+            - ACTIVE
+            - SUPERSEDED
+            - CANCELED
+          sourceCommit:
+            type: string
+          imageRef:
+            type: string
+          errorMessage:
+            type: string
+          occurredAt:
+            type: string
+            format: date-time
     BuildpackBuildConfig:
       required:
       - type
@@ -606,6 +638,10 @@ components:
           type: string
         latestArtifact:
           $ref: "#/components/schemas/LatestArtifact"
+        pendingBuild:
+          $ref: "#/components/schemas/PendingBuild"
+        queuedBuild:
+          $ref: "#/components/schemas/PendingBuild"
         lastPollAt:
           type: string
           format: date-time
@@ -775,6 +811,7 @@ components:
           audit-log: "#/components/schemas/AuditLogEvent"
           image-source-sync-batch: "#/components/schemas/ImageSourceSyncBatch"
           image-source-deleted-batch: "#/components/schemas/ImageSourceDeletedBatch"
+          build-lifecycle-event: "#/components/schemas/BuildLifecycleEvent"
     OwnerReference:
       type: object
       properties:
@@ -801,6 +838,31 @@ components:
           type: array
           items:
             type: object
+    PendingBuild:
+      type: object
+      properties:
+        sourceCommit:
+          type: string
+        lifecycle:
+          type: string
+          enum:
+          - QUEUED
+          - BUILDING
+          - BUILT
+          - FAILED
+          - ACTIVATING
+          - ACTIVE
+          - SUPERSEDED
+          - CANCELED
+        deploymentId:
+          type: string
+        jobName:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
     PortConfig:
       type: object
       properties:

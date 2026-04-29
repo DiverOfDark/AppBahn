@@ -74,6 +74,8 @@ val sharedCrdSchemaMappings = mapOf(
     "ImageSourceTrigger" to "eu.appbahn.shared.crd.imagesource.ImageSourceTrigger",
     "ImageSourcePoll" to "eu.appbahn.shared.crd.imagesource.ImageSourcePoll",
     "LatestArtifact" to "eu.appbahn.shared.crd.imagesource.LatestArtifact",
+    "PendingBuild" to "eu.appbahn.shared.crd.imagesource.PendingBuild",
+    "BuildLifecycle" to "eu.appbahn.shared.crd.imagesource.BuildLifecycle",
     "ImageSourceCondition" to "eu.appbahn.shared.crd.imagesource.ImageSourceCondition",
     // Fabric8 K8s stock types
     "ManagedFieldsEntry" to "io.fabric8.kubernetes.api.model.ManagedFieldsEntry",

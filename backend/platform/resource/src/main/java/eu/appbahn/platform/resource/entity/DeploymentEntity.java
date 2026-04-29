@@ -2,6 +2,7 @@ package eu.appbahn.platform.resource.entity;
 
 import eu.appbahn.platform.api.TriggerType;
 import eu.appbahn.shared.crd.DeploymentStatus;
+import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import eu.appbahn.shared.util.UuidV7;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,24 @@ public class DeploymentEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
     private DeploymentStatus status;
+
+    /**
+     * ImageSource-driven build lifecycle. Populated on rows minted by
+     * {@code BuildLifecycleEvent}; null for legacy resource-driven deployments. Replaces
+     * {@link #status} entirely once the Resource layer migrates to the new model.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lifecycle", length = 20)
+    private BuildLifecycle lifecycle;
+
+    @Column(name = "image_source_name", length = 255)
+    private String imageSourceName;
+
+    @Column(name = "image_source_namespace", length = 63)
+    private String imageSourceNamespace;
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 
     @Column(name = "is_primary", nullable = false)
     private boolean primary;

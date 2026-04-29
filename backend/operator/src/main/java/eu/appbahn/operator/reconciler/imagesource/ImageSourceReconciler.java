@@ -1,5 +1,8 @@
 package eu.appbahn.operator.reconciler.imagesource;
 
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobDependentResource;
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobReconcileCondition;
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildOrchestrator;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCondition;
 import eu.appbahn.shared.crd.imagesource.ImageSourceConditions;
@@ -7,12 +10,16 @@ import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
 import eu.appbahn.shared.crd.imagesource.LatestArtifact;
+import eu.appbahn.shared.crd.imagesource.PendingBuild;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.Workflow;
+import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +32,24 @@ import org.springframework.stereotype.Component;
 
 /**
  * Reconciles {@link ImageSourceCrd}. For {@code type: git} the reconciler polls the upstream
- * branch on {@code spec.trigger.poll.intervalSeconds} cadence and writes the HEAD SHA into
- * {@code status.observedCommit}. For {@code type: image} it mirrors {@code spec.image.ref}
- * directly into {@code status.latestArtifact} on every reconcile.
+ * branch on {@code spec.trigger.poll.intervalSeconds} cadence, writes the HEAD SHA into
+ * {@code status.observedCommit}, and advances the build state machine via {@link
+ * BuildOrchestrator}. For {@code type: image} it mirrors {@code spec.image.ref} directly into
+ * {@code status.latestArtifact} on every reconcile.
  *
- * <p>Adaptive-poll fields ({@code intervalSecondsAfterWebhook}, {@code webhookFreshnessSeconds})
- * are accepted on the spec but stay inert here — webhook delivery lands in a follow-up.
+ * <p>Build {@link Job} CRUD is handled by the JOSDK workflow — see {@link
+ * BuildJobDependentResource}. The orchestrator only mutates the {@link
+ * ImageSourceStatus#getPendingBuild() pendingBuild} slot; the dependent reads it and
+ * materializes the K8s Job. {@code explicitInvocation = true} so the workflow runs after
+ * the orchestrator has stamped the slot with a {@code jobName}.
  */
 @Component
 @ControllerConfiguration
+@Workflow(
+        explicitInvocation = true,
+        dependents = {
+            @Dependent(type = BuildJobDependentResource.class, reconcilePrecondition = BuildJobReconcileCondition.class)
+        })
 public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleaner<ImageSourceCrd> {
 
     private static final Logger log = LoggerFactory.getLogger(ImageSourceReconciler.class);
@@ -43,10 +59,13 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
 
     private final GitClient gitClient;
     private final OperatorEventPublisher eventPublisher;
+    private final BuildOrchestrator buildOrchestrator;
 
-    public ImageSourceReconciler(GitClient gitClient, OperatorEventPublisher eventPublisher) {
+    public ImageSourceReconciler(
+            GitClient gitClient, OperatorEventPublisher eventPublisher, BuildOrchestrator buildOrchestrator) {
         this.gitClient = gitClient;
         this.eventPublisher = eventPublisher;
+        this.buildOrchestrator = buildOrchestrator;
     }
 
     @Override
@@ -68,17 +87,19 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             next.setObservedCommit(prev.getObservedCommit());
             next.setLatestArtifact(prev.getLatestArtifact());
             next.setLastWebhookAt(prev.getLastWebhookAt());
+            next.setPendingBuild(prev.getPendingBuild());
+            next.setQueuedBuild(prev.getQueuedBuild());
         }
 
         Optional<String> validationError = validate(spec);
         if (validationError.isPresent()) {
             applyConfigInvalid(next, validationError.get());
-            return finalize(cr, next);
+            return finalize(cr, prev, next);
         }
 
         return switch (spec.getType()) {
-            case GIT -> reconcileGit(cr, spec, next, namespace);
-            case IMAGE -> reconcileImage(cr, spec, next);
+            case GIT -> reconcileGit(cr, spec, prev, next, namespace, context);
+            case IMAGE -> reconcileImage(cr, spec, prev, next);
         };
     }
 
@@ -95,7 +116,12 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     }
 
     private UpdateControl<ImageSourceCrd> reconcileGit(
-            ImageSourceCrd cr, ImageSourceSpec spec, ImageSourceStatus next, String namespace) {
+            ImageSourceCrd cr,
+            ImageSourceSpec spec,
+            ImageSourceStatus prev,
+            ImageSourceStatus next,
+            String namespace,
+            Context<ImageSourceCrd> context) {
         Instant now = Instant.now();
         try {
             String head = gitClient.resolveHead(
@@ -105,9 +131,27 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                     spec.getGit().getCredentialsSecretRef());
             next.setObservedCommit(head);
             next.setLastPollAt(now);
-            // Builds are out of scope for this PR — Ready stays false on git type until PR2 lands
-            // a build pipeline that fills in latestArtifact.
-            applyReady(next, ImageSourceConditions.STATUS_FALSE, ImageSourceConditions.REASON_PENDING, null);
+
+            // Read the in-flight Job from the JOSDK secondary cache (populated by the dependent's
+            // informer) — no manual kubeClient lookup. May be null while the workflow hasn't
+            // materialized the Job yet, or if pendingBuild is itself empty.
+            Job actualJob = context.getSecondaryResource(Job.class).orElse(null);
+            buildOrchestrator.advance(cr, head, next, actualJob);
+
+            // Make the dependent see the freshly-mutated status before the workflow runs. We
+            // restore the original status before {@link #finalize} so its no-op detection
+            // compares prev↔next, not next↔next.
+            cr.setStatus(next);
+            context.managedWorkflowAndDependentResourceContext().reconcileManagedWorkflow();
+            cr.setStatus(prev);
+
+            if (next.getLatestArtifact() != null && next.getLatestArtifact().getImageRef() != null) {
+                applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_OBSERVED, null);
+            } else if (next.getPendingBuild() != null) {
+                applyReady(next, ImageSourceConditions.STATUS_FALSE, ImageSourceConditions.REASON_PENDING, null);
+            } else {
+                applyReady(next, ImageSourceConditions.STATUS_FALSE, ImageSourceConditions.REASON_PENDING, null);
+            }
         } catch (Exception e) {
             log.warn(
                     "ImageSource {}/{} poll failed: {}",
@@ -121,19 +165,19 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                     ImageSourceConditions.REASON_POLL_FAILED,
                     truncate(e.getMessage()));
         }
-        UpdateControl<ImageSourceCrd> control = finalize(cr, next);
+        UpdateControl<ImageSourceCrd> control = finalize(cr, prev, next);
         return control.rescheduleAfter(intervalSeconds(spec), TimeUnit.SECONDS);
     }
 
     private UpdateControl<ImageSourceCrd> reconcileImage(
-            ImageSourceCrd cr, ImageSourceSpec spec, ImageSourceStatus next) {
+            ImageSourceCrd cr, ImageSourceSpec spec, ImageSourceStatus prev, ImageSourceStatus next) {
         var artifact = new LatestArtifact();
         artifact.setImageRef(spec.getImage().getRef());
         artifact.setRunCommand(spec.getImage().getRunCommand());
         artifact.setBuiltAt(Instant.now());
         next.setLatestArtifact(artifact);
         applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PINNED, null);
-        UpdateControl<ImageSourceCrd> control = finalize(cr, next);
+        UpdateControl<ImageSourceCrd> control = finalize(cr, prev, next);
         // Image-type ImageSources don't need fast polling — schedule a slow re-reconcile so
         // observability stays alive without burning the apiserver.
         return control.rescheduleAfter(IMAGE_TYPE_RESCHEDULE_SECONDS, TimeUnit.SECONDS);
@@ -176,8 +220,8 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         };
     }
 
-    private UpdateControl<ImageSourceCrd> finalize(ImageSourceCrd cr, ImageSourceStatus next) {
-        if (statusEquals(cr.getStatus(), next)) {
+    private UpdateControl<ImageSourceCrd> finalize(ImageSourceCrd cr, ImageSourceStatus prev, ImageSourceStatus next) {
+        if (statusEquals(prev, next)) {
             return UpdateControl.noUpdate();
         }
         cr.setStatus(next);
@@ -280,7 +324,19 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                 && Objects.equals(a.getObservedGeneration(), b.getObservedGeneration())
                 && Objects.equals(a.getLastWebhookAt(), b.getLastWebhookAt())
                 && Objects.equals(a.getLatestArtifact(), b.getLatestArtifact())
+                && pendingBuildEquals(a.getPendingBuild(), b.getPendingBuild())
+                && pendingBuildEquals(a.getQueuedBuild(), b.getQueuedBuild())
                 && conditionsEqual(a.getConditions(), b.getConditions());
+    }
+
+    private static boolean pendingBuildEquals(PendingBuild a, PendingBuild b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return Objects.equals(a.getSourceCommit(), b.getSourceCommit())
+                && Objects.equals(a.getLifecycle(), b.getLifecycle())
+                && Objects.equals(a.getDeploymentId(), b.getDeploymentId())
+                && Objects.equals(a.getJobName(), b.getJobName())
+                && Objects.equals(a.getErrorMessage(), b.getErrorMessage());
     }
 
     private static boolean conditionsEqual(List<ImageSourceCondition> a, List<ImageSourceCondition> b) {
