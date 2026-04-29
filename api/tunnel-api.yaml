@@ -344,6 +344,11 @@ components:
           type: object
           additionalProperties:
             type: string
+    BuildpackBuildOptions:
+      type: object
+      properties:
+        builder:
+          type: string
     CredentialRef:
       type: object
       properties:
@@ -420,6 +425,13 @@ components:
           type: object
           additionalProperties:
             type: string
+    DockerfileBuildOptions:
+      type: object
+      properties:
+        path:
+          type: string
+        context:
+          type: string
     ExecAction:
       type: object
       properties:
@@ -497,6 +509,164 @@ components:
         port:
           type: integer
           format: int32
+    ImageSourceBuildSpec:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+          - dockerfile
+          - peelbox
+          - buildpack
+          - nixpacks
+          - railpack
+        dockerfile:
+          $ref: "#/components/schemas/DockerfileBuildOptions"
+        buildpack:
+          $ref: "#/components/schemas/BuildpackBuildOptions"
+    ImageSourceCondition:
+      type: object
+      properties:
+        type:
+          type: string
+        status:
+          type: string
+        reason:
+          type: string
+        message:
+          type: string
+        lastTransitionTime:
+          type: string
+          format: date-time
+    ImageSourceCrd:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        kind:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/ObjectMeta"
+        spec:
+          $ref: "#/components/schemas/ImageSourceSpec"
+        status:
+          $ref: "#/components/schemas/ImageSourceStatus"
+    ImageSourceDeletedBatch:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          imageSourceSlugs:
+            type: array
+            items:
+              pattern: "^[a-z][a-z0-9-]{0,28}[a-z0-9]$"
+              type: string
+    ImageSourceGitSpec:
+      type: object
+      properties:
+        repo:
+          type: string
+        branch:
+          type: string
+        credentialsSecretRef:
+          type: string
+    ImageSourcePoll:
+      type: object
+      properties:
+        intervalSeconds:
+          type: integer
+          format: int32
+        intervalSecondsAfterWebhook:
+          type: integer
+          format: int32
+        webhookFreshnessSeconds:
+          type: integer
+          format: int32
+    ImageSourceSpec:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - git
+          - image
+        git:
+          $ref: "#/components/schemas/ImageSourceGitSpec"
+        image:
+          $ref: "#/components/schemas/ImageSpec"
+        build:
+          $ref: "#/components/schemas/ImageSourceBuildSpec"
+        trigger:
+          $ref: "#/components/schemas/ImageSourceTrigger"
+    ImageSourceStatus:
+      type: object
+      properties:
+        observedCommit:
+          type: string
+        latestArtifact:
+          $ref: "#/components/schemas/LatestArtifact"
+        lastPollAt:
+          type: string
+          format: date-time
+        lastWebhookAt:
+          type: string
+          format: date-time
+        observedGeneration:
+          type: integer
+          format: int64
+        conditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageSourceCondition"
+    ImageSourceSyncBatch:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ImageSourceSyncItem"
+    ImageSourceSyncItem:
+      type: object
+      properties:
+        imageSource:
+          $ref: "#/components/schemas/ImageSourceCrd"
+        generation:
+          type: integer
+          format: int64
+        resourceVersion:
+          type: string
+    ImageSourceTrigger:
+      type: object
+      properties:
+        poll:
+          $ref: "#/components/schemas/ImageSourcePoll"
+    ImageSpec:
+      type: object
+      properties:
+        ref:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
+    LatestArtifact:
+      type: object
+      properties:
+        sourceCommit:
+          type: string
+        imageRef:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
+        builtAt:
+          type: string
+          format: date-time
     LinkConfig:
       type: object
       properties:
@@ -603,6 +773,8 @@ components:
           admission-cache-miss-report: "#/components/schemas/AdmissionCacheMissReport"
           admission-approved: "#/components/schemas/AdmissionApproved"
           audit-log: "#/components/schemas/AuditLogEvent"
+          image-source-sync-batch: "#/components/schemas/ImageSourceSyncBatch"
+          image-source-deleted-batch: "#/components/schemas/ImageSourceDeletedBatch"
     OwnerReference:
       type: object
       properties:

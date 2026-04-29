@@ -24,6 +24,7 @@ node-gradle = "7.1.0"
 gson = "2.10.1"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
+jgit = "7.3.0.202506031305-r"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -69,6 +70,10 @@ jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api" 
 
 # UUID v7
 uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-creator" }
+
+# Git client (operator polls upstream HEAD via ls-remote)
+jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
+jgit-http = { module = "org.eclipse.jgit:org.eclipse.jgit.http.apache", version.ref = "jgit" }
 
 # Lombok
 lombok = { module = "org.projectlombok:lombok" }

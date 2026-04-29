@@ -6,10 +6,13 @@ import eu.appbahn.platform.api.tunnel.AdmissionApproved;
 import eu.appbahn.platform.api.tunnel.AdmissionCacheMissReport;
 import eu.appbahn.platform.api.tunnel.AuditLogEvent;
 import eu.appbahn.platform.api.tunnel.FullResourceSyncChunk;
+import eu.appbahn.platform.api.tunnel.ImageSourceDeletedBatch;
+import eu.appbahn.platform.api.tunnel.ImageSourceSyncBatch;
 import eu.appbahn.platform.api.tunnel.OperatorEvent;
 import eu.appbahn.platform.api.tunnel.PushEventsRequest;
 import eu.appbahn.platform.api.tunnel.ResourceDeletedBatch;
 import eu.appbahn.platform.api.tunnel.ResourceSyncBatch;
+import eu.appbahn.platform.resource.service.ImageSourceSyncService;
 import eu.appbahn.platform.resource.service.ResourceSyncService;
 import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.command.FullSyncChunkBufferEntity;
@@ -39,7 +42,9 @@ public class PushEventsHandler {
     private static final Logger log = LoggerFactory.getLogger(PushEventsHandler.class);
 
     private final ResourceSyncService resourceSyncService;
+    private final ImageSourceSyncService imageSourceSyncService;
     private final TunnelEventMapper eventMapper;
+    private final TunnelImageSourceMapper imageSourceMapper;
     private final FullSyncChunkBufferRepository chunkBuffer;
     private final ClusterRepository clusterRepository;
     private final AuditLogWriterService auditLogWriter;
@@ -47,13 +52,17 @@ public class PushEventsHandler {
 
     public PushEventsHandler(
             ResourceSyncService resourceSyncService,
+            ImageSourceSyncService imageSourceSyncService,
             TunnelEventMapper eventMapper,
+            TunnelImageSourceMapper imageSourceMapper,
             FullSyncChunkBufferRepository chunkBuffer,
             ClusterRepository clusterRepository,
             AuditLogWriterService auditLogWriter,
             ObjectMapper jsonMapper) {
         this.resourceSyncService = resourceSyncService;
+        this.imageSourceSyncService = imageSourceSyncService;
         this.eventMapper = eventMapper;
+        this.imageSourceMapper = imageSourceMapper;
         this.chunkBuffer = chunkBuffer;
         this.clusterRepository = clusterRepository;
         this.auditLogWriter = auditLogWriter;
@@ -87,6 +96,8 @@ public class PushEventsHandler {
             }
             case AdmissionCacheMissReport r -> handleAdmissionCacheMiss(clusterName, r);
             case AuditLogEvent e -> auditLogWriter.writeFromOperator(e);
+            case ImageSourceSyncBatch b -> handleImageSourceSyncBatch(clusterName, b);
+            case ImageSourceDeletedBatch b -> handleImageSourceDeletedBatch(clusterName, b);
             default -> log.debug("Unhandled OperatorEvent type: {}", event.getType());
         }
     }
@@ -108,6 +119,19 @@ public class PushEventsHandler {
             cluster.setLastAdmissionMissAt(Instant.now());
             clusterRepository.save(cluster);
         });
+    }
+
+    private void handleImageSourceSyncBatch(String clusterName, ImageSourceSyncBatch batch) {
+        if (batch.getItems() == null) return;
+        batch.getItems()
+                .forEach(item -> imageSourceSyncService.syncImageSourceFromCluster(
+                        imageSourceMapper.toPayload(item, clusterName), clusterName));
+    }
+
+    private void handleImageSourceDeletedBatch(String clusterName, ImageSourceDeletedBatch batch) {
+        if (batch.getImageSourceSlugs() == null) return;
+        batch.getImageSourceSlugs()
+                .forEach(slug -> imageSourceSyncService.deleteImageSourceFromCluster(slug, clusterName));
     }
 
     private void handleSyncBatch(String clusterName, ResourceSyncBatch batch) {
