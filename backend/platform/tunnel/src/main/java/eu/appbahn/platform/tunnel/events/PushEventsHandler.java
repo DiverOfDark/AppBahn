@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.tunnel.AdmissionApproved;
 import eu.appbahn.platform.api.tunnel.AdmissionCacheMissReport;
 import eu.appbahn.platform.api.tunnel.AuditLogEvent;
+import eu.appbahn.platform.api.tunnel.BuildLifecycleEvent;
 import eu.appbahn.platform.api.tunnel.FullResourceSyncChunk;
 import eu.appbahn.platform.api.tunnel.ImageSourceDeletedBatch;
 import eu.appbahn.platform.api.tunnel.ImageSourceSyncBatch;
@@ -12,6 +13,7 @@ import eu.appbahn.platform.api.tunnel.OperatorEvent;
 import eu.appbahn.platform.api.tunnel.PushEventsRequest;
 import eu.appbahn.platform.api.tunnel.ResourceDeletedBatch;
 import eu.appbahn.platform.api.tunnel.ResourceSyncBatch;
+import eu.appbahn.platform.resource.service.BuildLifecycleHandler;
 import eu.appbahn.platform.resource.service.ImageSourceSyncService;
 import eu.appbahn.platform.resource.service.ResourceSyncService;
 import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
@@ -43,6 +45,7 @@ public class PushEventsHandler {
 
     private final ResourceSyncService resourceSyncService;
     private final ImageSourceSyncService imageSourceSyncService;
+    private final BuildLifecycleHandler buildLifecycleHandler;
     private final TunnelEventMapper eventMapper;
     private final TunnelImageSourceMapper imageSourceMapper;
     private final FullSyncChunkBufferRepository chunkBuffer;
@@ -53,6 +56,7 @@ public class PushEventsHandler {
     public PushEventsHandler(
             ResourceSyncService resourceSyncService,
             ImageSourceSyncService imageSourceSyncService,
+            BuildLifecycleHandler buildLifecycleHandler,
             TunnelEventMapper eventMapper,
             TunnelImageSourceMapper imageSourceMapper,
             FullSyncChunkBufferRepository chunkBuffer,
@@ -61,6 +65,7 @@ public class PushEventsHandler {
             ObjectMapper jsonMapper) {
         this.resourceSyncService = resourceSyncService;
         this.imageSourceSyncService = imageSourceSyncService;
+        this.buildLifecycleHandler = buildLifecycleHandler;
         this.eventMapper = eventMapper;
         this.imageSourceMapper = imageSourceMapper;
         this.chunkBuffer = chunkBuffer;
@@ -98,8 +103,20 @@ public class PushEventsHandler {
             case AuditLogEvent e -> auditLogWriter.writeFromOperator(e);
             case ImageSourceSyncBatch b -> handleImageSourceSyncBatch(clusterName, b);
             case ImageSourceDeletedBatch b -> handleImageSourceDeletedBatch(clusterName, b);
+            case BuildLifecycleEvent e -> handleBuildLifecycleEvent(e);
             default -> log.debug("Unhandled OperatorEvent type: {}", event.getType());
         }
+    }
+
+    private void handleBuildLifecycleEvent(BuildLifecycleEvent event) {
+        buildLifecycleHandler.handle(
+                event.getImageSourceName(),
+                event.getImageSourceNamespace(),
+                event.getDeploymentId(),
+                event.getLifecycle(),
+                event.getSourceCommit(),
+                event.getImageRef(),
+                event.getErrorMessage());
     }
 
     /**

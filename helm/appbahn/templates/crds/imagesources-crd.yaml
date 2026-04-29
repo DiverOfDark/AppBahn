@@ -127,6 +127,54 @@ spec:
                 type: string
               observedGeneration:
                 type: integer
+              pendingBuild:
+                properties:
+                  deploymentId:
+                    type: string
+                  errorMessage:
+                    type: string
+                  jobName:
+                    type: string
+                  lifecycle:
+                    enum:
+                    - ACTIVATING
+                    - ACTIVE
+                    - BUILDING
+                    - BUILT
+                    - CANCELED
+                    - FAILED
+                    - QUEUED
+                    - SUPERSEDED
+                    type: string
+                  sourceCommit:
+                    type: string
+                  startedAt:
+                    type: string
+                type: object
+              queuedBuild:
+                properties:
+                  deploymentId:
+                    type: string
+                  errorMessage:
+                    type: string
+                  jobName:
+                    type: string
+                  lifecycle:
+                    enum:
+                    - ACTIVATING
+                    - ACTIVE
+                    - BUILDING
+                    - BUILT
+                    - CANCELED
+                    - FAILED
+                    - QUEUED
+                    - SUPERSEDED
+                    type: string
+                  sourceCommit:
+                    type: string
+                  startedAt:
+                    type: string
+                type: object
             type: object
         type: object
     served: true

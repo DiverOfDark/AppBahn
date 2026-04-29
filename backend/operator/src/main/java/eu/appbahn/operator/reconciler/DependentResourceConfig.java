@@ -1,5 +1,7 @@
 package eu.appbahn.operator.reconciler;
 
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobBuilder;
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobDependentResource;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import java.util.function.Consumer;
 import org.springframework.context.ApplicationContext;
@@ -34,5 +36,11 @@ public class DependentResourceConfig {
     @Scope("prototype")
     public IngressDependentResource ingressDependentResource(OperatorConfig operatorConfig) {
         return new IngressDependentResource(operatorConfig);
+    }
+
+    @Bean
+    @Scope("prototype")
+    public BuildJobDependentResource buildJobDependentResource(BuildJobBuilder jobBuilder) {
+        return new BuildJobDependentResource(jobBuilder);
     }
 }

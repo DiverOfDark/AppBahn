@@ -32,6 +32,23 @@ operator:
     read-only-root-filesystem: true
     allow-privilege-escalation: false
     drop-capabilities: ALL
+  build:
+    registry: appbahn-registry.appbahn-system.svc:5000
+    registry-insecure: true
+    git-clone-image: alpine/git:latest
+    active-deadline-seconds: 3600
+    ttl-seconds-after-finished: 60
+    builders:
+      peelbox:
+        image: ghcr.io/peelbox/peelbox:0.6
+      dockerfile:
+        image: moby/buildkit:rootless
+      buildpack:
+        image: buildpacksio/pack:0.36
+      nixpacks:
+        image: ghcr.io/railwayapp/nixpacks:latest
+      railpack:
+        image: ghcr.io/railwayapp/railpack:latest
 
 platform:
   api:

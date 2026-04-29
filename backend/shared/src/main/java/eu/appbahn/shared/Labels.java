@@ -13,6 +13,18 @@ public final class Labels {
     public static final String ENVIRONMENT_SLUG_KEY = "appbahn.eu/environment-slug";
     public static final String DEPLOYMENT_REVISION_KEY = "appbahn.eu/deployment-revision";
 
+    /** Marks Jobs created by the operator as builds for a specific ImageSource. */
+    public static final String IMAGE_SOURCE_KEY = "appbahn.eu/image-source";
+
+    /** Tags a build Job with the source commit SHA it builds (for diagnostic / debugging). */
+    public static final String BUILD_COMMIT_KEY = "appbahn.eu/build-commit";
+
+    /** Tags a build Job with the platform deploymentId so events round-trip cleanly. */
+    public static final String BUILD_DEPLOYMENT_ID_KEY = "appbahn.eu/build-deployment-id";
+
+    /** Build mode constant — DRY's the {@code BuildMode} enum value into a label string. */
+    public static final String BUILD_MODE_KEY = "appbahn.eu/build-mode";
+
     public static final String RESOURCE_TYPE_DEPLOYMENT = "deployment";
 
     public static final int DEFAULT_REPLICAS = 1;
