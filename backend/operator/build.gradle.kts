@@ -62,6 +62,19 @@ val sharedCrdSchemaMappings = mapOf(
     "DockerfileBuildConfig" to "eu.appbahn.shared.crd.DockerfileBuildConfig",
     "PeelboxBuildConfig" to "eu.appbahn.shared.crd.PeelboxBuildConfig",
     "RailpackBuildConfig" to "eu.appbahn.shared.crd.RailpackBuildConfig",
+    // ImageSource CRD top-level + nested
+    "ImageSourceCrd" to "eu.appbahn.shared.crd.imagesource.ImageSourceCrd",
+    "ImageSourceSpec" to "eu.appbahn.shared.crd.imagesource.ImageSourceSpec",
+    "ImageSourceStatus" to "eu.appbahn.shared.crd.imagesource.ImageSourceStatus",
+    "ImageSourceGitSpec" to "eu.appbahn.shared.crd.imagesource.ImageSourceGitSpec",
+    "ImageSpec" to "eu.appbahn.shared.crd.imagesource.ImageSpec",
+    "ImageSourceBuildSpec" to "eu.appbahn.shared.crd.imagesource.ImageSourceBuildSpec",
+    "DockerfileBuildOptions" to "eu.appbahn.shared.crd.imagesource.DockerfileBuildOptions",
+    "BuildpackBuildOptions" to "eu.appbahn.shared.crd.imagesource.BuildpackBuildOptions",
+    "ImageSourceTrigger" to "eu.appbahn.shared.crd.imagesource.ImageSourceTrigger",
+    "ImageSourcePoll" to "eu.appbahn.shared.crd.imagesource.ImageSourcePoll",
+    "LatestArtifact" to "eu.appbahn.shared.crd.imagesource.LatestArtifact",
+    "ImageSourceCondition" to "eu.appbahn.shared.crd.imagesource.ImageSourceCondition",
     // Fabric8 K8s stock types
     "ManagedFieldsEntry" to "io.fabric8.kubernetes.api.model.ManagedFieldsEntry",
     "ObjectMeta" to "io.fabric8.kubernetes.api.model.ObjectMeta",
@@ -162,6 +175,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.jgit)
+    implementation(libs.jgit.http)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.fabric8.kube.api.test)

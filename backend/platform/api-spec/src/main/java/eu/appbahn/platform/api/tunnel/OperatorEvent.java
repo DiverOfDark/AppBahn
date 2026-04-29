@@ -24,7 +24,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
     @JsonSubTypes.Type(value = DeploymentStatusUpdate.class, name = "deployment-status-update"),
     @JsonSubTypes.Type(value = AdmissionCacheMissReport.class, name = "admission-cache-miss-report"),
     @JsonSubTypes.Type(value = AdmissionApproved.class, name = "admission-approved"),
-    @JsonSubTypes.Type(value = AuditLogEvent.class, name = "audit-log")
+    @JsonSubTypes.Type(value = AuditLogEvent.class, name = "audit-log"),
+    @JsonSubTypes.Type(value = ImageSourceSyncBatch.class, name = "image-source-sync-batch"),
+    @JsonSubTypes.Type(value = ImageSourceDeletedBatch.class, name = "image-source-deleted-batch")
 })
 @Schema(
         discriminatorProperty = "type",
@@ -36,7 +38,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
             @DiscriminatorMapping(value = "deployment-status-update", schema = DeploymentStatusUpdate.class),
             @DiscriminatorMapping(value = "admission-cache-miss-report", schema = AdmissionCacheMissReport.class),
             @DiscriminatorMapping(value = "admission-approved", schema = AdmissionApproved.class),
-            @DiscriminatorMapping(value = "audit-log", schema = AuditLogEvent.class)
+            @DiscriminatorMapping(value = "audit-log", schema = AuditLogEvent.class),
+            @DiscriminatorMapping(value = "image-source-sync-batch", schema = ImageSourceSyncBatch.class),
+            @DiscriminatorMapping(value = "image-source-deleted-batch", schema = ImageSourceDeletedBatch.class)
         },
         subTypes = {
             ResourceSyncBatch.class,
@@ -46,7 +50,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
             DeploymentStatusUpdate.class,
             AdmissionCacheMissReport.class,
             AdmissionApproved.class,
-            AuditLogEvent.class
+            AuditLogEvent.class,
+            ImageSourceSyncBatch.class,
+            ImageSourceDeletedBatch.class
         })
 public abstract class OperatorEvent {
 

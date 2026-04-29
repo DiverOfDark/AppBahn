@@ -1,11 +1,15 @@
 package eu.appbahn.operator.tunnel;
 
 import eu.appbahn.operator.tunnel.client.model.FullResourceSyncChunk;
+import eu.appbahn.operator.tunnel.client.model.ImageSourceDeletedBatch;
+import eu.appbahn.operator.tunnel.client.model.ImageSourceSyncBatch;
+import eu.appbahn.operator.tunnel.client.model.ImageSourceSyncItem;
 import eu.appbahn.operator.tunnel.client.model.OperatorEvent;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.operator.tunnel.client.model.ResourceSyncBatch;
 import eu.appbahn.operator.tunnel.client.model.ResourceSyncItem;
 import eu.appbahn.shared.crd.ResourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +82,32 @@ public class OperatorEventPublisher {
             events.add(chunk);
         }
         queue.enqueue(events);
+    }
+
+    public void emitImageSourceSync(ImageSourceCrd crd) {
+        var batch = new ImageSourceSyncBatch();
+        batch.getItems().add(toImageSourceSyncItem(crd));
+        queue.enqueue(List.of(batch));
+    }
+
+    public void emitImageSourceDeleted(String slug) {
+        var event = new ImageSourceDeletedBatch();
+        event.getImageSourceSlugs().add(slug);
+        queue.enqueue(List.of(event));
+    }
+
+    public ImageSourceSyncItem toImageSourceSyncItem(ImageSourceCrd crd) {
+        var item = new ImageSourceSyncItem();
+        item.setImageSource(crd);
+        if (crd.getMetadata() != null) {
+            if (crd.getMetadata().getGeneration() != null) {
+                item.setGeneration(crd.getMetadata().getGeneration());
+            }
+            if (crd.getMetadata().getResourceVersion() != null) {
+                item.setResourceVersion(crd.getMetadata().getResourceVersion());
+            }
+        }
+        return item;
     }
 
     public ResourceSyncItem toSyncItem(ResourceCrd crd) {
