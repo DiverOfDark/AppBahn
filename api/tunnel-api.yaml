@@ -554,6 +554,15 @@ components:
         webhookFreshnessSeconds:
           type: integer
           format: int32
+    ImageSourcePromotionSpec:
+      type: object
+      properties:
+        upstream:
+          $ref: "#/components/schemas/ImageSourceUpstreamSpec"
+        autoPromote:
+          type: boolean
+        pinnedDigest:
+          type: string
     ImageSourceSpec:
       type: object
       properties:
@@ -562,10 +571,13 @@ components:
           enum:
           - git
           - image
+          - imageSource
         git:
           $ref: "#/components/schemas/ImageSourceGitSpec"
         image:
           $ref: "#/components/schemas/ImageSpec"
+        imageSource:
+          $ref: "#/components/schemas/ImageSourcePromotionSpec"
         build:
           $ref: "#/components/schemas/ImageSourceBuildSpec"
         trigger:
@@ -619,6 +631,15 @@ components:
       properties:
         poll:
           $ref: "#/components/schemas/ImageSourcePoll"
+    ImageSourceUpstreamSpec:
+      type: object
+      properties:
+        cluster:
+          type: string
+        namespace:
+          type: string
+        name:
+          type: string
     ImageSpec:
       type: object
       properties:

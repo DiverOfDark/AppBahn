@@ -14,12 +14,15 @@ import eu.appbahn.platform.api.resource.LogResponse;
 import eu.appbahn.platform.api.resource.MetricsResponse;
 import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
 import eu.appbahn.platform.api.resource.PagedResourceResponse;
+import eu.appbahn.platform.api.resource.PromoteRequest;
 import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
 import eu.appbahn.platform.api.resource.ResourcesApi;
+import eu.appbahn.platform.api.resource.RollbackRequest;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.PromotionService;
 import eu.appbahn.platform.resource.service.ResourceLifecycleService;
 import eu.appbahn.platform.resource.service.ResourceService;
 import java.time.OffsetDateTime;
@@ -36,14 +39,17 @@ public class ResourcesController implements ResourcesApi {
     private final ResourceService resourceService;
     private final ResourceLifecycleService lifecycleService;
     private final DeploymentService deploymentService;
+    private final PromotionService promotionService;
 
     public ResourcesController(
             ResourceService resourceService,
             ResourceLifecycleService lifecycleService,
-            DeploymentService deploymentService) {
+            DeploymentService deploymentService,
+            PromotionService promotionService) {
         this.resourceService = resourceService;
         this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
+        this.promotionService = promotionService;
     }
 
     @Override
@@ -88,6 +94,20 @@ public class ResourcesController implements ResourcesApi {
     @Override
     public ResponseEntity<Void> restartResource(String slug) {
         lifecycleService.restart(slug, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> promoteResource(String slug, PromoteRequest promoteRequest) {
+        String digest = promoteRequest != null ? promoteRequest.getDigest() : null;
+        promotionService.promote(slug, digest, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> rollbackResource(String slug, RollbackRequest rollbackRequest) {
+        UUID deploymentId = rollbackRequest != null ? rollbackRequest.getDeploymentId() : null;
+        promotionService.rollback(slug, deploymentId, AuthContextHolder.get());
         return ResponseEntity.noContent().build();
     }
 

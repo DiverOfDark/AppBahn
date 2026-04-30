@@ -26,7 +26,15 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
-podman run --rm \
+# Pick whichever container runtime is available; both work the same here. Pass --user so the
+# generated files land owned by the invoking user rather than root/nobody from the container.
+RUNTIME="${CONTAINER_RUNTIME:-}"
+if [ -z "$RUNTIME" ]; then
+  if command -v podman >/dev/null 2>&1; then RUNTIME=podman; else RUNTIME=docker; fi
+fi
+
+"$RUNTIME" run --rm \
+  --user "$(id -u):$(id -g)" \
   -v "$PROJECT_ROOT:/work:Z" \
   docker.io/openapitools/openapi-generator-cli:latest generate \
   -i /work/api/public-api.yaml \
@@ -39,7 +47,7 @@ podman run --rm \
   --global-property=apiTests=false,modelTests=false,apiDocs=false,modelDocs=false
 
 # Remove unnecessary generated files
-rm -f "$OUTPUT_DIR/go.mod" "$OUTPUT_DIR/go.sum" "$OUTPUT_DIR/.travis.yml" "$OUTPUT_DIR/git_push.sh"
+rm -f "$OUTPUT_DIR/go.mod" "$OUTPUT_DIR/go.sum" "$OUTPUT_DIR/.travis.yml" "$OUTPUT_DIR/git_push.sh" "$OUTPUT_DIR/.gitignore"
 rm -rf "$OUTPUT_DIR/.openapi-generator" "$OUTPUT_DIR/test" "$OUTPUT_DIR/docs" "$OUTPUT_DIR/api"
 
 # Format generated Go code

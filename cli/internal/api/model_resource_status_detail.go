@@ -20,20 +20,22 @@ var _ MappedNullable = &ResourceStatusDetail{}
 
 // ResourceStatusDetail struct for ResourceStatusDetail
 type ResourceStatusDetail struct {
-	Phase              *string              `json:"phase,omitempty"`
-	Message            *string              `json:"message,omitempty"`
-	ObservedGeneration *int64               `json:"observedGeneration,omitempty"`
-	Replicas           *ReplicaStatus       `json:"replicas,omitempty"`
-	Conditions         []ResourceCondition  `json:"conditions,omitempty"`
-	CustomDomains      []CustomDomainStatus `json:"customDomains,omitempty"`
-	Links              []LinkStatus         `json:"links,omitempty"`
-	LastSyncTime       *time.Time           `json:"lastSyncTime,omitempty"`
-	ActiveRelease      *ActiveRelease       `json:"activeRelease,omitempty"`
-	ObservedReleaseId  *string              `json:"observedReleaseId,omitempty"`
-	RolloutStatus      *string              `json:"rolloutStatus,omitempty"`
-	ReplicasReady      *int32               `json:"replicasReady,omitempty"`
-	SyncFailed         *bool                `json:"syncFailed,omitempty"`
-	LastError          *string              `json:"lastError,omitempty"`
+	Phase                     *string              `json:"phase,omitempty"`
+	Message                   *string              `json:"message,omitempty"`
+	ObservedGeneration        *int64               `json:"observedGeneration,omitempty"`
+	Replicas                  *ReplicaStatus       `json:"replicas,omitempty"`
+	Conditions                []ResourceCondition  `json:"conditions,omitempty"`
+	CustomDomains             []CustomDomainStatus `json:"customDomains,omitempty"`
+	Links                     []LinkStatus         `json:"links,omitempty"`
+	LastSyncTime              *time.Time           `json:"lastSyncTime,omitempty"`
+	ActiveRelease             *ActiveRelease       `json:"activeRelease,omitempty"`
+	ObservedReleaseId         *string              `json:"observedReleaseId,omitempty"`
+	ObservedRestartGeneration *int64               `json:"observedRestartGeneration,omitempty"`
+	ObservedEnvHash           *string              `json:"observedEnvHash,omitempty"`
+	RolloutStatus             *string              `json:"rolloutStatus,omitempty"`
+	ReplicasReady             *int32               `json:"replicasReady,omitempty"`
+	SyncFailed                *bool                `json:"syncFailed,omitempty"`
+	LastError                 *string              `json:"lastError,omitempty"`
 }
 
 // NewResourceStatusDetail instantiates a new ResourceStatusDetail object
@@ -373,6 +375,70 @@ func (o *ResourceStatusDetail) SetObservedReleaseId(v string) {
 	o.ObservedReleaseId = &v
 }
 
+// GetObservedRestartGeneration returns the ObservedRestartGeneration field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetObservedRestartGeneration() int64 {
+	if o == nil || IsNil(o.ObservedRestartGeneration) {
+		var ret int64
+		return ret
+	}
+	return *o.ObservedRestartGeneration
+}
+
+// GetObservedRestartGenerationOk returns a tuple with the ObservedRestartGeneration field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetObservedRestartGenerationOk() (*int64, bool) {
+	if o == nil || IsNil(o.ObservedRestartGeneration) {
+		return nil, false
+	}
+	return o.ObservedRestartGeneration, true
+}
+
+// HasObservedRestartGeneration returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasObservedRestartGeneration() bool {
+	if o != nil && !IsNil(o.ObservedRestartGeneration) {
+		return true
+	}
+
+	return false
+}
+
+// SetObservedRestartGeneration gets a reference to the given int64 and assigns it to the ObservedRestartGeneration field.
+func (o *ResourceStatusDetail) SetObservedRestartGeneration(v int64) {
+	o.ObservedRestartGeneration = &v
+}
+
+// GetObservedEnvHash returns the ObservedEnvHash field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetObservedEnvHash() string {
+	if o == nil || IsNil(o.ObservedEnvHash) {
+		var ret string
+		return ret
+	}
+	return *o.ObservedEnvHash
+}
+
+// GetObservedEnvHashOk returns a tuple with the ObservedEnvHash field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetObservedEnvHashOk() (*string, bool) {
+	if o == nil || IsNil(o.ObservedEnvHash) {
+		return nil, false
+	}
+	return o.ObservedEnvHash, true
+}
+
+// HasObservedEnvHash returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasObservedEnvHash() bool {
+	if o != nil && !IsNil(o.ObservedEnvHash) {
+		return true
+	}
+
+	return false
+}
+
+// SetObservedEnvHash gets a reference to the given string and assigns it to the ObservedEnvHash field.
+func (o *ResourceStatusDetail) SetObservedEnvHash(v string) {
+	o.ObservedEnvHash = &v
+}
+
 // GetRolloutStatus returns the RolloutStatus field value if set, zero value otherwise.
 func (o *ResourceStatusDetail) GetRolloutStatus() string {
 	if o == nil || IsNil(o.RolloutStatus) {
@@ -540,6 +606,12 @@ func (o ResourceStatusDetail) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ObservedReleaseId) {
 		toSerialize["observedReleaseId"] = o.ObservedReleaseId
+	}
+	if !IsNil(o.ObservedRestartGeneration) {
+		toSerialize["observedRestartGeneration"] = o.ObservedRestartGeneration
+	}
+	if !IsNil(o.ObservedEnvHash) {
+		toSerialize["observedEnvHash"] = o.ObservedEnvHash
 	}
 	if !IsNil(o.RolloutStatus) {
 		toSerialize["rolloutStatus"] = o.RolloutStatus

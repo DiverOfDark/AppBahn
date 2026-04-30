@@ -292,6 +292,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/rollback': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['rollbackResource']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/restart': {
     parameters: {
       query?: never
@@ -302,6 +318,22 @@ export interface paths {
     get?: never
     put?: never
     post: operations['restartResource']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/promote': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['promoteResource']
     delete?: never
     options?: never
     head?: never
@@ -1307,16 +1339,27 @@ export interface components {
       /** Format: int32 */
       webhookFreshnessSeconds?: number
     }
+    ImageSourcePromotionSpec: {
+      upstream?: components['schemas']['ImageSourceUpstreamSpec']
+      autoPromote?: boolean
+      pinnedDigest?: string
+    }
     ImageSourceSpec: {
       /** @enum {string} */
-      type?: 'git' | 'image'
+      type?: 'git' | 'image' | 'imageSource'
       git?: components['schemas']['ImageSourceGitSpec']
       image?: components['schemas']['ImageSpec']
+      imageSource?: components['schemas']['ImageSourcePromotionSpec']
       build?: components['schemas']['ImageSourceBuildSpec']
       trigger?: components['schemas']['ImageSourceTrigger']
     }
     ImageSourceTrigger: {
       poll?: components['schemas']['ImageSourcePoll']
+    }
+    ImageSourceUpstreamSpec: {
+      cluster?: string
+      namespace?: string
+      name?: string
     }
     ImageSpec: {
       ref?: string
@@ -1371,6 +1414,22 @@ export interface components {
     WebhookConfig: {
       url?: string
       secretMasked?: string
+    }
+    /** @description Request body for resource rollback operation */
+    RollbackRequest: {
+      /**
+       * Format: uuid
+       * @description Specific deployment audit id to roll back to. When null, uses the previous successful deployment.
+       */
+      deploymentId?: string
+    }
+    /** @description Request body for resource promote operation */
+    PromoteRequest: {
+      /**
+       * @description Specific digest to promote to. When null, uses upstream's current latestArtifact.
+       * @default
+       */
+      digest: string
     }
     CreateExposureRequest: {
       /** Format: int32 */
@@ -1602,6 +1661,9 @@ export interface components {
       lastSyncTime?: string
       activeRelease?: components['schemas']['ActiveRelease']
       observedReleaseId?: string
+      /** Format: int64 */
+      observedRestartGeneration?: number
+      observedEnvHash?: string
       /** @enum {string} */
       rolloutStatus?: 'Pending' | 'Deploying' | 'Healthy' | 'Degraded' | 'Failed'
       /** Format: int32 */
@@ -1798,7 +1860,14 @@ export interface components {
       sourceRef?: string
       imageRef?: string
       /** @enum {string} */
-      triggeredBy?: 'manual' | 'polling' | 'webhook' | 'auto-promotion' | 'rollback'
+      triggeredBy?:
+        | 'manual'
+        | 'polling'
+        | 'webhook'
+        | 'auto-promotion'
+        | 'rollback'
+        | 'manual-restart'
+        | 'env-change'
       /** @enum {string} */
       lifecycle?:
         | 'QUEUED'
@@ -2639,6 +2708,33 @@ export interface operations {
       }
     }
   }
+  rollbackResource: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['RollbackRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
   restartResource: {
     parameters: {
       query?: never
@@ -2652,6 +2748,33 @@ export interface operations {
       cookie?: never
     }
     requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  promoteResource: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['PromoteRequest']
+      }
+    }
     responses: {
       /** @description OK */
       200: {
