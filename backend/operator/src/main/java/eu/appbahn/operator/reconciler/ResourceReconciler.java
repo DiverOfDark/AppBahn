@@ -81,10 +81,15 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     private static final long ERROR_RETRY_MINUTES = 1;
 
     private final OperatorEventPublisher eventPublisher;
+    private final ReleaseLifecycleEmitter releaseLifecycleEmitter;
     private final Counter syncFailureCounter;
 
-    public ResourceReconciler(OperatorEventPublisher eventPublisher, MeterRegistry meterRegistry) {
+    public ResourceReconciler(
+            OperatorEventPublisher eventPublisher,
+            ReleaseLifecycleEmitter releaseLifecycleEmitter,
+            MeterRegistry meterRegistry) {
         this.eventPublisher = eventPublisher;
+        this.releaseLifecycleEmitter = releaseLifecycleEmitter;
         this.syncFailureCounter = Counter.builder("appbahn.operator.sync.failures")
                 .description("Number of failed platform sync attempts")
                 .register(meterRegistry);
@@ -164,10 +169,12 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             }
 
             var k8sDeployment = context.getSecondaryResource(Deployment.class).orElse(null);
+            ResourceStatusDetail previous = resource.getStatus();
             var status = deriveStatus(resource, k8sDeployment, context);
             enrichWithReleaseStatus(resource, status, context);
+            releaseLifecycleEmitter.reconcile(resource, previous, status);
 
-            if (statusEquals(resource.getStatus(), status)) {
+            if (statusEquals(previous, status)) {
                 log.debug("Status unchanged for {}, skipping update", name);
                 return UpdateControl.noUpdate();
             }
@@ -366,10 +373,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             activeRelease.setActivatedAt(artifact.getBuiltAt());
             status.setActiveRelease(activeRelease);
         });
-        Long restartGen = resource.getSpec().getRestartGeneration();
-        if (restartGen != null) {
-            status.setObservedReleaseId(String.valueOf(restartGen));
-        }
         if (status.getReplicas() != null) {
             status.setReplicasReady(status.getReplicas().getReady());
         }
@@ -537,6 +540,8 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && Objects.equals(a.getCustomDomains(), b.getCustomDomains())
                 && Objects.equals(a.getActiveRelease(), b.getActiveRelease())
                 && Objects.equals(a.getObservedReleaseId(), b.getObservedReleaseId())
+                && Objects.equals(a.getObservedRestartGeneration(), b.getObservedRestartGeneration())
+                && Objects.equals(a.getObservedEnvHash(), b.getObservedEnvHash())
                 && Objects.equals(a.getRolloutStatus(), b.getRolloutStatus())
                 && a.getReplicasReady() == b.getReplicasReady()
                 && Objects.equals(a.getSyncFailed(), b.getSyncFailed())

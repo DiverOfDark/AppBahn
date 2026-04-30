@@ -283,10 +283,14 @@ spec:
                 type: array
               message:
                 type: string
+              observedEnvHash:
+                type: string
               observedGeneration:
                 type: integer
               observedReleaseId:
                 type: string
+              observedRestartGeneration:
+                type: integer
               phase:
                 enum:
                 - DEGRADED

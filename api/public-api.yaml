@@ -3577,6 +3577,11 @@ components:
           $ref: "#/components/schemas/ActiveRelease"
         observedReleaseId:
           type: string
+        observedRestartGeneration:
+          type: integer
+          format: int64
+        observedEnvHash:
+          type: string
         rolloutStatus:
           type: string
           enum:
@@ -3908,6 +3913,8 @@ components:
           - webhook
           - auto-promotion
           - rollback
+          - manual-restart
+          - env-change
         lifecycle:
           type: string
           enum:

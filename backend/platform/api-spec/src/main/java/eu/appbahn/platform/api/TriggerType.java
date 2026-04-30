@@ -13,5 +13,11 @@ public enum TriggerType {
     @JsonProperty("auto-promotion")
     AUTO_PROMOTION,
     @JsonProperty("rollback")
-    ROLLBACK;
+    ROLLBACK,
+    /** User explicitly bumped {@code Resource.spec.restartGeneration} — re-roll, no rebuild. */
+    @JsonProperty("manual-restart")
+    MANUAL_RESTART,
+    /** {@code Resource.spec.config.env} changed and current image is reused — re-roll, no rebuild. */
+    @JsonProperty("env-change")
+    ENV_CHANGE;
 }
