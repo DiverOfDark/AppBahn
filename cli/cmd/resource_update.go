@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/diverofdark/appbahn/cli/internal/api"
 	"github.com/diverofdark/appbahn/cli/internal/output"
@@ -12,7 +11,6 @@ import (
 
 var (
 	resourceUpdateName     string
-	resourceUpdateImage    string
 	resourceUpdatePort     int32
 	resourceUpdateCPU      string
 	resourceUpdateMemory   string
@@ -26,9 +24,12 @@ var resourceUpdateCmd = &cobra.Command{
 	Short: "Update a resource (JSON merge patch)",
 	Long: `Update a resource's name or config fields. Only specified flags are sent.
 
+To rewire the bound ImageSource (image ref / git repo / build mode), use the dedicated
+ImageSource commands (deferred). For now this command edits the Resource side only.
+
 Example:
   appbahn resource update my-app-abc1234 --name new-name
-  appbahn resource update my-app-abc1234 --image nginx:1.28 --replicas 3`,
+  appbahn resource update my-app-abc1234 --replicas 3 --memory 512Mi`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		slug := args[0]
@@ -41,23 +42,6 @@ Example:
 
 		var config api.ResourceConfig
 		hasConfig := false
-
-		if cmd.Flags().Changed("image") {
-			imageName := resourceUpdateImage
-			imageTag := "latest"
-			if idx := strings.LastIndex(resourceUpdateImage, ":"); idx != -1 {
-				imageName = resourceUpdateImage[:idx]
-				imageTag = resourceUpdateImage[idx+1:]
-			}
-			source := api.DockerSource{
-				Type:  "docker",
-				Image: &imageName,
-				Tag:   &imageTag,
-			}
-			resourceSource := api.SourceConfig{DockerSource: &source}
-			config.Source = &resourceSource
-			hasConfig = true
-		}
 
 		var hosting api.HostingConfig
 		hasHosting := false
@@ -105,7 +89,7 @@ Example:
 		// Verify at least one field is being updated
 		reqJSON, _ := json.Marshal(req)
 		if string(reqJSON) == "{}" {
-			return fmt.Errorf("no update flags specified; use --name, --image, --port, --cpu, --memory, --replicas, --expose, or --domain")
+			return fmt.Errorf("no update flags specified; use --name, --port, --cpu, --memory, --replicas, --expose, or --domain")
 		}
 
 		client, ctx, err := api.NewClient()
@@ -139,8 +123,6 @@ Example:
 func init() {
 	resourceUpdateCmd.Flags().StringVar(&resourceUpdateName, "name", "",
 		"New name for the resource")
-	resourceUpdateCmd.Flags().StringVar(&resourceUpdateImage, "image", "",
-		"Container image reference")
 	resourceUpdateCmd.Flags().Int32Var(&resourceUpdatePort, "port", 0,
 		"Container port")
 	resourceUpdateCmd.Flags().StringVar(&resourceUpdateCPU, "cpu", "",

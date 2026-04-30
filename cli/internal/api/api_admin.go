@@ -214,10 +214,17 @@ type ApiCreateNetworkPolicyRequest struct {
 	ctx                        context.Context
 	ApiService                 AdminAPI
 	createNetworkPolicyRequest *CreateNetworkPolicyRequest
+	idempotencyKey             *string
 }
 
 func (r ApiCreateNetworkPolicyRequest) CreateNetworkPolicyRequest(createNetworkPolicyRequest CreateNetworkPolicyRequest) ApiCreateNetworkPolicyRequest {
 	r.createNetworkPolicyRequest = &createNetworkPolicyRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateNetworkPolicyRequest) IdempotencyKey(idempotencyKey string) ApiCreateNetworkPolicyRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -280,6 +287,9 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createNetworkPolicyRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -320,9 +330,16 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 }
 
 type ApiDeleteClusterRequest struct {
-	ctx        context.Context
-	ApiService AdminAPI
-	name       string
+	ctx            context.Context
+	ApiService     AdminAPI
+	name           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteClusterRequest) IdempotencyKey(idempotencyKey string) ApiDeleteClusterRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteClusterRequest) Execute() (*http.Response, error) {
@@ -381,6 +398,9 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -410,9 +430,16 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 }
 
 type ApiDeleteNetworkPolicyRequest struct {
-	ctx        context.Context
-	ApiService AdminAPI
-	id         string
+	ctx            context.Context
+	ApiService     AdminAPI
+	id             string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteNetworkPolicyRequest) IdempotencyKey(idempotencyKey string) ApiDeleteNetworkPolicyRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteNetworkPolicyRequest) Execute() (*http.Response, error) {
@@ -470,6 +497,9 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -1292,10 +1322,17 @@ type ApiRegisterClusterRequest struct {
 	ctx                  context.Context
 	ApiService           AdminAPI
 	createClusterRequest *CreateClusterRequest
+	idempotencyKey       *string
 }
 
 func (r ApiRegisterClusterRequest) CreateClusterRequest(createClusterRequest CreateClusterRequest) ApiRegisterClusterRequest {
 	r.createClusterRequest = &createClusterRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRegisterClusterRequest) IdempotencyKey(idempotencyKey string) ApiRegisterClusterRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -1358,6 +1395,9 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createClusterRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1401,10 +1441,17 @@ type ApiSetPlatformConfigRequest struct {
 	ctx            context.Context
 	ApiService     AdminAPI
 	platformConfig *PlatformConfig
+	idempotencyKey *string
 }
 
 func (r ApiSetPlatformConfigRequest) PlatformConfig(platformConfig PlatformConfig) ApiSetPlatformConfigRequest {
 	r.platformConfig = &platformConfig
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetPlatformConfigRequest) IdempotencyKey(idempotencyKey string) ApiSetPlatformConfigRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -1467,6 +1514,9 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.platformConfig
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1510,7 +1560,14 @@ type ApiUpdateClusterRequest struct {
 	ctx                  context.Context
 	ApiService           AdminAPI
 	name                 string
+	idempotencyKey       *string
 	updateClusterRequest *UpdateClusterRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateClusterRequest) IdempotencyKey(idempotencyKey string) ApiUpdateClusterRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateClusterRequest) UpdateClusterRequest(updateClusterRequest UpdateClusterRequest) ApiUpdateClusterRequest {
@@ -1577,6 +1634,9 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateClusterRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1620,7 +1680,14 @@ type ApiUpdateNetworkPolicyRequest struct {
 	ctx                        context.Context
 	ApiService                 AdminAPI
 	id                         string
+	idempotencyKey             *string
 	updateNetworkPolicyRequest *UpdateNetworkPolicyRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateNetworkPolicyRequest) IdempotencyKey(idempotencyKey string) ApiUpdateNetworkPolicyRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateNetworkPolicyRequest) UpdateNetworkPolicyRequest(updateNetworkPolicyRequest UpdateNetworkPolicyRequest) ApiUpdateNetworkPolicyRequest {
@@ -1687,6 +1754,9 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateNetworkPolicyRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1730,7 +1800,14 @@ type ApiUpdateResourceTypeAdminConfigRequest struct {
 	ctx                                  context.Context
 	ApiService                           AdminAPI
 	type_                                string
+	idempotencyKey                       *string
 	updateResourceTypeAdminConfigRequest *UpdateResourceTypeAdminConfigRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateResourceTypeAdminConfigRequest) IdempotencyKey(idempotencyKey string) ApiUpdateResourceTypeAdminConfigRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateResourceTypeAdminConfigRequest) UpdateResourceTypeAdminConfigRequest(updateResourceTypeAdminConfigRequest UpdateResourceTypeAdminConfigRequest) ApiUpdateResourceTypeAdminConfigRequest {
@@ -1796,6 +1873,9 @@ func (a *AdminAPIService) UpdateResourceTypeAdminConfigExecute(r ApiUpdateResour
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.updateResourceTypeAdminConfigRequest

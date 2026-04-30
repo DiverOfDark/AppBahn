@@ -1,7 +1,7 @@
 package eu.appbahn.platform.tunnel.command;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.appbahn.platform.api.tunnel.ApplyResource;
+import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.CommandStatus;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
@@ -75,8 +75,8 @@ public class PendingCommandExpirer {
     private Optional<String> extractResourceSlug(PendingCommandEntity row) {
         try {
             return switch (row.getCommandType()) {
-                case CommandTypes.APPLY_RESOURCE -> {
-                    ApplyResource body = mapper.readValue(row.getPayload(), ApplyResource.class);
+                case CommandTypes.APPLY_RESOURCE_BUNDLE -> {
+                    ApplyResourceBundle body = mapper.readValue(row.getPayload(), ApplyResourceBundle.class);
                     String slug = body.getResource() != null
                                     && body.getResource().getMetadata() != null
                                     && body.getResource().getMetadata().getName() != null

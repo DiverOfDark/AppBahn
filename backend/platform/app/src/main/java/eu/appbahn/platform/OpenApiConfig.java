@@ -92,8 +92,6 @@ class OpenApiConfig {
                 .addOpenApiCustomizer(idempotencyKeyHeaderCustomizer())
                 .addOpenApiCustomizer(stripPathPrefixCustomizer("/api/v1/"))
                 .addOpenApiCustomizer(errorResponseSchemaCustomizer())
-                .addOpenApiCustomizer(referencePublicPolymorphicFieldsCustomizer())
-                .addOpenApiCustomizer(flattenPolymorphicSubtypesCustomizer("SourceConfig", "BuildConfig"))
                 .addOpenApiCustomizer(stripNullableCustomizer())
                 .build();
     }
@@ -112,7 +110,6 @@ class OpenApiConfig {
                 .addOpenApiCustomizer(stripPathPrefixCustomizer("/api/tunnel/v1/"))
                 .addOpenApiCustomizer(sseFrameSchemasCustomizer())
                 .addOpenApiCustomizer(referenceOperatorEventCustomizer())
-                .addOpenApiCustomizer(flattenPolymorphicSubtypesCustomizer("SourceConfig", "BuildConfig"))
                 .addOpenApiCustomizer(stripNullableCustomizer())
                 .build();
     }
@@ -209,18 +206,6 @@ class OpenApiConfig {
     }
 
     /**
-     * Public-API counterpart of {@link #referenceOperatorEventCustomizer()} — same fix, just for
-     * the schemas the public spec actually contains (the tunnel-only families don't appear here).
-     */
-    private OpenApiCustomizer referencePublicPolymorphicFieldsCustomizer() {
-        return openApi -> {
-            if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) return;
-            applyReplacement(openApi, "ResourceConfig", "source", "SourceConfig", false);
-            applyReplacement(openApi, "GitSource", "buildConfig", "BuildConfig", false);
-        };
-    }
-
-    /**
      * Springdoc inlines polymorphic field types as literal {@code oneOf} blocks even when the
      * abstract base type (e.g. {@code OperatorEvent}, {@code SourceConfig}, {@code BuildConfig})
      * is already a named schema. openapi-generator then emits synthetic wrapper types
@@ -232,71 +217,11 @@ class OpenApiConfig {
      */
     private OpenApiCustomizer referenceOperatorEventCustomizer() {
         record Replacement(String parentSchema, String fieldName, String refTarget, boolean inArrayItems) {}
-        var replacements = List.of(
-                new Replacement("PushEventsRequest", "events", "OperatorEvent", true),
-                new Replacement("ResourceConfig", "source", "SourceConfig", false),
-                new Replacement("GitSource", "buildConfig", "BuildConfig", false));
+        var replacements = List.of(new Replacement("PushEventsRequest", "events", "OperatorEvent", true));
         return openApi -> {
             if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) return;
             for (var r : replacements) {
                 applyReplacement(openApi, r.parentSchema, r.fieldName, r.refTarget, r.inArrayItems);
-            }
-        };
-    }
-
-    /**
-     * Springdoc emits the polymorphic parent ({@code SourceConfig}, {@code BuildConfig}) as
-     * {@code type: object} with a {@code type: string} property AND {@code oneOf} +
-     * {@code discriminator}, and each subtype as {@code allOf: [$ref(parent), {inline}]}.
-     * openapi-generator's Java template then makes the parent both an
-     * {@code AbstractOpenApiSchema} oneOf wrapper AND a real superclass of every subtype, so
-     * {@code new SourceConfig(new DockerSource())} serializes the wrapper's {@code instance} /
-     * {@code isNullable} / {@code schemaType} fields onto the wire instead of the inner DTO.
-     *
-     * <p>This customizer cuts the inheritance leg: the parent loses {@code properties} /
-     * {@code required} / {@code type:object} (becomes a pure {@code oneOf} + {@code discriminator}
-     * wrapper) and each subtype's {@code allOf: [$ref, inline]} collapses to just the inline
-     * branch (becomes a flat standalone schema). End result: openapi-generator emits a clean
-     * oneOf wrapper plus unrelated DTOs, and the discriminator reaches the wire.
-     */
-    private OpenApiCustomizer flattenPolymorphicSubtypesCustomizer(String... parentNames) {
-        return openApi -> {
-            if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) return;
-            var schemas = openApi.getComponents().getSchemas();
-            for (String parentName : parentNames) {
-                var parent = schemas.get(parentName);
-                if (parent == null) continue;
-                parent.setProperties(null);
-                parent.setRequired(null);
-                parent.setType(null);
-                String parentRef = "#/components/schemas/" + parentName;
-                for (var entry : schemas.entrySet()) {
-                    var schema = entry.getValue();
-                    if (schema.getAllOf() == null) continue;
-                    var allOf = schema.getAllOf();
-                    io.swagger.v3.oas.models.media.Schema<?> inline = null;
-                    boolean refsParent = false;
-                    for (Object branch : allOf) {
-                        if (!(branch instanceof io.swagger.v3.oas.models.media.Schema<?> b)) continue;
-                        if (parentRef.equals(b.get$ref())) {
-                            refsParent = true;
-                        } else if (b.get$ref() == null) {
-                            inline = b;
-                        }
-                    }
-                    if (refsParent && inline != null) {
-                        schema.setAllOf(null);
-                        schema.setType(inline.getType() != null ? inline.getType() : "object");
-                        schema.setProperties(inline.getProperties());
-                        // Discriminator validation requires the discriminator property to be in
-                        // the `required` list on every subtype.
-                        var required = inline.getRequired() != null
-                                ? new java.util.ArrayList<>(inline.getRequired())
-                                : new java.util.ArrayList<String>();
-                        if (!required.contains("type")) required.add("type");
-                        schema.setRequired(required);
-                    }
-                }
             }
         };
     }
@@ -350,7 +275,6 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.HelloAck.class,
             eu.appbahn.platform.api.tunnel.AdminConfigPush.class,
             eu.appbahn.platform.api.tunnel.QuotaRbacCachePush.class,
-            eu.appbahn.platform.api.tunnel.ApplyResource.class,
             eu.appbahn.platform.api.tunnel.ApplyResourceBundle.class,
             eu.appbahn.platform.api.tunnel.DeleteResource.class,
             eu.appbahn.platform.api.tunnel.ApplyNamespace.class,

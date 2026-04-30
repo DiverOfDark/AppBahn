@@ -180,10 +180,17 @@ type ApiListGitReposRequest struct {
 	ctx            context.Context
 	ApiService     GitAPI
 	gitAuthRequest *GitAuthRequest
+	idempotencyKey *string
 }
 
 func (r ApiListGitReposRequest) GitAuthRequest(gitAuthRequest GitAuthRequest) ApiListGitReposRequest {
 	r.gitAuthRequest = &gitAuthRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiListGitReposRequest) IdempotencyKey(idempotencyKey string) ApiListGitReposRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -246,6 +253,9 @@ func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.gitAuthRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -289,10 +299,17 @@ type ApiStartBuildDetectionRequest struct {
 	ctx                context.Context
 	ApiService         GitAPI
 	detectBuildRequest *DetectBuildRequest
+	idempotencyKey     *string
 }
 
 func (r ApiStartBuildDetectionRequest) DetectBuildRequest(detectBuildRequest DetectBuildRequest) ApiStartBuildDetectionRequest {
 	r.detectBuildRequest = &detectBuildRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiStartBuildDetectionRequest) IdempotencyKey(idempotencyKey string) ApiStartBuildDetectionRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -355,6 +372,9 @@ func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionReque
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.detectBuildRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -398,10 +418,17 @@ type ApiValidateGitRepoRequest struct {
 	ctx                    context.Context
 	ApiService             GitAPI
 	validateGitRepoRequest *ValidateGitRepoRequest
+	idempotencyKey         *string
 }
 
 func (r ApiValidateGitRepoRequest) ValidateGitRepoRequest(validateGitRepoRequest ValidateGitRepoRequest) ApiValidateGitRepoRequest {
 	r.validateGitRepoRequest = &validateGitRepoRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiValidateGitRepoRequest) IdempotencyKey(idempotencyKey string) ApiValidateGitRepoRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -463,6 +490,9 @@ func (a *GitAPIService) ValidateGitRepoExecute(r ApiValidateGitRepoRequest) (*Gi
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.validateGitRepoRequest

@@ -16,9 +16,6 @@ import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
 import eu.appbahn.platform.api.resource.PagedResourceResponse;
 import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
 import eu.appbahn.platform.api.resource.ResourcesApi;
-import eu.appbahn.platform.api.resource.RollbackRequest;
-import eu.appbahn.platform.api.resource.TriggerDeploymentRequest;
-import eu.appbahn.platform.api.resource.TriggerDeploymentResponse;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
@@ -95,13 +92,6 @@ public class ResourcesController implements ResourcesApi {
     }
 
     @Override
-    public ResponseEntity<TriggerDeploymentResponse> triggerDeployment(
-            String slug, TriggerDeploymentRequest triggerDeploymentRequest) {
-        var result = deploymentService.trigger(slug, triggerDeploymentRequest, AuthContextHolder.get());
-        return ResponseEntity.accepted().body(result);
-    }
-
-    @Override
     public ResponseEntity<Deployment> getDeployment(String slug, UUID deploymentId) {
         return ResponseEntity.ok(deploymentService.get(slug, deploymentId, AuthContextHolder.get()));
     }
@@ -119,11 +109,6 @@ public class ResourcesController implements ResourcesApi {
 
     @Override
     public ResponseEntity<Void> approveDeployment(String slug, UUID deploymentId) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public ResponseEntity<Void> clearBuildCache(String slug) {
         throw new NotImplementedException();
     }
 
@@ -199,11 +184,6 @@ public class ResourcesController implements ResourcesApi {
 
     @Override
     public ResponseEntity<Void> removeDomain(String slug, String domain) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public ResponseEntity<Deployment> rollbackResource(String slug, RollbackRequest rollbackRequest) {
         throw new NotImplementedException();
     }
 

@@ -73,7 +73,7 @@ const quota = ref<Quota>({
 })
 
 // -- Registry --
-const registry = ref<RegistryConfig>({ url: '', credentialRef: { secretName: '', key: '' } })
+const registry = ref<RegistryConfig>({ url: '', credentialRef: { secretName: '' } })
 
 const credentialSecretName = computed({
   get: () => registry.value.credentialRef?.secretName ?? '',
@@ -83,10 +83,9 @@ const credentialSecretName = computed({
 })
 
 const credentialSecretKey = computed({
-  get: () => registry.value.credentialRef?.key ?? '',
-  set: (value: string) => {
-    registry.value.credentialRef = { ...registry.value.credentialRef, key: value }
-  },
+  get: () => '',
+  // registry credential key was removed in the API; secretName is the only field now
+  set: () => {},
 })
 
 // -- Security --

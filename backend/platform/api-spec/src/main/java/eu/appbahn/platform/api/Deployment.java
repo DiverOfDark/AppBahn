@@ -1,6 +1,6 @@
 package eu.appbahn.platform.api;
 
-import eu.appbahn.shared.crd.DeploymentStatus;
+import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class Deployment {
     private TriggerType triggeredBy;
 
     @Nullable
-    private DeploymentStatus status;
+    private BuildLifecycle lifecycle;
 
     @Nullable
     private Boolean isPrimary;

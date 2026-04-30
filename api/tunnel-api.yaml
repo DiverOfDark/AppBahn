@@ -332,19 +332,6 @@ components:
       - ENVIRONMENT
       - RESOURCE
       - DEPLOYMENT
-    BuildConfig:
-      discriminator:
-        propertyName: type
-        mapping:
-          peelbox: "#/components/schemas/PeelboxBuildConfig"
-          buildpack: "#/components/schemas/BuildpackBuildConfig"
-          railpack: "#/components/schemas/RailpackBuildConfig"
-          dockerfile: "#/components/schemas/DockerfileBuildConfig"
-      oneOf:
-      - $ref: "#/components/schemas/PeelboxBuildConfig"
-      - $ref: "#/components/schemas/BuildpackBuildConfig"
-      - $ref: "#/components/schemas/RailpackBuildConfig"
-      - $ref: "#/components/schemas/DockerfileBuildConfig"
     BuildLifecycleEvent:
       type: object
       allOf:
@@ -377,30 +364,10 @@ components:
           occurredAt:
             type: string
             format: date-time
-    BuildpackBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        builder:
-          type: string
-        buildVars:
-          type: object
-          additionalProperties:
-            type: string
     BuildpackBuildOptions:
       type: object
       properties:
         builder:
-          type: string
-    CredentialRef:
-      type: object
-      properties:
-        secretName:
-          type: string
-        key:
           type: string
     CustomDomainStatus:
       type: object
@@ -434,42 +401,6 @@ components:
           status:
             type: string
           message:
-            type: string
-    DockerSource:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        image:
-          type: string
-        tag:
-          type: string
-        registryUrl:
-          type: string
-        credentialRef:
-          $ref: "#/components/schemas/CredentialRef"
-        digest:
-          type: string
-    DockerfileBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        path:
-          type: string
-        target:
-          type: string
-        buildArgs:
-          type: object
-          additionalProperties:
             type: string
     DockerfileBuildOptions:
       type: object
@@ -509,27 +440,6 @@ components:
               $ref: "#/components/schemas/ResourceSyncItem"
           complete:
             type: boolean
-    GitSource:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        url:
-          type: string
-        branch:
-          type: string
-        path:
-          type: string
-        auth:
-          $ref: "#/components/schemas/SourceAuth"
-        buildConfig:
-          $ref: "#/components/schemas/BuildConfig"
     HealthCheckConfig:
       type: object
       properties:
@@ -846,17 +756,6 @@ components:
           type: string
         uid:
           type: string
-    PeelboxBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        universalBuild:
-          type: array
-          items:
-            type: object
     PendingBuild:
       type: object
       properties:
@@ -914,23 +813,6 @@ components:
         failureThreshold:
           type: integer
           format: int32
-    PromotionSource:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        sourceEnvironment:
-          type: string
-        sourceResource:
-          type: string
-        autoPromote:
-          type: boolean
     PushEventsRequest:
       required:
       - clusterName
@@ -945,19 +827,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperatorEvent"
-    RailpackBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        provider:
-          type: string
-        buildVars:
-          type: object
-          additionalProperties:
-            type: string
     Release:
       type: object
       properties:
@@ -995,8 +864,6 @@ components:
     ResourceConfig:
       type: object
       properties:
-        source:
-          $ref: "#/components/schemas/SourceConfig"
         hosting:
           $ref: "#/components/schemas/HostingConfig"
         networking:
@@ -1057,9 +924,6 @@ components:
             $ref: "#/components/schemas/LinkConfig"
         stopped:
           type: boolean
-        deploymentRevision:
-          type: string
-          deprecated: true
         release:
           $ref: "#/components/schemas/Release"
         restartGeneration:
@@ -1096,34 +960,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkStatus"
-        primaryDeploymentId:
-          type: string
-          deprecated: true
-        primaryImage:
-          type: string
-          deprecated: true
-        lastDeploymentTime:
-          type: string
-          format: date-time
-          deprecated: true
         lastSyncTime:
           type: string
           format: date-time
-        latestDeploymentId:
-          type: string
-          deprecated: true
-        latestDeploymentStatus:
-          type: string
-          deprecated: true
-          enum:
-          - QUEUED
-          - AWAITING_APPROVAL
-          - BUILDING
-          - COPYING_IMAGE
-          - DEPLOYING
-          - SUCCEEDED
-          - FAILED
-          - REJECTED
         activeRelease:
           $ref: "#/components/schemas/ActiveRelease"
         observedReleaseId:
@@ -1180,28 +1019,6 @@ components:
               type: string
           complete:
             type: boolean
-    SourceAuth:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - none
-          - basic
-          - ssh_key
-        credentialRef:
-          $ref: "#/components/schemas/CredentialRef"
-    SourceConfig:
-      discriminator:
-        propertyName: type
-        mapping:
-          docker: "#/components/schemas/DockerSource"
-          git: "#/components/schemas/GitSource"
-          promotion: "#/components/schemas/PromotionSource"
-      oneOf:
-      - $ref: "#/components/schemas/DockerSource"
-      - $ref: "#/components/schemas/GitSource"
-      - $ref: "#/components/schemas/PromotionSource"
     TcpSocketAction:
       type: object
       properties:
@@ -1353,17 +1170,6 @@ components:
           type: string
         limits:
           $ref: "#/components/schemas/QuotaDimensions"
-    ApplyResource:
-      type: object
-      properties:
-        correlationId:
-          type: string
-        namespace:
-          type: string
-        resource:
-          $ref: "#/components/schemas/ResourceCrd"
-        expectedResourceVersion:
-          type: string
     ApplyResourceBundle:
       type: object
       properties:

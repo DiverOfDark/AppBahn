@@ -26,7 +26,7 @@ type Deployment struct {
 	SourceRef          *string    `json:"sourceRef,omitempty"`
 	ImageRef           *string    `json:"imageRef,omitempty"`
 	TriggeredBy        *string    `json:"triggeredBy,omitempty"`
-	Status             *string    `json:"status,omitempty"`
+	Lifecycle          *string    `json:"lifecycle,omitempty"`
 	IsPrimary          *bool      `json:"isPrimary,omitempty"`
 	SourceDeploymentId *string    `json:"sourceDeploymentId,omitempty"`
 	CreatedAt          *time.Time `json:"createdAt,omitempty"`
@@ -242,36 +242,36 @@ func (o *Deployment) SetTriggeredBy(v string) {
 	o.TriggeredBy = &v
 }
 
-// GetStatus returns the Status field value if set, zero value otherwise.
-func (o *Deployment) GetStatus() string {
-	if o == nil || IsNil(o.Status) {
+// GetLifecycle returns the Lifecycle field value if set, zero value otherwise.
+func (o *Deployment) GetLifecycle() string {
+	if o == nil || IsNil(o.Lifecycle) {
 		var ret string
 		return ret
 	}
-	return *o.Status
+	return *o.Lifecycle
 }
 
-// GetStatusOk returns a tuple with the Status field value if set, nil otherwise
+// GetLifecycleOk returns a tuple with the Lifecycle field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Deployment) GetStatusOk() (*string, bool) {
-	if o == nil || IsNil(o.Status) {
+func (o *Deployment) GetLifecycleOk() (*string, bool) {
+	if o == nil || IsNil(o.Lifecycle) {
 		return nil, false
 	}
-	return o.Status, true
+	return o.Lifecycle, true
 }
 
-// HasStatus returns a boolean if a field has been set.
-func (o *Deployment) HasStatus() bool {
-	if o != nil && !IsNil(o.Status) {
+// HasLifecycle returns a boolean if a field has been set.
+func (o *Deployment) HasLifecycle() bool {
+	if o != nil && !IsNil(o.Lifecycle) {
 		return true
 	}
 
 	return false
 }
 
-// SetStatus gets a reference to the given string and assigns it to the Status field.
-func (o *Deployment) SetStatus(v string) {
-	o.Status = &v
+// SetLifecycle gets a reference to the given string and assigns it to the Lifecycle field.
+func (o *Deployment) SetLifecycle(v string) {
+	o.Lifecycle = &v
 }
 
 // GetIsPrimary returns the IsPrimary field value if set, zero value otherwise.
@@ -430,8 +430,8 @@ func (o Deployment) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.TriggeredBy) {
 		toSerialize["triggeredBy"] = o.TriggeredBy
 	}
-	if !IsNil(o.Status) {
-		toSerialize["status"] = o.Status
+	if !IsNil(o.Lifecycle) {
+		toSerialize["lifecycle"] = o.Lifecycle
 	}
 	if !IsNil(o.IsPrimary) {
 		toSerialize["isPrimary"] = o.IsPrimary

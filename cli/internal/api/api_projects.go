@@ -156,10 +156,17 @@ type ApiCreateProjectRequest struct {
 	ctx                  context.Context
 	ApiService           ProjectsAPI
 	createProjectRequest *CreateProjectRequest
+	idempotencyKey       *string
 }
 
 func (r ApiCreateProjectRequest) CreateProjectRequest(createProjectRequest CreateProjectRequest) ApiCreateProjectRequest {
 	r.createProjectRequest = &createProjectRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateProjectRequest) IdempotencyKey(idempotencyKey string) ApiCreateProjectRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -222,6 +229,9 @@ func (a *ProjectsAPIService) CreateProjectExecute(r ApiCreateProjectRequest) (*P
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createProjectRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -262,9 +272,16 @@ func (a *ProjectsAPIService) CreateProjectExecute(r ApiCreateProjectRequest) (*P
 }
 
 type ApiDeleteProjectRequest struct {
-	ctx        context.Context
-	ApiService ProjectsAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ProjectsAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteProjectRequest) IdempotencyKey(idempotencyKey string) ApiDeleteProjectRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteProjectRequest) Execute() (*http.Response, error) {
@@ -323,6 +340,9 @@ func (a *ProjectsAPIService) DeleteProjectExecute(r ApiDeleteProjectRequest) (*h
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -352,10 +372,17 @@ func (a *ProjectsAPIService) DeleteProjectExecute(r ApiDeleteProjectRequest) (*h
 }
 
 type ApiDeleteProjectMemberRoleRequest struct {
-	ctx        context.Context
-	ApiService ProjectsAPI
-	slug       string
-	userId     string
+	ctx            context.Context
+	ApiService     ProjectsAPI
+	slug           string
+	userId         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteProjectMemberRoleRequest) IdempotencyKey(idempotencyKey string) ApiDeleteProjectMemberRoleRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteProjectMemberRoleRequest) Execute() (*http.Response, error) {
@@ -416,6 +443,9 @@ func (a *ProjectsAPIService) DeleteProjectMemberRoleExecute(r ApiDeleteProjectMe
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -788,7 +818,14 @@ type ApiSetProjectMemberRoleRequest struct {
 	ApiService          ProjectsAPI
 	slug                string
 	userId              string
+	idempotencyKey      *string
 	updateMemberRequest *UpdateMemberRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetProjectMemberRoleRequest) IdempotencyKey(idempotencyKey string) ApiSetProjectMemberRoleRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetProjectMemberRoleRequest) UpdateMemberRequest(updateMemberRequest UpdateMemberRequest) ApiSetProjectMemberRoleRequest {
@@ -855,6 +892,9 @@ func (a *ProjectsAPIService) SetProjectMemberRoleExecute(r ApiSetProjectMemberRo
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateMemberRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -886,10 +926,17 @@ func (a *ProjectsAPIService) SetProjectMemberRoleExecute(r ApiSetProjectMemberRo
 }
 
 type ApiSetProjectQuotaRequest struct {
-	ctx        context.Context
-	ApiService ProjectsAPI
-	slug       string
-	quota      *Quota
+	ctx            context.Context
+	ApiService     ProjectsAPI
+	slug           string
+	idempotencyKey *string
+	quota          *Quota
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetProjectQuotaRequest) IdempotencyKey(idempotencyKey string) ApiSetProjectQuotaRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetProjectQuotaRequest) Quota(quota Quota) ApiSetProjectQuotaRequest {
@@ -956,6 +1003,9 @@ func (a *ProjectsAPIService) SetProjectQuotaExecute(r ApiSetProjectQuotaRequest)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.quota
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -999,7 +1049,14 @@ type ApiSetProjectRegistryRequest struct {
 	ctx            context.Context
 	ApiService     ProjectsAPI
 	slug           string
+	idempotencyKey *string
 	registryConfig *RegistryConfig
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetProjectRegistryRequest) IdempotencyKey(idempotencyKey string) ApiSetProjectRegistryRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetProjectRegistryRequest) RegistryConfig(registryConfig RegistryConfig) ApiSetProjectRegistryRequest {
@@ -1066,6 +1123,9 @@ func (a *ProjectsAPIService) SetProjectRegistryExecute(r ApiSetProjectRegistryRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.registryConfig
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1109,7 +1169,14 @@ type ApiUpdateProjectRequest struct {
 	ctx                  context.Context
 	ApiService           ProjectsAPI
 	slug                 string
+	idempotencyKey       *string
 	updateProjectRequest *UpdateProjectRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateProjectRequest) IdempotencyKey(idempotencyKey string) ApiUpdateProjectRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateProjectRequest) UpdateProjectRequest(updateProjectRequest UpdateProjectRequest) ApiUpdateProjectRequest {
@@ -1175,6 +1242,9 @@ func (a *ProjectsAPIService) UpdateProjectExecute(r ApiUpdateProjectRequest) (*P
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.updateProjectRequest

@@ -19,9 +19,10 @@ var _ MappedNullable = &UpdateResourceRequest{}
 
 // UpdateResourceRequest struct for UpdateResourceRequest
 type UpdateResourceRequest struct {
-	Name   *string         `json:"name,omitempty"`
-	Config *ResourceConfig `json:"config,omitempty"`
-	Links  []LinkConfig    `json:"links,omitempty"`
+	Name        *string          `json:"name,omitempty"`
+	Config      *ResourceConfig  `json:"config,omitempty"`
+	ImageSource *ImageSourceSpec `json:"imageSource,omitempty"`
+	Links       []LinkConfig     `json:"links,omitempty"`
 }
 
 // NewUpdateResourceRequest instantiates a new UpdateResourceRequest object
@@ -105,6 +106,38 @@ func (o *UpdateResourceRequest) SetConfig(v ResourceConfig) {
 	o.Config = &v
 }
 
+// GetImageSource returns the ImageSource field value if set, zero value otherwise.
+func (o *UpdateResourceRequest) GetImageSource() ImageSourceSpec {
+	if o == nil || IsNil(o.ImageSource) {
+		var ret ImageSourceSpec
+		return ret
+	}
+	return *o.ImageSource
+}
+
+// GetImageSourceOk returns a tuple with the ImageSource field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateResourceRequest) GetImageSourceOk() (*ImageSourceSpec, bool) {
+	if o == nil || IsNil(o.ImageSource) {
+		return nil, false
+	}
+	return o.ImageSource, true
+}
+
+// HasImageSource returns a boolean if a field has been set.
+func (o *UpdateResourceRequest) HasImageSource() bool {
+	if o != nil && !IsNil(o.ImageSource) {
+		return true
+	}
+
+	return false
+}
+
+// SetImageSource gets a reference to the given ImageSourceSpec and assigns it to the ImageSource field.
+func (o *UpdateResourceRequest) SetImageSource(v ImageSourceSpec) {
+	o.ImageSource = &v
+}
+
 // GetLinks returns the Links field value if set, zero value otherwise.
 func (o *UpdateResourceRequest) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
@@ -152,6 +185,9 @@ func (o UpdateResourceRequest) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config
+	}
+	if !IsNil(o.ImageSource) {
+		toSerialize["imageSource"] = o.ImageSource
 	}
 	if !IsNil(o.Links) {
 		toSerialize["links"] = o.Links

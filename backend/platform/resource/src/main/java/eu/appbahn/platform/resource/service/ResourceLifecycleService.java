@@ -55,7 +55,7 @@ public class ResourceLifecycleService {
             return;
         }
         existingCrd.getSpec().setStopped(true);
-        crdClient.update(existingCrd);
+        crdClient.update(existingCrd, null);
         log.info("Stopped Resource CRD: {}", slug);
 
         auditLogService
@@ -87,7 +87,7 @@ public class ResourceLifecycleService {
             return;
         }
         existingCrd.getSpec().setStopped(false);
-        crdClient.update(existingCrd);
+        crdClient.update(existingCrd, null);
         log.info("Started Resource CRD: {}", slug);
 
         auditLogService
@@ -114,8 +114,9 @@ public class ResourceLifecycleService {
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        existingCrd.getSpec().setDeploymentRevision(UUID.randomUUID().toString());
-        crdClient.update(existingCrd);
+        Long current = existingCrd.getSpec().getRestartGeneration();
+        existingCrd.getSpec().setRestartGeneration(current == null ? 1L : current + 1);
+        crdClient.update(existingCrd, null);
         log.info("Restarted Resource CRD: {}", slug);
 
         auditLogService

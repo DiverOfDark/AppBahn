@@ -20,20 +20,20 @@ var _ MappedNullable = &ResourceStatusDetail{}
 
 // ResourceStatusDetail struct for ResourceStatusDetail
 type ResourceStatusDetail struct {
-	Phase                  *string              `json:"phase,omitempty"`
-	Message                *string              `json:"message,omitempty"`
-	ObservedGeneration     *int64               `json:"observedGeneration,omitempty"`
-	Replicas               *ReplicaStatus       `json:"replicas,omitempty"`
-	Conditions             []ResourceCondition  `json:"conditions,omitempty"`
-	CustomDomains          []CustomDomainStatus `json:"customDomains,omitempty"`
-	Links                  []LinkStatus         `json:"links,omitempty"`
-	PrimaryDeploymentId    *string              `json:"primaryDeploymentId,omitempty"`
-	PrimaryImage           *string              `json:"primaryImage,omitempty"`
-	LastDeploymentTime     *time.Time           `json:"lastDeploymentTime,omitempty"`
-	LastSyncTime           *time.Time           `json:"lastSyncTime,omitempty"`
-	LatestDeploymentId     *string              `json:"latestDeploymentId,omitempty"`
-	LatestDeploymentStatus *string              `json:"latestDeploymentStatus,omitempty"`
-	SyncFailed             *bool                `json:"syncFailed,omitempty"`
+	Phase              *string              `json:"phase,omitempty"`
+	Message            *string              `json:"message,omitempty"`
+	ObservedGeneration *int64               `json:"observedGeneration,omitempty"`
+	Replicas           *ReplicaStatus       `json:"replicas,omitempty"`
+	Conditions         []ResourceCondition  `json:"conditions,omitempty"`
+	CustomDomains      []CustomDomainStatus `json:"customDomains,omitempty"`
+	Links              []LinkStatus         `json:"links,omitempty"`
+	LastSyncTime       *time.Time           `json:"lastSyncTime,omitempty"`
+	ActiveRelease      *ActiveRelease       `json:"activeRelease,omitempty"`
+	ObservedReleaseId  *string              `json:"observedReleaseId,omitempty"`
+	RolloutStatus      *string              `json:"rolloutStatus,omitempty"`
+	ReplicasReady      *int32               `json:"replicasReady,omitempty"`
+	SyncFailed         *bool                `json:"syncFailed,omitempty"`
+	LastError          *string              `json:"lastError,omitempty"`
 }
 
 // NewResourceStatusDetail instantiates a new ResourceStatusDetail object
@@ -277,102 +277,6 @@ func (o *ResourceStatusDetail) SetLinks(v []LinkStatus) {
 	o.Links = v
 }
 
-// GetPrimaryDeploymentId returns the PrimaryDeploymentId field value if set, zero value otherwise.
-func (o *ResourceStatusDetail) GetPrimaryDeploymentId() string {
-	if o == nil || IsNil(o.PrimaryDeploymentId) {
-		var ret string
-		return ret
-	}
-	return *o.PrimaryDeploymentId
-}
-
-// GetPrimaryDeploymentIdOk returns a tuple with the PrimaryDeploymentId field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ResourceStatusDetail) GetPrimaryDeploymentIdOk() (*string, bool) {
-	if o == nil || IsNil(o.PrimaryDeploymentId) {
-		return nil, false
-	}
-	return o.PrimaryDeploymentId, true
-}
-
-// HasPrimaryDeploymentId returns a boolean if a field has been set.
-func (o *ResourceStatusDetail) HasPrimaryDeploymentId() bool {
-	if o != nil && !IsNil(o.PrimaryDeploymentId) {
-		return true
-	}
-
-	return false
-}
-
-// SetPrimaryDeploymentId gets a reference to the given string and assigns it to the PrimaryDeploymentId field.
-func (o *ResourceStatusDetail) SetPrimaryDeploymentId(v string) {
-	o.PrimaryDeploymentId = &v
-}
-
-// GetPrimaryImage returns the PrimaryImage field value if set, zero value otherwise.
-func (o *ResourceStatusDetail) GetPrimaryImage() string {
-	if o == nil || IsNil(o.PrimaryImage) {
-		var ret string
-		return ret
-	}
-	return *o.PrimaryImage
-}
-
-// GetPrimaryImageOk returns a tuple with the PrimaryImage field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ResourceStatusDetail) GetPrimaryImageOk() (*string, bool) {
-	if o == nil || IsNil(o.PrimaryImage) {
-		return nil, false
-	}
-	return o.PrimaryImage, true
-}
-
-// HasPrimaryImage returns a boolean if a field has been set.
-func (o *ResourceStatusDetail) HasPrimaryImage() bool {
-	if o != nil && !IsNil(o.PrimaryImage) {
-		return true
-	}
-
-	return false
-}
-
-// SetPrimaryImage gets a reference to the given string and assigns it to the PrimaryImage field.
-func (o *ResourceStatusDetail) SetPrimaryImage(v string) {
-	o.PrimaryImage = &v
-}
-
-// GetLastDeploymentTime returns the LastDeploymentTime field value if set, zero value otherwise.
-func (o *ResourceStatusDetail) GetLastDeploymentTime() time.Time {
-	if o == nil || IsNil(o.LastDeploymentTime) {
-		var ret time.Time
-		return ret
-	}
-	return *o.LastDeploymentTime
-}
-
-// GetLastDeploymentTimeOk returns a tuple with the LastDeploymentTime field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ResourceStatusDetail) GetLastDeploymentTimeOk() (*time.Time, bool) {
-	if o == nil || IsNil(o.LastDeploymentTime) {
-		return nil, false
-	}
-	return o.LastDeploymentTime, true
-}
-
-// HasLastDeploymentTime returns a boolean if a field has been set.
-func (o *ResourceStatusDetail) HasLastDeploymentTime() bool {
-	if o != nil && !IsNil(o.LastDeploymentTime) {
-		return true
-	}
-
-	return false
-}
-
-// SetLastDeploymentTime gets a reference to the given time.Time and assigns it to the LastDeploymentTime field.
-func (o *ResourceStatusDetail) SetLastDeploymentTime(v time.Time) {
-	o.LastDeploymentTime = &v
-}
-
 // GetLastSyncTime returns the LastSyncTime field value if set, zero value otherwise.
 func (o *ResourceStatusDetail) GetLastSyncTime() time.Time {
 	if o == nil || IsNil(o.LastSyncTime) {
@@ -405,68 +309,132 @@ func (o *ResourceStatusDetail) SetLastSyncTime(v time.Time) {
 	o.LastSyncTime = &v
 }
 
-// GetLatestDeploymentId returns the LatestDeploymentId field value if set, zero value otherwise.
-func (o *ResourceStatusDetail) GetLatestDeploymentId() string {
-	if o == nil || IsNil(o.LatestDeploymentId) {
-		var ret string
+// GetActiveRelease returns the ActiveRelease field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetActiveRelease() ActiveRelease {
+	if o == nil || IsNil(o.ActiveRelease) {
+		var ret ActiveRelease
 		return ret
 	}
-	return *o.LatestDeploymentId
+	return *o.ActiveRelease
 }
 
-// GetLatestDeploymentIdOk returns a tuple with the LatestDeploymentId field value if set, nil otherwise
+// GetActiveReleaseOk returns a tuple with the ActiveRelease field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ResourceStatusDetail) GetLatestDeploymentIdOk() (*string, bool) {
-	if o == nil || IsNil(o.LatestDeploymentId) {
+func (o *ResourceStatusDetail) GetActiveReleaseOk() (*ActiveRelease, bool) {
+	if o == nil || IsNil(o.ActiveRelease) {
 		return nil, false
 	}
-	return o.LatestDeploymentId, true
+	return o.ActiveRelease, true
 }
 
-// HasLatestDeploymentId returns a boolean if a field has been set.
-func (o *ResourceStatusDetail) HasLatestDeploymentId() bool {
-	if o != nil && !IsNil(o.LatestDeploymentId) {
+// HasActiveRelease returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasActiveRelease() bool {
+	if o != nil && !IsNil(o.ActiveRelease) {
 		return true
 	}
 
 	return false
 }
 
-// SetLatestDeploymentId gets a reference to the given string and assigns it to the LatestDeploymentId field.
-func (o *ResourceStatusDetail) SetLatestDeploymentId(v string) {
-	o.LatestDeploymentId = &v
+// SetActiveRelease gets a reference to the given ActiveRelease and assigns it to the ActiveRelease field.
+func (o *ResourceStatusDetail) SetActiveRelease(v ActiveRelease) {
+	o.ActiveRelease = &v
 }
 
-// GetLatestDeploymentStatus returns the LatestDeploymentStatus field value if set, zero value otherwise.
-func (o *ResourceStatusDetail) GetLatestDeploymentStatus() string {
-	if o == nil || IsNil(o.LatestDeploymentStatus) {
+// GetObservedReleaseId returns the ObservedReleaseId field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetObservedReleaseId() string {
+	if o == nil || IsNil(o.ObservedReleaseId) {
 		var ret string
 		return ret
 	}
-	return *o.LatestDeploymentStatus
+	return *o.ObservedReleaseId
 }
 
-// GetLatestDeploymentStatusOk returns a tuple with the LatestDeploymentStatus field value if set, nil otherwise
+// GetObservedReleaseIdOk returns a tuple with the ObservedReleaseId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ResourceStatusDetail) GetLatestDeploymentStatusOk() (*string, bool) {
-	if o == nil || IsNil(o.LatestDeploymentStatus) {
+func (o *ResourceStatusDetail) GetObservedReleaseIdOk() (*string, bool) {
+	if o == nil || IsNil(o.ObservedReleaseId) {
 		return nil, false
 	}
-	return o.LatestDeploymentStatus, true
+	return o.ObservedReleaseId, true
 }
 
-// HasLatestDeploymentStatus returns a boolean if a field has been set.
-func (o *ResourceStatusDetail) HasLatestDeploymentStatus() bool {
-	if o != nil && !IsNil(o.LatestDeploymentStatus) {
+// HasObservedReleaseId returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasObservedReleaseId() bool {
+	if o != nil && !IsNil(o.ObservedReleaseId) {
 		return true
 	}
 
 	return false
 }
 
-// SetLatestDeploymentStatus gets a reference to the given string and assigns it to the LatestDeploymentStatus field.
-func (o *ResourceStatusDetail) SetLatestDeploymentStatus(v string) {
-	o.LatestDeploymentStatus = &v
+// SetObservedReleaseId gets a reference to the given string and assigns it to the ObservedReleaseId field.
+func (o *ResourceStatusDetail) SetObservedReleaseId(v string) {
+	o.ObservedReleaseId = &v
+}
+
+// GetRolloutStatus returns the RolloutStatus field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetRolloutStatus() string {
+	if o == nil || IsNil(o.RolloutStatus) {
+		var ret string
+		return ret
+	}
+	return *o.RolloutStatus
+}
+
+// GetRolloutStatusOk returns a tuple with the RolloutStatus field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetRolloutStatusOk() (*string, bool) {
+	if o == nil || IsNil(o.RolloutStatus) {
+		return nil, false
+	}
+	return o.RolloutStatus, true
+}
+
+// HasRolloutStatus returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasRolloutStatus() bool {
+	if o != nil && !IsNil(o.RolloutStatus) {
+		return true
+	}
+
+	return false
+}
+
+// SetRolloutStatus gets a reference to the given string and assigns it to the RolloutStatus field.
+func (o *ResourceStatusDetail) SetRolloutStatus(v string) {
+	o.RolloutStatus = &v
+}
+
+// GetReplicasReady returns the ReplicasReady field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetReplicasReady() int32 {
+	if o == nil || IsNil(o.ReplicasReady) {
+		var ret int32
+		return ret
+	}
+	return *o.ReplicasReady
+}
+
+// GetReplicasReadyOk returns a tuple with the ReplicasReady field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetReplicasReadyOk() (*int32, bool) {
+	if o == nil || IsNil(o.ReplicasReady) {
+		return nil, false
+	}
+	return o.ReplicasReady, true
+}
+
+// HasReplicasReady returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasReplicasReady() bool {
+	if o != nil && !IsNil(o.ReplicasReady) {
+		return true
+	}
+
+	return false
+}
+
+// SetReplicasReady gets a reference to the given int32 and assigns it to the ReplicasReady field.
+func (o *ResourceStatusDetail) SetReplicasReady(v int32) {
+	o.ReplicasReady = &v
 }
 
 // GetSyncFailed returns the SyncFailed field value if set, zero value otherwise.
@@ -501,6 +469,38 @@ func (o *ResourceStatusDetail) SetSyncFailed(v bool) {
 	o.SyncFailed = &v
 }
 
+// GetLastError returns the LastError field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetLastError() string {
+	if o == nil || IsNil(o.LastError) {
+		var ret string
+		return ret
+	}
+	return *o.LastError
+}
+
+// GetLastErrorOk returns a tuple with the LastError field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetLastErrorOk() (*string, bool) {
+	if o == nil || IsNil(o.LastError) {
+		return nil, false
+	}
+	return o.LastError, true
+}
+
+// HasLastError returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasLastError() bool {
+	if o != nil && !IsNil(o.LastError) {
+		return true
+	}
+
+	return false
+}
+
+// SetLastError gets a reference to the given string and assigns it to the LastError field.
+func (o *ResourceStatusDetail) SetLastError(v string) {
+	o.LastError = &v
+}
+
 func (o ResourceStatusDetail) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -532,26 +532,26 @@ func (o ResourceStatusDetail) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Links) {
 		toSerialize["links"] = o.Links
 	}
-	if !IsNil(o.PrimaryDeploymentId) {
-		toSerialize["primaryDeploymentId"] = o.PrimaryDeploymentId
-	}
-	if !IsNil(o.PrimaryImage) {
-		toSerialize["primaryImage"] = o.PrimaryImage
-	}
-	if !IsNil(o.LastDeploymentTime) {
-		toSerialize["lastDeploymentTime"] = o.LastDeploymentTime
-	}
 	if !IsNil(o.LastSyncTime) {
 		toSerialize["lastSyncTime"] = o.LastSyncTime
 	}
-	if !IsNil(o.LatestDeploymentId) {
-		toSerialize["latestDeploymentId"] = o.LatestDeploymentId
+	if !IsNil(o.ActiveRelease) {
+		toSerialize["activeRelease"] = o.ActiveRelease
 	}
-	if !IsNil(o.LatestDeploymentStatus) {
-		toSerialize["latestDeploymentStatus"] = o.LatestDeploymentStatus
+	if !IsNil(o.ObservedReleaseId) {
+		toSerialize["observedReleaseId"] = o.ObservedReleaseId
+	}
+	if !IsNil(o.RolloutStatus) {
+		toSerialize["rolloutStatus"] = o.RolloutStatus
+	}
+	if !IsNil(o.ReplicasReady) {
+		toSerialize["replicasReady"] = o.ReplicasReady
 	}
 	if !IsNil(o.SyncFailed) {
 		toSerialize["syncFailed"] = o.SyncFailed
+	}
+	if !IsNil(o.LastError) {
+		toSerialize["lastError"] = o.LastError
 	}
 	return toSerialize, nil
 }

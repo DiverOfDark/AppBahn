@@ -1,6 +1,7 @@
 package eu.appbahn.shared.crd;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.fabric8.generator.annotation.Required;
 import lombok.Data;
 
 /**
@@ -12,11 +13,13 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Release {
 
+    @Required
     private FromImageSource fromImageSource;
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class FromImageSource {
+        @Required
         private String name;
     }
 }

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.common.exception.ValidationException;
-import eu.appbahn.shared.crd.*;
+import eu.appbahn.shared.crd.ResourceConfig;
+import eu.appbahn.shared.crd.RunMode;
 import eu.appbahn.shared.util.DeepClone;
 import io.fabric8.kubernetes.api.model.Quantity;
 import java.util.ArrayList;
@@ -17,26 +18,7 @@ final class ResourceConfigMerger {
     private ResourceConfigMerger() {}
 
     /**
-     * Check that immutable config fields have not been changed. The patch source type (if present)
-     * must match the existing source type.
-     */
-    static void checkImmutableSourceType(ResourceConfig existing, JsonNode patchSourceNode) {
-        if (patchSourceNode == null || !patchSourceNode.has("type")) {
-            return;
-        }
-        if (existing.getSource() == null) {
-            return;
-        }
-        String patchType = patchSourceNode.get("type").asText();
-        String existingType = sourceType(existing.getSource());
-        if (existingType != null && !existingType.equals(patchType)) {
-            throw new ValidationException("Field 'source.type' is immutable and cannot be changed");
-        }
-    }
-
-    /**
-     * Merge patch into a deep copy of existing config. Source fields from the patch JsonNode
-     * are applied to the existing polymorphic Source without requiring a type discriminator.
+     * Merge patch into a deep copy of existing config.
      */
     static ResourceConfig merge(ResourceConfig existing, JsonNode patchNode, ObjectMapper objectMapper) {
         try {
@@ -48,19 +30,8 @@ final class ResourceConfigMerger {
 
     private static ResourceConfig doMerge(ResourceConfig existing, JsonNode patchNode, ObjectMapper objectMapper)
             throws JsonMappingException {
-        ResourceConfig result = DeepClone.of(existing, objectMapper);
+        ResourceConfig result = existing != null ? DeepClone.of(existing, objectMapper) : new ResourceConfig();
 
-        if (patchNode.has("source") && !patchNode.get("source").isNull()) {
-            JsonNode sourceNode = patchNode.get("source");
-            if (result.getSource() == null) {
-                if (!sourceNode.has("type")) {
-                    throw new ValidationException("Field 'source.type' is required when creating source");
-                }
-                result.setSource(objectMapper.convertValue(sourceNode, Source.class));
-            } else {
-                result.setSource(objectMapper.updateValue(result.getSource(), sourceNode));
-            }
-        }
         if (patchNode.has("hosting") && !patchNode.get("hosting").isNull()) {
             if (result.getHosting() == null) result.setHosting(new ResourceConfig.HostingConfig());
             result.setHosting(objectMapper.updateValue(result.getHosting(), patchNode.get("hosting")));
@@ -101,10 +72,10 @@ final class ResourceConfigMerger {
 
     /** Returns true if hosting has changed between existing and updated config. */
     static boolean hasHostingChange(ResourceConfig existing, ResourceConfig updated) {
-        if (updated.getHosting() == null) {
+        if (updated == null || updated.getHosting() == null) {
             return false;
         }
-        if (existing.getHosting() == null) {
+        if (existing == null || existing.getHosting() == null) {
             return true;
         }
         var a = existing.getHosting();
@@ -120,13 +91,5 @@ final class ResourceConfigMerger {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return a.getNumericalAmount().compareTo(b.getNumericalAmount()) == 0;
-    }
-
-    private static String sourceType(Source src) {
-        return switch (src) {
-            case DockerSource ds -> ds.getType();
-            case GitSource gs -> gs.getType();
-            case PromotionSource ps -> ps.getType();
-        };
     }
 }

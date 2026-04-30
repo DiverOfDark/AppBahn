@@ -1,7 +1,6 @@
 package eu.appbahn.platform.resource.entity;
 
 import eu.appbahn.platform.api.TriggerType;
-import eu.appbahn.shared.crd.DeploymentStatus;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import eu.appbahn.shared.util.UuidV7;
 import jakarta.persistence.Column;
@@ -43,19 +42,7 @@ public class DeploymentEntity {
     @Column(name = "triggered_by", length = 20, nullable = false)
     private TriggerType triggeredBy;
 
-    /**
-     * @deprecated populated only by the legacy resource-driven deployment flow.
-     * ImageSource-driven rows leave this column null and rely on {@link #lifecycle}.
-     */
-    @Deprecated
-    @Enumerated(EnumType.STRING)
-    @Column(length = 30)
-    private DeploymentStatus status;
-
-    /**
-     * ImageSource-driven build lifecycle. Populated on rows minted by
-     * {@code BuildLifecycleEvent}; null for legacy resource-driven deployments.
-     */
+    /** Build lifecycle. Mints / advances on operator {@code BuildLifecycleEvent}s. */
     @Enumerated(EnumType.STRING)
     @Column(name = "lifecycle", length = 20)
     private BuildLifecycle lifecycle;

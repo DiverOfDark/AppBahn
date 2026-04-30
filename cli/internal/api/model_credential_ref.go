@@ -20,7 +20,6 @@ var _ MappedNullable = &CredentialRef{}
 // CredentialRef struct for CredentialRef
 type CredentialRef struct {
 	SecretName *string `json:"secretName,omitempty"`
-	Key        *string `json:"key,omitempty"`
 }
 
 // NewCredentialRef instantiates a new CredentialRef object
@@ -72,38 +71,6 @@ func (o *CredentialRef) SetSecretName(v string) {
 	o.SecretName = &v
 }
 
-// GetKey returns the Key field value if set, zero value otherwise.
-func (o *CredentialRef) GetKey() string {
-	if o == nil || IsNil(o.Key) {
-		var ret string
-		return ret
-	}
-	return *o.Key
-}
-
-// GetKeyOk returns a tuple with the Key field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *CredentialRef) GetKeyOk() (*string, bool) {
-	if o == nil || IsNil(o.Key) {
-		return nil, false
-	}
-	return o.Key, true
-}
-
-// HasKey returns a boolean if a field has been set.
-func (o *CredentialRef) HasKey() bool {
-	if o != nil && !IsNil(o.Key) {
-		return true
-	}
-
-	return false
-}
-
-// SetKey gets a reference to the given string and assigns it to the Key field.
-func (o *CredentialRef) SetKey(v string) {
-	o.Key = &v
-}
-
 func (o CredentialRef) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -116,9 +83,6 @@ func (o CredentialRef) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.SecretName) {
 		toSerialize["secretName"] = o.SecretName
-	}
-	if !IsNil(o.Key) {
-		toSerialize["key"] = o.Key
 	}
 	return toSerialize, nil
 }

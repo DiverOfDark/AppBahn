@@ -343,7 +343,14 @@ type ApiAddWorkspaceMemberRequest struct {
 	ctx              context.Context
 	ApiService       WorkspacesAPI
 	slug             string
+	idempotencyKey   *string
 	addMemberRequest *AddMemberRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiAddWorkspaceMemberRequest) IdempotencyKey(idempotencyKey string) ApiAddWorkspaceMemberRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiAddWorkspaceMemberRequest) AddMemberRequest(addMemberRequest AddMemberRequest) ApiAddWorkspaceMemberRequest {
@@ -410,6 +417,9 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.addMemberRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -453,7 +463,14 @@ type ApiCreateGroupMappingRequest struct {
 	ctx                       context.Context
 	ApiService                WorkspacesAPI
 	slug                      string
+	idempotencyKey            *string
 	createGroupMappingRequest *CreateGroupMappingRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateGroupMappingRequest) IdempotencyKey(idempotencyKey string) ApiCreateGroupMappingRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiCreateGroupMappingRequest) CreateGroupMappingRequest(createGroupMappingRequest CreateGroupMappingRequest) ApiCreateGroupMappingRequest {
@@ -520,6 +537,9 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createGroupMappingRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -563,7 +583,14 @@ type ApiCreateNotificationWebhookRequest struct {
 	ctx                              context.Context
 	ApiService                       WorkspacesAPI
 	slug                             string
+	idempotencyKey                   *string
 	createNotificationWebhookRequest *CreateNotificationWebhookRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateNotificationWebhookRequest) IdempotencyKey(idempotencyKey string) ApiCreateNotificationWebhookRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiCreateNotificationWebhookRequest) CreateNotificationWebhookRequest(createNotificationWebhookRequest CreateNotificationWebhookRequest) ApiCreateNotificationWebhookRequest {
@@ -630,6 +657,9 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createNotificationWebhookRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -673,10 +703,17 @@ type ApiCreateWorkspaceRequest struct {
 	ctx                    context.Context
 	ApiService             WorkspacesAPI
 	createWorkspaceRequest *CreateWorkspaceRequest
+	idempotencyKey         *string
 }
 
 func (r ApiCreateWorkspaceRequest) CreateWorkspaceRequest(createWorkspaceRequest CreateWorkspaceRequest) ApiCreateWorkspaceRequest {
 	r.createWorkspaceRequest = &createWorkspaceRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateWorkspaceRequest) IdempotencyKey(idempotencyKey string) ApiCreateWorkspaceRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -739,6 +776,9 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createWorkspaceRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -779,10 +819,17 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 }
 
 type ApiDeleteGroupMappingRequest struct {
-	ctx        context.Context
-	ApiService WorkspacesAPI
-	slug       string
-	mappingId  string
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	mappingId      string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteGroupMappingRequest) IdempotencyKey(idempotencyKey string) ApiDeleteGroupMappingRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteGroupMappingRequest) Execute() (*http.Response, error) {
@@ -844,6 +891,9 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -873,10 +923,17 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 }
 
 type ApiDeleteNotificationWebhookRequest struct {
-	ctx        context.Context
-	ApiService WorkspacesAPI
-	slug       string
-	hookId     string
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	hookId         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteNotificationWebhookRequest) IdempotencyKey(idempotencyKey string) ApiDeleteNotificationWebhookRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteNotificationWebhookRequest) Execute() (*http.Response, error) {
@@ -938,6 +995,9 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -967,9 +1027,16 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 }
 
 type ApiDeleteWorkspaceRequest struct {
-	ctx        context.Context
-	ApiService WorkspacesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteWorkspaceRequest) IdempotencyKey(idempotencyKey string) ApiDeleteWorkspaceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteWorkspaceRequest) Execute() (*http.Response, error) {
@@ -1027,6 +1094,9 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -2065,10 +2135,17 @@ func (a *WorkspacesAPIService) ListWorkspacesExecute(r ApiListWorkspacesRequest)
 }
 
 type ApiRemoveWorkspaceMemberRequest struct {
-	ctx        context.Context
-	ApiService WorkspacesAPI
-	slug       string
-	userId     string
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	userId         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRemoveWorkspaceMemberRequest) IdempotencyKey(idempotencyKey string) ApiRemoveWorkspaceMemberRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiRemoveWorkspaceMemberRequest) Execute() (*http.Response, error) {
@@ -2130,6 +2207,9 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -2159,10 +2239,17 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 }
 
 type ApiSetWorkspaceQuotaRequest struct {
-	ctx        context.Context
-	ApiService WorkspacesAPI
-	slug       string
-	quota      *Quota
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	idempotencyKey *string
+	quota          *Quota
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetWorkspaceQuotaRequest) IdempotencyKey(idempotencyKey string) ApiSetWorkspaceQuotaRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetWorkspaceQuotaRequest) Quota(quota Quota) ApiSetWorkspaceQuotaRequest {
@@ -2229,6 +2316,9 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.quota
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2272,7 +2362,14 @@ type ApiSetWorkspaceRegistryRequest struct {
 	ctx            context.Context
 	ApiService     WorkspacesAPI
 	slug           string
+	idempotencyKey *string
 	registryConfig *RegistryConfig
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetWorkspaceRegistryRequest) IdempotencyKey(idempotencyKey string) ApiSetWorkspaceRegistryRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetWorkspaceRegistryRequest) RegistryConfig(registryConfig RegistryConfig) ApiSetWorkspaceRegistryRequest {
@@ -2339,6 +2436,9 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.registryConfig
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2382,7 +2482,14 @@ type ApiSetWorkspaceSecurityRequest struct {
 	ctx              context.Context
 	ApiService       WorkspacesAPI
 	slug             string
+	idempotencyKey   *string
 	securitySettings *SecuritySettings
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetWorkspaceSecurityRequest) IdempotencyKey(idempotencyKey string) ApiSetWorkspaceSecurityRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetWorkspaceSecurityRequest) SecuritySettings(securitySettings SecuritySettings) ApiSetWorkspaceSecurityRequest {
@@ -2449,6 +2556,9 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.securitySettings
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2493,7 +2603,14 @@ type ApiUpdateGroupMappingRequest struct {
 	ApiService                WorkspacesAPI
 	slug                      string
 	mappingId                 string
+	idempotencyKey            *string
 	updateGroupMappingRequest *UpdateGroupMappingRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateGroupMappingRequest) IdempotencyKey(idempotencyKey string) ApiUpdateGroupMappingRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateGroupMappingRequest) UpdateGroupMappingRequest(updateGroupMappingRequest UpdateGroupMappingRequest) ApiUpdateGroupMappingRequest {
@@ -2563,6 +2680,9 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateGroupMappingRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2607,7 +2727,14 @@ type ApiUpdateNotificationWebhookRequest struct {
 	ApiService                       WorkspacesAPI
 	slug                             string
 	hookId                           string
+	idempotencyKey                   *string
 	updateNotificationWebhookRequest *UpdateNotificationWebhookRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateNotificationWebhookRequest) IdempotencyKey(idempotencyKey string) ApiUpdateNotificationWebhookRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateNotificationWebhookRequest) UpdateNotificationWebhookRequest(updateNotificationWebhookRequest UpdateNotificationWebhookRequest) ApiUpdateNotificationWebhookRequest {
@@ -2677,6 +2804,9 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateNotificationWebhookRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2721,10 +2851,17 @@ type ApiUpdateWorkspaceRequest struct {
 	ApiService             WorkspacesAPI
 	slug                   string
 	updateWorkspaceRequest *UpdateWorkspaceRequest
+	idempotencyKey         *string
 }
 
 func (r ApiUpdateWorkspaceRequest) UpdateWorkspaceRequest(updateWorkspaceRequest UpdateWorkspaceRequest) ApiUpdateWorkspaceRequest {
 	r.updateWorkspaceRequest = &updateWorkspaceRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateWorkspaceRequest) IdempotencyKey(idempotencyKey string) ApiUpdateWorkspaceRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -2790,6 +2927,9 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateWorkspaceRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -2834,7 +2974,14 @@ type ApiUpdateWorkspaceMemberRequest struct {
 	ApiService          WorkspacesAPI
 	slug                string
 	userId              string
+	idempotencyKey      *string
 	updateMemberRequest *UpdateMemberRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateWorkspaceMemberRequest) IdempotencyKey(idempotencyKey string) ApiUpdateWorkspaceMemberRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateWorkspaceMemberRequest) UpdateMemberRequest(updateMemberRequest UpdateMemberRequest) ApiUpdateWorkspaceMemberRequest {
@@ -2903,6 +3050,9 @@ func (a *WorkspacesAPIService) UpdateWorkspaceMemberExecute(r ApiUpdateWorkspace
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.updateMemberRequest

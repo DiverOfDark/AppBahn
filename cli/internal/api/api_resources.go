@@ -49,18 +49,6 @@ type ResourcesAPI interface {
 	ApproveDeploymentExecute(r ApiApproveDeploymentRequest) (*http.Response, error)
 
 	/*
-		ClearBuildCache Method for ClearBuildCache
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiClearBuildCacheRequest
-	*/
-	ClearBuildCache(ctx context.Context, slug string) ApiClearBuildCacheRequest
-
-	// ClearBuildCacheExecute executes the request
-	ClearBuildCacheExecute(r ApiClearBuildCacheRequest) (*http.Response, error)
-
-	/*
 		CreateExposure Method for CreateExposure
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -332,19 +320,6 @@ type ResourcesAPI interface {
 	RestartResourceExecute(r ApiRestartResourceRequest) (*http.Response, error)
 
 	/*
-		RollbackResource Method for RollbackResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiRollbackResourceRequest
-	*/
-	RollbackResource(ctx context.Context, slug string) ApiRollbackResourceRequest
-
-	// RollbackResourceExecute executes the request
-	//  @return Deployment
-	RollbackResourceExecute(r ApiRollbackResourceRequest) (*Deployment, *http.Response, error)
-
-	/*
 		RotateWebhookSecret Method for RotateWebhookSecret
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -382,19 +357,6 @@ type ResourcesAPI interface {
 	StopResourceExecute(r ApiStopResourceRequest) (*http.Response, error)
 
 	/*
-		TriggerDeployment Method for TriggerDeployment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiTriggerDeploymentRequest
-	*/
-	TriggerDeployment(ctx context.Context, slug string) ApiTriggerDeploymentRequest
-
-	// TriggerDeploymentExecute executes the request
-	//  @return TriggerDeploymentResponse
-	TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*TriggerDeploymentResponse, *http.Response, error)
-
-	/*
 		UpdateResource Method for UpdateResource
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -415,7 +377,14 @@ type ApiAddDomainRequest struct {
 	ctx              context.Context
 	ApiService       ResourcesAPI
 	slug             string
+	idempotencyKey   *string
 	addDomainRequest *AddDomainRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiAddDomainRequest) IdempotencyKey(idempotencyKey string) ApiAddDomainRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiAddDomainRequest) AddDomainRequest(addDomainRequest AddDomainRequest) ApiAddDomainRequest {
@@ -482,6 +451,9 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.addDomainRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -522,10 +494,17 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 }
 
 type ApiApproveDeploymentRequest struct {
-	ctx          context.Context
-	ApiService   ResourcesAPI
-	slug         string
-	deploymentId string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	deploymentId   string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiApproveDeploymentRequest) IdempotencyKey(idempotencyKey string) ApiApproveDeploymentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiApproveDeploymentRequest) Execute() (*http.Response, error) {
@@ -587,95 +566,8 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarHTTPResponse, newErr
-	}
-
-	return localVarHTTPResponse, nil
-}
-
-type ApiClearBuildCacheRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
-}
-
-func (r ApiClearBuildCacheRequest) Execute() (*http.Response, error) {
-	return r.ApiService.ClearBuildCacheExecute(r)
-}
-
-/*
-ClearBuildCache Method for ClearBuildCache
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiClearBuildCacheRequest
-*/
-func (a *ResourcesAPIService) ClearBuildCache(ctx context.Context, slug string) ApiClearBuildCacheRequest {
-	return ApiClearBuildCacheRequest{
-		ApiService: a,
-		ctx:        ctx,
-		slug:       slug,
-	}
-}
-
-// Execute executes the request
-func (a *ResourcesAPIService) ClearBuildCacheExecute(r ApiClearBuildCacheRequest) (*http.Response, error) {
-	var (
-		localVarHTTPMethod = http.MethodDelete
-		localVarPostBody   interface{}
-		formFiles          []formFile
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.ClearBuildCache")
-	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/resources/{slug}/build-cache"
-	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -709,7 +601,14 @@ type ApiCreateExposureRequest struct {
 	ctx                   context.Context
 	ApiService            ResourcesAPI
 	slug                  string
+	idempotencyKey        *string
 	createExposureRequest *CreateExposureRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateExposureRequest) IdempotencyKey(idempotencyKey string) ApiCreateExposureRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiCreateExposureRequest) CreateExposureRequest(createExposureRequest CreateExposureRequest) ApiCreateExposureRequest {
@@ -776,6 +675,9 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createExposureRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -819,10 +721,17 @@ type ApiCreateResourceRequest struct {
 	ctx                   context.Context
 	ApiService            ResourcesAPI
 	createResourceRequest *CreateResourceRequest
+	idempotencyKey        *string
 }
 
 func (r ApiCreateResourceRequest) CreateResourceRequest(createResourceRequest CreateResourceRequest) ApiCreateResourceRequest {
 	r.createResourceRequest = &createResourceRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateResourceRequest) IdempotencyKey(idempotencyKey string) ApiCreateResourceRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -885,6 +794,9 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createResourceRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -925,10 +837,17 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 }
 
 type ApiDeleteExposureRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
-	port       int32
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	port           int32
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteExposureRequest) IdempotencyKey(idempotencyKey string) ApiDeleteExposureRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteExposureRequest) Execute() (*http.Response, error) {
@@ -990,6 +909,9 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -1019,9 +941,16 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 }
 
 type ApiDeleteResourceRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteResourceRequest) IdempotencyKey(idempotencyKey string) ApiDeleteResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteResourceRequest) Execute() (*http.Response, error) {
@@ -1079,6 +1008,9 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -2775,10 +2707,17 @@ func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*
 }
 
 type ApiRejectDeploymentRequest struct {
-	ctx          context.Context
-	ApiService   ResourcesAPI
-	slug         string
-	deploymentId string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	deploymentId   string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRejectDeploymentRequest) IdempotencyKey(idempotencyKey string) ApiRejectDeploymentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiRejectDeploymentRequest) Execute() (*http.Response, error) {
@@ -2840,6 +2779,9 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -2869,10 +2811,17 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 }
 
 type ApiRemoveDomainRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
-	domain     string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	domain         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRemoveDomainRequest) IdempotencyKey(idempotencyKey string) ApiRemoveDomainRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiRemoveDomainRequest) Execute() (*http.Response, error) {
@@ -2934,6 +2883,9 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -2963,9 +2915,16 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 }
 
 type ApiRestartResourceRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRestartResourceRequest) IdempotencyKey(idempotencyKey string) ApiRestartResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiRestartResourceRequest) Execute() (*http.Response, error) {
@@ -3024,6 +2983,9 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -3052,120 +3014,17 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 	return localVarHTTPResponse, nil
 }
 
-type ApiRollbackResourceRequest struct {
-	ctx             context.Context
-	ApiService      ResourcesAPI
-	slug            string
-	rollbackRequest *RollbackRequest
-}
-
-func (r ApiRollbackResourceRequest) RollbackRequest(rollbackRequest RollbackRequest) ApiRollbackResourceRequest {
-	r.rollbackRequest = &rollbackRequest
-	return r
-}
-
-func (r ApiRollbackResourceRequest) Execute() (*Deployment, *http.Response, error) {
-	return r.ApiService.RollbackResourceExecute(r)
-}
-
-/*
-RollbackResource Method for RollbackResource
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiRollbackResourceRequest
-*/
-func (a *ResourcesAPIService) RollbackResource(ctx context.Context, slug string) ApiRollbackResourceRequest {
-	return ApiRollbackResourceRequest{
-		ApiService: a,
-		ctx:        ctx,
-		slug:       slug,
-	}
-}
-
-// Execute executes the request
-//
-//	@return Deployment
-func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceRequest) (*Deployment, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *Deployment
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RollbackResource")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/resources/{slug}/rollback"
-	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.rollbackRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
 type ApiRotateWebhookSecretRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRotateWebhookSecretRequest) IdempotencyKey(idempotencyKey string) ApiRotateWebhookSecretRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiRotateWebhookSecretRequest) Execute() (*WebhookConfig, *http.Response, error) {
@@ -3227,6 +3086,9 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -3265,9 +3127,16 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 }
 
 type ApiStartResourceRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiStartResourceRequest) IdempotencyKey(idempotencyKey string) ApiStartResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiStartResourceRequest) Execute() (*http.Response, error) {
@@ -3326,6 +3195,9 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -3355,9 +3227,16 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 }
 
 type ApiStopResourceRequest struct {
-	ctx        context.Context
-	ApiService ResourcesAPI
-	slug       string
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiStopResourceRequest) IdempotencyKey(idempotencyKey string) ApiStopResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiStopResourceRequest) Execute() (*http.Response, error) {
@@ -3416,6 +3295,9 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -3444,121 +3326,18 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 	return localVarHTTPResponse, nil
 }
 
-type ApiTriggerDeploymentRequest struct {
-	ctx                      context.Context
-	ApiService               ResourcesAPI
-	slug                     string
-	triggerDeploymentRequest *TriggerDeploymentRequest
-}
-
-func (r ApiTriggerDeploymentRequest) TriggerDeploymentRequest(triggerDeploymentRequest TriggerDeploymentRequest) ApiTriggerDeploymentRequest {
-	r.triggerDeploymentRequest = &triggerDeploymentRequest
-	return r
-}
-
-func (r ApiTriggerDeploymentRequest) Execute() (*TriggerDeploymentResponse, *http.Response, error) {
-	return r.ApiService.TriggerDeploymentExecute(r)
-}
-
-/*
-TriggerDeployment Method for TriggerDeployment
-
-	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param slug
-	@return ApiTriggerDeploymentRequest
-*/
-func (a *ResourcesAPIService) TriggerDeployment(ctx context.Context, slug string) ApiTriggerDeploymentRequest {
-	return ApiTriggerDeploymentRequest{
-		ApiService: a,
-		ctx:        ctx,
-		slug:       slug,
-	}
-}
-
-// Execute executes the request
-//
-//	@return TriggerDeploymentResponse
-func (a *ResourcesAPIService) TriggerDeploymentExecute(r ApiTriggerDeploymentRequest) (*TriggerDeploymentResponse, *http.Response, error) {
-	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *TriggerDeploymentResponse
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.TriggerDeployment")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/resources/{slug}/deployments"
-	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.triggerDeploymentRequest
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
 type ApiUpdateResourceRequest struct {
 	ctx                   context.Context
 	ApiService            ResourcesAPI
 	slug                  string
+	idempotencyKey        *string
 	updateResourceRequest *UpdateResourceRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateResourceRequest) IdempotencyKey(idempotencyKey string) ApiUpdateResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateResourceRequest) UpdateResourceRequest(updateResourceRequest UpdateResourceRequest) ApiUpdateResourceRequest {
@@ -3624,6 +3403,9 @@ func (a *ResourcesAPIService) UpdateResourceExecute(r ApiUpdateResourceRequest) 
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.updateResourceRequest

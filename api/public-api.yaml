@@ -715,36 +715,6 @@ paths:
       responses:
         "200":
           description: OK
-  /resources/{slug}/rollback:
-    post:
-      tags:
-      - Resources
-      operationId: rollbackResource
-      parameters:
-      - name: slug
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        description: Optional dedup key. Same key + same body within 24h returns the
-          cached response.
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RollbackRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Deployment"
   /resources/{slug}/restart:
     post:
       tags:
@@ -845,70 +815,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DomainEntry"
-  /resources/{slug}/deployments:
-    get:
-      tags:
-      - Resources
-      operationId: listDeployments
-      parameters:
-      - name: slug
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-      - name: sort
-        in: query
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PagedDeploymentResponse"
-    post:
-      tags:
-      - Resources
-      operationId: triggerDeployment
-      parameters:
-      - name: slug
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        description: Optional dedup key. Same key + same body within 24h returns the
-          cached response.
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TriggerDeploymentRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TriggerDeploymentResponse"
   /resources/{slug}/deployments/{deployment_id}/reject:
     post:
       tags:
@@ -2332,6 +2238,41 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResourceExposure"
+  /resources/{slug}/deployments:
+    get:
+      tags:
+      - Resources
+      operationId: listDeployments
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedDeploymentResponse"
   /resources/{slug}/deployments/{deployment_id}:
     get:
       tags:
@@ -2647,27 +2588,6 @@ paths:
       responses:
         "200":
           description: OK
-  /resources/{slug}/build-cache:
-    delete:
-      tags:
-      - Resources
-      operationId: clearBuildCache
-      parameters:
-      - name: slug
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        description: Optional dedup key. Same key + same body within 24h returns the
-          cached response.
-        required: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
   /environments/{slug}/tokens/{token_id}:
     delete:
       tags:
@@ -2706,8 +2626,6 @@ components:
       type: object
       properties:
         secretName:
-          type: string
-        key:
           type: string
     RegistryConfig:
       type: object
@@ -2972,36 +2890,16 @@ components:
         deploymentId:
           type: string
           format: uuid
-    BuildConfig:
-      discriminator:
-        propertyName: type
-        mapping:
-          peelbox: "#/components/schemas/PeelboxBuildConfig"
-          buildpack: "#/components/schemas/BuildpackBuildConfig"
-          railpack: "#/components/schemas/RailpackBuildConfig"
-          dockerfile: "#/components/schemas/DockerfileBuildConfig"
-      oneOf:
-      - $ref: "#/components/schemas/PeelboxBuildConfig"
-      - $ref: "#/components/schemas/BuildpackBuildConfig"
-      - $ref: "#/components/schemas/RailpackBuildConfig"
-      - $ref: "#/components/schemas/DockerfileBuildConfig"
-    BuildpackBuildConfig:
-      required:
-      - type
+    BuildpackBuildOptions:
       type: object
       properties:
-        type:
-          type: string
         builder:
           type: string
-        buildVars:
-          type: object
-          additionalProperties:
-            type: string
     CreateResourceRequest:
       required:
       - config
       - environmentSlug
+      - imageSource
       - name
       - type
       type: object
@@ -3014,46 +2912,19 @@ components:
           type: string
         config:
           $ref: "#/components/schemas/ResourceConfig"
+        imageSource:
+          $ref: "#/components/schemas/ImageSourceSpec"
         links:
           type: array
           items:
             $ref: "#/components/schemas/LinkConfig"
-    DockerSource:
-      required:
-      - type
+    DockerfileBuildOptions:
       type: object
       properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        image:
-          type: string
-        tag:
-          type: string
-        registryUrl:
-          type: string
-        credentialRef:
-          $ref: "#/components/schemas/CredentialRef"
-        digest:
-          type: string
-    DockerfileBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
         path:
           type: string
-        target:
+        context:
           type: string
-        buildArgs:
-          type: object
-          additionalProperties:
-            type: string
     ExecAction:
       type: object
       properties:
@@ -3061,27 +2932,6 @@ components:
           type: array
           items:
             type: string
-    GitSource:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        url:
-          type: string
-        branch:
-          type: string
-        path:
-          type: string
-        auth:
-          $ref: "#/components/schemas/SourceAuth"
-        buildConfig:
-          $ref: "#/components/schemas/BuildConfig"
     HealthCheckConfig:
       type: object
       properties:
@@ -3112,6 +2962,72 @@ components:
         port:
           type: integer
           format: int32
+    ImageSourceBuildSpec:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+          - dockerfile
+          - peelbox
+          - buildpack
+          - nixpacks
+          - railpack
+        dockerfile:
+          $ref: "#/components/schemas/DockerfileBuildOptions"
+        buildpack:
+          $ref: "#/components/schemas/BuildpackBuildOptions"
+    ImageSourceGitSpec:
+      type: object
+      properties:
+        repo:
+          type: string
+        branch:
+          type: string
+        credentialsSecretRef:
+          type: string
+    ImageSourcePoll:
+      type: object
+      properties:
+        intervalSeconds:
+          type: integer
+          format: int32
+        intervalSecondsAfterWebhook:
+          type: integer
+          format: int32
+        webhookFreshnessSeconds:
+          type: integer
+          format: int32
+    ImageSourceSpec:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - git
+          - image
+        git:
+          $ref: "#/components/schemas/ImageSourceGitSpec"
+        image:
+          $ref: "#/components/schemas/ImageSpec"
+        build:
+          $ref: "#/components/schemas/ImageSourceBuildSpec"
+        trigger:
+          $ref: "#/components/schemas/ImageSourceTrigger"
+    ImageSourceTrigger:
+      type: object
+      properties:
+        poll:
+          $ref: "#/components/schemas/ImageSourcePoll"
+    ImageSpec:
+      type: object
+      properties:
+        ref:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
     LinkConfig:
       type: object
       properties:
@@ -3130,17 +3046,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PortConfig"
-    PeelboxBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        universalBuild:
-          type: array
-          items:
-            type: object
     PortConfig:
       type: object
       properties:
@@ -3173,41 +3078,9 @@ components:
         failureThreshold:
           type: integer
           format: int32
-    PromotionSource:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        pollInterval:
-          type: string
-        webhookEnabled:
-          type: boolean
-        sourceEnvironment:
-          type: string
-        sourceResource:
-          type: string
-        autoPromote:
-          type: boolean
-    RailpackBuildConfig:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-        provider:
-          type: string
-        buildVars:
-          type: object
-          additionalProperties:
-            type: string
     ResourceConfig:
       type: object
       properties:
-        source:
-          $ref: "#/components/schemas/SourceConfig"
         hosting:
           $ref: "#/components/schemas/HostingConfig"
         networking:
@@ -3223,28 +3096,6 @@ components:
           enum:
           - CONTINUOUS
           - TASK
-    SourceAuth:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - none
-          - basic
-          - ssh_key
-        credentialRef:
-          $ref: "#/components/schemas/CredentialRef"
-    SourceConfig:
-      discriminator:
-        propertyName: type
-        mapping:
-          docker: "#/components/schemas/DockerSource"
-          git: "#/components/schemas/GitSource"
-          promotion: "#/components/schemas/PromotionSource"
-      oneOf:
-      - $ref: "#/components/schemas/DockerSource"
-      - $ref: "#/components/schemas/GitSource"
-      - $ref: "#/components/schemas/PromotionSource"
     TcpSocketAction:
       type: object
       properties:
@@ -3265,58 +3116,6 @@ components:
           type: string
         secretMasked:
           type: string
-    RollbackRequest:
-      required:
-      - deploymentId
-      type: object
-      properties:
-        deploymentId:
-          type: string
-          format: uuid
-    Deployment:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        resourceSlug:
-          type: string
-        environmentSlug:
-          type: string
-        sourceRef:
-          type: string
-        imageRef:
-          type: string
-        triggeredBy:
-          type: string
-          enum:
-          - manual
-          - polling
-          - webhook
-          - auto-promotion
-          - rollback
-        status:
-          type: string
-          enum:
-          - QUEUED
-          - AWAITING_APPROVAL
-          - BUILDING
-          - COPYING_IMAGE
-          - DEPLOYING
-          - SUCCEEDED
-          - FAILED
-          - REJECTED
-        isPrimary:
-          type: boolean
-        sourceDeploymentId:
-          type: string
-          format: uuid
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     CreateExposureRequest:
       required:
       - port
@@ -3370,26 +3169,6 @@ components:
           format: int32
         status:
           type: string
-    TriggerDeploymentRequest:
-      type: object
-      properties:
-        sourceRef:
-          type: string
-    TriggerDeploymentResponse:
-      required:
-      - deploymentId
-      - status
-      type: object
-      properties:
-        deploymentId:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum:
-          - QUEUED
-          - DEPLOYING
-          - DUPLICATE
     CreateProjectRequest:
       required:
       - name
@@ -3643,6 +3422,8 @@ components:
           type: string
         config:
           $ref: "#/components/schemas/ResourceConfig"
+        imageSource:
+          $ref: "#/components/schemas/ImageSourceSpec"
         links:
           type: array
           items:
@@ -3789,34 +3570,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkStatus"
-        primaryDeploymentId:
-          type: string
-          deprecated: true
-        primaryImage:
-          type: string
-          deprecated: true
-        lastDeploymentTime:
-          type: string
-          format: date-time
-          deprecated: true
         lastSyncTime:
           type: string
           format: date-time
-        latestDeploymentId:
-          type: string
-          deprecated: true
-        latestDeploymentStatus:
-          type: string
-          deprecated: true
-          enum:
-          - QUEUED
-          - AWAITING_APPROVAL
-          - BUILDING
-          - COPYING_IMAGE
-          - DEPLOYING
-          - SUCCEEDED
-          - FAILED
-          - REJECTED
         activeRelease:
           $ref: "#/components/schemas/ActiveRelease"
         observedReleaseId:
@@ -4130,6 +3886,50 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LogLine"
+    Deployment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        resourceSlug:
+          type: string
+        environmentSlug:
+          type: string
+        sourceRef:
+          type: string
+        imageRef:
+          type: string
+        triggeredBy:
+          type: string
+          enum:
+          - manual
+          - polling
+          - webhook
+          - auto-promotion
+          - rollback
+        lifecycle:
+          type: string
+          enum:
+          - QUEUED
+          - BUILDING
+          - BUILT
+          - FAILED
+          - ACTIVATING
+          - ACTIVE
+          - SUPERSEDED
+          - CANCELED
+        isPrimary:
+          type: boolean
+        sourceDeploymentId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     PagedDeploymentResponse:
       type: object
       properties:

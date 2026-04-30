@@ -58,20 +58,6 @@ public interface ResourcesApi {
     ResponseEntity<Void> approveDeployment(
             @PathVariable("slug") String slug, @PathVariable("deployment_id") UUID deploymentId);
     /**
-     * DELETE /resources/{slug}/build-cache : ClearBuildCache
-     *
-     * @param slug  (required)
-     * @return Build cache cleared (status code 204)
-     *         or Unauthorized (status code 401)
-     *         or Forbidden (status code 403)
-     *         or Not found (status code 404)
-     */
-    @RequestMapping(
-            method = RequestMethod.DELETE,
-            value = "/resources/{slug}/build-cache",
-            produces = {"application/json"})
-    ResponseEntity<Void> clearBuildCache(@PathVariable("slug") String slug);
-    /**
      * POST /resources/{slug}/expose : CreateExposure
      *
      * @param slug  (required)
@@ -444,25 +430,6 @@ public interface ResourcesApi {
             produces = {"application/json"})
     ResponseEntity<Void> restartResource(@PathVariable("slug") String slug);
     /**
-     * POST /resources/{slug}/rollback : RollbackResource
-     *
-     * @param slug  (required)
-     * @param rollbackRequest  (optional)
-     * @return Rollback deployment created (status code 201)
-     *         or Bad request (status code 400)
-     *         or Unauthorized (status code 401)
-     *         or Forbidden (status code 403)
-     *         or Not found (status code 404)
-     */
-    @RequestMapping(
-            method = RequestMethod.POST,
-            value = "/resources/{slug}/rollback",
-            produces = {"application/json"},
-            consumes = {"application/json"})
-    ResponseEntity<Deployment> rollbackResource(
-            @PathVariable("slug") String slug,
-            @Valid @RequestBody(required = false) @Nullable RollbackRequest rollbackRequest);
-    /**
      * POST /resources/{slug}/webhook/rotate : RotateWebhookSecret
      *
      * @param slug  (required)
@@ -504,25 +471,6 @@ public interface ResourcesApi {
             value = "/resources/{slug}/stop",
             produces = {"application/json"})
     ResponseEntity<Void> stopResource(@PathVariable("slug") String slug);
-    /**
-     * POST /resources/{slug}/deployments : TriggerDeployment
-     *
-     * @param slug  (required)
-     * @param triggerDeploymentRequest  (optional)
-     * @return Deployment accepted (status code 202)
-     *         or Bad request (status code 400)
-     *         or Unauthorized (status code 401)
-     *         or Forbidden (status code 403)
-     *         or Not found (status code 404)
-     */
-    @RequestMapping(
-            method = RequestMethod.POST,
-            value = "/resources/{slug}/deployments",
-            produces = {"application/json"},
-            consumes = {"application/json"})
-    ResponseEntity<TriggerDeploymentResponse> triggerDeployment(
-            @PathVariable("slug") String slug,
-            @Valid @RequestBody(required = false) @Nullable TriggerDeploymentRequest triggerDeploymentRequest);
     /**
      * PATCH /resources/{slug} : UpdateResource
      *

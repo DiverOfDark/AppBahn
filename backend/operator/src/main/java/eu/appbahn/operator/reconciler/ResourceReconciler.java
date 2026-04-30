@@ -122,8 +122,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     if (namespace == null || imageSourceName == null) {
                         return Set.of();
                     }
-                    // Find Resources in the same namespace whose release.fromImageSource.name
-                    // matches. Cheap because the informer cache is local.
                     var matches = new java.util.HashSet<ResourceID>();
                     var resources = context.getClient()
                             .resources(ResourceCrd.class)
@@ -156,25 +154,18 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 log.debug("Reconcile called with null spec for {}; skipping", name);
                 return UpdateControl.noUpdate();
             }
-            // Either path must be configured: release.fromImageSource (new) or config.source
-            // (legacy DockerSource). Both can't be missing — we'd have nothing to roll out.
-            boolean useReleasePath = ResourceReleaseResolver.usesReleasePath(resource);
-            var config = resource.getSpec().getConfig();
-            if (!useReleasePath
-                    && (config == null
-                            || !(config.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSrc)
-                            || dockerSrc.getImage() == null)) {
-                resource.setStatus(
-                        createErrorStatus(resource, "spec.release.fromImageSource or docker source is required"));
+            // The release path is the only path: spec.release.fromImageSource must be set.
+            // Resources without it never make it past admission, but a stale/legacy CR could.
+            if (!ResourceReleaseResolver.usesReleasePath(resource)) {
+                resource.setStatus(createErrorStatus(
+                        resource, "spec.release.fromImageSource.name is required", "LegacySourceRemoved"));
                 syncToPlatform(resource);
                 return UpdateControl.patchStatus(resource);
             }
 
             var k8sDeployment = context.getSecondaryResource(Deployment.class).orElse(null);
             var status = deriveStatus(resource, k8sDeployment, context);
-            if (useReleasePath) {
-                enrichWithReleaseStatus(resource, status, context);
-            }
+            enrichWithReleaseStatus(resource, status, context);
 
             if (statusEquals(resource.getStatus(), status)) {
                 log.debug("Status unchanged for {}, skipping update", name);
@@ -187,7 +178,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             return UpdateControl.patchStatus(resource);
         } catch (Exception e) {
             log.error("Error reconciling resource {}: {}", name, e.getMessage(), e);
-            resource.setStatus(createErrorStatus(resource, e.getMessage()));
+            resource.setStatus(createErrorStatus(resource, e.getMessage(), null));
             syncToPlatform(resource);
             return UpdateControl.<ResourceCrd>patchStatus(resource)
                     .rescheduleAfter(ERROR_RETRY_MINUTES, TimeUnit.MINUTES);
@@ -209,11 +200,20 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         return DeleteControl.defaultDelete();
     }
 
-    private ResourceStatusDetail createErrorStatus(ResourceCrd resource, String message) {
+    private ResourceStatusDetail createErrorStatus(ResourceCrd resource, String message, String reason) {
         var status = new ResourceStatusDetail();
         status.setPhase(ResourcePhase.ERROR);
         status.setMessage(message);
         status.setObservedGeneration(resource.getMetadata().getGeneration());
+        if (reason != null) {
+            var condition = new ResourceStatusDetail.ResourceCondition();
+            condition.setType("Ready");
+            condition.setStatus("False");
+            condition.setReason(reason);
+            condition.setMessage(message);
+            condition.setLastUpdateTime(java.time.Instant.now());
+            status.setConditions(List.of(condition));
+        }
         return status;
     }
 
@@ -221,14 +221,8 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             ResourceCrd resource, Deployment k8sDeployment, Context<ResourceCrd> context) {
         var status = new ResourceStatusDetail();
         status.setObservedGeneration(resource.getMetadata().getGeneration());
-        // syncFailed is owned by syncToPlatform, not derived from K8s.
         if (resource.getStatus() != null) {
             status.setSyncFailed(resource.getStatus().getSyncFailed());
-        }
-
-        String deploymentRevision = resource.getSpec().getDeploymentRevision();
-        if (deploymentRevision != null) {
-            status.setLatestDeploymentId(deploymentRevision);
         }
 
         boolean stopped = Boolean.TRUE.equals(resource.getSpec().getStopped());
@@ -241,17 +235,11 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             }
             status.setPhase(ResourcePhase.PENDING);
             status.setMessage("Waiting for deployment");
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
-            }
             return status;
         }
         if (k8sDeployment.getStatus() == null) {
             status.setPhase(ResourcePhase.PENDING);
             status.setMessage("Waiting for deployment");
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
-            }
             return status;
         }
 
@@ -264,9 +252,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         int available = depStatus.getAvailableReplicas() != null ? depStatus.getAvailableReplicas() : 0;
 
         if (stopped) {
-            // Deployment is still present mid-teardown — JOSDK will delete it, but until then
-            // surface a transitional PENDING/"Stopping..." rather than flipping straight to
-            // STOPPED. The k8sDeployment==null branch above handles the terminal STOPPED state.
             status.setPhase(ResourcePhase.PENDING);
             status.setMessage("Stopping...");
             var replicas = new ResourceStatusDetail.ReplicaStatus();
@@ -278,9 +263,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             return status;
         }
 
-        // DeploymentDependentResource scales to 0 on a terminally-failed revision (see
-        // isCurrentRevisionFailed). Preserve ERROR so status doesn't flip to PENDING once
-        // the crashing pods are gone.
         if (desired == 0 && DeploymentDependentResource.isCurrentRevisionFailed(resource)) {
             var prev = resource.getStatus();
             status.setPhase(ResourcePhase.ERROR);
@@ -297,9 +279,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             replicas.setUpdated(updated);
             replicas.setAvailable(available);
             status.setReplicas(replicas);
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
-            }
             return status;
         }
 
@@ -310,7 +289,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         replicas.setAvailable(available);
         status.setReplicas(replicas);
 
-        // Surface every ingress host that's actually live on the cluster. Primary first.
         var config = resource.getSpec().getConfig();
         var ingressPorts =
                 config != null ? config.getIngressPorts() : List.<eu.appbahn.shared.crd.ResourceConfig.PortConfig>of();
@@ -341,10 +319,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
         Optional<String> terminalFailure = inspection.terminalFailure;
         boolean conditionRolloutFailed = hasFailedRolloutCondition(depStatus);
-        // ImagePullBackOff & friends never recover without a spec edit. CrashLoopBackOff is
-        // reversible (the pod might still come up) but still reported as ERROR with the
-        // crash detail in lastError; phase reverts to READY automatically once the kubelet
-        // stops reporting the waiting reason.
         boolean rolloutFailed = conditionRolloutFailed || terminalFailure.isPresent();
 
         if (rolloutFailed && ready > 0) {
@@ -352,28 +326,15 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             status.setMessage(terminalFailure
                     .map(reason -> reason + " (old replicas still serving)")
                     .orElseGet(() -> "Deployment rollout failed but " + ready + " old replica(s) still running"));
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
-            }
         } else if (rolloutFailed) {
             status.setPhase(ResourcePhase.ERROR);
             status.setMessage(terminalFailure.orElse("Deployment rollout failed"));
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
-            }
         } else if (inspection.crashLoopReason != null) {
-            // STOPPED > ERROR (crash-looping) > READY/DEGRADED/RESTARTING/PENDING.
             status.setPhase(ResourcePhase.ERROR);
             status.setMessage(inspection.crashLoopReason);
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.FAILED);
-            }
         } else if (ready >= desired && desired > 0) {
             status.setPhase(ResourcePhase.READY);
             status.setMessage(null);
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.SUCCEEDED);
-            }
         } else if (ready > 0) {
             if (updated < desired) {
                 status.setPhase(ResourcePhase.RESTARTING);
@@ -382,15 +343,9 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 status.setPhase(ResourcePhase.DEGRADED);
                 status.setMessage(ready + "/" + desired + " replicas ready");
             }
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
-            }
         } else {
             status.setPhase(ResourcePhase.PENDING);
             status.setMessage("Waiting for pods to be ready");
-            if (deploymentRevision != null) {
-                status.setLatestDeploymentStatus(eu.appbahn.shared.crd.DeploymentStatus.DEPLOYING);
-            }
         }
 
         return status;
@@ -399,9 +354,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     /**
      * Populate the release-path fields ({@code activeRelease}, {@code observedReleaseId},
      * {@code rolloutStatus}, {@code replicasReady}) from the bound ImageSource's
-     * {@code latestArtifact} and the K8s deployment status. The derivation reuses the same
-     * facts the legacy phase computation already used; this method just translates them onto
-     * the new field shape so consumers can read either path uniformly.
+     * {@code latestArtifact} and the K8s deployment status.
      */
     static void enrichWithReleaseStatus(
             ResourceCrd resource, ResourceStatusDetail status, Context<ResourceCrd> context) {
@@ -415,9 +368,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         });
         Long restartGen = resource.getSpec().getRestartGeneration();
         if (restartGen != null) {
-            // observedReleaseId surfaces the operator's view of "what's currently rolled out".
-            // The platform-side audit row id pairs with this value; without a build half driving
-            // the value (PR4), restartGeneration acts as the operator's local releaseId proxy.
             status.setObservedReleaseId(String.valueOf(restartGen));
         }
         if (status.getReplicas() != null) {
@@ -427,11 +377,8 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     }
 
     /**
-     * Map the legacy {@link ResourcePhase} (already computed against the same K8s deployment
-     * facts) onto the new {@link RolloutStatus}. {@code Pending} → ImageSource hasn't built yet
-     * or the deployment hasn't started rolling. {@code Healthy} when phase = READY. Failure /
-     * crashloop maps to {@code Failed}; partial readiness maps to {@code Degraded};
-     * mid-rollout maps to {@code Deploying}.
+     * Map the {@link ResourcePhase} (computed against the same K8s deployment facts) onto the
+     * {@link RolloutStatus} surface.
      */
     static RolloutStatus deriveRolloutStatus(ResourceStatusDetail status) {
         if (status.getActiveRelease() == null) {
@@ -493,9 +440,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                                 cs.getName(), waitingReason, waitingMessage, previousTermination);
                     }
                 } else if (lastError == null && previousTermination != null) {
-                    // Container is currently running but the previous instance exited badly — still
-                    // worth surfacing so the user can see "exited 137 (OOMKilled)" even before the
-                    // next restart trips CrashLoopBackOff.
                     lastError = "container '" + cs.getName() + "' previously " + previousTermination;
                 }
             }
@@ -556,14 +500,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         return message != null && !message.isBlank() ? reason + ": " + message : reason;
     }
 
-    /**
-     * Result of walking a resource's pods. {@code terminalFailure} reports a
-     * never-recovers waiting reason (ImagePullBackOff &amp; friends).
-     * {@code crashLoopReason} is non-null when any container is currently
-     * {@code CrashLoopBackOff}-ing. {@code lastError} carries the most
-     * informative explanation seen — surfaced in
-     * {@link ResourceStatusDetail#getLastError()} regardless of phase.
-     */
     record PodInspection(Optional<String> terminalFailure, String crashLoopReason, String lastError) {}
 
     private static boolean hasFailedRolloutCondition(io.fabric8.kubernetes.api.model.apps.DeploymentStatus depStatus) {
@@ -599,8 +535,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && Objects.equals(a.getLastError(), b.getLastError())
                 && Objects.equals(a.getObservedGeneration(), b.getObservedGeneration())
                 && Objects.equals(a.getCustomDomains(), b.getCustomDomains())
-                && Objects.equals(a.getLatestDeploymentId(), b.getLatestDeploymentId())
-                && Objects.equals(a.getLatestDeploymentStatus(), b.getLatestDeploymentStatus())
                 && Objects.equals(a.getActiveRelease(), b.getActiveRelease())
                 && Objects.equals(a.getObservedReleaseId(), b.getObservedReleaseId())
                 && Objects.equals(a.getRolloutStatus(), b.getRolloutStatus())
@@ -618,12 +552,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && a.getAvailable() == b.getAvailable();
     }
 
-    /**
-     * Hand the resource to the async event queue and return. The queue's drainer pushes to
-     * the platform with retries and exponential backoff, so reconcile latency is decoupled
-     * from tunnel latency. The {@code syncFailed} flag is only set if {@code emitSync} itself
-     * throws — currently a defensive branch, since enqueue overflow drops silently with a WARN.
-     */
     private void syncToPlatform(ResourceCrd resource) {
         try {
             eventPublisher.emitSync(resource);

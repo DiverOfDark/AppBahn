@@ -3,7 +3,6 @@ package eu.appbahn.shared.crd;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.generator.annotation.Max;
 import io.fabric8.generator.annotation.Min;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -15,9 +14,6 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceConfig {
-
-    @PreserveUnknownFields
-    private Source source;
 
     private HostingConfig hosting;
     private NetworkingConfig networking;

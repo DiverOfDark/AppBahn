@@ -20,39 +20,18 @@ public class ResourceStatusDetail {
     private List<CustomDomainStatus> customDomains;
     private List<LinkStatus> links;
 
-    /** @deprecated replaced by {@link #activeRelease}. */
-    @Deprecated
-    private String primaryDeploymentId;
-
-    /** @deprecated replaced by {@link #activeRelease}'s {@code imageRef}. */
-    @Deprecated
-    private String primaryImage;
-
-    /** @deprecated replaced by {@link #activeRelease}'s {@code activatedAt}. */
-    @Deprecated
-    private Instant lastDeploymentTime;
-
     private Instant lastSyncTime;
 
-    /** @deprecated replaced by {@link #observedReleaseId}. */
-    @Deprecated
-    private String latestDeploymentId;
-
-    /** @deprecated replaced by {@link #rolloutStatus}. */
-    @Deprecated
-    private DeploymentStatus latestDeploymentStatus;
-
     /**
-     * Operator's view of the artifact currently rolled out — populated when the Resource resolves
-     * its image via {@code spec.release.fromImageSource}. Mirrors the bound ImageSource's
-     * {@code status.latestArtifact} the moment the rollout actually flips to it.
+     * Operator's view of the artifact currently rolled out — populated from the bound
+     * ImageSource's {@code status.latestArtifact} the moment the rollout actually flips to it.
      */
     private ActiveRelease activeRelease;
 
     /** Platform-side audit row id for the release the operator currently has active. */
     private String observedReleaseId;
 
-    /** Rollout state derived from K8s facts when the new release path is in use. */
+    /** Rollout state derived from K8s facts. */
     private RolloutStatus rolloutStatus;
 
     /** Pods reporting Ready out of {@link ReplicaStatus#getDesired()}. */

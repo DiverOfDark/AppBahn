@@ -21,11 +21,12 @@ var _ MappedNullable = &CreateResourceRequest{}
 
 // CreateResourceRequest struct for CreateResourceRequest
 type CreateResourceRequest struct {
-	Name            string         `json:"name"`
-	Type            string         `json:"type"`
-	EnvironmentSlug string         `json:"environmentSlug"`
-	Config          ResourceConfig `json:"config"`
-	Links           []LinkConfig   `json:"links,omitempty"`
+	Name            string          `json:"name"`
+	Type            string          `json:"type"`
+	EnvironmentSlug string          `json:"environmentSlug"`
+	Config          ResourceConfig  `json:"config"`
+	ImageSource     ImageSourceSpec `json:"imageSource"`
+	Links           []LinkConfig    `json:"links,omitempty"`
 }
 
 type _CreateResourceRequest CreateResourceRequest
@@ -34,12 +35,13 @@ type _CreateResourceRequest CreateResourceRequest
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateResourceRequest(name string, type_ string, environmentSlug string, config ResourceConfig) *CreateResourceRequest {
+func NewCreateResourceRequest(name string, type_ string, environmentSlug string, config ResourceConfig, imageSource ImageSourceSpec) *CreateResourceRequest {
 	this := CreateResourceRequest{}
 	this.Name = name
 	this.Type = type_
 	this.EnvironmentSlug = environmentSlug
 	this.Config = config
+	this.ImageSource = imageSource
 	return &this
 }
 
@@ -147,6 +149,30 @@ func (o *CreateResourceRequest) SetConfig(v ResourceConfig) {
 	o.Config = v
 }
 
+// GetImageSource returns the ImageSource field value
+func (o *CreateResourceRequest) GetImageSource() ImageSourceSpec {
+	if o == nil {
+		var ret ImageSourceSpec
+		return ret
+	}
+
+	return o.ImageSource
+}
+
+// GetImageSourceOk returns a tuple with the ImageSource field value
+// and a boolean to check if the value has been set.
+func (o *CreateResourceRequest) GetImageSourceOk() (*ImageSourceSpec, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.ImageSource, true
+}
+
+// SetImageSource sets field value
+func (o *CreateResourceRequest) SetImageSource(v ImageSourceSpec) {
+	o.ImageSource = v
+}
+
 // GetLinks returns the Links field value if set, zero value otherwise.
 func (o *CreateResourceRequest) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
@@ -193,6 +219,7 @@ func (o CreateResourceRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize["type"] = o.Type
 	toSerialize["environmentSlug"] = o.EnvironmentSlug
 	toSerialize["config"] = o.Config
+	toSerialize["imageSource"] = o.ImageSource
 	if !IsNil(o.Links) {
 		toSerialize["links"] = o.Links
 	}
@@ -208,6 +235,7 @@ func (o *CreateResourceRequest) UnmarshalJSON(data []byte) (err error) {
 		"type",
 		"environmentSlug",
 		"config",
+		"imageSource",
 	}
 
 	allProperties := make(map[string]interface{})

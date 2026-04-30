@@ -38,19 +38,12 @@ public class ResourceSpec {
     private Boolean stopped;
 
     /**
-     * @deprecated set {@link #release} instead. Bumped by the platform on each deployment
-     * trigger to force K8s pod rollout — coexists with the new image-source-driven release path
-     * while the platform API migrates to {@link #release}.
+     * Image-source-driven release. The operator resolves the bound sibling ImageSource and
+     * renders the pod template from its {@code status.latestArtifact}. Required —
+     * {@code release.fromImageSource.name} must be set on every Resource; the admission webhook
+     * rejects Resources that lack it.
      */
-    @Deprecated
-    private String deploymentRevision;
-
-    /**
-     * Image-source-driven release. When {@link Release#getFromImageSource()} is set, the operator
-     * resolves the bound sibling ImageSource and renders the pod template from its
-     * {@code status.latestArtifact}. Mutually exclusive with the legacy {@link ResourceConfig}
-     * source path; if both are present, {@code release} wins.
-     */
+    @Required
     private Release release;
 
     /**
