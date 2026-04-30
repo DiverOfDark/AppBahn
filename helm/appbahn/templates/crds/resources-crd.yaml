@@ -193,6 +193,16 @@ spec:
                 type: string
               projectId:
                 type: string
+              release:
+                properties:
+                  fromImageSource:
+                    properties:
+                      name:
+                        type: string
+                    type: object
+                type: object
+              restartGeneration:
+                type: integer
               stopped:
                 type: boolean
               type:
@@ -208,6 +218,19 @@ spec:
             type: object
           status:
             properties:
+              activeRelease:
+                properties:
+                  activatedAt:
+                    type: string
+                  imageRef:
+                    type: string
+                  runCommand:
+                    items:
+                      type: string
+                    type: array
+                  sourceCommit:
+                    type: string
+                type: object
               conditions:
                 items:
                   properties:
@@ -278,6 +301,8 @@ spec:
                 type: string
               observedGeneration:
                 type: integer
+              observedReleaseId:
+                type: string
               phase:
                 enum:
                 - DEGRADED
@@ -302,6 +327,16 @@ spec:
                   updated:
                     type: integer
                 type: object
+              replicasReady:
+                type: integer
+              rolloutStatus:
+                enum:
+                - Degraded
+                - Deploying
+                - Failed
+                - Healthy
+                - Pending
+                type: string
               syncFailed:
                 type: boolean
             type: object

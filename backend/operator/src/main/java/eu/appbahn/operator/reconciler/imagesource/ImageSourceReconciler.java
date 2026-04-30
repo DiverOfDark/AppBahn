@@ -4,6 +4,7 @@ import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobDependentReso
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobReconcileCondition;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildOrchestrator;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
+import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCondition;
 import eu.appbahn.shared.crd.imagesource.ImageSourceConditions;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
@@ -11,20 +12,28 @@ import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
 import eu.appbahn.shared.crd.imagesource.LatestArtifact;
 import eu.appbahn.shared.crd.imagesource.PendingBuild;
+import io.fabric8.kubernetes.api.model.OwnerReference;
+import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Workflow;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
+import io.javaoperatorsdk.operator.processing.event.ResourceID;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +77,33 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         this.buildOrchestrator = buildOrchestrator;
     }
 
+    /**
+     * Watch sibling Resources so an arriving Resource triggers the OwnerReference auto-bind
+     * without waiting for the slow re-reconcile schedule. Build Jobs are watched via the
+     * {@code @Workflow} dependent (see {@link BuildJobDependentResource}).
+     */
+    @Override
+    public List<EventSource<?, ImageSourceCrd>> prepareEventSources(EventSourceContext<ImageSourceCrd> context) {
+        var resourceInformerConfig = InformerEventSourceConfiguration.from(ResourceCrd.class, ImageSourceCrd.class)
+                .withSecondaryToPrimaryMapper(resource -> {
+                    if (resource.getMetadata() == null
+                            || resource.getSpec() == null
+                            || resource.getSpec().getRelease() == null
+                            || resource.getSpec().getRelease().getFromImageSource() == null) {
+                        return Set.of();
+                    }
+                    String boundName =
+                            resource.getSpec().getRelease().getFromImageSource().getName();
+                    if (boundName == null || boundName.isBlank()) {
+                        return Set.of();
+                    }
+                    return Set.of(
+                            new ResourceID(boundName, resource.getMetadata().getNamespace()));
+                })
+                .build();
+        return List.of(new InformerEventSource<>(resourceInformerConfig, context));
+    }
+
     @Override
     public UpdateControl<ImageSourceCrd> reconcile(ImageSourceCrd cr, Context<ImageSourceCrd> context) {
         String name = cr.getMetadata().getName();
@@ -97,10 +133,99 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             return finalize(cr, prev, next);
         }
 
+        // Auto-bind OwnerReference on the kubectl-apply path. The platform-driven path sets
+        // the OwnerReference inline in ApplyResourceBundle; on this path we look up which
+        // Resource (if exactly one) refers to this ImageSource and stamp the reference.
+        ensureOwnerReference(cr, context, next);
+
         return switch (spec.getType()) {
             case GIT -> reconcileGit(cr, spec, prev, next, namespace, context);
             case IMAGE -> reconcileImage(cr, spec, prev, next);
         };
+    }
+
+    /**
+     * Set {@code metadata.ownerReferences[0]} to the unique sibling Resource whose
+     * {@code spec.release.fromImageSource.name} matches this ImageSource. Strict 1:1; if zero or
+     * multiple Resources match, surface {@code OwnerNotResolved} on the status conditions and
+     * leave ownerReferences untouched.
+     */
+    private void ensureOwnerReference(ImageSourceCrd cr, Context<ImageSourceCrd> context, ImageSourceStatus next) {
+        if (hasController(cr)) {
+            removeCondition(next, ImageSourceConditions.TYPE_OWNER_NOT_RESOLVED);
+            return;
+        }
+        String namespace = cr.getMetadata().getNamespace();
+        String name = cr.getMetadata().getName();
+        java.util.List<ResourceCrd> matches;
+        try {
+            matches = context.getClient().resources(ResourceCrd.class).inNamespace(namespace).list().getItems().stream()
+                    .filter(r -> r.getSpec() != null
+                            && r.getSpec().getRelease() != null
+                            && r.getSpec().getRelease().getFromImageSource() != null
+                            && name.equals(r.getSpec()
+                                    .getRelease()
+                                    .getFromImageSource()
+                                    .getName()))
+                    .toList();
+        } catch (Exception e) {
+            log.debug("OwnerReference lookup failed for {}/{}: {}", namespace, name, e.getMessage());
+            return;
+        }
+        if (matches.size() != 1) {
+            String reason =
+                    matches.isEmpty() ? ImageSourceConditions.REASON_NO_MATCH : ImageSourceConditions.REASON_AMBIGUOUS;
+            String message = matches.isEmpty()
+                    ? "No Resource in namespace " + namespace + " references this ImageSource"
+                    : matches.size() + " Resources in namespace " + namespace + " reference this ImageSource";
+            upsertCondition(
+                    next,
+                    ImageSourceConditions.TYPE_OWNER_NOT_RESOLVED,
+                    ImageSourceConditions.STATUS_TRUE,
+                    reason,
+                    message);
+            return;
+        }
+        ResourceCrd owner = matches.get(0);
+        String uid = owner.getMetadata() != null ? owner.getMetadata().getUid() : null;
+        if (uid == null || uid.isBlank()) {
+            log.debug(
+                    "Owner Resource {}/{} has no UID yet; deferring owner-bind",
+                    namespace,
+                    owner.getMetadata() != null ? owner.getMetadata().getName() : "?");
+            return;
+        }
+        OwnerReference ref = new OwnerReferenceBuilder()
+                .withApiVersion(owner.getApiVersion())
+                .withKind(owner.getKind())
+                .withName(owner.getMetadata().getName())
+                .withUid(uid)
+                .withController(true)
+                .withBlockOwnerDeletion(true)
+                .build();
+        cr.getMetadata().setOwnerReferences(java.util.List.of(ref));
+        // Patch the metadata immediately so the owner-bind sticks even if the rest of the
+        // reconcile aborts. Status is updated via finalize() at the end of the reconcile.
+        try {
+            context.getClient()
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(namespace)
+                    .withName(name)
+                    .edit(existing -> {
+                        existing.getMetadata().setOwnerReferences(java.util.List.of(ref));
+                        return existing;
+                    });
+        } catch (Exception e) {
+            log.warn("Failed to persist OwnerReference for ImageSource {}/{}: {}", namespace, name, e.getMessage());
+        }
+        removeCondition(next, ImageSourceConditions.TYPE_OWNER_NOT_RESOLVED);
+    }
+
+    private static boolean hasController(ImageSourceCrd cr) {
+        if (cr.getMetadata() == null || cr.getMetadata().getOwnerReferences() == null) {
+            return false;
+        }
+        return cr.getMetadata().getOwnerReferences().stream().anyMatch(o -> Boolean.TRUE.equals(o.getController()));
     }
 
     @Override

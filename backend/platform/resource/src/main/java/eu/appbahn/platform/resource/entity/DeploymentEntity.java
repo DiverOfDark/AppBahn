@@ -43,14 +43,18 @@ public class DeploymentEntity {
     @Column(name = "triggered_by", length = 20, nullable = false)
     private TriggerType triggeredBy;
 
+    /**
+     * @deprecated populated only by the legacy resource-driven deployment flow.
+     * ImageSource-driven rows leave this column null and rely on {@link #lifecycle}.
+     */
+    @Deprecated
     @Enumerated(EnumType.STRING)
-    @Column(length = 30, nullable = false)
+    @Column(length = 30)
     private DeploymentStatus status;
 
     /**
      * ImageSource-driven build lifecycle. Populated on rows minted by
-     * {@code BuildLifecycleEvent}; null for legacy resource-driven deployments. Replaces
-     * {@link #status} entirely once the Resource layer migrates to the new model.
+     * {@code BuildLifecycleEvent}; null for legacy resource-driven deployments.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "lifecycle", length = 20)

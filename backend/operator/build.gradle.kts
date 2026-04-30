@@ -50,6 +50,11 @@ val sharedCrdSchemaMappings = mapOf(
     "ReplicaStatus" to "eu.appbahn.shared.crd.ResourceStatusDetail.ReplicaStatus",
     "ResourceCondition" to "eu.appbahn.shared.crd.ResourceStatusDetail.ResourceCondition",
     "CustomDomainStatus" to "eu.appbahn.shared.crd.ResourceStatusDetail.CustomDomainStatus",
+    // Release / ImageSource binding
+    "Release" to "eu.appbahn.shared.crd.Release",
+    "FromImageSource" to "eu.appbahn.shared.crd.Release.FromImageSource",
+    "ActiveRelease" to "eu.appbahn.shared.crd.ActiveRelease",
+    "RolloutStatus" to "eu.appbahn.shared.crd.RolloutStatus",
     // Source polymorphism
     "SourceConfig" to "eu.appbahn.shared.crd.Source",
     "DockerSource" to "eu.appbahn.shared.crd.DockerSource",

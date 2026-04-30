@@ -15,6 +15,7 @@ final class TunnelEventNames {
     static final String ADMIN_CONFIG_PUSH = "admin-config-push";
     static final String QUOTA_RBAC_CACHE_PUSH = "quota-rbac-cache-push";
     static final String APPLY_RESOURCE = "apply-resource";
+    static final String APPLY_RESOURCE_BUNDLE = "apply-resource-bundle";
     static final String DELETE_RESOURCE = "delete-resource";
     static final String APPLY_NAMESPACE = "apply-namespace";
     static final String DELETE_NAMESPACE = "delete-namespace";
