@@ -39,9 +39,16 @@ type WebhooksAPI interface {
 type WebhooksAPIService service
 
 type ApiTriggerWebhookRequest struct {
-	ctx          context.Context
-	ApiService   WebhooksAPI
-	resourceSlug string
+	ctx            context.Context
+	ApiService     WebhooksAPI
+	resourceSlug   string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiTriggerWebhookRequest) IdempotencyKey(idempotencyKey string) ApiTriggerWebhookRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiTriggerWebhookRequest) Execute() (*WebhookTriggerResponse, *http.Response, error) {
@@ -102,6 +109,9 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {

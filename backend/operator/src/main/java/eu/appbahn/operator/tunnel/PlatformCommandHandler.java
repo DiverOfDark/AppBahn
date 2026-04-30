@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.operator.tunnel.client.model.AckCommandRequest;
 import eu.appbahn.operator.tunnel.client.model.AdminConfigPush;
 import eu.appbahn.operator.tunnel.client.model.ApplyNamespace;
-import eu.appbahn.operator.tunnel.client.model.ApplyResource;
 import eu.appbahn.operator.tunnel.client.model.ApplyResourceBundle;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
@@ -62,7 +61,6 @@ public class PlatformCommandHandler {
     public void handle(String event, String data) {
         try {
             switch (event) {
-                case TunnelEventNames.APPLY_RESOURCE -> handleApply(mapper.readValue(data, ApplyResource.class));
                 case TunnelEventNames.APPLY_RESOURCE_BUNDLE ->
                     handleApplyBundle(mapper.readValue(data, ApplyResourceBundle.class));
                 case TunnelEventNames.DELETE_RESOURCE -> handleDelete(mapper.readValue(data, DeleteResource.class));
@@ -105,42 +103,35 @@ public class PlatformCommandHandler {
         }
     }
 
-    private void handleApply(ApplyResource apply) {
-        String correlationId = apply.getCorrelationId();
-        ResourceCrd crd = buildCrd(apply);
-        String slug = crd.getMetadata() != null && crd.getMetadata().getName() != null
-                ? crd.getMetadata().getName()
-                : "";
-        try {
-            kubernetesClient
-                    .resources(ResourceCrd.class)
-                    .inNamespace(apply.getNamespace())
-                    .resource(crd)
-                    .serverSideApply();
-            log.info("Applied Resource CR {}/{}", apply.getNamespace(), slug);
-            ack(correlationId, StatusEnum.OK, "");
-        } catch (Exception e) {
-            log.warn("ApplyResource {} failed: {}", slug, e.getMessage());
-            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
-        }
-    }
-
     private void handleApplyBundle(ApplyResourceBundle bundle) {
         String correlationId = bundle.getCorrelationId();
         ResourceCrd resource = bundle.getResource();
         ImageSourceCrd imageSource = bundle.getImageSource();
-        if (resource == null || imageSource == null) {
-            ack(correlationId, StatusEnum.INVALID_ARGUMENT, "bundle requires both resource and imageSource");
+        if (resource == null) {
+            ack(correlationId, StatusEnum.INVALID_ARGUMENT, "bundle requires a resource");
             return;
         }
         stampEnvironmentSlugLabel(resource, bundle.getNamespace());
-        stampEnvironmentSlugLabel(imageSource, bundle.getNamespace());
+        if (imageSource != null) {
+            stampEnvironmentSlugLabel(imageSource, bundle.getNamespace());
+        }
         try {
             ResourceCrd applied = kubernetesClient
                     .resources(ResourceCrd.class)
                     .inNamespace(bundle.getNamespace())
                     .resource(resource)
                     .serverSideApply();
+            // Resource-only edits (stop/start/restart) carry a null imageSource — the operator
+            // applies just the Resource and skips the ImageSource step. The bundle stays the
+            // unit of dispatch even when only one half changes.
+            if (imageSource == null) {
+                log.info(
+                        "Applied Resource (no ImageSource update) {}/{}",
+                        bundle.getNamespace(),
+                        resource.getMetadata().getName());
+                ack(correlationId, StatusEnum.OK, "");
+                return;
+            }
             // SSA returns the materialised object including the freshly-assigned UID — use it to
             // wire the ImageSource's OwnerReference inline so the kubectl-apply auto-bind path
             // never has to fire on this pair.
@@ -243,21 +234,6 @@ public class PlatformCommandHandler {
             log.warn("DeleteNamespace {} failed: {}", cmd.getNamespace(), e.getMessage());
             ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
-    }
-
-    /**
-     * Stamp the env-slug label onto the metadata if the platform didn't supply it — we resolve
-     * it from the admission-snapshot cache instead. Keeps downstream code (admission webhook,
-     * reconciler) from having to reconstruct the env from the namespace.
-     */
-    private ResourceCrd buildCrd(ApplyResource apply) {
-        ResourceCrd crd = apply.getResource();
-        if (crd == null) {
-            throw new IllegalStateException(
-                    "ApplyResource has no resource payload for correlation_id " + apply.getCorrelationId());
-        }
-        stampEnvironmentSlugLabel(crd, apply.getNamespace());
-        return crd;
     }
 
     /**

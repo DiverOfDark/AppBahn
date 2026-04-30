@@ -47,7 +47,7 @@ public final class ResourceEntityMapper {
         deployment.setSourceRef(entity.getSourceRef());
         deployment.setImageRef(entity.getImageRef());
         deployment.setTriggeredBy(entity.getTriggeredBy());
-        deployment.setStatus(entity.getStatus());
+        deployment.setLifecycle(entity.getLifecycle());
         deployment.setIsPrimary(entity.isPrimary());
         deployment.setSourceDeploymentId(entity.getSourceDeploymentId());
         deployment.setCreatedAt(toOffset(entity.getCreatedAt()));

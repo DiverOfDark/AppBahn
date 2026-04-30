@@ -11,7 +11,6 @@ public final class Labels {
     public static final String MANAGED_BY_VALUE = "appbahn";
     public static final String RESOURCE_KEY = "appbahn.eu/resource";
     public static final String ENVIRONMENT_SLUG_KEY = "appbahn.eu/environment-slug";
-    public static final String DEPLOYMENT_REVISION_KEY = "appbahn.eu/deployment-revision";
 
     /** Pod-template annotation that pins the rolled-out artifact when the release path is in use. */
     public static final String RELEASE_IMAGE_REF_KEY = "appbahn.eu/release-image-ref";

@@ -19,7 +19,6 @@ var _ MappedNullable = &ResourceConfig{}
 
 // ResourceConfig struct for ResourceConfig
 type ResourceConfig struct {
-	Source      *SourceConfig      `json:"source,omitempty"`
 	Hosting     *HostingConfig     `json:"hosting,omitempty"`
 	Networking  *NetworkingConfig  `json:"networking,omitempty"`
 	HealthCheck *HealthCheckConfig `json:"healthCheck,omitempty"`
@@ -42,38 +41,6 @@ func NewResourceConfig() *ResourceConfig {
 func NewResourceConfigWithDefaults() *ResourceConfig {
 	this := ResourceConfig{}
 	return &this
-}
-
-// GetSource returns the Source field value if set, zero value otherwise.
-func (o *ResourceConfig) GetSource() SourceConfig {
-	if o == nil || IsNil(o.Source) {
-		var ret SourceConfig
-		return ret
-	}
-	return *o.Source
-}
-
-// GetSourceOk returns a tuple with the Source field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ResourceConfig) GetSourceOk() (*SourceConfig, bool) {
-	if o == nil || IsNil(o.Source) {
-		return nil, false
-	}
-	return o.Source, true
-}
-
-// HasSource returns a boolean if a field has been set.
-func (o *ResourceConfig) HasSource() bool {
-	if o != nil && !IsNil(o.Source) {
-		return true
-	}
-
-	return false
-}
-
-// SetSource gets a reference to the given SourceConfig and assigns it to the Source field.
-func (o *ResourceConfig) SetSource(v SourceConfig) {
-	o.Source = &v
 }
 
 // GetHosting returns the Hosting field value if set, zero value otherwise.
@@ -246,9 +213,6 @@ func (o ResourceConfig) MarshalJSON() ([]byte, error) {
 
 func (o ResourceConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Source) {
-		toSerialize["source"] = o.Source
-	}
 	if !IsNil(o.Hosting) {
 		toSerialize["hosting"] = o.Hosting
 	}

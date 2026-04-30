@@ -42,29 +42,11 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
         var hosting = config != null ? config.getHosting() : null;
 
-        boolean useReleasePath = ResourceReleaseResolver.usesReleasePath(primary);
-        String containerImage;
-        boolean useAlwaysPullPolicy = false;
-        if (useReleasePath) {
-            // Resolved by DeploymentReconcileCondition before this method runs — but resolve
-            // again because the workflow precondition only checks reachability, not freshness.
-            containerImage = ResourceReleaseResolver.resolveImageRef(primary, context)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Resource " + name + ": bound ImageSource has no latestArtifact yet"));
-        } else {
-            var source = config != null ? config.getSource() : null;
-            if (!(source instanceof eu.appbahn.shared.crd.DockerSource dockerSource)
-                    || dockerSource.getImage() == null) {
-                throw new IllegalStateException("Resource " + name + ": docker source with image is required");
-            }
-            String image = dockerSource.getImage();
-            String tag = dockerSource.getTag() != null ? dockerSource.getTag() : Labels.DEFAULT_IMAGE_TAG;
-            String digest = dockerSource.getDigest();
-            // When the platform has resolved the manifest digest, pin the Pod spec to image@digest
-            // so a moved tag in the upstream registry can't change what runs.
-            containerImage = (digest != null && !digest.isBlank()) ? image + "@" + digest : image + ":" + tag;
-            useAlwaysPullPolicy = (digest == null || digest.isBlank()) && Labels.DEFAULT_IMAGE_TAG.equals(tag);
-        }
+        // Resolved by DeploymentReconcileCondition before this method runs — but resolve again
+        // because the workflow precondition only checks reachability, not freshness.
+        String containerImage = ResourceReleaseResolver.resolveImageRef(primary, context)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Resource " + name + ": bound ImageSource has no latestArtifact yet"));
 
         var allPorts = config != null ? config.getPorts() : List.<ResourceConfig.PortConfig>of();
         Integer port = config != null ? config.getLowestPort() : null;
@@ -83,7 +65,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
         Map<String, String> labels = Labels.forPrimary(primary);
 
-        Map<String, String> podAnnotations = buildPodAnnotations(primary, containerImage, useReleasePath);
+        Map<String, String> podAnnotations = buildPodAnnotations(primary, containerImage);
 
         var deploymentBuilder = new DeploymentBuilder()
                 .withNewMetadata()
@@ -106,7 +88,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .addNewContainer()
                 .withName(Labels.CONTAINER_NAME)
                 .withImage(containerImage)
-                .withImagePullPolicy(useAlwaysPullPolicy ? "Always" : "IfNotPresent")
+                .withImagePullPolicy("IfNotPresent")
                 .withPorts(allPorts.stream()
                         .filter(p -> p.getPort() != null)
                         .map(p -> new ContainerPortBuilder()
@@ -261,26 +243,17 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
     }
 
     /**
-     * Pod-template annotations that drive K8s rollout when relevant inputs change. Legacy path:
-     * carry {@code spec.deploymentRevision} on the pod template so the platform's bump triggers
-     * a roll. Release path: carry the resolved {@code imageRef} (digest-pinned) so the bound
-     * ImageSource's new artifact triggers a roll, plus {@code restartGeneration} so an explicit
-     * restart bump triggers a roll without changing the image.
+     * Pod-template annotations that drive K8s rollout when relevant inputs change. Carries the
+     * resolved {@code imageRef} (digest-pinned) so the bound ImageSource's new artifact triggers
+     * a roll, plus {@code restartGeneration} so an explicit restart bump triggers a roll without
+     * changing the image.
      */
-    private static Map<String, String> buildPodAnnotations(
-            ResourceCrd primary, String imageRef, boolean useReleasePath) {
+    private static Map<String, String> buildPodAnnotations(ResourceCrd primary, String imageRef) {
         Map<String, String> annotations = new HashMap<>();
-        if (useReleasePath) {
-            annotations.put(Labels.RELEASE_IMAGE_REF_KEY, imageRef);
-            Long restartGen = primary.getSpec().getRestartGeneration();
-            if (restartGen != null) {
-                annotations.put(Labels.RESTART_GENERATION_KEY, restartGen.toString());
-            }
-        } else {
-            String revision = primary.getSpec().getDeploymentRevision();
-            if (revision != null) {
-                annotations.put(Labels.DEPLOYMENT_REVISION_KEY, revision);
-            }
+        annotations.put(Labels.RELEASE_IMAGE_REF_KEY, imageRef);
+        Long restartGen = primary.getSpec().getRestartGeneration();
+        if (restartGen != null) {
+            annotations.put(Labels.RESTART_GENERATION_KEY, restartGen.toString());
         }
         return annotations;
     }

@@ -2,7 +2,6 @@ package eu.appbahn.platform.tunnel.command;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.tunnel.ApplyNamespace;
-import eu.appbahn.platform.api.tunnel.ApplyResource;
 import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
@@ -73,11 +72,6 @@ public class PendingCommandDispatcher {
     private Claimed toFrame(PendingCommandEntity row) {
         try {
             return switch (row.getCommandType()) {
-                case CommandTypes.APPLY_RESOURCE -> {
-                    ApplyResource body = mapper.readValue(row.getPayload(), ApplyResource.class);
-                    body.setCorrelationId(row.getCorrelationId().toString());
-                    yield new Claimed(row.getId(), row.getCorrelationId(), ApplyResource.EVENT_NAME, body);
-                }
                 case CommandTypes.APPLY_RESOURCE_BUNDLE -> {
                     ApplyResourceBundle body = mapper.readValue(row.getPayload(), ApplyResourceBundle.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
@@ -115,8 +109,8 @@ public class PendingCommandDispatcher {
 
     /**
      * One dispatchable command. {@code eventType} is the SSE event-name constant from the
-     * payload DTO (e.g. {@link ApplyResource#EVENT_NAME}); {@code body} is the matching DTO —
-     * the caller serialises it straight onto an SSE frame.
+     * payload DTO (e.g. {@link ApplyResourceBundle#EVENT_NAME}); {@code body} is the matching
+     * DTO — the caller serialises it straight onto an SSE frame.
      */
     public record Claimed(java.util.UUID commandId, java.util.UUID correlationId, String eventType, Object body) {}
 }

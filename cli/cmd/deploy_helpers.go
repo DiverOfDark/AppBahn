@@ -9,7 +9,7 @@ import (
 func deploymentToRow(dep api.Deployment) []string {
 	return []string{
 		dep.GetId(),
-		dep.GetStatus(),
+		dep.GetLifecycle(),
 		dep.GetImageRef(),
 		dep.GetTriggeredBy(),
 		fmt.Sprintf("%t", dep.GetIsPrimary()),

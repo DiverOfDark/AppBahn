@@ -26,11 +26,15 @@ import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.platform.workspace.service.PermissionService;
 import eu.appbahn.shared.Labels;
+import eu.appbahn.shared.crd.Release;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourceSpec;
+import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +49,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for Resource CRUD. Kubernetes is the source of truth; the operator is the only writer
- * to {@code resource_cache}. This service writes to Kubernetes (CRDs) synchronously and defers
- * the cache update to the operator's next sync.
+ * to {@code resource_cache}. This service writes to Kubernetes (Resource + ImageSource pair via
+ * {@code ApplyResourceBundle}) and defers the cache update to the operator's next sync.
  */
 @Service
 public class ResourceService {
@@ -114,6 +118,9 @@ public class ResourceService {
         if (!Labels.RESOURCE_TYPE_DEPLOYMENT.equals(req.getType())) {
             throw new ValidationException("Unknown resource type: " + req.getType());
         }
+        if (req.getImageSource() == null || req.getImageSource().getType() == null) {
+            throw new ValidationException("imageSource is required (type, plus type-specific sub-block)");
+        }
 
         var env = environmentRepository
                 .findBySlug(req.getEnvironmentSlug())
@@ -122,15 +129,14 @@ public class ResourceService {
         permissionService.requireEnvironmentRole(ctx, env.getId(), MemberRole.EDITOR);
 
         ResourceConfig resourceConfig = objectMapper.convertValue(req.getConfig(), ResourceConfig.class);
+        ImageSourceSpec imageSourceSpec = objectMapper.convertValue(req.getImageSource(), ImageSourceSpec.class);
 
         // Pre-CRD gate: reject obviously over-quota/over-license requests before creating the CRD.
         // There's a small soft-overshoot window between this check and the operator's first sync.
         quotaService.checkQuota(env.getId(), null, resourceConfig);
         licenseService.checkLicense();
 
-        // Reject synchronously if the target cluster is unreachable (not approved or stale heartbeat).
-        // Otherwise the CRD lands, the operator never sees it, and the user discovers failure only
-        // after the pending-command sweeper expires the unacked command minutes later.
+        // Reject synchronously if the target cluster is unreachable.
         clusterLivenessProbe.requireReachable(env.getTargetCluster());
 
         UUID workspaceId = environmentLookupService.getWorkspaceId(env);
@@ -138,7 +144,7 @@ public class ResourceService {
         List<ResourceSpec.LinkConfig> resourceLinks =
                 (req.getLinks() != null && !req.getLinks().isEmpty()) ? req.getLinks() : List.of();
 
-        String slug = createCrdWithSlugRetry(req, env, workspaceId, resourceConfig, resourceLinks);
+        String slug = createCrdWithSlugRetry(req, env, workspaceId, resourceConfig, imageSourceSpec, resourceLinks);
 
         auditLogService
                 .audit(ctx, AuditAction.RESOURCE_CREATED)
@@ -199,9 +205,6 @@ public class ResourceService {
         ResourceConfig mergedConfig = null;
         if (req.getConfig() != null) {
             JsonNode patchNode = objectMapper.valueToTree(req.getConfig());
-            if (patchNode.has("source")) {
-                ResourceConfigMerger.checkImmutableSourceType(oldConfig, patchNode.get("source"));
-            }
             mergedConfig = ResourceConfigMerger.merge(oldConfig, patchNode, objectMapper);
             assignDomain(mergedConfig, slug);
             if (ResourceConfigMerger.hasHostingChange(oldConfig, mergedConfig)) {
@@ -215,6 +218,10 @@ public class ResourceService {
             mergedLinks = req.getLinks();
         }
 
+        ImageSourceSpec imageSourceSpec = req.getImageSource() != null
+                ? objectMapper.convertValue(req.getImageSource(), ImageSourceSpec.class)
+                : null;
+
         var existingCrd = crdLookup.get(slug, env.getSlug());
         if (existingCrd != null) {
             if (req.getName() != null) {
@@ -226,17 +233,14 @@ public class ResourceService {
             if (mergedLinks != null) {
                 existingCrd.getSpec().setLinks(mergedLinks);
             }
-            crdClient.update(existingCrd);
+            ImageSourceCrd imageSourceCrd =
+                    imageSourceSpec != null ? buildImageSourceCrd(slug, env.getSlug(), imageSourceSpec) : null;
+            crdClient.update(existingCrd, imageSourceCrd);
             log.info("Updated Resource CRD: {}", slug);
         } else {
             log.warn("CRD not found for resource {} during update — K8s state may diverge", slug);
         }
 
-        // Reflect the merged state in the cache immediately so follow-up reads (including
-        // DeploymentService.trigger picking up the new sourceRef) see the user's intent
-        // without waiting on the operator's next sync. The operator's sync will overwrite
-        // with the same values (both reads are from K8s, our merge and the operator's
-        // reconcile converge).
         if (req.getName() != null) {
             entity.setName(req.getName());
         }
@@ -302,18 +306,18 @@ public class ResourceService {
     }
 
     /**
-     * Builds the CRD with a fresh slug and creates it via {@link ResourceCrdClient}. Retries up to
-     * {@link #MAX_SLUG_ATTEMPTS} times on slug-collision signals (Kubernetes 409 or DB unique
-     * violation on the cache primary key). Returns the slug that ultimately succeeded.
+     * Builds the Resource + ImageSource pair with a fresh slug and creates them via
+     * {@link ResourceCrdClient#applyBundle}. Retries up to {@link #MAX_SLUG_ATTEMPTS} times on
+     * slug-collision signals (Kubernetes 409 or DB unique violation on the cache primary key).
+     * Returns the slug that ultimately succeeded.
      */
     private String createCrdWithSlugRetry(
             CreateResourceRequest req,
             eu.appbahn.platform.workspace.entity.EnvironmentEntity env,
             UUID workspaceId,
             ResourceConfig resourceConfig,
+            ImageSourceSpec imageSourceSpec,
             List<ResourceSpec.LinkConfig> resourceLinks) {
-        // Snapshot user-supplied ingress domains before any auto-assignment so a retry doesn't
-        // carry over the previous attempt's slug-based domain into the next one.
         var userDomains = new HashMap<Integer, String>();
         for (var port : resourceConfig.getIngressPorts()) {
             if (port.getDomain() != null) {
@@ -331,10 +335,14 @@ public class ResourceService {
                 validateLinks(resourceLinks, candidate);
             }
 
-            var crd = new ResourceCrd();
-            crd.getMetadata().setName(candidate);
-            crd.getMetadata().setNamespace(namespaceService.computeNamespace(env.getSlug()));
-            crd.getMetadata().setLabels(Map.of(Labels.ENVIRONMENT_SLUG_KEY, env.getSlug()));
+            String namespace = namespaceService.computeNamespace(env.getSlug());
+
+            var resourceCrd = new ResourceCrd();
+            var resourceMeta = new ObjectMeta();
+            resourceMeta.setName(candidate);
+            resourceMeta.setNamespace(namespace);
+            resourceMeta.setLabels(Map.of(Labels.ENVIRONMENT_SLUG_KEY, env.getSlug()));
+            resourceCrd.setMetadata(resourceMeta);
 
             var spec = new ResourceSpec();
             spec.setType(req.getType());
@@ -344,17 +352,18 @@ public class ResourceService {
             spec.setWorkspaceId(workspaceId.toString());
             spec.setConfig(resourceConfig);
             spec.setLinks(resourceLinks);
-            // Pre-generate a deploymentRevision so the operator's first status sync carries a stable
-            // UUID — ResourceSyncService materialises the matching DeploymentEntity on first sight.
-            spec.setDeploymentRevision(UUID.randomUUID().toString());
-            crd.setSpec(spec);
+            var release = new Release();
+            var fromImageSource = new Release.FromImageSource();
+            fromImageSource.setName(candidate);
+            release.setFromImageSource(fromImageSource);
+            spec.setRelease(release);
+            resourceCrd.setSpec(spec);
+
+            ImageSourceCrd imageSourceCrd = buildImageSourceCrd(candidate, env.getSlug(), imageSourceSpec);
 
             try {
-                crdClient.create(crd);
-                log.info(
-                        "Created Resource CRD: {} in namespace {}",
-                        candidate,
-                        crd.getMetadata().getNamespace());
+                crdClient.applyBundle(resourceCrd, imageSourceCrd);
+                log.info("Created Resource+ImageSource bundle: {} in namespace {}", candidate, namespace);
                 return candidate;
             } catch (KubernetesClientException e) {
                 if (e.getCode() != 409) {
@@ -375,6 +384,17 @@ public class ResourceService {
             }
         }
         throw new IllegalStateException("Unreachable: slug retry loop exited without success or failure");
+    }
+
+    private ImageSourceCrd buildImageSourceCrd(String name, String envSlug, ImageSourceSpec spec) {
+        var crd = new ImageSourceCrd();
+        var meta = new ObjectMeta();
+        meta.setName(name);
+        meta.setNamespace(namespaceService.computeNamespace(envSlug));
+        meta.setLabels(Map.of(Labels.ENVIRONMENT_SLUG_KEY, envSlug));
+        crd.setMetadata(meta);
+        crd.setSpec(spec);
+        return crd;
     }
 
     private ConflictException slugCollisionExhausted(String lastCandidate) {

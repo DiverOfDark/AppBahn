@@ -1,6 +1,5 @@
 package eu.appbahn.platform.api;
 
-import eu.appbahn.shared.crd.CredentialRef;
 import lombok.Data;
 import org.springframework.lang.Nullable;
 
@@ -12,4 +11,10 @@ public class RegistryConfig {
 
     @Nullable
     private CredentialRef credentialRef;
+
+    @Data
+    public static class CredentialRef {
+        @Nullable
+        private String secretName;
+    }
 }

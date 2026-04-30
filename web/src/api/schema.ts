@@ -292,22 +292,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/resources/{slug}/rollback': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['rollbackResource']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/resources/{slug}/restart': {
     parameters: {
       query?: never
@@ -350,22 +334,6 @@ export interface paths {
     get: operations['listDomains']
     put?: never
     post: operations['addDomain']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/resources/{slug}/deployments': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['listDeployments']
-    put?: never
-    post: operations['triggerDeployment']
     delete?: never
     options?: never
     head?: never
@@ -884,6 +852,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/deployments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listDeployments']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/deployments/{deployment_id}': {
     parameters: {
       query?: never
@@ -1092,22 +1076,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/resources/{slug}/build-cache': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post?: never
-    delete: operations['clearBuildCache']
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/environments/{slug}/tokens/{token_id}': {
     parameters: {
       query?: never
@@ -1133,7 +1101,6 @@ export interface components {
     }
     CredentialRef: {
       secretName?: string
-      key?: string
     }
     RegistryConfig: {
       url?: string
@@ -1285,71 +1252,23 @@ export interface components {
       /** Format: uuid */
       deploymentId?: string
     }
-    BuildConfig:
-      | components['schemas']['PeelboxBuildConfig']
-      | components['schemas']['BuildpackBuildConfig']
-      | components['schemas']['RailpackBuildConfig']
-      | components['schemas']['DockerfileBuildConfig']
-    BuildpackBuildConfig: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'buildpack'
+    BuildpackBuildOptions: {
       builder?: string
-      buildVars?: {
-        [key: string]: string
-      }
     }
     CreateResourceRequest: {
       name: string
       type: string
       environmentSlug: string
       config: components['schemas']['ResourceConfig']
+      imageSource: components['schemas']['ImageSourceSpec']
       links?: components['schemas']['LinkConfig'][]
     }
-    DockerSource: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'docker'
-      pollInterval?: string
-      webhookEnabled?: boolean
-      image?: string
-      tag?: string
-      registryUrl?: string
-      credentialRef?: components['schemas']['CredentialRef']
-      digest?: string
-    }
-    DockerfileBuildConfig: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'dockerfile'
+    DockerfileBuildOptions: {
       path?: string
-      target?: string
-      buildArgs?: {
-        [key: string]: string
-      }
+      context?: string
     }
     ExecAction: {
       command?: string[]
-    }
-    GitSource: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'git'
-      pollInterval?: string
-      webhookEnabled?: boolean
-      url?: string
-      branch?: string
-      path?: string
-      auth?: components['schemas']['SourceAuth']
-      buildConfig?: components['schemas']['BuildConfig']
     }
     HealthCheckConfig: {
       readiness?: components['schemas']['ProbeConfig']
@@ -1369,6 +1288,40 @@ export interface components {
       /** Format: int32 */
       port?: number
     }
+    ImageSourceBuildSpec: {
+      /** @enum {string} */
+      mode?: 'dockerfile' | 'peelbox' | 'buildpack' | 'nixpacks' | 'railpack'
+      dockerfile?: components['schemas']['DockerfileBuildOptions']
+      buildpack?: components['schemas']['BuildpackBuildOptions']
+    }
+    ImageSourceGitSpec: {
+      repo?: string
+      branch?: string
+      credentialsSecretRef?: string
+    }
+    ImageSourcePoll: {
+      /** Format: int32 */
+      intervalSeconds?: number
+      /** Format: int32 */
+      intervalSecondsAfterWebhook?: number
+      /** Format: int32 */
+      webhookFreshnessSeconds?: number
+    }
+    ImageSourceSpec: {
+      /** @enum {string} */
+      type?: 'git' | 'image'
+      git?: components['schemas']['ImageSourceGitSpec']
+      image?: components['schemas']['ImageSpec']
+      build?: components['schemas']['ImageSourceBuildSpec']
+      trigger?: components['schemas']['ImageSourceTrigger']
+    }
+    ImageSourceTrigger: {
+      poll?: components['schemas']['ImageSourcePoll']
+    }
+    ImageSpec: {
+      ref?: string
+      runCommand?: string[]
+    }
     LinkConfig: {
       resource?: string
       secret?: string
@@ -1378,14 +1331,6 @@ export interface components {
     }
     NetworkingConfig: {
       ports?: components['schemas']['PortConfig'][]
-    }
-    PeelboxBuildConfig: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'peelbox'
-      universalBuild?: Record<string, never>[]
     }
     PortConfig: {
       /** Format: int32 */
@@ -1405,31 +1350,7 @@ export interface components {
       /** Format: int32 */
       failureThreshold?: number
     }
-    PromotionSource: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'promotion'
-      pollInterval?: string
-      webhookEnabled?: boolean
-      sourceEnvironment?: string
-      sourceResource?: string
-      autoPromote?: boolean
-    }
-    RailpackBuildConfig: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'railpack'
-      provider?: string
-      buildVars?: {
-        [key: string]: string
-      }
-    }
     ResourceConfig: {
-      source?: components['schemas']['SourceConfig']
       hosting?: components['schemas']['HostingConfig']
       networking?: components['schemas']['NetworkingConfig']
       healthCheck?: components['schemas']['HealthCheckConfig']
@@ -1439,15 +1360,6 @@ export interface components {
       /** @enum {string} */
       runMode?: 'CONTINUOUS' | 'TASK'
     }
-    SourceAuth: {
-      /** @enum {string} */
-      type?: 'none' | 'basic' | 'ssh_key'
-      credentialRef?: components['schemas']['CredentialRef']
-    }
-    SourceConfig:
-      | components['schemas']['DockerSource']
-      | components['schemas']['GitSource']
-      | components['schemas']['PromotionSource']
     TcpSocketAction: {
       /** Format: int32 */
       port?: number
@@ -1459,37 +1371,6 @@ export interface components {
     WebhookConfig: {
       url?: string
       secretMasked?: string
-    }
-    RollbackRequest: {
-      /** Format: uuid */
-      deploymentId: string
-    }
-    Deployment: {
-      /** Format: uuid */
-      id?: string
-      resourceSlug?: string
-      environmentSlug?: string
-      sourceRef?: string
-      imageRef?: string
-      /** @enum {string} */
-      triggeredBy?: 'manual' | 'polling' | 'webhook' | 'auto-promotion' | 'rollback'
-      /** @enum {string} */
-      status?:
-        | 'QUEUED'
-        | 'AWAITING_APPROVAL'
-        | 'BUILDING'
-        | 'COPYING_IMAGE'
-        | 'DEPLOYING'
-        | 'SUCCEEDED'
-        | 'FAILED'
-        | 'REJECTED'
-      isPrimary?: boolean
-      /** Format: uuid */
-      sourceDeploymentId?: string
-      /** Format: date-time */
-      createdAt?: string
-      /** Format: date-time */
-      updatedAt?: string
     }
     CreateExposureRequest: {
       /** Format: int32 */
@@ -1520,15 +1401,6 @@ export interface components {
       /** Format: int32 */
       port?: number
       status?: string
-    }
-    TriggerDeploymentRequest: {
-      sourceRef?: string
-    }
-    TriggerDeploymentResponse: {
-      /** Format: uuid */
-      deploymentId: string
-      /** @enum {string} */
-      status: 'QUEUED' | 'DEPLOYING' | 'DUPLICATE'
     }
     CreateProjectRequest: {
       name: string
@@ -1654,7 +1526,15 @@ export interface components {
     UpdateResourceRequest: {
       name?: string
       config?: components['schemas']['ResourceConfig']
+      imageSource?: components['schemas']['ImageSourceSpec']
       links?: components['schemas']['LinkConfig'][]
+    }
+    ActiveRelease: {
+      sourceCommit?: string
+      imageRef?: string
+      runCommand?: string[]
+      /** Format: date-time */
+      activatedAt?: string
     }
     CustomDomainStatus: {
       domain?: string
@@ -1718,23 +1598,14 @@ export interface components {
       conditions?: components['schemas']['ResourceCondition'][]
       customDomains?: components['schemas']['CustomDomainStatus'][]
       links?: components['schemas']['LinkStatus'][]
-      primaryDeploymentId?: string
-      primaryImage?: string
-      /** Format: date-time */
-      lastDeploymentTime?: string
       /** Format: date-time */
       lastSyncTime?: string
-      latestDeploymentId?: string
+      activeRelease?: components['schemas']['ActiveRelease']
+      observedReleaseId?: string
       /** @enum {string} */
-      latestDeploymentStatus?:
-        | 'QUEUED'
-        | 'AWAITING_APPROVAL'
-        | 'BUILDING'
-        | 'COPYING_IMAGE'
-        | 'DEPLOYING'
-        | 'SUCCEEDED'
-        | 'FAILED'
-        | 'REJECTED'
+      rolloutStatus?: 'Pending' | 'Deploying' | 'Healthy' | 'Degraded' | 'Failed'
+      /** Format: int32 */
+      replicasReady?: number
       syncFailed?: boolean
       lastError?: string
     }
@@ -1918,6 +1789,33 @@ export interface components {
     }
     LogResponse: {
       lines?: components['schemas']['LogLine'][]
+    }
+    Deployment: {
+      /** Format: uuid */
+      id?: string
+      resourceSlug?: string
+      environmentSlug?: string
+      sourceRef?: string
+      imageRef?: string
+      /** @enum {string} */
+      triggeredBy?: 'manual' | 'polling' | 'webhook' | 'auto-promotion' | 'rollback'
+      /** @enum {string} */
+      lifecycle?:
+        | 'QUEUED'
+        | 'BUILDING'
+        | 'BUILT'
+        | 'FAILED'
+        | 'ACTIVATING'
+        | 'ACTIVE'
+        | 'SUPERSEDED'
+        | 'CANCELED'
+      isPrimary?: boolean
+      /** Format: uuid */
+      sourceDeploymentId?: string
+      /** Format: date-time */
+      createdAt?: string
+      /** Format: date-time */
+      updatedAt?: string
     }
     PagedDeploymentResponse: {
       /** Format: int32 */
@@ -2741,35 +2639,6 @@ export interface operations {
       }
     }
   }
-  rollbackResource: {
-    parameters: {
-      query?: never
-      header?: {
-        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
-        'Idempotency-Key'?: string
-      }
-      path: {
-        slug: string
-      }
-      cookie?: never
-    }
-    requestBody?: {
-      content: {
-        'application/json': components['schemas']['RollbackRequest']
-      }
-    }
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Deployment']
-        }
-      }
-    }
-  }
   restartResource: {
     parameters: {
       query?: never
@@ -2869,61 +2738,6 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['DomainEntry']
-        }
-      }
-    }
-  }
-  listDeployments: {
-    parameters: {
-      query?: {
-        page?: number
-        size?: number
-        sort?: string
-      }
-      header?: never
-      path: {
-        slug: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['PagedDeploymentResponse']
-        }
-      }
-    }
-  }
-  triggerDeployment: {
-    parameters: {
-      query?: never
-      header?: {
-        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
-        'Idempotency-Key'?: string
-      }
-      path: {
-        slug: string
-      }
-      cookie?: never
-    }
-    requestBody?: {
-      content: {
-        'application/json': components['schemas']['TriggerDeploymentRequest']
-      }
-    }
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['TriggerDeploymentResponse']
         }
       }
     }
@@ -4281,6 +4095,32 @@ export interface operations {
       }
     }
   }
+  listDeployments: {
+    parameters: {
+      query?: {
+        page?: number
+        size?: number
+        sort?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedDeploymentResponse']
+        }
+      }
+    }
+  }
   getDeployment: {
     parameters: {
       query?: never
@@ -4565,29 +4405,6 @@ export interface operations {
       path: {
         slug: string
         domain: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-    }
-  }
-  clearBuildCache: {
-    parameters: {
-      query?: never
-      header?: {
-        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
-        'Idempotency-Key'?: string
-      }
-      path: {
-        slug: string
       }
       cookie?: never
     }

@@ -1,10 +1,9 @@
 package eu.appbahn.platform.tunnel.events;
 
-import eu.appbahn.platform.api.tunnel.ApplyResource;
+import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheMapper;
-import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.resource.service.ResourceCrdClient;
 import eu.appbahn.platform.tunnel.cluster.ClusterEntity;
@@ -18,6 +17,7 @@ import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -25,9 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Platform-side {@link ResourceCrdClient}: CR writes become {@code pending_command} rows, the
- * cache flips to {@code PENDING} in the same tx for immediate read-after-write, and the operator
- * picks up the command, applies the CR, and acks. {@link #get} reads from {@code resource_cache}.
+ * Platform-side {@link ResourceCrdClient}: Resource + ImageSource pair writes become a single
+ * {@code APPLY_RESOURCE_BUNDLE} {@code pending_command} row, the cache flips to {@code PENDING}
+ * in the same tx for immediate read-after-write, and the operator picks up the command, applies
+ * the pair, and acks. {@link #get} reads from {@code resource_cache}.
  */
 @Service
 public class TunnelResourceCrdClient implements ResourceCrdClient {
@@ -36,7 +37,6 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
 
     private final CommandEnqueueService enqueue;
     private final ResourceCacheRepository resourceCacheRepository;
-    private final DeploymentRepository deploymentRepository;
     private final EnvironmentRepository environmentRepository;
     private final ProjectRepository projectRepository;
     private final ClusterRepository clusterRepository;
@@ -44,13 +44,11 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
     public TunnelResourceCrdClient(
             CommandEnqueueService enqueue,
             ResourceCacheRepository resourceCacheRepository,
-            DeploymentRepository deploymentRepository,
             EnvironmentRepository environmentRepository,
             ProjectRepository projectRepository,
             ClusterRepository clusterRepository) {
         this.enqueue = enqueue;
         this.resourceCacheRepository = resourceCacheRepository;
-        this.deploymentRepository = deploymentRepository;
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
         this.clusterRepository = clusterRepository;
@@ -58,36 +56,30 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
 
     @Override
     @Transactional
-    public void create(ResourceCrd crd) {
-        String envSlug = crd.getMetadata().getLabels() != null
-                ? crd.getMetadata().getLabels().getOrDefault(Labels.ENVIRONMENT_SLUG_KEY, "")
+    public void applyBundle(ResourceCrd resource, ImageSourceCrd imageSource) {
+        String envSlug = resource.getMetadata().getLabels() != null
+                ? resource.getMetadata().getLabels().getOrDefault(Labels.ENVIRONMENT_SLUG_KEY, "")
                 : "";
         EnvironmentEntity env = envSlug.isEmpty()
                 ? null
                 : environmentRepository.findBySlug(envSlug).orElse(null);
 
         assertClusterReachable(env);
-        upsertCache(crd, env);
-        enqueueApply(crd);
+        upsertCache(resource, env);
+        enqueueApplyBundle(resource, imageSource);
     }
 
     @Override
     @Transactional
-    public void update(ResourceCrd crd) {
-        String envSlug = crd.getMetadata().getLabels() != null
-                ? crd.getMetadata().getLabels().getOrDefault(Labels.ENVIRONMENT_SLUG_KEY, "")
+    public void update(ResourceCrd resource, @Nullable ImageSourceCrd imageSource) {
+        String envSlug = resource.getMetadata().getLabels() != null
+                ? resource.getMetadata().getLabels().getOrDefault(Labels.ENVIRONMENT_SLUG_KEY, "")
                 : "";
         EnvironmentEntity env = envSlug.isEmpty()
                 ? null
                 : environmentRepository.findBySlug(envSlug).orElse(null);
         assertClusterReachable(env);
-        enqueueApply(crd);
-    }
-
-    @Override
-    @Transactional
-    public void delete(ResourceCrd crd) {
-        delete(crd.getMetadata().getName(), crd.getMetadata().getNamespace());
+        enqueueApplyBundle(resource, imageSource);
     }
 
     @Override
@@ -119,19 +111,20 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
         String clusterName = env != null ? env.getTargetCluster() : "local";
         ClusterEntity cluster = clusterRepository.findById(clusterName).orElse(null);
         if (cluster == null) {
-            return; // Uninitialised cluster row — tests run this path; production registration seeds it.
+            return;
         }
         if (cluster.getStatus() != ClusterStatus.APPROVED) {
             log.warn("Enqueuing command for cluster {} in status {}", clusterName, cluster.getStatus());
         }
     }
 
-    private void enqueueApply(ResourceCrd crd) {
-        String clusterName = resolveClusterNameForCrd(crd);
-        var payload = new ApplyResource();
-        payload.setNamespace(crd.getMetadata().getNamespace());
-        payload.setResource(crd);
-        enqueue.enqueue(clusterName, CommandTypes.APPLY_RESOURCE, payload);
+    private void enqueueApplyBundle(ResourceCrd resource, @Nullable ImageSourceCrd imageSource) {
+        String clusterName = resolveClusterNameForCrd(resource);
+        var payload = new ApplyResourceBundle();
+        payload.setNamespace(resource.getMetadata().getNamespace());
+        payload.setResource(resource);
+        payload.setImageSource(imageSource);
+        enqueue.enqueue(clusterName, CommandTypes.APPLY_RESOURCE_BUNDLE, payload);
     }
 
     private String resolveClusterNameForCrd(ResourceCrd crd) {
@@ -162,13 +155,6 @@ public class TunnelResourceCrdClient implements ResourceCrdClient {
             return;
         }
         resourceCacheRepository.saveAndFlush(ResourceCacheMapper.newCacheEntity(crd, env));
-
-        // Materialise the initial DeploymentEntity synchronously so `listDeployments` sees
-        // it before the operator round-trips — the pre-seeded cache row hides "first sight"
-        // from the sync path, so platform owns the initial insert.
-        ResourceCacheMapper.initialDeployment(crd, env)
-                .filter(dep -> deploymentRepository.findById(dep.getId()).isEmpty())
-                .ifPresent(deploymentRepository::save);
     }
 
     private ResourceCrd cacheRowToCrd(ResourceCacheEntity row, String namespace) {

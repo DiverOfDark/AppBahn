@@ -6,7 +6,6 @@ package eu.appbahn.platform.tunnel.command;
  */
 public final class CommandTypes {
 
-    public static final String APPLY_RESOURCE = "APPLY_RESOURCE";
     public static final String APPLY_RESOURCE_BUNDLE = "APPLY_RESOURCE_BUNDLE";
     public static final String DELETE_RESOURCE = "DELETE_RESOURCE";
     public static final String APPLY_NAMESPACE = "APPLY_NAMESPACE";

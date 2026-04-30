@@ -73,18 +73,12 @@ async function fetchAll() {
 }
 
 async function triggerDeploy() {
+  // Manual deployment trigger has moved to the ImageSource side; the legacy POST
+  // /resources/{slug}/deployments endpoint is gone. Stub kept so the existing UI
+  // wiring compiles; rebuild flow lands in a follow-up PR.
   deployLoading.value = true
-  try {
-    await api.POST('/resources/{slug}/deployments', {
-      params: { path: { slug: resSlug.value } },
-      body: {},
-    })
-    await fetchDeployments()
-  } catch {
-    error.value = 'Failed to trigger deployment'
-  } finally {
-    deployLoading.value = false
-  }
+  await fetchDeployments()
+  deployLoading.value = false
 }
 
 async function deleteResource() {
@@ -213,8 +207,8 @@ onUnmounted(() => {
         <template #body>
           <tr v-for="dep in deployments" :key="dep.id">
             <td>
-              <span class="status-badge" :class="statusClass(dep.status)">
-                {{ dep.status }}
+              <span class="status-badge" :class="statusClass(dep.lifecycle)">
+                {{ dep.lifecycle }}
               </span>
             </td>
             <td class="cell-mono">{{ dep.imageRef ?? '-' }}</td>

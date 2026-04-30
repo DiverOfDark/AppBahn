@@ -167,13 +167,7 @@ spec:
                     - CONTINUOUS
                     - TASK
                     type: string
-                  source:
-                    type: object
-                    x-kubernetes-preserve-unknown-fields: true
                 type: object
-                x-kubernetes-preserve-unknown-fields: true
-              deploymentRevision:
-                type: string
               environmentId:
                 type: string
               links:
@@ -199,7 +193,11 @@ spec:
                     properties:
                       name:
                         type: string
+                    required:
+                    - name
                     type: object
+                required:
+                - fromImageSource
                 type: object
               restartGeneration:
                 type: integer
@@ -213,6 +211,7 @@ spec:
             - environmentId
             - name
             - projectId
+            - release
             - type
             - workspaceId
             type: object
@@ -267,24 +266,9 @@ spec:
                       type: string
                   type: object
                 type: array
-              lastDeploymentTime:
-                type: string
               lastError:
                 type: string
               lastSyncTime:
-                type: string
-              latestDeploymentId:
-                type: string
-              latestDeploymentStatus:
-                enum:
-                - AWAITING_APPROVAL
-                - BUILDING
-                - COPYING_IMAGE
-                - DEPLOYING
-                - FAILED
-                - QUEUED
-                - REJECTED
-                - SUCCEEDED
                 type: string
               links:
                 items:
@@ -311,10 +295,6 @@ spec:
                 - READY
                 - RESTARTING
                 - STOPPED
-                type: string
-              primaryDeploymentId:
-                type: string
-              primaryImage:
                 type: string
               replicas:
                 properties:

@@ -113,19 +113,21 @@ async function submit() {
   error.value = ''
 
   try {
+    const fullImage = tag.value.trim()
+      ? `${image.value.trim()}:${tag.value.trim()}`
+      : image.value.trim()
     const body: CreateResourceRequest = {
       name: name.value.trim(),
       type: type.value,
       environmentSlug: envSlug.value,
       config: {},
+      imageSource: {
+        type: 'image',
+        image: { ref: fullImage },
+      },
     }
     if (type.value === DEPLOYMENT_TYPE) {
       body.config = {
-        source: {
-          type: 'docker',
-          image: image.value.trim(),
-          tag: tag.value.trim() || 'latest',
-        },
         hosting: {
           cpu: cpu.value + 'm',
           memory: memory.value + 'Mi',

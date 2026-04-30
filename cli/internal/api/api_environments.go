@@ -221,10 +221,17 @@ type ApiCreateEnvironmentRequest struct {
 	ctx                      context.Context
 	ApiService               EnvironmentsAPI
 	createEnvironmentRequest *CreateEnvironmentRequest
+	idempotencyKey           *string
 }
 
 func (r ApiCreateEnvironmentRequest) CreateEnvironmentRequest(createEnvironmentRequest CreateEnvironmentRequest) ApiCreateEnvironmentRequest {
 	r.createEnvironmentRequest = &createEnvironmentRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateEnvironmentRequest) IdempotencyKey(idempotencyKey string) ApiCreateEnvironmentRequest {
+	r.idempotencyKey = &idempotencyKey
 	return r
 }
 
@@ -287,6 +294,9 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createEnvironmentRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -330,7 +340,14 @@ type ApiCreateEnvironmentTokenRequest struct {
 	ctx                           context.Context
 	ApiService                    EnvironmentsAPI
 	slug                          string
+	idempotencyKey                *string
 	createEnvironmentTokenRequest *CreateEnvironmentTokenRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateEnvironmentTokenRequest) IdempotencyKey(idempotencyKey string) ApiCreateEnvironmentTokenRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiCreateEnvironmentTokenRequest) CreateEnvironmentTokenRequest(createEnvironmentTokenRequest CreateEnvironmentTokenRequest) ApiCreateEnvironmentTokenRequest {
@@ -397,6 +414,9 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.createEnvironmentTokenRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -437,9 +457,16 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 }
 
 type ApiDeleteEnvironmentRequest struct {
-	ctx        context.Context
-	ApiService EnvironmentsAPI
-	slug       string
+	ctx            context.Context
+	ApiService     EnvironmentsAPI
+	slug           string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteEnvironmentRequest) IdempotencyKey(idempotencyKey string) ApiDeleteEnvironmentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteEnvironmentRequest) Execute() (*http.Response, error) {
@@ -498,6 +525,9 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -527,10 +557,17 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 }
 
 type ApiDeleteEnvironmentMemberRoleRequest struct {
-	ctx        context.Context
-	ApiService EnvironmentsAPI
-	slug       string
-	userId     string
+	ctx            context.Context
+	ApiService     EnvironmentsAPI
+	slug           string
+	userId         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteEnvironmentMemberRoleRequest) IdempotencyKey(idempotencyKey string) ApiDeleteEnvironmentMemberRoleRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteEnvironmentMemberRoleRequest) Execute() (*http.Response, error) {
@@ -592,6 +629,9 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentMemberRoleExecute(r ApiDeleteE
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -621,10 +661,17 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentMemberRoleExecute(r ApiDeleteE
 }
 
 type ApiDeleteEnvironmentTokenRequest struct {
-	ctx        context.Context
-	ApiService EnvironmentsAPI
-	slug       string
-	tokenId    string
+	ctx            context.Context
+	ApiService     EnvironmentsAPI
+	slug           string
+	tokenId        string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiDeleteEnvironmentTokenRequest) IdempotencyKey(idempotencyKey string) ApiDeleteEnvironmentTokenRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiDeleteEnvironmentTokenRequest) Execute() (*http.Response, error) {
@@ -685,6 +732,9 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -1158,7 +1208,14 @@ type ApiSetApprovalGatesRequest struct {
 	ctx                 context.Context
 	ApiService          EnvironmentsAPI
 	slug                string
+	idempotencyKey      *string
 	approvalGatesConfig *ApprovalGatesConfig
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetApprovalGatesRequest) IdempotencyKey(idempotencyKey string) ApiSetApprovalGatesRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetApprovalGatesRequest) ApprovalGatesConfig(approvalGatesConfig ApprovalGatesConfig) ApiSetApprovalGatesRequest {
@@ -1225,6 +1282,9 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.approvalGatesConfig
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1269,7 +1329,14 @@ type ApiSetEnvironmentMemberRoleRequest struct {
 	ApiService          EnvironmentsAPI
 	slug                string
 	userId              string
+	idempotencyKey      *string
 	updateMemberRequest *UpdateMemberRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetEnvironmentMemberRoleRequest) IdempotencyKey(idempotencyKey string) ApiSetEnvironmentMemberRoleRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetEnvironmentMemberRoleRequest) UpdateMemberRequest(updateMemberRequest UpdateMemberRequest) ApiSetEnvironmentMemberRoleRequest {
@@ -1336,6 +1403,9 @@ func (a *EnvironmentsAPIService) SetEnvironmentMemberRoleExecute(r ApiSetEnviron
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.updateMemberRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1367,10 +1437,17 @@ func (a *EnvironmentsAPIService) SetEnvironmentMemberRoleExecute(r ApiSetEnviron
 }
 
 type ApiSetEnvironmentQuotaRequest struct {
-	ctx        context.Context
-	ApiService EnvironmentsAPI
-	slug       string
-	quota      *Quota
+	ctx            context.Context
+	ApiService     EnvironmentsAPI
+	slug           string
+	idempotencyKey *string
+	quota          *Quota
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetEnvironmentQuotaRequest) IdempotencyKey(idempotencyKey string) ApiSetEnvironmentQuotaRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetEnvironmentQuotaRequest) Quota(quota Quota) ApiSetEnvironmentQuotaRequest {
@@ -1437,6 +1514,9 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.quota
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1480,7 +1560,14 @@ type ApiSetEnvironmentRegistryRequest struct {
 	ctx            context.Context
 	ApiService     EnvironmentsAPI
 	slug           string
+	idempotencyKey *string
 	registryConfig *RegistryConfig
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetEnvironmentRegistryRequest) IdempotencyKey(idempotencyKey string) ApiSetEnvironmentRegistryRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetEnvironmentRegistryRequest) RegistryConfig(registryConfig RegistryConfig) ApiSetEnvironmentRegistryRequest {
@@ -1547,6 +1634,9 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.registryConfig
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1590,7 +1680,14 @@ type ApiSetTargetClusterRequest struct {
 	ctx                     context.Context
 	ApiService              EnvironmentsAPI
 	slug                    string
+	idempotencyKey          *string
 	setTargetClusterRequest *SetTargetClusterRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiSetTargetClusterRequest) IdempotencyKey(idempotencyKey string) ApiSetTargetClusterRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiSetTargetClusterRequest) SetTargetClusterRequest(setTargetClusterRequest SetTargetClusterRequest) ApiSetTargetClusterRequest {
@@ -1657,6 +1754,9 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
 	// body params
 	localVarPostBody = r.setTargetClusterRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -1700,7 +1800,14 @@ type ApiUpdateEnvironmentRequest struct {
 	ctx                      context.Context
 	ApiService               EnvironmentsAPI
 	slug                     string
+	idempotencyKey           *string
 	updateEnvironmentRequest *UpdateEnvironmentRequest
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiUpdateEnvironmentRequest) IdempotencyKey(idempotencyKey string) ApiUpdateEnvironmentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
 }
 
 func (r ApiUpdateEnvironmentRequest) UpdateEnvironmentRequest(updateEnvironmentRequest UpdateEnvironmentRequest) ApiUpdateEnvironmentRequest {
@@ -1766,6 +1873,9 @@ func (a *EnvironmentsAPIService) UpdateEnvironmentExecute(r ApiUpdateEnvironment
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	// body params
 	localVarPostBody = r.updateEnvironmentRequest
