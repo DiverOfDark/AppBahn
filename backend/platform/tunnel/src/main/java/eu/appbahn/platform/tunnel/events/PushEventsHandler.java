@@ -46,6 +46,7 @@ public class PushEventsHandler {
     private final ResourceSyncService resourceSyncService;
     private final ImageSourceSyncService imageSourceSyncService;
     private final BuildLifecycleHandler buildLifecycleHandler;
+    private final ImageSourcePromotionBroker promotionBroker;
     private final TunnelEventMapper eventMapper;
     private final TunnelImageSourceMapper imageSourceMapper;
     private final FullSyncChunkBufferRepository chunkBuffer;
@@ -57,6 +58,7 @@ public class PushEventsHandler {
             ResourceSyncService resourceSyncService,
             ImageSourceSyncService imageSourceSyncService,
             BuildLifecycleHandler buildLifecycleHandler,
+            ImageSourcePromotionBroker promotionBroker,
             TunnelEventMapper eventMapper,
             TunnelImageSourceMapper imageSourceMapper,
             FullSyncChunkBufferRepository chunkBuffer,
@@ -66,6 +68,7 @@ public class PushEventsHandler {
         this.resourceSyncService = resourceSyncService;
         this.imageSourceSyncService = imageSourceSyncService;
         this.buildLifecycleHandler = buildLifecycleHandler;
+        this.promotionBroker = promotionBroker;
         this.eventMapper = eventMapper;
         this.imageSourceMapper = imageSourceMapper;
         this.chunkBuffer = chunkBuffer;
@@ -141,9 +144,17 @@ public class PushEventsHandler {
 
     private void handleImageSourceSyncBatch(String clusterName, ImageSourceSyncBatch batch) {
         if (batch.getItems() == null) return;
-        batch.getItems()
-                .forEach(item -> imageSourceSyncService.syncImageSourceFromCluster(
-                        imageSourceMapper.toPayload(item, clusterName), clusterName));
+        for (var item : batch.getItems()) {
+            var payload = imageSourceMapper.toPayload(item, clusterName);
+            imageSourceSyncService.syncImageSourceFromCluster(payload, clusterName);
+            // After persisting an upstream sync, fan out cross-cluster promotion updates.
+            // Same-cluster downstream rows are handled by the operator directly.
+            try {
+                promotionBroker.brokerUpstreamUpdate(clusterName, payload.slug());
+            } catch (Exception e) {
+                log.warn("Promotion broker failed for upstream {}: {}", payload.slug(), e.getMessage());
+            }
+        }
     }
 
     private void handleImageSourceDeletedBatch(String clusterName, ImageSourceDeletedBatch batch) {

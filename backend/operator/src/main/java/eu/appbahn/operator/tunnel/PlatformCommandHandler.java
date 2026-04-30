@@ -107,15 +107,34 @@ public class PlatformCommandHandler {
         String correlationId = bundle.getCorrelationId();
         ResourceCrd resource = bundle.getResource();
         ImageSourceCrd imageSource = bundle.getImageSource();
-        if (resource == null) {
-            ack(correlationId, StatusEnum.INVALID_ARGUMENT, "bundle requires a resource");
+        if (resource == null && imageSource == null) {
+            ack(correlationId, StatusEnum.INVALID_ARGUMENT, "bundle requires a resource or an imageSource");
             return;
         }
-        stampEnvironmentSlugLabel(resource, bundle.getNamespace());
+        if (resource != null) {
+            stampEnvironmentSlugLabel(resource, bundle.getNamespace());
+        }
         if (imageSource != null) {
             stampEnvironmentSlugLabel(imageSource, bundle.getNamespace());
         }
         try {
+            // ImageSource-only edits (cross-cluster promotion broker, manual promote/rollback)
+            // carry a null Resource and just SSA the ImageSource. The pair lives in the same
+            // namespace so the existing OwnerReference (set when the Resource was first created)
+            // remains valid; we don't need to touch it here.
+            if (resource == null) {
+                kubernetesClient
+                        .resources(ImageSourceCrd.class)
+                        .inNamespace(bundle.getNamespace())
+                        .resource(imageSource)
+                        .serverSideApply();
+                log.info(
+                        "Applied ImageSource (no Resource update) {}/{}",
+                        bundle.getNamespace(),
+                        imageSource.getMetadata().getName());
+                ack(correlationId, StatusEnum.OK, "");
+                return;
+            }
             ResourceCrd applied = kubernetesClient
                     .resources(ResourceCrd.class)
                     .inNamespace(bundle.getNamespace())

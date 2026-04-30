@@ -430,6 +430,48 @@ public interface ResourcesApi {
             produces = {"application/json"})
     ResponseEntity<Void> restartResource(@PathVariable("slug") String slug);
     /**
+     * POST /resources/{slug}/promote : PromoteResource — pin the bound ImageSource's
+     * {@code pinnedDigest} to either the supplied digest or the upstream's current latest.
+     *
+     * @param slug  (required)
+     * @param promoteRequest  (optional)
+     * @return Resource promoted (status code 204)
+     *         or Bad request (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     *         or Unprocessable entity (status code 422)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/{slug}/promote",
+            produces = {"application/json"},
+            consumes = {"application/json"})
+    ResponseEntity<Void> promoteResource(
+            @PathVariable("slug") String slug,
+            @Valid @RequestBody(required = false) @Nullable PromoteRequest promoteRequest);
+    /**
+     * POST /resources/{slug}/rollback : RollbackResource — pin the bound ImageSource's
+     * {@code pinnedDigest} to a previous deployment's imageRef digest.
+     *
+     * @param slug  (required)
+     * @param rollbackRequest  (optional)
+     * @return Resource rollback requested (status code 204)
+     *         or Bad request (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     *         or Unprocessable entity (status code 422)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/{slug}/rollback",
+            produces = {"application/json"},
+            consumes = {"application/json"})
+    ResponseEntity<Void> rollbackResource(
+            @PathVariable("slug") String slug,
+            @Valid @RequestBody(required = false) @Nullable RollbackRequest rollbackRequest);
+    /**
      * POST /resources/{slug}/webhook/rotate : RotateWebhookSecret
      *
      * @param slug  (required)

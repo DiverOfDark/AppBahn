@@ -21,6 +21,24 @@ public interface ImageSourceCacheRepository extends JpaRepository<ImageSourceCac
     int deleteBySlugIfExists(@Param("slug") String slug);
 
     /**
+     * Find downstream {@code type: imageSource} rows whose {@code spec.imageSource.upstream}
+     * points at the given upstream coordinates. The cluster, namespace, name triple uniquely
+     * identifies a target ImageSource regardless of which cluster the downstream lives on. Used
+     * by the platform broker to fan out promotion updates.
+     */
+    @Query(nativeQuery = true, value = """
+                    SELECT * FROM image_source_cache
+                    WHERE spec ->> 'type' = 'imageSource'
+                      AND spec -> 'imageSource' -> 'upstream' ->> 'name' = :upstreamName
+                      AND spec -> 'imageSource' -> 'upstream' ->> 'namespace' = :upstreamNamespace
+                      AND COALESCE(spec -> 'imageSource' -> 'upstream' ->> 'cluster', '') = :upstreamCluster
+                    """)
+    List<ImageSourceCacheEntity> findDownstreamPromotions(
+            @Param("upstreamName") String upstreamName,
+            @Param("upstreamNamespace") String upstreamNamespace,
+            @Param("upstreamCluster") String upstreamCluster);
+
+    /**
      * UPSERT used by the operator sync: insert on first sight, otherwise overwrite every column
      * regardless of the cache's current optimistic-lock {@code version}. The CR is the source of
      * truth, so an "always wins" write is correct — but {@code version} is bumped so platform

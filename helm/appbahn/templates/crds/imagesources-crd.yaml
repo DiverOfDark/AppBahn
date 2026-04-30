@@ -69,6 +69,22 @@ spec:
                       type: string
                     type: array
                 type: object
+              imageSource:
+                properties:
+                  autoPromote:
+                    type: boolean
+                  pinnedDigest:
+                    type: string
+                  upstream:
+                    properties:
+                      cluster:
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                type: object
               trigger:
                 properties:
                   poll:
@@ -85,6 +101,7 @@ spec:
                 enum:
                 - git
                 - image
+                - imageSource
                 type: string
             required:
             - type

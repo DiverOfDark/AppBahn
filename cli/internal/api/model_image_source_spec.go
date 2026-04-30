@@ -19,11 +19,12 @@ var _ MappedNullable = &ImageSourceSpec{}
 
 // ImageSourceSpec struct for ImageSourceSpec
 type ImageSourceSpec struct {
-	Type    *string               `json:"type,omitempty"`
-	Git     *ImageSourceGitSpec   `json:"git,omitempty"`
-	Image   *ImageSpec            `json:"image,omitempty"`
-	Build   *ImageSourceBuildSpec `json:"build,omitempty"`
-	Trigger *ImageSourceTrigger   `json:"trigger,omitempty"`
+	Type        *string                   `json:"type,omitempty"`
+	Git         *ImageSourceGitSpec       `json:"git,omitempty"`
+	Image       *ImageSpec                `json:"image,omitempty"`
+	ImageSource *ImageSourcePromotionSpec `json:"imageSource,omitempty"`
+	Build       *ImageSourceBuildSpec     `json:"build,omitempty"`
+	Trigger     *ImageSourceTrigger       `json:"trigger,omitempty"`
 }
 
 // NewImageSourceSpec instantiates a new ImageSourceSpec object
@@ -139,6 +140,38 @@ func (o *ImageSourceSpec) SetImage(v ImageSpec) {
 	o.Image = &v
 }
 
+// GetImageSource returns the ImageSource field value if set, zero value otherwise.
+func (o *ImageSourceSpec) GetImageSource() ImageSourcePromotionSpec {
+	if o == nil || IsNil(o.ImageSource) {
+		var ret ImageSourcePromotionSpec
+		return ret
+	}
+	return *o.ImageSource
+}
+
+// GetImageSourceOk returns a tuple with the ImageSource field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ImageSourceSpec) GetImageSourceOk() (*ImageSourcePromotionSpec, bool) {
+	if o == nil || IsNil(o.ImageSource) {
+		return nil, false
+	}
+	return o.ImageSource, true
+}
+
+// HasImageSource returns a boolean if a field has been set.
+func (o *ImageSourceSpec) HasImageSource() bool {
+	if o != nil && !IsNil(o.ImageSource) {
+		return true
+	}
+
+	return false
+}
+
+// SetImageSource gets a reference to the given ImageSourcePromotionSpec and assigns it to the ImageSource field.
+func (o *ImageSourceSpec) SetImageSource(v ImageSourcePromotionSpec) {
+	o.ImageSource = &v
+}
+
 // GetBuild returns the Build field value if set, zero value otherwise.
 func (o *ImageSourceSpec) GetBuild() ImageSourceBuildSpec {
 	if o == nil || IsNil(o.Build) {
@@ -221,6 +254,9 @@ func (o ImageSourceSpec) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Image) {
 		toSerialize["image"] = o.Image
+	}
+	if !IsNil(o.ImageSource) {
+		toSerialize["imageSource"] = o.ImageSource
 	}
 	if !IsNil(o.Build) {
 		toSerialize["build"] = o.Build

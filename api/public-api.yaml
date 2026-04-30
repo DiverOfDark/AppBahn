@@ -715,6 +715,32 @@ paths:
       responses:
         "200":
           description: OK
+  /resources/{slug}/rollback:
+    post:
+      tags:
+      - Resources
+      operationId: rollbackResource
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollbackRequest"
+      responses:
+        "200":
+          description: OK
   /resources/{slug}/restart:
     post:
       tags:
@@ -733,6 +759,32 @@ paths:
         required: false
         schema:
           type: string
+      responses:
+        "200":
+          description: OK
+  /resources/{slug}/promote:
+    post:
+      tags:
+      - Resources
+      operationId: promoteResource
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoteRequest"
       responses:
         "200":
           description: OK
@@ -2998,6 +3050,15 @@ components:
         webhookFreshnessSeconds:
           type: integer
           format: int32
+    ImageSourcePromotionSpec:
+      type: object
+      properties:
+        upstream:
+          $ref: "#/components/schemas/ImageSourceUpstreamSpec"
+        autoPromote:
+          type: boolean
+        pinnedDigest:
+          type: string
     ImageSourceSpec:
       type: object
       properties:
@@ -3006,10 +3067,13 @@ components:
           enum:
           - git
           - image
+          - imageSource
         git:
           $ref: "#/components/schemas/ImageSourceGitSpec"
         image:
           $ref: "#/components/schemas/ImageSpec"
+        imageSource:
+          $ref: "#/components/schemas/ImageSourcePromotionSpec"
         build:
           $ref: "#/components/schemas/ImageSourceBuildSpec"
         trigger:
@@ -3019,6 +3083,15 @@ components:
       properties:
         poll:
           $ref: "#/components/schemas/ImageSourcePoll"
+    ImageSourceUpstreamSpec:
+      type: object
+      properties:
+        cluster:
+          type: string
+        namespace:
+          type: string
+        name:
+          type: string
     ImageSpec:
       type: object
       properties:
@@ -3116,6 +3189,24 @@ components:
           type: string
         secretMasked:
           type: string
+    RollbackRequest:
+      type: object
+      properties:
+        deploymentId:
+          type: string
+          description: "Specific deployment audit id to roll back to. When null, uses\
+            \ the previous successful deployment."
+          format: uuid
+      description: Request body for resource rollback operation
+    PromoteRequest:
+      type: object
+      properties:
+        digest:
+          type: string
+          description: "Specific digest to promote to. When null, uses upstream's\
+            \ current latestArtifact."
+          default: ""
+      description: Request body for resource promote operation
     CreateExposureRequest:
       required:
       - port
