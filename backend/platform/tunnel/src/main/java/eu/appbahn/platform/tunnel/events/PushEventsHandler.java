@@ -116,7 +116,8 @@ public class PushEventsHandler {
                 event.getLifecycle(),
                 event.getSourceCommit(),
                 event.getImageRef(),
-                event.getErrorMessage());
+                event.getErrorMessage(),
+                event.getTriggeredBy());
     }
 
     /**

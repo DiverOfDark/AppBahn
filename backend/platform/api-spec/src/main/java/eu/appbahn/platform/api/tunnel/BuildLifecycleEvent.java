@@ -1,5 +1,6 @@
 package eu.appbahn.platform.api.tunnel;
 
+import eu.appbahn.platform.api.TriggerType;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import java.time.Instant;
 import lombok.Data;
@@ -31,6 +32,15 @@ public class BuildLifecycleEvent extends OperatorEvent {
     private String imageRef;
 
     private String errorMessage;
+
+    /**
+     * Audit reason — set on the event that mints a deployment row so the platform can record
+     * the right trigger. Typical values: {@code POLLING}/{@code WEBHOOK} for build events,
+     * {@code MANUAL_RESTART}/{@code ENV_CHANGE} for the release-only flows that skip the
+     * build half. Optional: legacy build events leave this null and the handler defaults to
+     * {@code POLLING}.
+     */
+    private TriggerType triggeredBy;
 
     private Instant occurredAt;
 

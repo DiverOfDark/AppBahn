@@ -31,6 +31,21 @@ public class ResourceStatusDetail {
     /** Platform-side audit row id for the release the operator currently has active. */
     private String observedReleaseId;
 
+    /**
+     * Latest {@code spec.restartGeneration} the operator has acknowledged. The reconciler emits a
+     * {@code BuildLifecycleEvent(triggeredBy=MANUAL_RESTART)} the first time it observes a bump
+     * past this value and updates this field once the new revision is ACTIVE.
+     */
+    private Long observedRestartGeneration;
+
+    /**
+     * Stable hash of {@code spec.config.env} as last acknowledged by the reconciler. When the
+     * spec hash diverges and the resolved {@code imageRef} is unchanged, the reconciler emits a
+     * {@code BuildLifecycleEvent(triggeredBy=ENV_CHANGE)} (no rebuild — the same artifact rolls
+     * with new env vars).
+     */
+    private String observedEnvHash;
+
     /** Rollout state derived from K8s facts. */
     private RolloutStatus rolloutStatus;
 

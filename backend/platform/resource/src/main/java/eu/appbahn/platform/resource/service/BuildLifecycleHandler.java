@@ -42,7 +42,8 @@ public class BuildLifecycleHandler {
             BuildLifecycle lifecycle,
             String sourceCommit,
             String imageRef,
-            String errorMessage) {
+            String errorMessage,
+            TriggerType triggeredBy) {
         if (deploymentIdRaw == null || deploymentIdRaw.isBlank()) {
             log.warn("BuildLifecycleEvent dropped — deploymentId missing");
             return;
@@ -60,7 +61,7 @@ public class BuildLifecycleHandler {
         }
         var existing = deploymentRepository.findById(deploymentId).orElse(null);
         if (existing == null) {
-            existing = newDeployment(deploymentId, imageSourceName, imageSourceNamespace);
+            existing = newDeployment(deploymentId, imageSourceName, imageSourceNamespace, triggeredBy);
             if (existing == null) {
                 return;
             }
@@ -87,7 +88,8 @@ public class BuildLifecycleHandler {
                 imageRef);
     }
 
-    private DeploymentEntity newDeployment(UUID deploymentId, String imageSourceName, String imageSourceNamespace) {
+    private DeploymentEntity newDeployment(
+            UUID deploymentId, String imageSourceName, String imageSourceNamespace, TriggerType triggeredBy) {
         // Resolve the environment from the namespace ({prefix}-{envSlug} convention). If we
         // can't resolve, the row is still recorded (it lets the operator's events land while
         // the platform catches up) — but we drop here when there's no environment, since the
@@ -110,7 +112,7 @@ public class BuildLifecycleHandler {
         fresh.setEnvironmentId(env.getId());
         fresh.setImageSourceName(imageSourceName);
         fresh.setImageSourceNamespace(imageSourceNamespace);
-        fresh.setTriggeredBy(TriggerType.POLLING);
+        fresh.setTriggeredBy(triggeredBy != null ? triggeredBy : TriggerType.POLLING);
         return fresh;
     }
 }
