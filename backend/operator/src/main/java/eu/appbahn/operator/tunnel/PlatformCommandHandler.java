@@ -5,6 +5,7 @@ import eu.appbahn.operator.tunnel.client.model.AckCommandRequest;
 import eu.appbahn.operator.tunnel.client.model.AdminConfigPush;
 import eu.appbahn.operator.tunnel.client.model.ApplyNamespace;
 import eu.appbahn.operator.tunnel.client.model.ApplyResource;
+import eu.appbahn.operator.tunnel.client.model.ApplyResourceBundle;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
 import eu.appbahn.operator.tunnel.client.model.DeleteNamespace;
@@ -14,7 +15,9 @@ import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.net.HttpURLConnection;
@@ -60,6 +63,8 @@ public class PlatformCommandHandler {
         try {
             switch (event) {
                 case TunnelEventNames.APPLY_RESOURCE -> handleApply(mapper.readValue(data, ApplyResource.class));
+                case TunnelEventNames.APPLY_RESOURCE_BUNDLE ->
+                    handleApplyBundle(mapper.readValue(data, ApplyResourceBundle.class));
                 case TunnelEventNames.DELETE_RESOURCE -> handleDelete(mapper.readValue(data, DeleteResource.class));
                 case TunnelEventNames.APPLY_NAMESPACE ->
                     handleApplyNamespace(mapper.readValue(data, ApplyNamespace.class));
@@ -116,6 +121,55 @@ public class PlatformCommandHandler {
             ack(correlationId, StatusEnum.OK, "");
         } catch (Exception e) {
             log.warn("ApplyResource {} failed: {}", slug, e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    private void handleApplyBundle(ApplyResourceBundle bundle) {
+        String correlationId = bundle.getCorrelationId();
+        ResourceCrd resource = bundle.getResource();
+        ImageSourceCrd imageSource = bundle.getImageSource();
+        if (resource == null || imageSource == null) {
+            ack(correlationId, StatusEnum.INVALID_ARGUMENT, "bundle requires both resource and imageSource");
+            return;
+        }
+        stampEnvironmentSlugLabel(resource, bundle.getNamespace());
+        stampEnvironmentSlugLabel(imageSource, bundle.getNamespace());
+        try {
+            ResourceCrd applied = kubernetesClient
+                    .resources(ResourceCrd.class)
+                    .inNamespace(bundle.getNamespace())
+                    .resource(resource)
+                    .serverSideApply();
+            // SSA returns the materialised object including the freshly-assigned UID — use it to
+            // wire the ImageSource's OwnerReference inline so the kubectl-apply auto-bind path
+            // never has to fire on this pair.
+            String resourceUid =
+                    applied.getMetadata() != null ? applied.getMetadata().getUid() : null;
+            if (resourceUid != null && !resourceUid.isBlank()) {
+                imageSource
+                        .getMetadata()
+                        .setOwnerReferences(java.util.List.of(new OwnerReferenceBuilder()
+                                .withApiVersion(applied.getApiVersion())
+                                .withKind(applied.getKind())
+                                .withName(applied.getMetadata().getName())
+                                .withUid(resourceUid)
+                                .withController(true)
+                                .withBlockOwnerDeletion(true)
+                                .build()));
+            }
+            kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(bundle.getNamespace())
+                    .resource(imageSource)
+                    .serverSideApply();
+            log.info(
+                    "Applied Resource+ImageSource bundle {}/{}",
+                    bundle.getNamespace(),
+                    resource.getMetadata().getName());
+            ack(correlationId, StatusEnum.OK, "");
+        } catch (Exception e) {
+            log.warn("ApplyResourceBundle {} failed: {}", resource.getMetadata().getName(), e.getMessage());
             ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }
@@ -202,22 +256,34 @@ public class PlatformCommandHandler {
             throw new IllegalStateException(
                     "ApplyResource has no resource payload for correlation_id " + apply.getCorrelationId());
         }
-        if (crd.getMetadata() != null
-                && (crd.getMetadata().getLabels() == null
-                        || !crd.getMetadata().getLabels().containsKey(Labels.ENVIRONMENT_SLUG_KEY))) {
-            String fallbackEnvSlug = admissionCache
-                    .environmentSlugForNamespace(apply.getNamespace())
-                    .orElse("");
-            if (!fallbackEnvSlug.isBlank()) {
-                Map<String, String> labels = crd.getMetadata().getLabels();
-                if (labels == null) {
-                    labels = new HashMap<>();
-                    crd.getMetadata().setLabels(labels);
-                }
-                labels.putIfAbsent(Labels.ENVIRONMENT_SLUG_KEY, fallbackEnvSlug);
-            }
-        }
+        stampEnvironmentSlugLabel(crd, apply.getNamespace());
         return crd;
+    }
+
+    /**
+     * Resolve the env-slug label from the admission-snapshot cache when the platform didn't
+     * supply it on the metadata. Keeps downstream code (admission webhook, reconciler) from
+     * having to reconstruct the env from the namespace string.
+     */
+    private void stampEnvironmentSlugLabel(io.fabric8.kubernetes.api.model.HasMetadata cr, String namespace) {
+        if (cr.getMetadata() == null) {
+            return;
+        }
+        if (cr.getMetadata().getLabels() != null
+                && cr.getMetadata().getLabels().containsKey(Labels.ENVIRONMENT_SLUG_KEY)) {
+            return;
+        }
+        String fallbackEnvSlug =
+                admissionCache.environmentSlugForNamespace(namespace).orElse("");
+        if (fallbackEnvSlug.isBlank()) {
+            return;
+        }
+        Map<String, String> labels = cr.getMetadata().getLabels();
+        if (labels == null) {
+            labels = new HashMap<>();
+            cr.getMetadata().setLabels(labels);
+        }
+        labels.putIfAbsent(Labels.ENVIRONMENT_SLUG_KEY, fallbackEnvSlug);
     }
 
     private void ack(String correlationId, StatusEnum status, String message) {

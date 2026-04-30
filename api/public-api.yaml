@@ -3647,6 +3647,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkConfig"
+    ActiveRelease:
+      type: object
+      properties:
+        sourceCommit:
+          type: string
+        imageRef:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
+        activatedAt:
+          type: string
+          format: date-time
     CustomDomainStatus:
       type: object
       properties:
@@ -3777,18 +3791,23 @@ components:
             $ref: "#/components/schemas/LinkStatus"
         primaryDeploymentId:
           type: string
+          deprecated: true
         primaryImage:
           type: string
+          deprecated: true
         lastDeploymentTime:
           type: string
           format: date-time
+          deprecated: true
         lastSyncTime:
           type: string
           format: date-time
         latestDeploymentId:
           type: string
+          deprecated: true
         latestDeploymentStatus:
           type: string
+          deprecated: true
           enum:
           - QUEUED
           - AWAITING_APPROVAL
@@ -3798,6 +3817,21 @@ components:
           - SUCCEEDED
           - FAILED
           - REJECTED
+        activeRelease:
+          $ref: "#/components/schemas/ActiveRelease"
+        observedReleaseId:
+          type: string
+        rolloutStatus:
+          type: string
+          enum:
+          - Pending
+          - Deploying
+          - Healthy
+          - Degraded
+          - Failed
+        replicasReady:
+          type: integer
+          format: int32
         syncFailed:
           type: boolean
         lastError:

@@ -186,6 +186,20 @@ components:
           type: string
     GoodbyeAck:
       type: object
+    ActiveRelease:
+      type: object
+      properties:
+        sourceCommit:
+          type: string
+        imageRef:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
+        activatedAt:
+          type: string
+          format: date-time
     AdmissionApproved:
       type: object
       allOf:
@@ -473,6 +487,11 @@ components:
             type: string
     FieldsV1:
       type: object
+    FromImageSource:
+      type: object
+      properties:
+        name:
+          type: string
     FullResourceSyncChunk:
       type: object
       allOf:
@@ -939,6 +958,11 @@ components:
           type: object
           additionalProperties:
             type: string
+    Release:
+      type: object
+      properties:
+        fromImageSource:
+          $ref: "#/components/schemas/FromImageSource"
     ReplicaStatus:
       type: object
       properties:
@@ -1035,6 +1059,12 @@ components:
           type: boolean
         deploymentRevision:
           type: string
+          deprecated: true
+        release:
+          $ref: "#/components/schemas/Release"
+        restartGeneration:
+          type: integer
+          format: int64
     ResourceStatusDetail:
       type: object
       properties:
@@ -1068,18 +1098,23 @@ components:
             $ref: "#/components/schemas/LinkStatus"
         primaryDeploymentId:
           type: string
+          deprecated: true
         primaryImage:
           type: string
+          deprecated: true
         lastDeploymentTime:
           type: string
           format: date-time
+          deprecated: true
         lastSyncTime:
           type: string
           format: date-time
         latestDeploymentId:
           type: string
+          deprecated: true
         latestDeploymentStatus:
           type: string
+          deprecated: true
           enum:
           - QUEUED
           - AWAITING_APPROVAL
@@ -1089,6 +1124,21 @@ components:
           - SUCCEEDED
           - FAILED
           - REJECTED
+        activeRelease:
+          $ref: "#/components/schemas/ActiveRelease"
+        observedReleaseId:
+          type: string
+        rolloutStatus:
+          type: string
+          enum:
+          - Pending
+          - Deploying
+          - Healthy
+          - Degraded
+          - Failed
+        replicasReady:
+          type: integer
+          format: int32
         syncFailed:
           type: boolean
         lastError:
@@ -1314,6 +1364,17 @@ components:
           $ref: "#/components/schemas/ResourceCrd"
         expectedResourceVersion:
           type: string
+    ApplyResourceBundle:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resource:
+          $ref: "#/components/schemas/ResourceCrd"
+        imageSource:
+          $ref: "#/components/schemas/ImageSourceCrd"
     DeleteResource:
       type: object
       properties:

@@ -3,6 +3,7 @@ package eu.appbahn.platform.tunnel.command;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.tunnel.ApplyNamespace;
 import eu.appbahn.platform.api.tunnel.ApplyResource;
+import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
 import java.time.Duration;
@@ -76,6 +77,11 @@ public class PendingCommandDispatcher {
                     ApplyResource body = mapper.readValue(row.getPayload(), ApplyResource.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
                     yield new Claimed(row.getId(), row.getCorrelationId(), ApplyResource.EVENT_NAME, body);
+                }
+                case CommandTypes.APPLY_RESOURCE_BUNDLE -> {
+                    ApplyResourceBundle body = mapper.readValue(row.getPayload(), ApplyResourceBundle.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), ApplyResourceBundle.EVENT_NAME, body);
                 }
                 case CommandTypes.DELETE_RESOURCE -> {
                     DeleteResource body = mapper.readValue(row.getPayload(), DeleteResource.class);

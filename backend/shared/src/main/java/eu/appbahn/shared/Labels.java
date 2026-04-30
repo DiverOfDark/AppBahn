@@ -13,6 +13,12 @@ public final class Labels {
     public static final String ENVIRONMENT_SLUG_KEY = "appbahn.eu/environment-slug";
     public static final String DEPLOYMENT_REVISION_KEY = "appbahn.eu/deployment-revision";
 
+    /** Pod-template annotation that pins the rolled-out artifact when the release path is in use. */
+    public static final String RELEASE_IMAGE_REF_KEY = "appbahn.eu/release-image-ref";
+
+    /** Pod-template annotation that forces a re-roll on {@code restartGeneration} bumps. */
+    public static final String RESTART_GENERATION_KEY = "appbahn.eu/restart-generation";
+
     /** Marks Jobs created by the operator as builds for a specific ImageSource. */
     public static final String IMAGE_SOURCE_KEY = "appbahn.eu/image-source";
 

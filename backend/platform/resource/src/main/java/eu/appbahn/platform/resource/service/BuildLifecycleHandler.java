@@ -5,7 +5,6 @@ import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
-import eu.appbahn.shared.crd.DeploymentStatus;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -17,16 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
  * Persists {@code BuildLifecycleEvent}s into the {@code deployment} audit table. Idempotent on
  * {@code (deploymentId, lifecycle)} — reapplying the same event reapplies the same row update.
  *
- * <p>The platform doesn't yet model env-time snapshots / build-config snapshots — those land in
- * PR3 with the Resource-side bundle command. PR2 only persists the build half of the lifecycle.
+ * <p>Handles both the build half ({@code QUEUED → BUILDING → BUILT/FAILED → SUPERSEDED/CANCELED})
+ * and the rollout half ({@code BUILT → ACTIVATING → ACTIVE/FAILED}) of the lifecycle. The
+ * legacy {@code status} column is left {@code null} on rows minted from this handler.
  */
 @Service
 public class BuildLifecycleHandler {
 
     private static final Logger log = LoggerFactory.getLogger(BuildLifecycleHandler.class);
-
-    /** Bridge to legacy {@code status} column — populated alongside {@code lifecycle}. */
-    private static final DeploymentStatus LEGACY_STATUS_BRIDGE = DeploymentStatus.QUEUED;
 
     private final DeploymentRepository deploymentRepository;
     private final EnvironmentRepository environmentRepository;
@@ -80,11 +77,6 @@ public class BuildLifecycleHandler {
         }
         if (lifecycle == BuildLifecycle.ACTIVE) {
             existing.setPrimary(true);
-        }
-        // Bridge to the legacy status column on first persist so the NOT-NULL constraint is
-        // satisfied — PR3 retires the column.
-        if (existing.getStatus() == null) {
-            existing.setStatus(LEGACY_STATUS_BRIDGE);
         }
         deploymentRepository.save(existing);
         log.info(

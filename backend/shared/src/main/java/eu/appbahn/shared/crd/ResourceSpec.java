@@ -37,8 +37,27 @@ public class ResourceSpec {
     /** When true, the operator removes the underlying workload (no Deployment exists). */
     private Boolean stopped;
 
-    /** Bumped by platform on each deployment trigger to force K8s pod rollout */
+    /**
+     * @deprecated set {@link #release} instead. Bumped by the platform on each deployment
+     * trigger to force K8s pod rollout — coexists with the new image-source-driven release path
+     * while the platform API migrates to {@link #release}.
+     */
+    @Deprecated
     private String deploymentRevision;
+
+    /**
+     * Image-source-driven release. When {@link Release#getFromImageSource()} is set, the operator
+     * resolves the bound sibling ImageSource and renders the pod template from its
+     * {@code status.latestArtifact}. Mutually exclusive with the legacy {@link ResourceConfig}
+     * source path; if both are present, {@code release} wins.
+     */
+    private Release release;
+
+    /**
+     * Bumped to force a re-roll without changing the underlying ImageSource. The operator
+     * incorporates this into the pod-template hash so a bump triggers a new revision.
+     */
+    private Long restartGeneration;
 
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)

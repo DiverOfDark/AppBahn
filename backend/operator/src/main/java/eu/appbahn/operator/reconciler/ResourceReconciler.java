@@ -1,11 +1,15 @@
 package eu.appbahn.operator.reconciler;
 
+import eu.appbahn.operator.reconciler.imagesource.ResourceReleaseResolver;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.K8sStatusReasons;
 import eu.appbahn.shared.Labels;
+import eu.appbahn.shared.crd.ActiveRelease;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
+import eu.appbahn.shared.crd.RolloutStatus;
+import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -106,7 +110,37 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     return Set.of(new ResourceID(resourceName, pod.getMetadata().getNamespace()));
                 })
                 .build();
-        return List.of(new InformerEventSource<>(podInformerConfig, context));
+        // Watch ImageSource → Resource so a fresh latestArtifact triggers re-render of the
+        // bound Resource's pod template without waiting for the next reconcile tick.
+        var imageSourceInformerConfig = InformerEventSourceConfiguration.from(ImageSourceCrd.class, ResourceCrd.class)
+                .withSecondaryToPrimaryMapper(imageSource -> {
+                    if (imageSource.getMetadata() == null) {
+                        return Set.of();
+                    }
+                    String namespace = imageSource.getMetadata().getNamespace();
+                    String imageSourceName = imageSource.getMetadata().getName();
+                    if (namespace == null || imageSourceName == null) {
+                        return Set.of();
+                    }
+                    // Find Resources in the same namespace whose release.fromImageSource.name
+                    // matches. Cheap because the informer cache is local.
+                    var matches = new java.util.HashSet<ResourceID>();
+                    var resources = context.getClient()
+                            .resources(ResourceCrd.class)
+                            .inNamespace(namespace)
+                            .list()
+                            .getItems();
+                    for (var r : resources) {
+                        if (imageSourceName.equals(ResourceReleaseResolver.boundImageSourceName(r))) {
+                            matches.add(new ResourceID(r.getMetadata().getName(), namespace));
+                        }
+                    }
+                    return matches;
+                })
+                .build();
+        return List.of(
+                new InformerEventSource<>(podInformerConfig, context),
+                new InformerEventSource<>(imageSourceInformerConfig, context));
     }
 
     @Override
@@ -122,17 +156,25 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 log.debug("Reconcile called with null spec for {}; skipping", name);
                 return UpdateControl.noUpdate();
             }
+            // Either path must be configured: release.fromImageSource (new) or config.source
+            // (legacy DockerSource). Both can't be missing — we'd have nothing to roll out.
+            boolean useReleasePath = ResourceReleaseResolver.usesReleasePath(resource);
             var config = resource.getSpec().getConfig();
-            if (config == null
-                    || !(config.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSrc)
-                    || dockerSrc.getImage() == null) {
-                resource.setStatus(createErrorStatus(resource, "docker source with image is required"));
+            if (!useReleasePath
+                    && (config == null
+                            || !(config.getSource() instanceof eu.appbahn.shared.crd.DockerSource dockerSrc)
+                            || dockerSrc.getImage() == null)) {
+                resource.setStatus(
+                        createErrorStatus(resource, "spec.release.fromImageSource or docker source is required"));
                 syncToPlatform(resource);
                 return UpdateControl.patchStatus(resource);
             }
 
             var k8sDeployment = context.getSecondaryResource(Deployment.class).orElse(null);
             var status = deriveStatus(resource, k8sDeployment, context);
+            if (useReleasePath) {
+                enrichWithReleaseStatus(resource, status, context);
+            }
 
             if (statusEquals(resource.getStatus(), status)) {
                 log.debug("Status unchanged for {}, skipping update", name);
@@ -355,6 +397,60 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     }
 
     /**
+     * Populate the release-path fields ({@code activeRelease}, {@code observedReleaseId},
+     * {@code rolloutStatus}, {@code replicasReady}) from the bound ImageSource's
+     * {@code latestArtifact} and the K8s deployment status. The derivation reuses the same
+     * facts the legacy phase computation already used; this method just translates them onto
+     * the new field shape so consumers can read either path uniformly.
+     */
+    static void enrichWithReleaseStatus(
+            ResourceCrd resource, ResourceStatusDetail status, Context<ResourceCrd> context) {
+        ResourceReleaseResolver.resolveLatestArtifact(resource, context).ifPresent(artifact -> {
+            ActiveRelease activeRelease = new ActiveRelease();
+            activeRelease.setSourceCommit(artifact.getSourceCommit());
+            activeRelease.setImageRef(artifact.getImageRef());
+            activeRelease.setRunCommand(artifact.getRunCommand());
+            activeRelease.setActivatedAt(artifact.getBuiltAt());
+            status.setActiveRelease(activeRelease);
+        });
+        Long restartGen = resource.getSpec().getRestartGeneration();
+        if (restartGen != null) {
+            // observedReleaseId surfaces the operator's view of "what's currently rolled out".
+            // The platform-side audit row id pairs with this value; without a build half driving
+            // the value (PR4), restartGeneration acts as the operator's local releaseId proxy.
+            status.setObservedReleaseId(String.valueOf(restartGen));
+        }
+        if (status.getReplicas() != null) {
+            status.setReplicasReady(status.getReplicas().getReady());
+        }
+        status.setRolloutStatus(deriveRolloutStatus(status));
+    }
+
+    /**
+     * Map the legacy {@link ResourcePhase} (already computed against the same K8s deployment
+     * facts) onto the new {@link RolloutStatus}. {@code Pending} → ImageSource hasn't built yet
+     * or the deployment hasn't started rolling. {@code Healthy} when phase = READY. Failure /
+     * crashloop maps to {@code Failed}; partial readiness maps to {@code Degraded};
+     * mid-rollout maps to {@code Deploying}.
+     */
+    static RolloutStatus deriveRolloutStatus(ResourceStatusDetail status) {
+        if (status.getActiveRelease() == null) {
+            return RolloutStatus.Pending;
+        }
+        ResourcePhase phase = status.getPhase();
+        if (phase == null) {
+            return RolloutStatus.Pending;
+        }
+        return switch (phase) {
+            case READY -> RolloutStatus.Healthy;
+            case DEGRADED -> RolloutStatus.Degraded;
+            case ERROR -> RolloutStatus.Failed;
+            case RESTARTING, PENDING -> RolloutStatus.Deploying;
+            case STOPPED -> RolloutStatus.Pending;
+        };
+    }
+
+    /**
      * Walk every container in every non-terminating pod and collect:
      * <ul>
      *   <li>{@link PodInspection#terminalFailure} — first pod hitting a {@link #TERMINAL_WAITING_REASONS}
@@ -505,6 +601,10 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && Objects.equals(a.getCustomDomains(), b.getCustomDomains())
                 && Objects.equals(a.getLatestDeploymentId(), b.getLatestDeploymentId())
                 && Objects.equals(a.getLatestDeploymentStatus(), b.getLatestDeploymentStatus())
+                && Objects.equals(a.getActiveRelease(), b.getActiveRelease())
+                && Objects.equals(a.getObservedReleaseId(), b.getObservedReleaseId())
+                && Objects.equals(a.getRolloutStatus(), b.getRolloutStatus())
+                && a.getReplicasReady() == b.getReplicasReady()
                 && Objects.equals(a.getSyncFailed(), b.getSyncFailed())
                 && replicasEqual(a.getReplicas(), b.getReplicas());
     }

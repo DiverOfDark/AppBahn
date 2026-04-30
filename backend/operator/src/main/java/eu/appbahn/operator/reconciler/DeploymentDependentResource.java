@@ -1,5 +1,6 @@
 package eu.appbahn.operator.reconciler;
 
+import eu.appbahn.operator.reconciler.imagesource.ResourceReleaseResolver;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
@@ -15,6 +16,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,25 +40,38 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         String namespace = primary.getMetadata().getNamespace();
         ResourceConfig config = primary.getSpec().getConfig();
 
-        var source = config != null ? config.getSource() : null;
         var hosting = config != null ? config.getHosting() : null;
 
-        if (!(source instanceof eu.appbahn.shared.crd.DockerSource dockerSource) || dockerSource.getImage() == null) {
-            throw new IllegalStateException("Resource " + name + ": docker source with image is required");
+        boolean useReleasePath = ResourceReleaseResolver.usesReleasePath(primary);
+        String containerImage;
+        boolean useAlwaysPullPolicy = false;
+        if (useReleasePath) {
+            // Resolved by DeploymentReconcileCondition before this method runs — but resolve
+            // again because the workflow precondition only checks reachability, not freshness.
+            containerImage = ResourceReleaseResolver.resolveImageRef(primary, context)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Resource " + name + ": bound ImageSource has no latestArtifact yet"));
+        } else {
+            var source = config != null ? config.getSource() : null;
+            if (!(source instanceof eu.appbahn.shared.crd.DockerSource dockerSource)
+                    || dockerSource.getImage() == null) {
+                throw new IllegalStateException("Resource " + name + ": docker source with image is required");
+            }
+            String image = dockerSource.getImage();
+            String tag = dockerSource.getTag() != null ? dockerSource.getTag() : Labels.DEFAULT_IMAGE_TAG;
+            String digest = dockerSource.getDigest();
+            // When the platform has resolved the manifest digest, pin the Pod spec to image@digest
+            // so a moved tag in the upstream registry can't change what runs.
+            containerImage = (digest != null && !digest.isBlank()) ? image + "@" + digest : image + ":" + tag;
+            useAlwaysPullPolicy = (digest == null || digest.isBlank()) && Labels.DEFAULT_IMAGE_TAG.equals(tag);
         }
 
-        String image = dockerSource.getImage();
-        String tag = dockerSource.getTag() != null ? dockerSource.getTag() : Labels.DEFAULT_IMAGE_TAG;
-        String digest = dockerSource.getDigest();
-        // When the platform has resolved the manifest digest, pin the Pod spec to image@digest so
-        // a moved tag in the upstream registry can't change what runs.
-        String containerImage = (digest != null && !digest.isBlank()) ? image + "@" + digest : image + ":" + tag;
-        var allPorts = config.getPorts();
-        Integer port = config.getLowestPort();
+        var allPorts = config != null ? config.getPorts() : List.<ResourceConfig.PortConfig>of();
+        Integer port = config != null ? config.getLowestPort() : null;
         int replicas;
         if (isCurrentRevisionFailed(primary)) {
             // Stop K8s from crashlooping a terminally-failed revision. Recovery requires a
-            // spec edit (bumps generation) or restart (bumps deploymentRevision).
+            // spec edit (bumps generation) or a restartGeneration bump.
             replicas = 0;
         } else {
             replicas = hosting != null && hosting.getMinReplicas() != null
@@ -68,9 +83,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
         Map<String, String> labels = Labels.forPrimary(primary);
 
-        String revision = primary.getSpec().getDeploymentRevision();
-        Map<String, String> podAnnotations =
-                revision != null ? Map.of(Labels.DEPLOYMENT_REVISION_KEY, revision) : Map.of();
+        Map<String, String> podAnnotations = buildPodAnnotations(primary, containerImage, useReleasePath);
 
         var deploymentBuilder = new DeploymentBuilder()
                 .withNewMetadata()
@@ -93,10 +106,7 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .addNewContainer()
                 .withName(Labels.CONTAINER_NAME)
                 .withImage(containerImage)
-                .withImagePullPolicy(
-                        (digest == null || digest.isBlank()) && Labels.DEFAULT_IMAGE_TAG.equals(tag)
-                                ? "Always"
-                                : "IfNotPresent")
+                .withImagePullPolicy(useAlwaysPullPolicy ? "Always" : "IfNotPresent")
                 .withPorts(allPorts.stream()
                         .filter(p -> p.getPort() != null)
                         .map(p -> new ContainerPortBuilder()
@@ -248,6 +258,31 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         BigDecimal amount = new BigDecimal(q.getAmount());
         var scaled = amount.multiply(BigDecimal.valueOf(factor));
         return new Quantity(scaled.stripTrailingZeros().toPlainString() + (format != null ? format : ""));
+    }
+
+    /**
+     * Pod-template annotations that drive K8s rollout when relevant inputs change. Legacy path:
+     * carry {@code spec.deploymentRevision} on the pod template so the platform's bump triggers
+     * a roll. Release path: carry the resolved {@code imageRef} (digest-pinned) so the bound
+     * ImageSource's new artifact triggers a roll, plus {@code restartGeneration} so an explicit
+     * restart bump triggers a roll without changing the image.
+     */
+    private static Map<String, String> buildPodAnnotations(
+            ResourceCrd primary, String imageRef, boolean useReleasePath) {
+        Map<String, String> annotations = new HashMap<>();
+        if (useReleasePath) {
+            annotations.put(Labels.RELEASE_IMAGE_REF_KEY, imageRef);
+            Long restartGen = primary.getSpec().getRestartGeneration();
+            if (restartGen != null) {
+                annotations.put(Labels.RESTART_GENERATION_KEY, restartGen.toString());
+            }
+        } else {
+            String revision = primary.getSpec().getDeploymentRevision();
+            if (revision != null) {
+                annotations.put(Labels.DEPLOYMENT_REVISION_KEY, revision);
+            }
+        }
+        return annotations;
     }
 
     /** ERROR + zero ready replicas observed for the current spec generation. */

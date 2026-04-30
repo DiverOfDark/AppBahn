@@ -19,16 +19,44 @@ public class ResourceStatusDetail {
     private List<ResourceCondition> conditions;
     private List<CustomDomainStatus> customDomains;
     private List<LinkStatus> links;
+
+    /** @deprecated replaced by {@link #activeRelease}. */
+    @Deprecated
     private String primaryDeploymentId;
+
+    /** @deprecated replaced by {@link #activeRelease}'s {@code imageRef}. */
+    @Deprecated
     private String primaryImage;
+
+    /** @deprecated replaced by {@link #activeRelease}'s {@code activatedAt}. */
+    @Deprecated
     private Instant lastDeploymentTime;
+
     private Instant lastSyncTime;
 
-    /** The deployment ID the operator is currently processing (from spec.deploymentRevision). */
+    /** @deprecated replaced by {@link #observedReleaseId}. */
+    @Deprecated
     private String latestDeploymentId;
 
-    /** The actual status of the latest deployment, derived from K8s rollout status (not resource phase). */
+    /** @deprecated replaced by {@link #rolloutStatus}. */
+    @Deprecated
     private DeploymentStatus latestDeploymentStatus;
+
+    /**
+     * Operator's view of the artifact currently rolled out — populated when the Resource resolves
+     * its image via {@code spec.release.fromImageSource}. Mirrors the bound ImageSource's
+     * {@code status.latestArtifact} the moment the rollout actually flips to it.
+     */
+    private ActiveRelease activeRelease;
+
+    /** Platform-side audit row id for the release the operator currently has active. */
+    private String observedReleaseId;
+
+    /** Rollout state derived from K8s facts when the new release path is in use. */
+    private RolloutStatus rolloutStatus;
+
+    /** Pods reporting Ready out of {@link ReplicaStatus#getDesired()}. */
+    private int replicasReady;
 
     /** True when the last attempt to sync this resource to the platform API failed. */
     private Boolean syncFailed;

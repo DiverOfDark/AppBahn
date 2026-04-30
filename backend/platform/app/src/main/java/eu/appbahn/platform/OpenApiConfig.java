@@ -351,6 +351,7 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.AdminConfigPush.class,
             eu.appbahn.platform.api.tunnel.QuotaRbacCachePush.class,
             eu.appbahn.platform.api.tunnel.ApplyResource.class,
+            eu.appbahn.platform.api.tunnel.ApplyResourceBundle.class,
             eu.appbahn.platform.api.tunnel.DeleteResource.class,
             eu.appbahn.platform.api.tunnel.ApplyNamespace.class,
             eu.appbahn.platform.api.tunnel.DeleteNamespace.class,
