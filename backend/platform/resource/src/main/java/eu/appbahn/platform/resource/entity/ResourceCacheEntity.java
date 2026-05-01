@@ -1,5 +1,6 @@
 package eu.appbahn.platform.resource.entity;
 
+import eu.appbahn.shared.crd.PinnedRelease;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
@@ -53,6 +54,15 @@ public class ResourceCacheEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "status_detail", columnDefinition = "jsonb")
     private ResourceStatusDetail statusDetail;
+
+    /**
+     * Snapshot of the historical artifact the Resource is pinned to. When non-null, the operator
+     * runs this snapshot instead of the bound ImageSource's {@code latestArtifact}. Set by
+     * {@code POST /resources/{slug}/rollback}; cleared by {@code POST /resources/{slug}/unpin}.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "pinned_release", columnDefinition = "jsonb")
+    private PinnedRelease pinnedRelease;
 
     @Column(name = "last_synced_at")
     private Instant lastSyncedAt;

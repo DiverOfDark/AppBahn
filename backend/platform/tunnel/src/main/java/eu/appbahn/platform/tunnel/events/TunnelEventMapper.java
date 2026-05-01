@@ -33,6 +33,7 @@ public class TunnelEventMapper {
                     ResourcePhase.PENDING,
                     null,
                     null,
+                    null,
                     item.getGeneration() > 0 ? item.getGeneration() : null,
                     emptyToNull(item.getResourceVersion()));
         }
@@ -59,6 +60,7 @@ public class TunnelEventMapper {
                 spec != null ? spec.getLinks() : null,
                 phase,
                 status,
+                spec != null ? spec.getPinnedRelease() : null,
                 createdAt,
                 item.getGeneration() > 0 ? item.getGeneration() : null,
                 emptyToNull(item.getResourceVersion()));

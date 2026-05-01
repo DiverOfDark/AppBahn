@@ -342,12 +342,12 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
     /**
      * Populate the release-path fields ({@code activeRelease}, {@code observedReleaseId},
-     * {@code rolloutStatus}, {@code replicasReady}) from the bound ImageSource's
-     * {@code latestArtifact} and the K8s deployment status.
+     * {@code rolloutStatus}, {@code replicasReady}) from the resolved active artifact (pin first,
+     * then ImageSource {@code latestArtifact}) and the K8s deployment status.
      */
     static void enrichWithReleaseStatus(
             ResourceCrd resource, ResourceStatusDetail status, Context<ResourceCrd> context) {
-        ResourceReleaseResolver.resolveLatestArtifact(resource, context).ifPresent(artifact -> {
+        ResourceReleaseResolver.resolveActiveArtifact(resource, context).ifPresent(artifact -> {
             ActiveRelease activeRelease = new ActiveRelease();
             activeRelease.setSourceCommit(artifact.getSourceCommit());
             activeRelease.setImageRef(artifact.getImageRef());
@@ -524,6 +524,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && Objects.equals(a.getObservedReleaseId(), b.getObservedReleaseId())
                 && Objects.equals(a.getObservedRestartGeneration(), b.getObservedRestartGeneration())
                 && Objects.equals(a.getObservedEnvHash(), b.getObservedEnvHash())
+                && Objects.equals(a.getObservedPinnedImageRef(), b.getObservedPinnedImageRef())
                 && Objects.equals(a.getRolloutStatus(), b.getRolloutStatus())
                 && a.getReplicasReady() == b.getReplicasReady()
                 && Objects.equals(a.getSyncFailed(), b.getSyncFailed())

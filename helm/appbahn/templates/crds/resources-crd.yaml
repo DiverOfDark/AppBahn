@@ -185,6 +185,21 @@ spec:
                 type: array
               name:
                 type: string
+              pinnedRelease:
+                properties:
+                  imageRef:
+                    type: string
+                  pinnedAt:
+                    type: string
+                  pinnedFromDeploymentId:
+                    type: string
+                  runCommand:
+                    items:
+                      type: string
+                    type: array
+                  sourceCommit:
+                    type: string
+                type: object
               projectId:
                 type: string
               restartGeneration:
@@ -274,6 +289,8 @@ spec:
                 type: string
               observedGeneration:
                 type: integer
+              observedPinnedImageRef:
+                type: string
               observedReleaseId:
                 type: string
               observedRestartGeneration:

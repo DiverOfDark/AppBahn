@@ -11,13 +11,15 @@ var resourceRollbackTo string
 var resourceRollbackCmd = &cobra.Command{
 	Use:   "rollback <slug>",
 	Short: "Roll back the resource to a previous deployment's image",
-	Long: `Pins the bound ImageSource's pinnedDigest to the imageRef of the deployment
-audit row identified by --to (or, when --to is omitted, the previous successful
-deployment). The operator applies the pin and rolls the resource onto the
-historical digest. A new deployment audit row is minted with triggeredBy=rollback.
+	Long: `Pins Resource.spec.pinnedRelease to the snapshot of the deployment audit row
+identified by --to (or, when --to is omitted, the previous successful
+deployment). The operator stops following the bound ImageSource and rolls the
+resource onto the historical artifact — no rebuild runs. A new deployment
+audit row is minted with triggeredBy=rollback.
 
-Rollback only applies to type=imageSource and type=image ImageSources. For
-type=git, revert your source commit instead.
+Works for every ImageSource type, including type=git: rollback is a Resource-
+level concern, not an ImageSource-level concern. To clear the pin and resume
+following the ImageSource, use 'appbahn resource unpin'.
 
 Examples:
   appbahn resource rollback my-app-abc1234

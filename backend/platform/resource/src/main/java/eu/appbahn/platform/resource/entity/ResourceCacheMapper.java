@@ -54,6 +54,7 @@ public final class ResourceCacheMapper {
         if (row.getStatus() == ResourcePhase.STOPPED) {
             spec.setStopped(true);
         }
+        spec.setPinnedRelease(row.getPinnedRelease());
         crd.setSpec(spec);
         crd.setStatus(row.getStatusDetail() != null ? row.getStatusDetail() : new ResourceStatusDetail());
         return crd;

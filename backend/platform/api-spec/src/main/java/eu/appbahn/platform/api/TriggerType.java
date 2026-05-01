@@ -19,5 +19,11 @@ public enum TriggerType {
     MANUAL_RESTART,
     /** {@code Resource.spec.config.env} changed and current image is reused — re-roll, no rebuild. */
     @JsonProperty("env-change")
-    ENV_CHANGE;
+    ENV_CHANGE,
+    /**
+     * User cleared {@code Resource.spec.pinnedRelease}, resuming follow of the bound ImageSource's
+     * {@code latestArtifact}. Re-roll, no rebuild.
+     */
+    @JsonProperty("unpin")
+    UNPIN;
 }

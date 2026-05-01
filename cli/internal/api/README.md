@@ -146,6 +146,7 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**RotateWebhookSecret**](docs/ResourcesAPI.md#rotatewebhooksecret) | **Post** /resources/{slug}/webhook/rotate | 
 *ResourcesAPI* | [**StartResource**](docs/ResourcesAPI.md#startresource) | **Post** /resources/{slug}/start | 
 *ResourcesAPI* | [**StopResource**](docs/ResourcesAPI.md#stopresource) | **Post** /resources/{slug}/stop | 
+*ResourcesAPI* | [**UnpinResource**](docs/ResourcesAPI.md#unpinresource) | **Post** /resources/{slug}/unpin | 
 *ResourcesAPI* | [**UpdateResource**](docs/ResourcesAPI.md#updateresource) | **Patch** /resources/{slug} | 
 *WebhooksAPI* | [**TriggerWebhook**](docs/WebhooksAPI.md#triggerwebhook) | **Post** /webhooks/{resource_slug} | 
 *WorkspacesAPI* | [**AddWorkspaceMember**](docs/WorkspacesAPI.md#addworkspacemember) | **Post** /workspaces/{slug}/members | 

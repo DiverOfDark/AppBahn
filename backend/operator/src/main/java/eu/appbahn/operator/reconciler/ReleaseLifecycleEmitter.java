@@ -3,6 +3,7 @@ package eu.appbahn.operator.reconciler;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.operator.tunnel.client.model.BuildLifecycleEvent;
 import eu.appbahn.shared.crd.ActiveRelease;
+import eu.appbahn.shared.crd.PinnedRelease;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
 import eu.appbahn.shared.crd.RolloutStatus;
@@ -19,16 +20,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Detects release-only re-rolls on a Resource (restart, env edit) and emits
+ * Detects release-only re-rolls on a Resource (restart, env edit, pin set/clear) and emits
  * {@link BuildLifecycleEvent}s ({@code ACTIVATING → ACTIVE/FAILED}) so the platform appends a
  * deployment audit row with the right {@code triggeredBy}. No build runs in this path — the
  * bound ImageSource is untouched.
  *
- * <p>Detection is stateful via the Resource's status: we track {@code observedRestartGeneration}
- * and {@code observedEnvHash}. A bump in {@code spec.restartGeneration} or a change in the env
- * hash with the same {@code imageRef} flips the operator into "ACTIVATING" for a fresh
- * {@code observedReleaseId} (a UUID minted here), then advances to {@code ACTIVE} once the
- * rollout reaches {@link RolloutStatus#Healthy} (or {@code FAILED} on terminal failure).
+ * <p>Detection is stateful via the Resource's status: we track {@code observedRestartGeneration},
+ * {@code observedEnvHash}, and {@code observedPinnedImageRef}. A bump in
+ * {@code spec.restartGeneration}, an env-hash change with the same {@code imageRef}, or a
+ * change in {@code spec.pinnedRelease.imageRef} (set / swap / clear) flips the operator into
+ * "ACTIVATING" for a fresh {@code observedReleaseId} (a UUID minted here), then advances to
+ * {@code ACTIVE} once the rollout reaches {@link RolloutStatus#Healthy} (or {@code FAILED} on
+ * terminal failure).
  */
 @Component
 public class ReleaseLifecycleEmitter {
@@ -43,8 +46,9 @@ public class ReleaseLifecycleEmitter {
 
     /**
      * Inspect the previous status against the new status and the spec, emit lifecycle events for
-     * any restart/env-edit transitions, and return the {@code newStatus} updated with
-     * {@code observedReleaseId}, {@code observedRestartGeneration}, {@code observedEnvHash}.
+     * any restart/env-edit/pin transitions, and return the {@code newStatus} updated with
+     * {@code observedReleaseId}, {@code observedRestartGeneration}, {@code observedEnvHash},
+     * {@code observedPinnedImageRef}.
      */
     public void reconcile(ResourceCrd resource, ResourceStatusDetail previous, ResourceStatusDetail newStatus) {
         if (resource.getSpec() == null) {
@@ -56,26 +60,36 @@ public class ReleaseLifecycleEmitter {
         }
         Long specRestartGen = resource.getSpec().getRestartGeneration();
         String specEnvHash = hashEnv(envOf(resource));
+        PinnedRelease pin = resource.getSpec().getPinnedRelease();
+        String specPinImageRef = pin != null ? pin.getImageRef() : null;
         ActiveRelease active = newStatus.getActiveRelease();
         String imageRef = active != null ? active.getImageRef() : null;
 
         Long prevRestartGen = previous != null ? previous.getObservedRestartGeneration() : null;
         String prevEnvHash = previous != null ? previous.getObservedEnvHash() : null;
         String prevReleaseId = previous != null ? previous.getObservedReleaseId() : null;
+        String prevPinImageRef = previous != null ? previous.getObservedPinnedImageRef() : null;
 
         boolean restartBumped = !Objects.equals(specRestartGen, prevRestartGen) && specRestartGen != null;
         boolean envChanged = previous != null && !Objects.equals(specEnvHash, prevEnvHash) && imageRef != null;
+        boolean pinChanged = previous != null && !Objects.equals(specPinImageRef, prevPinImageRef);
 
         // First reconcile of a new resource — seed the trackers without emitting (the build-half
-        // already minted a row for the initial activation).
+        // already minted a row for the initial activation). A Resource that is born with a pin
+        // already set (e.g. created from a CRD apply) is treated the same way.
         if (previous == null) {
             newStatus.setObservedRestartGeneration(specRestartGen);
             newStatus.setObservedEnvHash(specEnvHash);
+            newStatus.setObservedPinnedImageRef(specPinImageRef);
             return;
         }
 
         TriggerEnum trigger = null;
-        if (restartBumped) {
+        if (pinChanged) {
+            // A pin transition wins over a coincidental restart/env edit on the same reconcile —
+            // the deployment row should reflect the user-visible cause.
+            trigger = specPinImageRef != null ? TriggerEnum.ROLLBACK : TriggerEnum.UNPIN;
+        } else if (restartBumped) {
             trigger = TriggerEnum.MANUAL_RESTART;
         } else if (envChanged) {
             trigger = TriggerEnum.ENV_CHANGE;
@@ -110,6 +124,13 @@ public class ReleaseLifecycleEmitter {
             } else {
                 newStatus.setObservedEnvHash(prevEnvHash);
             }
+            // Advance the pin tracker on pin transitions so we don't re-emit; on other triggers
+            // hold the prev value (a concurrent pin change on the next reconcile still fires).
+            if (trigger == TriggerEnum.ROLLBACK || trigger == TriggerEnum.UNPIN) {
+                newStatus.setObservedPinnedImageRef(specPinImageRef);
+            } else {
+                newStatus.setObservedPinnedImageRef(prevPinImageRef);
+            }
             return;
         }
 
@@ -118,6 +139,7 @@ public class ReleaseLifecycleEmitter {
         newStatus.setObservedReleaseId(prevReleaseId);
         newStatus.setObservedRestartGeneration(specRestartGen);
         newStatus.setObservedEnvHash(specEnvHash);
+        newStatus.setObservedPinnedImageRef(specPinImageRef);
 
         RolloutStatus rollout = newStatus.getRolloutStatus();
         if (prevReleaseId != null && imageRef != null) {
@@ -214,7 +236,9 @@ public class ReleaseLifecycleEmitter {
 
     enum TriggerEnum {
         MANUAL_RESTART(BuildLifecycleEvent.TriggeredByEnum.MANUAL_RESTART),
-        ENV_CHANGE(BuildLifecycleEvent.TriggeredByEnum.ENV_CHANGE);
+        ENV_CHANGE(BuildLifecycleEvent.TriggeredByEnum.ENV_CHANGE),
+        ROLLBACK(BuildLifecycleEvent.TriggeredByEnum.ROLLBACK),
+        UNPIN(BuildLifecycleEvent.TriggeredByEnum.UNPIN);
         private final BuildLifecycleEvent.TriggeredByEnum eventEnum;
 
         TriggerEnum(BuildLifecycleEvent.TriggeredByEnum eventEnum) {

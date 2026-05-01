@@ -32,6 +32,7 @@ type ResourceStatusDetail struct {
 	ObservedReleaseId         *string              `json:"observedReleaseId,omitempty"`
 	ObservedRestartGeneration *int64               `json:"observedRestartGeneration,omitempty"`
 	ObservedEnvHash           *string              `json:"observedEnvHash,omitempty"`
+	ObservedPinnedImageRef    *string              `json:"observedPinnedImageRef,omitempty"`
 	RolloutStatus             *string              `json:"rolloutStatus,omitempty"`
 	ReplicasReady             *int32               `json:"replicasReady,omitempty"`
 	SyncFailed                *bool                `json:"syncFailed,omitempty"`
@@ -439,6 +440,38 @@ func (o *ResourceStatusDetail) SetObservedEnvHash(v string) {
 	o.ObservedEnvHash = &v
 }
 
+// GetObservedPinnedImageRef returns the ObservedPinnedImageRef field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetObservedPinnedImageRef() string {
+	if o == nil || IsNil(o.ObservedPinnedImageRef) {
+		var ret string
+		return ret
+	}
+	return *o.ObservedPinnedImageRef
+}
+
+// GetObservedPinnedImageRefOk returns a tuple with the ObservedPinnedImageRef field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetObservedPinnedImageRefOk() (*string, bool) {
+	if o == nil || IsNil(o.ObservedPinnedImageRef) {
+		return nil, false
+	}
+	return o.ObservedPinnedImageRef, true
+}
+
+// HasObservedPinnedImageRef returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasObservedPinnedImageRef() bool {
+	if o != nil && !IsNil(o.ObservedPinnedImageRef) {
+		return true
+	}
+
+	return false
+}
+
+// SetObservedPinnedImageRef gets a reference to the given string and assigns it to the ObservedPinnedImageRef field.
+func (o *ResourceStatusDetail) SetObservedPinnedImageRef(v string) {
+	o.ObservedPinnedImageRef = &v
+}
+
 // GetRolloutStatus returns the RolloutStatus field value if set, zero value otherwise.
 func (o *ResourceStatusDetail) GetRolloutStatus() string {
 	if o == nil || IsNil(o.RolloutStatus) {
@@ -612,6 +645,9 @@ func (o ResourceStatusDetail) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ObservedEnvHash) {
 		toSerialize["observedEnvHash"] = o.ObservedEnvHash
+	}
+	if !IsNil(o.ObservedPinnedImageRef) {
+		toSerialize["observedPinnedImageRef"] = o.ObservedPinnedImageRef
 	}
 	if !IsNil(o.RolloutStatus) {
 		toSerialize["rolloutStatus"] = o.RolloutStatus

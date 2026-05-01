@@ -260,6 +260,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/unpin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['unpinResource']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/stop': {
     parameters: {
       query?: never
@@ -1664,6 +1680,7 @@ export interface components {
       /** Format: int64 */
       observedRestartGeneration?: number
       observedEnvHash?: string
+      observedPinnedImageRef?: string
       /** @enum {string} */
       rolloutStatus?: 'Pending' | 'Deploying' | 'Healthy' | 'Degraded' | 'Failed'
       /** Format: int32 */
@@ -1868,6 +1885,7 @@ export interface components {
         | 'rollback'
         | 'manual-restart'
         | 'env-change'
+        | 'unpin'
       /** @enum {string} */
       lifecycle?:
         | 'QUEUED'
@@ -2659,6 +2677,29 @@ export interface operations {
         content: {
           'application/json': components['schemas']['WebhookConfig']
         }
+      }
+    }
+  }
+  unpinResource: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
       }
     }
   }
