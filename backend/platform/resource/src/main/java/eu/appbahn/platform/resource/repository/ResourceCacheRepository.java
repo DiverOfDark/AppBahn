@@ -82,10 +82,11 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
     @Query(nativeQuery = true, value = """
                     INSERT INTO resource_cache (
                         slug, environment_id, name, type, config, links, status, status_detail,
-                        last_synced_at, created_at, updated_at, version
+                        pinned_release, last_synced_at, created_at, updated_at, version
                     ) VALUES (
                         :slug, :environmentId, :name, :type, CAST(:config AS jsonb), CAST(:links AS jsonb),
-                        :status, CAST(:statusDetail AS jsonb), :lastSyncedAt, :createdAt, :updatedAt, 0
+                        :status, CAST(:statusDetail AS jsonb), CAST(:pinnedRelease AS jsonb),
+                        :lastSyncedAt, :createdAt, :updatedAt, 0
                     )
                     ON CONFLICT (slug) DO UPDATE SET
                         environment_id = EXCLUDED.environment_id,
@@ -95,6 +96,7 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
                         links          = EXCLUDED.links,
                         status         = EXCLUDED.status,
                         status_detail  = EXCLUDED.status_detail,
+                        pinned_release = EXCLUDED.pinned_release,
                         last_synced_at = EXCLUDED.last_synced_at,
                         updated_at     = EXCLUDED.updated_at,
                         version        = resource_cache.version + 1
@@ -108,6 +110,7 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
             @Param("links") String linksJson,
             @Param("status") String status,
             @Param("statusDetail") String statusDetailJson,
+            @Param("pinnedRelease") String pinnedReleaseJson,
             @Param("lastSyncedAt") Instant lastSyncedAt,
             @Param("createdAt") Instant createdAt,
             @Param("updatedAt") Instant updatedAt);
@@ -119,6 +122,9 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
                     objectMapper.writeValueAsString(entity.getLinks() != null ? entity.getLinks() : List.of());
             String statusDetailJson =
                     entity.getStatusDetail() != null ? objectMapper.writeValueAsString(entity.getStatusDetail()) : null;
+            String pinnedReleaseJson = entity.getPinnedRelease() != null
+                    ? objectMapper.writeValueAsString(entity.getPinnedRelease())
+                    : null;
             ResourcePhase phase = entity.getStatus();
             return upsertFromSync(
                     entity.getSlug(),
@@ -129,6 +135,7 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
                     linksJson,
                     phase != null ? phase.name() : null,
                     statusDetailJson,
+                    pinnedReleaseJson,
                     entity.getLastSyncedAt(),
                     entity.getCreatedAt(),
                     entity.getUpdatedAt());

@@ -50,6 +50,10 @@ Deleting an environment **cascades** — the corresponding Kubernetes namespace 
 
 A **Resource** is a deployable unit — a container, database, or other service — that runs inside an environment. Resources are defined as Kubernetes Custom Resources (CRDs) and managed by the AppBahn Operator. Full CRUD on resources requires the **Editor** role or higher.
 
+### Rollback
+
+Every resource keeps a deployment history. To roll back to a previous deployment without rebuilding, use `appbahn resource rollback <slug>` (or `--to <deployment-id>` for a specific row). The resource is pinned to the older artifact and re-rolls immediately. To clear the pin and resume tracking new builds, run `appbahn resource unpin <slug>`. Rollback works for every resource type, including those built from a git repo — there's no need to revert your source commit.
+
 ## Environment tokens
 
 **Environment tokens** provide API access scoped to a single environment, intended for CI/CD pipelines. Tokens have the format `abp_` followed by 40 random alphanumeric characters.

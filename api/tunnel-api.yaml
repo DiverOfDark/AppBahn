@@ -371,6 +371,7 @@ components:
             - rollback
             - manual-restart
             - env-change
+            - unpin
           occurredAt:
             type: string
             format: date-time
@@ -807,6 +808,23 @@ components:
           format: date-time
         errorMessage:
           type: string
+    PinnedRelease:
+      type: object
+      properties:
+        sourceCommit:
+          type: string
+        imageRef:
+          type: string
+        runCommand:
+          type: array
+          items:
+            type: string
+        pinnedAt:
+          type: string
+          format: date-time
+        pinnedFromDeploymentId:
+          type: string
+          format: uuid
     PortConfig:
       type: object
       properties:
@@ -948,6 +966,8 @@ components:
         restartGeneration:
           type: integer
           format: int64
+        pinnedRelease:
+          $ref: "#/components/schemas/PinnedRelease"
     ResourceStatusDetail:
       type: object
       properties:
@@ -990,6 +1010,8 @@ components:
           type: integer
           format: int64
         observedEnvHash:
+          type: string
+        observedPinnedImageRef:
           type: string
         rolloutStatus:
           type: string

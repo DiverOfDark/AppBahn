@@ -7,12 +7,13 @@ import lombok.Data;
 /**
  * Body for {@code POST /resources/{slug}/rollback}. {@code deploymentId} is optional — when null
  * the server rolls back to the most recent successful deployment that is not the current one.
- * When set, the deployment id is looked up, its imageRef digest read, and the bound
- * ImageSource's {@code pinnedDigest} set to that value.
+ * When set, the deployment id is looked up, its imageRef read, and {@code Resource.spec.pinnedRelease}
+ * is set to a snapshot built from that audit row.
  *
- * <p>Rollback is supported on {@code type: image} and {@code type: imageSource} ImageSources;
- * for {@code type: git}, callers should revert the source commit instead — the API surfaces a
- * 422 with a clear message.
+ * <p>Rollback is supported on every ImageSource type ({@code git}, {@code image}, {@code imageSource}):
+ * the pin lives on the Resource, not the ImageSource, so no rebuild runs. Vercel/Railway/Heroku
+ * semantics — the user can re-pin to {@code v(N-k)} of any app instantly. Use
+ * {@code POST /resources/{slug}/unpin} to clear the pin.
  */
 @Data
 @Schema(name = "RollbackRequest", description = "Request body for resource rollback operation")

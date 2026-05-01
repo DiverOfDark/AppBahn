@@ -46,6 +46,14 @@ public class ResourceStatusDetail {
      */
     private String observedEnvHash;
 
+    /**
+     * {@code spec.pinnedRelease.imageRef} the reconciler last acknowledged. When it changes
+     * — pin set, swapped to a different historical artifact, or cleared (null) — the reconciler
+     * mints a fresh release id and emits a {@code BuildLifecycleEvent} with the right
+     * {@code triggeredBy} ({@code ROLLBACK} on set/swap, {@code UNPIN} on clear).
+     */
+    private String observedPinnedImageRef;
+
     /** Rollout state derived from K8s facts. */
     private RolloutStatus rolloutStatus;
 

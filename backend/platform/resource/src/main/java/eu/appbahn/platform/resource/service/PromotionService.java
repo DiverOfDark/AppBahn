@@ -15,6 +15,8 @@ import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ImageSourceCacheRepository;
 import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.shared.Labels;
+import eu.appbahn.shared.crd.PinnedRelease;
+import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourcePromotionSpec;
@@ -25,6 +27,7 @@ import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.UuidV7;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -33,31 +36,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Implements promote/rollback semantics by editing the bound ImageSource's
- * {@code spec.imageSource.pinnedDigest} (for promotion-chain) or {@code spec.image.ref} (for
- * pinned-image) and dispatching a one-sided {@code ApplyResourceBundle}. The operator picks up
- * the change, status updates flow back, K8s rolls.
- *
- * <p>Promotion model:
+ * Implements promote / rollback / unpin semantics. Two distinct layers:
  *
  * <ul>
- *   <li>{@code POST /promote} with no digest → resolve the bound ImageSource's
- *       {@code spec.imageSource.upstream} → read upstream's {@code latestArtifact.imageRef} →
- *       set as the downstream's pinnedDigest.
- *   <li>{@code POST /promote} with explicit digest → set as pinnedDigest directly.
- *   <li>{@code POST /rollback} with deploymentId → look up the audit row → use its imageRef.
- *   <li>{@code POST /rollback} no body → use the previous successful (non-current) deployment.
+ *   <li><b>Promote</b> edits the bound ImageSource (sets {@code spec.imageSource.pinnedDigest}
+ *       for {@code type=imageSource}, {@code spec.image.ref} for {@code type=image}). Controls
+ *       the promotion gate between environments.
+ *   <li><b>Rollback / unpin</b> edit the Resource's {@code spec.pinnedRelease}. Pins the
+ *       Resource to a previous deployment's full snapshot (digest + run command + commit) and
+ *       lets the operator re-roll without rebuilding — Vercel/Railway/Heroku-style fast rollback.
+ *       Independent of ImageSource type; works for {@code git} too (the load-bearing case).
  * </ul>
  *
- * <p>Type-specific semantics:
- *
- * <ul>
- *   <li>{@code type: imageSource} → set/unset {@code spec.imageSource.pinnedDigest}; flips
- *       {@code autoPromote=false} when pinning so subsequent upstream changes don't override.
- *   <li>{@code type: image} → set {@code spec.image.ref} to the target digest. {@code autoPromote}
- *       does not apply.
- *   <li>{@code type: git} → rejected with 422; callers should revert their commit.
- * </ul>
+ * <p>The two layers compose: a staging Resource can have its {@code pinnedRelease} set even
+ * while its {@code type=imageSource} ImageSource is auto-mirroring upstream. The pin wins —
+ * the Resource stays on the historical artifact until cleared.
  */
 @Service
 public class PromotionService {
@@ -101,7 +94,7 @@ public class PromotionService {
 
         ImageSourceCacheEntity boundImageSource = loadBoundImageSource(slug);
         ImageSourceSpec spec = boundImageSource.getSpec();
-        rejectGitType(spec, "promote");
+        rejectGitTypeForPromote(spec);
 
         String targetDigest;
         TriggerType trigger;
@@ -113,8 +106,8 @@ public class PromotionService {
             trigger = TriggerType.AUTO_PROMOTION;
         }
 
-        applyPin(boundImageSource, env.getSlug(), spec, targetDigest);
-        recordPromotion(slug, env.getId(), boundImageSource, targetDigest, trigger);
+        applyImageSourcePin(boundImageSource, env.getSlug(), spec, targetDigest);
+        recordDeploymentRow(slug, env.getId(), boundImageSource, targetDigest, trigger);
         log.info("Promoted resource {} to digest {}", slug, targetDigest);
 
         auditLogService
@@ -127,6 +120,12 @@ public class PromotionService {
                 .save();
     }
 
+    /**
+     * Pin {@code Resource.spec.pinnedRelease} to a historical deployment's snapshot. Works for
+     * any ImageSource type — including {@code git} — because the pin lives on the Resource, not
+     * on the ImageSource. The operator stops following the bound ImageSource's
+     * {@code latestArtifact} until {@link #unpin} clears the pin.
+     */
     @RetryOnConflict
     @Transactional
     public void rollback(String slug, UUID deploymentId, AuthContext ctx) {
@@ -135,8 +134,6 @@ public class PromotionService {
         UUID workspaceId = resolved.workspaceId();
 
         ImageSourceCacheEntity boundImageSource = loadBoundImageSource(slug);
-        ImageSourceSpec spec = boundImageSource.getSpec();
-        rejectGitType(spec, "rollback");
 
         DeploymentEntity target = deploymentId != null
                 ? deploymentRepository
@@ -147,10 +144,23 @@ public class PromotionService {
         if (target.getImageRef() == null || target.getImageRef().isBlank()) {
             throw new ValidationException("Deployment " + target.getId() + " has no imageRef; cannot roll back");
         }
-        String targetDigest = target.getImageRef();
-        applyPin(boundImageSource, env.getSlug(), spec, targetDigest);
-        recordPromotion(slug, env.getId(), boundImageSource, targetDigest, TriggerType.ROLLBACK);
-        log.info("Rolled back resource {} to deployment {} (digest {})", slug, target.getId(), targetDigest);
+        String targetImageRef = target.getImageRef();
+
+        // Run command isn't stored on the deployment row. Recover it from the ImageSource's
+        // latestArtifact when the matching commit lines up; otherwise leave null and let the
+        // image's default CMD apply (matches Vercel/Railway behaviour).
+        List<String> recoveredRunCommand = recoverRunCommand(boundImageSource, target.getSourceRef());
+
+        var pin = new PinnedRelease();
+        pin.setSourceCommit(target.getSourceRef());
+        pin.setImageRef(targetImageRef);
+        pin.setRunCommand(recoveredRunCommand);
+        pin.setPinnedAt(Instant.now());
+        pin.setPinnedFromDeploymentId(target.getId());
+
+        applyResourcePin(slug, env.getSlug(), pin);
+        recordDeploymentRow(slug, env.getId(), boundImageSource, targetImageRef, TriggerType.ROLLBACK);
+        log.info("Rolled back resource {} to deployment {} (digest {})", slug, target.getId(), targetImageRef);
 
         auditLogService
                 .audit(ctx, AuditAction.RESOURCE_UPDATED)
@@ -159,19 +169,51 @@ public class PromotionService {
                 .inProject(env.getProjectId())
                 .inEnvironment(env.getId())
                 .change("rolledBackTo", "", target.getId().toString())
-                .change("rolledBackDigest", "", targetDigest)
+                .change("rolledBackDigest", "", targetImageRef)
                 .save();
     }
 
     /**
-     * Record a fresh deployment audit row capturing the digest the resource is being moved to.
-     * Promote and rollback both reuse an existing artifact (no build runs) — but the operations
-     * still represent a state change worth tracking, and rollback's "previous deployment" lookup
-     * relies on a row existing for each prior pin. Lifecycle starts at {@code ACTIVATING};
-     * {@code ReleaseLifecycleEmitter} on the operator advances it to {@code ACTIVE} once the
-     * rollout settles.
+     * Clear {@code Resource.spec.pinnedRelease}. The Resource immediately resumes following the
+     * bound ImageSource's current {@code latestArtifact} (which may be newer than the pin if
+     * builds continued while pinned). Mints a deployment audit row with
+     * {@code triggered_by = UNPIN} so the timeline reflects the cause.
      */
-    private void recordPromotion(
+    @RetryOnConflict
+    @Transactional
+    public void unpin(String slug, AuthContext ctx) {
+        var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
+        var env = resolved.env();
+        UUID workspaceId = resolved.workspaceId();
+
+        ImageSourceCacheEntity boundImageSource = loadBoundImageSource(slug);
+
+        applyResourcePin(slug, env.getSlug(), null);
+        // The ImageSource's current latestArtifact is what the Resource will catch up to. Record
+        // it on the audit row so timelines show what the unpin landed on; null is acceptable when
+        // the ImageSource hasn't produced an artifact yet.
+        String catchUpRef = currentLatestArtifactRef(boundImageSource);
+        recordDeploymentRow(slug, env.getId(), boundImageSource, catchUpRef, TriggerType.UNPIN);
+        log.info("Unpinned resource {} (catching up to {})", slug, catchUpRef);
+
+        auditLogService
+                .audit(ctx, AuditAction.RESOURCE_UPDATED)
+                .target(AuditTargetType.RESOURCE, slug)
+                .inWorkspace(workspaceId)
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .change("unpinned", "", catchUpRef != null ? catchUpRef : "")
+                .save();
+    }
+
+    /**
+     * Append a {@code deployment} audit row capturing the activation. Promote/rollback/unpin all
+     * reuse an existing artifact (no build runs) — but the operations still represent a state
+     * change worth tracking, and rollback's "previous deployment" lookup relies on a row existing
+     * for each prior pin. Lifecycle starts at {@code ACTIVATING}; {@link ReleaseLifecycleEmitter}
+     * on the operator advances it to {@code ACTIVE} once the rollout settles.
+     */
+    private void recordDeploymentRow(
             String slug, UUID envId, ImageSourceCacheEntity bound, String digest, TriggerType trigger) {
         var dep = new DeploymentEntity();
         dep.setId(UuidV7.generate());
@@ -196,13 +238,13 @@ public class PromotionService {
                 .orElseThrow(() -> new NotFoundException("Bound ImageSource not found for resource: " + slug));
     }
 
-    private static void rejectGitType(ImageSourceSpec spec, String op) {
+    private static void rejectGitTypeForPromote(ImageSourceSpec spec) {
         if (spec == null) {
             throw new ValidationException("ImageSource spec is missing");
         }
         if (spec.getType() == ImageSourceType.GIT) {
-            throw new ValidationException("Cannot " + op
-                    + " a git-type ImageSource — git ImageSources roll forward; revert the source commit instead");
+            throw new ValidationException(
+                    "Cannot promote a git-type ImageSource — git ImageSources roll forward; revert the source commit instead");
         }
     }
 
@@ -266,12 +308,44 @@ public class PromotionService {
     }
 
     /**
-     * Mutate {@code spec} to pin {@code digest}, then dispatch an {@code ApplyResourceBundle}
-     * that updates the ImageSource's spec on the target cluster. For {@code type: imageSource}
-     * this also flips {@code autoPromote=false} so the operator no longer follows the upstream
-     * automatically (otherwise the next upstream change would clobber the pin immediately).
+     * Recover the {@code runCommand} for a historical artifact. Deployment audit rows don't
+     * capture it (commit + image are enough for re-roll); we look up the bound ImageSource's
+     * current {@code latestArtifact} and reuse its run-command when the source commit matches.
+     * Otherwise null — the image's own default CMD applies, which matches the artifact at build
+     * time for git-derived images.
      */
-    private void applyPin(
+    private static List<String> recoverRunCommand(ImageSourceCacheEntity bound, String targetCommit) {
+        if (bound == null || bound.getStatus() == null) {
+            return null;
+        }
+        LatestArtifact artifact = bound.getStatus().getLatestArtifact();
+        if (artifact == null) {
+            return null;
+        }
+        if (targetCommit != null
+                && artifact.getSourceCommit() != null
+                && targetCommit.equals(artifact.getSourceCommit())) {
+            return artifact.getRunCommand();
+        }
+        return null;
+    }
+
+    private static String currentLatestArtifactRef(ImageSourceCacheEntity bound) {
+        if (bound == null || bound.getStatus() == null) {
+            return null;
+        }
+        LatestArtifact artifact = bound.getStatus().getLatestArtifact();
+        return artifact != null ? artifact.getImageRef() : null;
+    }
+
+    /**
+     * Mutate the bound ImageSource's spec to pin {@code digest} and dispatch an
+     * {@code ApplyResourceBundle} that updates only the ImageSource (no Resource change). Used
+     * by {@link #promote} for {@code type=imageSource} (sets {@code pinnedDigest +
+     * autoPromote=false}) and {@code type=image} (sets {@code spec.image.ref}). Git is rejected
+     * upstream.
+     */
+    private void applyImageSourcePin(
             ImageSourceCacheEntity boundImageSource, String envSlug, ImageSourceSpec spec, String digest) {
         ImageSourceSpec mutated = objectMapper.convertValue(spec, ImageSourceSpec.class);
         if (mutated.getType() == ImageSourceType.IMAGE_SOURCE) {
@@ -303,11 +377,24 @@ public class PromotionService {
     }
 
     /**
+     * Mutate {@code Resource.spec.pinnedRelease} (set or null) and dispatch an
+     * {@code ApplyResourceBundle} that updates only the Resource (no ImageSource change).
+     */
+    private void applyResourcePin(String slug, String envSlug, PinnedRelease pin) {
+        var existing = crdLookup.get(slug, envSlug);
+        if (existing == null) {
+            throw new NotFoundException("Resource CRD not found: " + slug);
+        }
+        existing.getSpec().setPinnedRelease(pin);
+        crdClient.update(existing, null);
+    }
+
+    /**
      * The {@link ResourceCrdClient#update} contract takes a Resource + optional ImageSource; for
      * pin operations we pass through the existing Resource unchanged so the dispatcher has the
      * env-slug label needed for cluster routing.
      */
-    private eu.appbahn.shared.crd.ResourceCrd buildResourcePassthrough(String slug, String envSlug) {
+    private ResourceCrd buildResourcePassthrough(String slug, String envSlug) {
         var existing = crdLookup.get(slug, envSlug);
         if (existing == null) {
             throw new NotFoundException("Resource CRD not found: " + slug);

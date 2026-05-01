@@ -673,6 +673,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebhookConfig"
+  /resources/{slug}/unpin:
+    post:
+      tags:
+      - Resources
+      operationId: unpinResource
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
   /resources/{slug}/stop:
     post:
       tags:
@@ -3673,6 +3694,8 @@ components:
           format: int64
         observedEnvHash:
           type: string
+        observedPinnedImageRef:
+          type: string
         rolloutStatus:
           type: string
           enum:
@@ -4006,6 +4029,7 @@ components:
           - rollback
           - manual-restart
           - env-change
+          - unpin
         lifecycle:
           type: string
           enum:

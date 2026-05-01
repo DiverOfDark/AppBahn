@@ -43,6 +43,15 @@ public class ResourceSpec {
      */
     private Long restartGeneration;
 
+    /**
+     * When non-null, the operator runs this snapshot instead of the bound ImageSource's
+     * {@code status.latestArtifact}. Set by {@code POST /resources/{slug}/rollback} for fast
+     * rollback to a previous deployment without rebuilding. Cleared by
+     * {@code POST /resources/{slug}/unpin}, after which the Resource resumes following the
+     * ImageSource's current latestArtifact.
+     */
+    private PinnedRelease pinnedRelease;
+
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class LinkConfig {

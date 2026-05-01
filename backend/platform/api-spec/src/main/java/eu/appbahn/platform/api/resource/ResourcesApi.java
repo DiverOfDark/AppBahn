@@ -451,8 +451,10 @@ public interface ResourcesApi {
             @PathVariable("slug") String slug,
             @Valid @RequestBody(required = false) @Nullable PromoteRequest promoteRequest);
     /**
-     * POST /resources/{slug}/rollback : RollbackResource — pin the bound ImageSource's
-     * {@code pinnedDigest} to a previous deployment's imageRef digest.
+     * POST /resources/{slug}/rollback : RollbackResource — pin {@code Resource.spec.pinnedRelease}
+     * to a previous deployment's snapshot. Works for any ImageSource type ({@code git},
+     * {@code image}, {@code imageSource}) — the pin lives on the Resource, not the ImageSource,
+     * so no rebuild runs.
      *
      * @param slug  (required)
      * @param rollbackRequest  (optional)
@@ -471,6 +473,22 @@ public interface ResourcesApi {
     ResponseEntity<Void> rollbackResource(
             @PathVariable("slug") String slug,
             @Valid @RequestBody(required = false) @Nullable RollbackRequest rollbackRequest);
+    /**
+     * POST /resources/{slug}/unpin : UnpinResource — clear {@code Resource.spec.pinnedRelease}.
+     * The Resource immediately resumes following the bound ImageSource's
+     * {@code latestArtifact} (which may be newer than the pin if builds ran while pinned).
+     *
+     * @param slug  (required)
+     * @return Resource unpin requested (status code 204)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/{slug}/unpin",
+            produces = {"application/json"})
+    ResponseEntity<Void> unpinResource(@PathVariable("slug") String slug);
     /**
      * POST /resources/{slug}/webhook/rotate : RotateWebhookSecret
      *

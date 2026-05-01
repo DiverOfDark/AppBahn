@@ -1,6 +1,7 @@
 package eu.appbahn.shared.tunnel;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import eu.appbahn.shared.crd.PinnedRelease;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
@@ -23,6 +24,7 @@ public record ResourceSyncPayload(
         List<ResourceSpec.LinkConfig> links,
         ResourcePhase status,
         ResourceStatusDetail statusDetail,
+        PinnedRelease pinnedRelease,
         Instant createdAt,
         Long generation,
         String resourceVersion) {}

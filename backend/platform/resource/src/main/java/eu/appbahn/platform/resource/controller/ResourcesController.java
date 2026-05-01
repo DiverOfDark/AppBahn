@@ -112,6 +112,12 @@ public class ResourcesController implements ResourcesApi {
     }
 
     @Override
+    public ResponseEntity<Void> unpinResource(String slug) {
+        promotionService.unpin(slug, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     public ResponseEntity<Deployment> getDeployment(String slug, UUID deploymentId) {
         return ResponseEntity.ok(deploymentService.get(slug, deploymentId, AuthContextHolder.get()));
     }
