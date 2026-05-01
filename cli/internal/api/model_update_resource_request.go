@@ -19,10 +19,12 @@ var _ MappedNullable = &UpdateResourceRequest{}
 
 // UpdateResourceRequest struct for UpdateResourceRequest
 type UpdateResourceRequest struct {
-	Name        *string          `json:"name,omitempty"`
-	Config      *ResourceConfig  `json:"config,omitempty"`
-	ImageSource *ImageSourceSpec `json:"imageSource,omitempty"`
-	Links       []LinkConfig     `json:"links,omitempty"`
+	Name                 *string          `json:"name,omitempty"`
+	Config               *ResourceConfig  `json:"config,omitempty"`
+	ImageSource          *ImageSourceSpec `json:"imageSource,omitempty"`
+	CommandOverride      *CommandOverride `json:"commandOverride,omitempty"`
+	ClearCommandOverride *bool            `json:"clearCommandOverride,omitempty"`
+	Links                []LinkConfig     `json:"links,omitempty"`
 }
 
 // NewUpdateResourceRequest instantiates a new UpdateResourceRequest object
@@ -138,6 +140,70 @@ func (o *UpdateResourceRequest) SetImageSource(v ImageSourceSpec) {
 	o.ImageSource = &v
 }
 
+// GetCommandOverride returns the CommandOverride field value if set, zero value otherwise.
+func (o *UpdateResourceRequest) GetCommandOverride() CommandOverride {
+	if o == nil || IsNil(o.CommandOverride) {
+		var ret CommandOverride
+		return ret
+	}
+	return *o.CommandOverride
+}
+
+// GetCommandOverrideOk returns a tuple with the CommandOverride field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateResourceRequest) GetCommandOverrideOk() (*CommandOverride, bool) {
+	if o == nil || IsNil(o.CommandOverride) {
+		return nil, false
+	}
+	return o.CommandOverride, true
+}
+
+// HasCommandOverride returns a boolean if a field has been set.
+func (o *UpdateResourceRequest) HasCommandOverride() bool {
+	if o != nil && !IsNil(o.CommandOverride) {
+		return true
+	}
+
+	return false
+}
+
+// SetCommandOverride gets a reference to the given CommandOverride and assigns it to the CommandOverride field.
+func (o *UpdateResourceRequest) SetCommandOverride(v CommandOverride) {
+	o.CommandOverride = &v
+}
+
+// GetClearCommandOverride returns the ClearCommandOverride field value if set, zero value otherwise.
+func (o *UpdateResourceRequest) GetClearCommandOverride() bool {
+	if o == nil || IsNil(o.ClearCommandOverride) {
+		var ret bool
+		return ret
+	}
+	return *o.ClearCommandOverride
+}
+
+// GetClearCommandOverrideOk returns a tuple with the ClearCommandOverride field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateResourceRequest) GetClearCommandOverrideOk() (*bool, bool) {
+	if o == nil || IsNil(o.ClearCommandOverride) {
+		return nil, false
+	}
+	return o.ClearCommandOverride, true
+}
+
+// HasClearCommandOverride returns a boolean if a field has been set.
+func (o *UpdateResourceRequest) HasClearCommandOverride() bool {
+	if o != nil && !IsNil(o.ClearCommandOverride) {
+		return true
+	}
+
+	return false
+}
+
+// SetClearCommandOverride gets a reference to the given bool and assigns it to the ClearCommandOverride field.
+func (o *UpdateResourceRequest) SetClearCommandOverride(v bool) {
+	o.ClearCommandOverride = &v
+}
+
 // GetLinks returns the Links field value if set, zero value otherwise.
 func (o *UpdateResourceRequest) GetLinks() []LinkConfig {
 	if o == nil || IsNil(o.Links) {
@@ -188,6 +254,12 @@ func (o UpdateResourceRequest) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ImageSource) {
 		toSerialize["imageSource"] = o.ImageSource
+	}
+	if !IsNil(o.CommandOverride) {
+		toSerialize["commandOverride"] = o.CommandOverride
+	}
+	if !IsNil(o.ClearCommandOverride) {
+		toSerialize["clearCommandOverride"] = o.ClearCommandOverride
 	}
 	if !IsNil(o.Links) {
 		toSerialize["links"] = o.Links

@@ -224,6 +224,16 @@ public class ResourceService {
                 ? objectMapper.convertValue(req.getImageSource(), ImageSourceSpec.class)
                 : null;
 
+        boolean clearOverride = Boolean.TRUE.equals(req.getClearCommandOverride());
+        eu.appbahn.shared.crd.CommandOverride incomingOverride = req.getCommandOverride();
+        if (clearOverride && incomingOverride != null) {
+            throw new ValidationException("commandOverride and clearCommandOverride=true are mutually exclusive");
+        }
+        if (incomingOverride != null && isEmptyOverride(incomingOverride)) {
+            throw new ValidationException(
+                    "commandOverride must set at least one of command/args; pass clearCommandOverride=true to clear");
+        }
+
         var existingCrd = crdLookup.get(slug, env.getSlug());
         if (existingCrd != null) {
             if (req.getName() != null) {
@@ -234,6 +244,11 @@ public class ResourceService {
             }
             if (mergedLinks != null) {
                 existingCrd.getSpec().setLinks(mergedLinks);
+            }
+            if (clearOverride) {
+                existingCrd.getSpec().setCommandOverride(null);
+            } else if (incomingOverride != null) {
+                existingCrd.getSpec().setCommandOverride(incomingOverride);
             }
             ImageSourceCrd imageSourceCrd =
                     imageSourceSpec != null ? buildImageSourceCrd(slug, env.getSlug(), imageSourceSpec) : null;
@@ -269,6 +284,11 @@ public class ResourceService {
         if (mergedLinks != null) {
             auditBuilder.change(
                     "links", toJsonString(oldLinks != null ? oldLinks : List.of()), toJsonString(mergedLinks));
+        }
+        if (incomingOverride != null) {
+            auditBuilder.change("commandOverride", "", toJsonString(incomingOverride));
+        } else if (clearOverride) {
+            auditBuilder.change("commandOverride", "set", "");
         }
         auditBuilder.save();
 
@@ -454,5 +474,12 @@ public class ResourceService {
         } catch (JsonProcessingException e) {
             return String.valueOf(value);
         }
+    }
+
+    private static boolean isEmptyOverride(eu.appbahn.shared.crd.CommandOverride override) {
+        boolean noCommand =
+                override.getCommand() == null || override.getCommand().isEmpty();
+        boolean noArgs = override.getArgs() == null || override.getArgs().isEmpty();
+        return noCommand && noArgs;
     }
 }

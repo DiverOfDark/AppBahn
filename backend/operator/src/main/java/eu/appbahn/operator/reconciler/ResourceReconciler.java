@@ -351,7 +351,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             ActiveRelease activeRelease = new ActiveRelease();
             activeRelease.setSourceCommit(artifact.getSourceCommit());
             activeRelease.setImageRef(artifact.getImageRef());
-            activeRelease.setRunCommand(artifact.getRunCommand());
             activeRelease.setActivatedAt(artifact.getBuiltAt());
             status.setActiveRelease(activeRelease);
         });

@@ -111,6 +111,7 @@ public class ResourceSyncService {
         entity.setStatus(request.status());
         entity.setStatusDetail(statusDetail);
         entity.setPinnedRelease(request.pinnedRelease());
+        entity.setCommandOverride(request.commandOverride());
         entity.setLastSyncedAt(now);
         if (existing == null) {
             entity.setCreatedAt(request.createdAt() != null ? request.createdAt() : now);

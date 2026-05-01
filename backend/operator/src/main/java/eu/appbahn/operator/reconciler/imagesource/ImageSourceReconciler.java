@@ -344,7 +344,6 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             ImageSourceCrd cr, ImageSourceSpec spec, ImageSourceStatus prev, ImageSourceStatus next) {
         var artifact = new LatestArtifact();
         artifact.setImageRef(spec.getImage().getRef());
-        artifact.setRunCommand(spec.getImage().getRunCommand());
         artifact.setBuiltAt(Instant.now());
         next.setLatestArtifact(artifact);
         applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PINNED, null);
@@ -452,15 +451,15 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         removeCondition(next, ImageSourceConditions.TYPE_UPSTREAM_NOT_READY);
         boolean autoPromote = Boolean.TRUE.equals(promo.getAutoPromote());
         if (autoPromote) {
-            // Mirror upstream's full artifact triple (digest, runCommand, sourceCommit).
+            // Mirror upstream's artifact (digest + sourceCommit).
             mirrorArtifact(next, upstreamArtifact);
             applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PROMOTED, null);
             return;
         }
         // Manual pin: mirror the pinned digest directly. When pinnedDigest matches the upstream's
-        // current artifact we copy the full triple (digest, runCommand, sourceCommit); otherwise
-        // we still pin to the digest alone — the operator trusts it's reachable in the registry
-        // (BYO registry assumption — same as the cross-cluster path).
+        // current artifact we copy the full pair (digest, sourceCommit); otherwise we still pin
+        // to the digest alone — the operator trusts it's reachable in the registry (BYO registry
+        // assumption — same as the cross-cluster path).
         String pinned = promo.getPinnedDigest();
         if (pinned == null || pinned.isBlank()) {
             upsertCondition(
@@ -517,7 +516,6 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     private static void mirrorArtifact(ImageSourceStatus next, LatestArtifact upstream) {
         var copy = new LatestArtifact();
         copy.setImageRef(upstream.getImageRef());
-        copy.setRunCommand(upstream.getRunCommand());
         copy.setSourceCommit(upstream.getSourceCommit());
         copy.setBuiltAt(Instant.now());
         next.setLatestArtifact(copy);

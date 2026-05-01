@@ -1,5 +1,6 @@
 package eu.appbahn.platform.resource.entity;
 
+import eu.appbahn.shared.crd.CommandOverride;
 import eu.appbahn.shared.crd.PinnedRelease;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourcePhase;
@@ -63,6 +64,14 @@ public class ResourceCacheEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "pinned_release", columnDefinition = "jsonb")
     private PinnedRelease pinnedRelease;
+
+    /**
+     * Optional override for the container's entrypoint/args. Null means run the image's default
+     * ENTRYPOINT/CMD; the common case.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "command_override", columnDefinition = "jsonb")
+    private CommandOverride commandOverride;
 
     @Column(name = "last_synced_at")
     private Instant lastSyncedAt;

@@ -192,6 +192,7 @@ Class | Method | HTTP request | Description
  - [BuildDetectionJobCreated](docs/BuildDetectionJobCreated.md)
  - [BuildpackBuildOptions](docs/BuildpackBuildOptions.md)
  - [Cluster](docs/Cluster.md)
+ - [CommandOverride](docs/CommandOverride.md)
  - [ConnectionEntry](docs/ConnectionEntry.md)
  - [ConnectionResponse](docs/ConnectionResponse.md)
  - [CreateClusterRequest](docs/CreateClusterRequest.md)

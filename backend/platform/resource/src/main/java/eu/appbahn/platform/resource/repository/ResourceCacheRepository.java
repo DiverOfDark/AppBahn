@@ -82,24 +82,26 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
     @Query(nativeQuery = true, value = """
                     INSERT INTO resource_cache (
                         slug, environment_id, name, type, config, links, status, status_detail,
-                        pinned_release, last_synced_at, created_at, updated_at, version
+                        pinned_release, command_override, last_synced_at, created_at, updated_at, version
                     ) VALUES (
                         :slug, :environmentId, :name, :type, CAST(:config AS jsonb), CAST(:links AS jsonb),
                         :status, CAST(:statusDetail AS jsonb), CAST(:pinnedRelease AS jsonb),
+                        CAST(:commandOverride AS jsonb),
                         :lastSyncedAt, :createdAt, :updatedAt, 0
                     )
                     ON CONFLICT (slug) DO UPDATE SET
-                        environment_id = EXCLUDED.environment_id,
-                        name           = EXCLUDED.name,
-                        type           = EXCLUDED.type,
-                        config         = EXCLUDED.config,
-                        links          = EXCLUDED.links,
-                        status         = EXCLUDED.status,
-                        status_detail  = EXCLUDED.status_detail,
-                        pinned_release = EXCLUDED.pinned_release,
-                        last_synced_at = EXCLUDED.last_synced_at,
-                        updated_at     = EXCLUDED.updated_at,
-                        version        = resource_cache.version + 1
+                        environment_id   = EXCLUDED.environment_id,
+                        name             = EXCLUDED.name,
+                        type             = EXCLUDED.type,
+                        config           = EXCLUDED.config,
+                        links            = EXCLUDED.links,
+                        status           = EXCLUDED.status,
+                        status_detail    = EXCLUDED.status_detail,
+                        pinned_release   = EXCLUDED.pinned_release,
+                        command_override = EXCLUDED.command_override,
+                        last_synced_at   = EXCLUDED.last_synced_at,
+                        updated_at       = EXCLUDED.updated_at,
+                        version          = resource_cache.version + 1
                     """)
     int upsertFromSync(
             @Param("slug") String slug,
@@ -111,6 +113,7 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
             @Param("status") String status,
             @Param("statusDetail") String statusDetailJson,
             @Param("pinnedRelease") String pinnedReleaseJson,
+            @Param("commandOverride") String commandOverrideJson,
             @Param("lastSyncedAt") Instant lastSyncedAt,
             @Param("createdAt") Instant createdAt,
             @Param("updatedAt") Instant updatedAt);
@@ -125,6 +128,9 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
             String pinnedReleaseJson = entity.getPinnedRelease() != null
                     ? objectMapper.writeValueAsString(entity.getPinnedRelease())
                     : null;
+            String commandOverrideJson = entity.getCommandOverride() != null
+                    ? objectMapper.writeValueAsString(entity.getCommandOverride())
+                    : null;
             ResourcePhase phase = entity.getStatus();
             return upsertFromSync(
                     entity.getSlug(),
@@ -136,6 +142,7 @@ public interface ResourceCacheRepository extends JpaRepository<ResourceCacheEnti
                     phase != null ? phase.name() : null,
                     statusDetailJson,
                     pinnedReleaseJson,
+                    commandOverrideJson,
                     entity.getLastSyncedAt(),
                     entity.getCreatedAt(),
                     entity.getUpdatedAt());

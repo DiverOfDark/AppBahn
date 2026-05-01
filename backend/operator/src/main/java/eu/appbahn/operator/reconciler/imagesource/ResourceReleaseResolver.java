@@ -96,7 +96,6 @@ public final class ResourceReleaseResolver {
         var artifact = new LatestArtifact();
         artifact.setSourceCommit(pin.getSourceCommit());
         artifact.setImageRef(pin.getImageRef());
-        artifact.setRunCommand(pin.getRunCommand());
         artifact.setBuiltAt(pin.getPinnedAt());
         return Optional.of(artifact);
     }

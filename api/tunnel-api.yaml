@@ -193,10 +193,6 @@ components:
           type: string
         imageRef:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
         activatedAt:
           type: string
           format: date-time
@@ -380,6 +376,17 @@ components:
       properties:
         builder:
           type: string
+    CommandOverride:
+      type: object
+      properties:
+        command:
+          type: array
+          items:
+            type: string
+        args:
+          type: array
+          items:
+            type: string
     CustomDomainStatus:
       type: object
       properties:
@@ -641,10 +648,6 @@ components:
       properties:
         ref:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
     LatestArtifact:
       type: object
       properties:
@@ -652,10 +655,6 @@ components:
           type: string
         imageRef:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
         builtAt:
           type: string
           format: date-time
@@ -815,10 +814,6 @@ components:
           type: string
         imageRef:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
         pinnedAt:
           type: string
           format: date-time
@@ -968,6 +963,8 @@ components:
           format: int64
         pinnedRelease:
           $ref: "#/components/schemas/PinnedRelease"
+        commandOverride:
+          $ref: "#/components/schemas/CommandOverride"
     ResourceStatusDetail:
       type: object
       properties:

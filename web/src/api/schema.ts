@@ -1379,7 +1379,6 @@ export interface components {
     }
     ImageSpec: {
       ref?: string
-      runCommand?: string[]
     }
     LinkConfig: {
       resource?: string
@@ -1598,16 +1597,21 @@ export interface components {
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
+    CommandOverride: {
+      command?: string[]
+      args?: string[]
+    }
     UpdateResourceRequest: {
       name?: string
       config?: components['schemas']['ResourceConfig']
       imageSource?: components['schemas']['ImageSourceSpec']
+      commandOverride?: components['schemas']['CommandOverride']
+      clearCommandOverride?: boolean
       links?: components['schemas']['LinkConfig'][]
     }
     ActiveRelease: {
       sourceCommit?: string
       imageRef?: string
-      runCommand?: string[]
       /** Format: date-time */
       activatedAt?: string
     }
