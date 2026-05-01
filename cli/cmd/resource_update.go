@@ -10,13 +10,16 @@ import (
 )
 
 var (
-	resourceUpdateName     string
-	resourceUpdatePort     int32
-	resourceUpdateCPU      string
-	resourceUpdateMemory   string
-	resourceUpdateReplicas int32
-	resourceUpdateExpose   string
-	resourceUpdateDomain   string
+	resourceUpdateName                 string
+	resourceUpdatePort                 int32
+	resourceUpdateCPU                  string
+	resourceUpdateMemory               string
+	resourceUpdateReplicas             int32
+	resourceUpdateExpose               string
+	resourceUpdateDomain               string
+	resourceUpdateCommand              []string
+	resourceUpdateArgs                 []string
+	resourceUpdateClearCommandOverride bool
 )
 
 var resourceUpdateCmd = &cobra.Command{
@@ -86,10 +89,30 @@ Example:
 			req.SetConfig(config)
 		}
 
+		commandFlagSet := cmd.Flags().Changed("command")
+		argsFlagSet := cmd.Flags().Changed("args")
+		clearOverrideFlagSet := cmd.Flags().Changed("clear-command-override")
+		if clearOverrideFlagSet && (commandFlagSet || argsFlagSet) {
+			return fmt.Errorf("--clear-command-override is mutually exclusive with --command/--args")
+		}
+		if commandFlagSet || argsFlagSet {
+			override := api.NewCommandOverride()
+			if commandFlagSet {
+				override.SetCommand(resourceUpdateCommand)
+			}
+			if argsFlagSet {
+				override.SetArgs(resourceUpdateArgs)
+			}
+			req.SetCommandOverride(*override)
+		}
+		if clearOverrideFlagSet && resourceUpdateClearCommandOverride {
+			req.SetClearCommandOverride(true)
+		}
+
 		// Verify at least one field is being updated
 		reqJSON, _ := json.Marshal(req)
 		if string(reqJSON) == "{}" {
-			return fmt.Errorf("no update flags specified; use --name, --port, --cpu, --memory, --replicas, --expose, or --domain")
+			return fmt.Errorf("no update flags specified; use --name, --port, --cpu, --memory, --replicas, --expose, --domain, --command, --args, or --clear-command-override")
 		}
 
 		client, ctx, err := api.NewClient()
@@ -135,5 +158,11 @@ func init() {
 		"Expose mode: ingress, tcp, or none")
 	resourceUpdateCmd.Flags().StringVar(&resourceUpdateDomain, "domain", "",
 		"Custom domain (requires expose=ingress)")
+	resourceUpdateCmd.Flags().StringSliceVar(&resourceUpdateCommand, "command", nil,
+		"Override the container's ENTRYPOINT (comma-separated, e.g. /bin/sh,-c)")
+	resourceUpdateCmd.Flags().StringSliceVar(&resourceUpdateArgs, "args", nil,
+		"Override the container's CMD args (comma-separated)")
+	resourceUpdateCmd.Flags().BoolVar(&resourceUpdateClearCommandOverride, "clear-command-override", false,
+		"Clear any existing command/args override and run the image's default ENTRYPOINT/CMD")
 	resourceCmd.AddCommand(resourceUpdateCmd)
 }

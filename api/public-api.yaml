@@ -3118,10 +3118,6 @@ components:
       properties:
         ref:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
     LinkConfig:
       type: object
       properties:
@@ -3527,6 +3523,17 @@ components:
           - ADMIN
           - EDITOR
           - VIEWER
+    CommandOverride:
+      type: object
+      properties:
+        command:
+          type: array
+          items:
+            type: string
+        args:
+          type: array
+          items:
+            type: string
     UpdateResourceRequest:
       type: object
       properties:
@@ -3536,6 +3543,10 @@ components:
           $ref: "#/components/schemas/ResourceConfig"
         imageSource:
           $ref: "#/components/schemas/ImageSourceSpec"
+        commandOverride:
+          $ref: "#/components/schemas/CommandOverride"
+        clearCommandOverride:
+          type: boolean
         links:
           type: array
           items:
@@ -3547,10 +3558,6 @@ components:
           type: string
         imageRef:
           type: string
-        runCommand:
-          type: array
-          items:
-            type: string
         activatedAt:
           type: string
           format: date-time

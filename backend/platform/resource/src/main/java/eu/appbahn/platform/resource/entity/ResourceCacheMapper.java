@@ -55,6 +55,7 @@ public final class ResourceCacheMapper {
             spec.setStopped(true);
         }
         spec.setPinnedRelease(row.getPinnedRelease());
+        spec.setCommandOverride(row.getCommandOverride());
         crd.setSpec(spec);
         crd.setStatus(row.getStatusDetail() != null ? row.getStatusDetail() : new ResourceStatusDetail());
         return crd;

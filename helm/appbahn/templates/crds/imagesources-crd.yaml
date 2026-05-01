@@ -64,10 +64,6 @@ spec:
                 properties:
                   ref:
                     type: string
-                  runCommand:
-                    items:
-                      type: string
-                    type: array
                 type: object
               imageSource:
                 properties:
@@ -133,10 +129,6 @@ spec:
                     type: string
                   imageRef:
                     type: string
-                  runCommand:
-                    items:
-                      type: string
-                    type: array
                   sourceCommit:
                     type: string
                 type: object

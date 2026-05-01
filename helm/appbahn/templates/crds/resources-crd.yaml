@@ -30,6 +30,17 @@ spec:
         properties:
           spec:
             properties:
+              commandOverride:
+                properties:
+                  args:
+                    items:
+                      type: string
+                    type: array
+                  command:
+                    items:
+                      type: string
+                    type: array
+                type: object
               config:
                 properties:
                   env:
@@ -193,10 +204,6 @@ spec:
                     type: string
                   pinnedFromDeploymentId:
                     type: string
-                  runCommand:
-                    items:
-                      type: string
-                    type: array
                   sourceCommit:
                     type: string
                 type: object
@@ -225,10 +232,6 @@ spec:
                     type: string
                   imageRef:
                     type: string
-                  runCommand:
-                    items:
-                      type: string
-                    type: array
                   sourceCommit:
                     type: string
                 type: object

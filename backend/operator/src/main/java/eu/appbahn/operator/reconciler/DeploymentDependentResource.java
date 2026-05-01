@@ -2,6 +2,7 @@ package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.reconciler.imagesource.ResourceReleaseResolver;
 import eu.appbahn.shared.Labels;
+import eu.appbahn.shared.crd.CommandOverride;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
@@ -68,6 +69,18 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
 
         Map<String, String> podAnnotations = buildPodAnnotations(primary, containerImage);
 
+        CommandOverride override = primary.getSpec().getCommandOverride();
+        List<String> commandOverride = override != null
+                        && override.getCommand() != null
+                        && !override.getCommand().isEmpty()
+                ? override.getCommand()
+                : null;
+        List<String> argsOverride = override != null
+                        && override.getArgs() != null
+                        && !override.getArgs().isEmpty()
+                ? override.getArgs()
+                : null;
+
         var deploymentBuilder = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(name)
@@ -90,6 +103,8 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .withName(Labels.CONTAINER_NAME)
                 .withImage(containerImage)
                 .withImagePullPolicy("IfNotPresent")
+                .withCommand(commandOverride)
+                .withArgs(argsOverride)
                 .withPorts(allPorts.stream()
                         .filter(p -> p.getPort() != null)
                         .map(p -> new ContainerPortBuilder()

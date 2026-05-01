@@ -1,5 +1,6 @@
 package eu.appbahn.platform.api.resource;
 
+import eu.appbahn.shared.crd.CommandOverride;
 import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
@@ -21,6 +22,22 @@ public class UpdateResourceRequest {
     @Valid
     @Nullable
     private ImageSourceSpec imageSource;
+
+    /**
+     * Tri-state override for the container's entrypoint/args. Field absent → no change. Field
+     * present and {@link CommandOverride#getCommand()} / {@code getArgs()} both empty → clear the
+     * override on the Resource (run image's default ENTRYPOINT/CMD). Otherwise set the override.
+     */
+    @Valid
+    @Nullable
+    private CommandOverride commandOverride;
+
+    /**
+     * When true, clear {@code commandOverride} on the Resource regardless of the
+     * {@code commandOverride} field. Convenience for CLI/Web toggles.
+     */
+    @Nullable
+    private Boolean clearCommandOverride;
 
     @Valid
     private List<eu.appbahn.shared.crd.ResourceSpec.LinkConfig> links = new ArrayList<>();

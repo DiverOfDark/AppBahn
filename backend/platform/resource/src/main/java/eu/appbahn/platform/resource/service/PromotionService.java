@@ -27,7 +27,6 @@ import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.UuidV7;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -159,12 +158,9 @@ public class PromotionService {
                 .orElseThrow(() -> new NotFoundException(
                         "No historical deployment for resource " + slug + " with digest " + explicitDigest));
 
-        List<String> recoveredRunCommand = recoverRunCommand(boundImageSource, target.getSourceRef());
-
         var pin = new PinnedRelease();
         pin.setSourceCommit(target.getSourceRef());
         pin.setImageRef(explicitDigest);
-        pin.setRunCommand(recoveredRunCommand);
         pin.setPinnedAt(Instant.now());
         pin.setPinnedFromDeploymentId(target.getId());
 
@@ -209,15 +205,9 @@ public class PromotionService {
         }
         String targetImageRef = target.getImageRef();
 
-        // Run command isn't stored on the deployment row. Recover it from the ImageSource's
-        // latestArtifact when the matching commit lines up; otherwise leave null and let the
-        // image's default CMD apply (matches Vercel/Railway behaviour).
-        List<String> recoveredRunCommand = recoverRunCommand(boundImageSource, target.getSourceRef());
-
         var pin = new PinnedRelease();
         pin.setSourceCommit(target.getSourceRef());
         pin.setImageRef(targetImageRef);
-        pin.setRunCommand(recoveredRunCommand);
         pin.setPinnedAt(Instant.now());
         pin.setPinnedFromDeploymentId(target.getId());
 
@@ -358,29 +348,6 @@ public class PromotionService {
             }
         }
         throw new ValidationException("No previous successful deployment found for resource: " + slug);
-    }
-
-    /**
-     * Recover the {@code runCommand} for a historical artifact. Deployment audit rows don't
-     * capture it (commit + image are enough for re-roll); we look up the bound ImageSource's
-     * current {@code latestArtifact} and reuse its run-command when the source commit matches.
-     * Otherwise null — the image's own default CMD applies, which matches the artifact at build
-     * time for git-derived images.
-     */
-    private static List<String> recoverRunCommand(ImageSourceCacheEntity bound, String targetCommit) {
-        if (bound == null || bound.getStatus() == null) {
-            return null;
-        }
-        LatestArtifact artifact = bound.getStatus().getLatestArtifact();
-        if (artifact == null) {
-            return null;
-        }
-        if (targetCommit != null
-                && artifact.getSourceCommit() != null
-                && targetCommit.equals(artifact.getSourceCommit())) {
-            return artifact.getRunCommand();
-        }
-        return null;
     }
 
     private static String currentLatestArtifactRef(ImageSourceCacheEntity bound) {

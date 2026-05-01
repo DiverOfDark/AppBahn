@@ -50,6 +50,12 @@ Deleting an environment **cascades** — the corresponding Kubernetes namespace 
 
 A **Resource** is a deployable unit — a container, database, or other service — that runs inside an environment. Resources are defined as Kubernetes Custom Resources (CRDs) and managed by the AppBahn Operator. Full CRUD on resources requires the **Editor** role or higher.
 
+### Run command
+
+The image's own `ENTRYPOINT`/`CMD` is what the resource runs by default. Built images (Dockerfile, Buildpack, Nixpacks, Railpack, Peelbox) bake the start command into the image — AppBahn does not store a separate run command on the resource side.
+
+To run a different command, set a Resource-level **command override**: `appbahn resource update <slug> --command /bin/sh,-c --args "alternate process"`. The override maps directly to the K8s container's `command` and `args`. Either may be set independently. Clear the override with `appbahn resource update <slug> --clear-command-override`; the container goes back to running the image's defaults on the next reconcile.
+
 ### Rollback
 
 Every resource keeps a deployment history. To roll back to a previous deployment without rebuilding, use `appbahn resource rollback <slug>` (or `--to <deployment-id>` for a specific row). The resource is pinned to the older artifact and re-rolls immediately. To clear the pin and resume tracking new builds, run `appbahn resource unpin <slug>`. Rollback works for every resource type, including those built from a git repo — there's no need to revert your source commit.

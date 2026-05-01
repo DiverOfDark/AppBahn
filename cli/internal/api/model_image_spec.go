@@ -19,8 +19,7 @@ var _ MappedNullable = &ImageSpec{}
 
 // ImageSpec struct for ImageSpec
 type ImageSpec struct {
-	Ref        *string  `json:"ref,omitempty"`
-	RunCommand []string `json:"runCommand,omitempty"`
+	Ref *string `json:"ref,omitempty"`
 }
 
 // NewImageSpec instantiates a new ImageSpec object
@@ -72,38 +71,6 @@ func (o *ImageSpec) SetRef(v string) {
 	o.Ref = &v
 }
 
-// GetRunCommand returns the RunCommand field value if set, zero value otherwise.
-func (o *ImageSpec) GetRunCommand() []string {
-	if o == nil || IsNil(o.RunCommand) {
-		var ret []string
-		return ret
-	}
-	return o.RunCommand
-}
-
-// GetRunCommandOk returns a tuple with the RunCommand field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ImageSpec) GetRunCommandOk() ([]string, bool) {
-	if o == nil || IsNil(o.RunCommand) {
-		return nil, false
-	}
-	return o.RunCommand, true
-}
-
-// HasRunCommand returns a boolean if a field has been set.
-func (o *ImageSpec) HasRunCommand() bool {
-	if o != nil && !IsNil(o.RunCommand) {
-		return true
-	}
-
-	return false
-}
-
-// SetRunCommand gets a reference to the given []string and assigns it to the RunCommand field.
-func (o *ImageSpec) SetRunCommand(v []string) {
-	o.RunCommand = v
-}
-
 func (o ImageSpec) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -116,9 +83,6 @@ func (o ImageSpec) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Ref) {
 		toSerialize["ref"] = o.Ref
-	}
-	if !IsNil(o.RunCommand) {
-		toSerialize["runCommand"] = o.RunCommand
 	}
 	return toSerialize, nil
 }

@@ -22,7 +22,6 @@ var _ MappedNullable = &ActiveRelease{}
 type ActiveRelease struct {
 	SourceCommit *string    `json:"sourceCommit,omitempty"`
 	ImageRef     *string    `json:"imageRef,omitempty"`
-	RunCommand   []string   `json:"runCommand,omitempty"`
 	ActivatedAt  *time.Time `json:"activatedAt,omitempty"`
 }
 
@@ -107,38 +106,6 @@ func (o *ActiveRelease) SetImageRef(v string) {
 	o.ImageRef = &v
 }
 
-// GetRunCommand returns the RunCommand field value if set, zero value otherwise.
-func (o *ActiveRelease) GetRunCommand() []string {
-	if o == nil || IsNil(o.RunCommand) {
-		var ret []string
-		return ret
-	}
-	return o.RunCommand
-}
-
-// GetRunCommandOk returns a tuple with the RunCommand field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ActiveRelease) GetRunCommandOk() ([]string, bool) {
-	if o == nil || IsNil(o.RunCommand) {
-		return nil, false
-	}
-	return o.RunCommand, true
-}
-
-// HasRunCommand returns a boolean if a field has been set.
-func (o *ActiveRelease) HasRunCommand() bool {
-	if o != nil && !IsNil(o.RunCommand) {
-		return true
-	}
-
-	return false
-}
-
-// SetRunCommand gets a reference to the given []string and assigns it to the RunCommand field.
-func (o *ActiveRelease) SetRunCommand(v []string) {
-	o.RunCommand = v
-}
-
 // GetActivatedAt returns the ActivatedAt field value if set, zero value otherwise.
 func (o *ActiveRelease) GetActivatedAt() time.Time {
 	if o == nil || IsNil(o.ActivatedAt) {
@@ -186,9 +153,6 @@ func (o ActiveRelease) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ImageRef) {
 		toSerialize["imageRef"] = o.ImageRef
-	}
-	if !IsNil(o.RunCommand) {
-		toSerialize["runCommand"] = o.RunCommand
 	}
 	if !IsNil(o.ActivatedAt) {
 		toSerialize["activatedAt"] = o.ActivatedAt

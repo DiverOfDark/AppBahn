@@ -2,7 +2,6 @@ package eu.appbahn.shared.crd;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import lombok.Data;
 
@@ -18,6 +17,10 @@ import lombok.Data;
  *
  * <p>The ImageSource is unaffected — it keeps building, mints deployment audit rows, but those
  * builds don't roll the Resource until the pin is cleared.
+ *
+ * <p>The image's own ENTRYPOINT/CMD is authoritative for the run command. To override at the
+ * Resource level, set {@code spec.commandOverride}; that override applies regardless of whether
+ * {@code pinnedRelease} is set.
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,9 +30,6 @@ public class PinnedRelease {
 
     /** Image ref to run (digest-pinned ideally). Required. */
     private String imageRef;
-
-    /** Run command override at the time the artifact was built. Null falls back to image default. */
-    private List<String> runCommand;
 
     /** Wall-clock time the pin was applied. */
     private Instant pinnedAt;

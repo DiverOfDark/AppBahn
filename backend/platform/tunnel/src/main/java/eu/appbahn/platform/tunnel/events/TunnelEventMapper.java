@@ -34,6 +34,7 @@ public class TunnelEventMapper {
                     null,
                     null,
                     null,
+                    null,
                     item.getGeneration() > 0 ? item.getGeneration() : null,
                     emptyToNull(item.getResourceVersion()));
         }
@@ -61,6 +62,7 @@ public class TunnelEventMapper {
                 phase,
                 status,
                 spec != null ? spec.getPinnedRelease() : null,
+                spec != null ? spec.getCommandOverride() : null,
                 createdAt,
                 item.getGeneration() > 0 ? item.getGeneration() : null,
                 emptyToNull(item.getResourceVersion()));

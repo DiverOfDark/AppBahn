@@ -52,6 +52,13 @@ public class ResourceSpec {
      */
     private PinnedRelease pinnedRelease;
 
+    /**
+     * Optional override for the container's entrypoint/args. Null means run whatever the image's
+     * ENTRYPOINT/CMD says (the common case). When set, must carry at least one non-empty
+     * {@code command} or {@code args}.
+     */
+    private CommandOverride commandOverride;
+
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class LinkConfig {
