@@ -11,12 +11,16 @@ var resourcePromoteDigest string
 var resourcePromoteCmd = &cobra.Command{
 	Use:   "promote <slug>",
 	Short: "Promote the resource's bound ImageSource to a digest",
-	Long: `Pins the bound ImageSource's pinnedDigest to either the supplied digest or
-(when --digest is omitted) the upstream's current latestArtifact. The operator
-applies the pin and rolls the resource onto the new digest.
+	Long: `Pins the resource's active artifact.
 
-Promotion only applies to type=imageSource and type=image ImageSources. For
-type=git, revert your source commit instead.
+For type=imageSource and type=image ImageSources, sets the IS-level pin
+(spec.imageSource.pinnedDigest or spec.image.ref). When --digest is omitted,
+type=imageSource auto-promotes to the upstream's current latestArtifact.
+
+For type=git ImageSources, --digest is required and must match a historical
+deployment's image_ref for this resource — promote pins Resource.spec.pinnedRelease
+to that snapshot (the same Resource-level pin rollback uses), so the resource
+re-rolls without rebuilding.
 
 Examples:
   appbahn resource promote my-app-abc1234

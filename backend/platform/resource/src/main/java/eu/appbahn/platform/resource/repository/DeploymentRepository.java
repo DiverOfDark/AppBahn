@@ -20,6 +20,9 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UU
 
     Optional<DeploymentEntity> findTopByResourceSlugOrderByCreatedAtDesc(String resourceSlug);
 
+    Optional<DeploymentEntity> findFirstByResourceSlugAndImageRefOrderByCreatedAtDesc(
+            String resourceSlug, String imageRef);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE DeploymentEntity d SET d.primary = (d.id = :newPrimaryId) "
             + "WHERE d.resourceSlug = :slug AND (d.primary = true OR d.id = :newPrimaryId)")
