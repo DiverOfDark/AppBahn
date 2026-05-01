@@ -3,9 +3,14 @@ package eu.appbahn.platform.api.resource;
 import eu.appbahn.platform.api.Deployment;
 import eu.appbahn.platform.api.DeploymentApproval;
 import eu.appbahn.platform.api.DomainEntry;
+import eu.appbahn.platform.api.ErrorResponse;
 import eu.appbahn.platform.api.Resource;
 import eu.appbahn.platform.api.ResourceExposure;
 import eu.appbahn.platform.api.WebhookConfig;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -118,7 +123,19 @@ public interface ResourcesApi {
      *         or Unauthorized (status code 401)
      *         or Forbidden (status code 403)
      *         or Not found (status code 404)
+     *         or Conflict — downstream ImageSource references the bound ImageSource of this
+     *         Resource, or other Resources link to it. Body is an {@link ErrorResponse} whose
+     *         {@code error} is {@code resource_has_downstream_image_sources} or
+     *         {@code resource_has_dependents}, and {@code details} is the list of blocking
+     *         Resource slugs. (status code 409)
      */
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Resource deleted"),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Cannot delete: dependent Resources or downstream ImageSources reference this Resource",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @RequestMapping(
             method = RequestMethod.DELETE,
             value = "/resources/{slug}",

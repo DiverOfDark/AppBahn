@@ -23,6 +23,39 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UU
     Optional<DeploymentEntity> findFirstByResourceSlugAndImageRefOrderByCreatedAtDesc(
             String resourceSlug, String imageRef);
 
+    /**
+     * Defense-in-depth lookup keyed by the (image source, commit) triple instead of the
+     * platform-side row id. The operator carries a {@code deploymentId} on every
+     * {@link eu.appbahn.platform.api.tunnel.BuildLifecycleEvent} as the canonical correlator —
+     * but during a reconcile race two events can land with different ids for the same build.
+     * When that happens the {@link eu.appbahn.platform.resource.service.BuildLifecycleHandler}
+     * falls back to this query so the late-arriving event lands on the existing audit row
+     * instead of creating a duplicate.
+     *
+     * <p>{@code lifecycle IS NULL} matches the very first event of a build (lifecycle hasn't been
+     * stamped yet on the row); the in-flight set
+     * ({@code QUEUED}, {@code BUILDING}, {@code BUILT}, {@code ACTIVATING}) covers the build half;
+     * terminal rows ({@code FAILED}, {@code SUPERSEDED}, {@code CANCELED}, {@code ACTIVE}) are
+     * intentionally excluded — a fresh event for a (source, commit) whose previous build
+     * terminated should mint a new audit row, not resurrect an old one.
+     */
+    @Query("""
+            SELECT d FROM DeploymentEntity d
+            WHERE d.imageSourceNamespace = :namespace
+              AND d.imageSourceName = :name
+              AND d.sourceRef = :sourceCommit
+              AND (d.lifecycle IS NULL OR d.lifecycle IN (
+                  eu.appbahn.shared.crd.imagesource.BuildLifecycle.QUEUED,
+                  eu.appbahn.shared.crd.imagesource.BuildLifecycle.BUILDING,
+                  eu.appbahn.shared.crd.imagesource.BuildLifecycle.BUILT,
+                  eu.appbahn.shared.crd.imagesource.BuildLifecycle.ACTIVATING))
+            ORDER BY d.createdAt ASC
+            """)
+    java.util.List<DeploymentEntity> findInFlightByImageSourceAndCommit(
+            @Param("namespace") String namespace,
+            @Param("name") String name,
+            @Param("sourceCommit") String sourceCommit);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE DeploymentEntity d SET d.primary = (d.id = :newPrimaryId) "
             + "WHERE d.resourceSlug = :slug AND (d.primary = true OR d.id = :newPrimaryId)")

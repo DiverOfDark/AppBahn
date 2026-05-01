@@ -30,6 +30,22 @@ public final class Labels {
     /** Build mode constant — DRY's the {@code BuildMode} enum value into a label string. */
     public static final String BUILD_MODE_KEY = "appbahn.eu/build-mode";
 
+    /**
+     * Finalizer that blocks ImageSource deletion while downstream Resources still reference it.
+     * The operator's {@link io.javaoperatorsdk.operator.api.reconciler.Cleaner} adds it on every
+     * reconcile and only removes it (via {@code DeleteControl.defaultDelete()}) once the
+     * same-cluster downstream check and the cross-cluster annotation check both come up empty.
+     */
+    public static final String FINALIZER_UPSTREAM_PROTECTION = "appbahn.eu/upstream-protection";
+
+    /**
+     * JSON-array annotation on an upstream ImageSource listing the cross-cluster downstreams that
+     * point at it. Each entry is {@code {"cluster":"...","namespace":"...","name":"..."}}. The
+     * platform's promotion broker maintains it via {@code ApplyResourceBundle}; the operator's
+     * cleanup logic reads it to block deletion when downstreams from another cluster exist.
+     */
+    public static final String ANNOTATION_DOWNSTREAM_REFERENCES = "appbahn.eu/downstream-references";
+
     public static final String RESOURCE_TYPE_DEPLOYMENT = "deployment";
 
     public static final int DEFAULT_REPLICAS = 1;

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +11,39 @@ import (
 	"github.com/diverofdark/appbahn/cli/internal/output"
 	"github.com/spf13/cobra"
 )
+
+// formatDeleteError extracts the structured 409 ConflictException body and prints a
+// human-readable message listing the dependent Resources. Falls back to FormatAPIError for
+// any other error.
+func formatDeleteError(err error) error {
+	openAPIErr, ok := err.(*api.GenericOpenAPIError)
+	if !ok {
+		return api.FormatAPIError(err)
+	}
+	var body struct {
+		Status  int      `json:"status"`
+		Error   string   `json:"error"`
+		Message string   `json:"message"`
+		Details []string `json:"details"`
+	}
+	if jsonErr := json.Unmarshal(openAPIErr.Body(), &body); jsonErr != nil {
+		return api.FormatAPIError(err)
+	}
+	if body.Status != 409 || (body.Error != "resource_has_dependents" && body.Error != "resource_has_downstream_image_sources") {
+		return api.FormatAPIError(err)
+	}
+	var sb strings.Builder
+	if body.Error == "resource_has_downstream_image_sources" {
+		fmt.Fprintf(&sb, "Cannot delete; %d downstream Resource(s) depend on this:\n", len(body.Details))
+	} else {
+		fmt.Fprintf(&sb, "Cannot delete; %d dependent Resource(s) link to this:\n", len(body.Details))
+	}
+	for _, d := range body.Details {
+		fmt.Fprintf(&sb, "  - %s\n", d)
+	}
+	sb.WriteString("Delete those first.")
+	return fmt.Errorf("%s", sb.String())
+}
 
 var resourceDeleteYes bool
 
@@ -46,7 +80,7 @@ Example:
 
 		_, err = client.ResourcesAPI.DeleteResource(ctx, slug).Execute()
 		if err != nil {
-			return api.FormatAPIError(err)
+			return formatDeleteError(err)
 		}
 
 		format, err := output.ParseFormat(OutputFormat())
