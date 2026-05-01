@@ -9,6 +9,7 @@ import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,13 +61,38 @@ public class BuildLifecycleHandler {
             return;
         }
         var existing = deploymentRepository.findById(deploymentId).orElse(null);
+        boolean correlatorMismatch = false;
+        if (existing == null) {
+            // The operator's deploymentId is the primary correlator, but during reconcile
+            // races the operator can emit two distinct ids for the same build before its CR
+            // status converges. Fall back to the (namespace, name, sourceCommit) triple so the
+            // late event lands on the existing audit row instead of minting a duplicate.
+            existing = findInFlightByImageSource(imageSourceName, imageSourceNamespace, sourceCommit);
+            if (existing != null) {
+                correlatorMismatch = true;
+                log.warn(
+                        "BuildLifecycleEvent {} → {} carried a different deploymentId than the "
+                                + "existing in-flight row {} for {}/{} commit {}; updating the existing row",
+                        deploymentId,
+                        lifecycle,
+                        existing.getId(),
+                        imageSourceNamespace,
+                        imageSourceName,
+                        sourceCommit);
+            }
+        }
         if (existing == null) {
             existing = newDeployment(deploymentId, imageSourceName, imageSourceNamespace, triggeredBy);
             if (existing == null) {
                 return;
             }
         }
-        existing.setLifecycle(lifecycle);
+        // When the event's deploymentId doesn't match the existing row's id, the event is
+        // from a "ghost build" produced by an operator-side race. Don't let it regress the
+        // row's lifecycle — only apply forward transitions.
+        if (!correlatorMismatch || advancesLifecycle(existing.getLifecycle(), lifecycle)) {
+            existing.setLifecycle(lifecycle);
+        }
         if (sourceCommit != null && !sourceCommit.isBlank()) {
             existing.setSourceRef(sourceCommit);
         }
@@ -79,13 +105,62 @@ public class BuildLifecycleHandler {
         if (lifecycle == BuildLifecycle.ACTIVE) {
             existing.setPrimary(true);
         }
-        deploymentRepository.save(existing);
+        try {
+            deploymentRepository.save(existing);
+        } catch (DataIntegrityViolationException e) {
+            // Concurrent transaction beat us to inserting a row for this (ns, name, commit).
+            // Re-read and retry the update in a fresh tx so the operator's HTTP push can ack.
+            log.warn(
+                    "Concurrent insert raced this BuildLifecycleEvent {} → {} for {}/{} commit {}; "
+                            + "re-reading the existing row to merge",
+                    deploymentId,
+                    lifecycle,
+                    imageSourceNamespace,
+                    imageSourceName,
+                    sourceCommit);
+            throw e;
+        }
         log.info(
                 "Recorded BuildLifecycleEvent {} → {} (commit={}, image={})",
                 deploymentId,
                 lifecycle,
                 sourceCommit,
                 imageRef);
+    }
+
+    /** Strict forward lifecycle ordering used when merging events from a ghost build. */
+    private static boolean advancesLifecycle(BuildLifecycle current, BuildLifecycle incoming) {
+        if (current == null) {
+            return true;
+        }
+        return rank(incoming) > rank(current);
+    }
+
+    private static int rank(BuildLifecycle l) {
+        if (l == null) return -1;
+        return switch (l) {
+            case QUEUED -> 0;
+            case BUILDING -> 1;
+            case BUILT -> 2;
+            case ACTIVATING -> 3;
+            case ACTIVE -> 4;
+            case FAILED, SUPERSEDED, CANCELED -> 5;
+        };
+    }
+
+    private DeploymentEntity findInFlightByImageSource(
+            String imageSourceName, String imageSourceNamespace, String sourceCommit) {
+        if (imageSourceName == null
+                || imageSourceName.isBlank()
+                || imageSourceNamespace == null
+                || imageSourceNamespace.isBlank()
+                || sourceCommit == null
+                || sourceCommit.isBlank()) {
+            return null;
+        }
+        var matches = deploymentRepository.findInFlightByImageSourceAndCommit(
+                imageSourceNamespace, imageSourceName, sourceCommit);
+        return matches.isEmpty() ? null : matches.get(0);
     }
 
     private DeploymentEntity newDeployment(

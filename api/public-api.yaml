@@ -1606,8 +1606,15 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "204":
+          description: Resource deleted
+        "409":
+          description: "Cannot delete: dependent Resources or downstream ImageSources\
+            \ reference this Resource"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     patch:
       tags:
       - Resources

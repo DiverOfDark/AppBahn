@@ -154,13 +154,38 @@ public class PushEventsHandler {
             } catch (Exception e) {
                 log.warn("Promotion broker failed for upstream {}: {}", payload.slug(), e.getMessage());
             }
+            // For downstream rows (type: imageSource), refresh the upstream's
+            // appbahn.eu/downstream-references annotation so the upstream operator can block
+            // hard-deletion when downstreams still exist.
+            try {
+                promotionBroker.publishDownstreamReferences(payload.slug());
+            } catch (Exception e) {
+                log.warn(
+                        "Failed to publish downstream-references annotation for {}: {}",
+                        payload.slug(),
+                        e.getMessage());
+            }
         }
     }
 
     private void handleImageSourceDeletedBatch(String clusterName, ImageSourceDeletedBatch batch) {
         if (batch.getImageSourceSlugs() == null) return;
-        batch.getImageSourceSlugs()
-                .forEach(slug -> imageSourceSyncService.deleteImageSourceFromCluster(slug, clusterName));
+        for (var slug : batch.getImageSourceSlugs()) {
+            // Capture the upstream coords (if this was a downstream) before the row is removed
+            // so we can refresh that upstream's annotation afterwards.
+            var coords = promotionBroker.captureUpstreamForDownstream(slug);
+            imageSourceSyncService.deleteImageSourceFromCluster(slug, clusterName);
+            if (coords != null) {
+                try {
+                    promotionBroker.refreshUpstreamReferencesAfterDownstreamRemoval(coords);
+                } catch (Exception e) {
+                    log.warn(
+                            "Failed to refresh upstream references after deleting downstream {}: {}",
+                            slug,
+                            e.getMessage());
+                }
+            }
+        }
     }
 
     private void handleSyncBatch(String clusterName, ResourceSyncBatch batch) {

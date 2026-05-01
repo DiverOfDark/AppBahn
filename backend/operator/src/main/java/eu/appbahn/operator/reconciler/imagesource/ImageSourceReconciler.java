@@ -1,17 +1,22 @@
 package eu.appbahn.operator.reconciler.imagesource;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobDependentResource;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobReconcileCondition;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildOrchestrator;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.operator.tunnel.OperatorTunnelConfig;
+import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
+import eu.appbahn.shared.crd.imagesource.DownstreamReference;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCondition;
 import eu.appbahn.shared.crd.imagesource.ImageSourceConditions;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourcePromotionSpec;
 import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
+import eu.appbahn.shared.crd.imagesource.ImageSourceType;
 import eu.appbahn.shared.crd.imagesource.ImageSourceUpstreamSpec;
 import eu.appbahn.shared.crd.imagesource.LatestArtifact;
 import eu.appbahn.shared.crd.imagesource.PendingBuild;
@@ -73,16 +78,19 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     private final GitClient gitClient;
     private final OperatorEventPublisher eventPublisher;
     private final BuildOrchestrator buildOrchestrator;
+    private final ObjectMapper objectMapper;
     private final String ownClusterName;
 
     public ImageSourceReconciler(
             GitClient gitClient,
             OperatorEventPublisher eventPublisher,
             BuildOrchestrator buildOrchestrator,
-            OperatorTunnelConfig tunnelConfig) {
+            OperatorTunnelConfig tunnelConfig,
+            ObjectMapper objectMapper) {
         this.gitClient = gitClient;
         this.eventPublisher = eventPublisher;
         this.buildOrchestrator = buildOrchestrator;
+        this.objectMapper = objectMapper;
         this.ownClusterName = tunnelConfig.clusterName();
     }
 
@@ -110,22 +118,26 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                 })
                 .build();
         // Upstream ImageSource → all downstream ImageSources whose spec.imageSource.upstream
-        // points at it (cluster matches own; namespace+name match the upstream CR).
+        // points at it (cluster matches own; namespace+name match the upstream CR). When the
+        // changed CR is itself a downstream (type: imageSource), also re-trigger the upstream
+        // it points at — needed so the upstream's cleanup() sees the downstream's deletion and
+        // can drop the upstream-protection finalizer.
         var upstreamInformerConfig = InformerEventSourceConfiguration.from(ImageSourceCrd.class, ImageSourceCrd.class)
-                .withSecondaryToPrimaryMapper(upstreamCr -> {
-                    if (upstreamCr.getMetadata() == null) return Set.of();
-                    String upstreamName = upstreamCr.getMetadata().getName();
-                    String upstreamNs = upstreamCr.getMetadata().getNamespace();
-                    var downstreams = context.getClient()
+                .withSecondaryToPrimaryMapper(changed -> {
+                    if (changed.getMetadata() == null) return Set.of();
+                    String changedName = changed.getMetadata().getName();
+                    String changedNs = changed.getMetadata().getNamespace();
+                    var hits = new java.util.HashSet<ResourceID>();
+
+                    // Forward: this CR (an upstream) changed → re-reconcile downstreams.
+                    var allImageSources = context.getClient()
                             .resources(ImageSourceCrd.class)
                             .inAnyNamespace()
                             .list()
                             .getItems();
-                    var hits = new java.util.HashSet<ResourceID>();
-                    for (var ds : downstreams) {
+                    for (var ds : allImageSources) {
                         if (ds.getSpec() == null
-                                || ds.getSpec().getType()
-                                        != eu.appbahn.shared.crd.imagesource.ImageSourceType.IMAGE_SOURCE
+                                || ds.getSpec().getType() != ImageSourceType.IMAGE_SOURCE
                                 || ds.getSpec().getImageSource() == null
                                 || ds.getSpec().getImageSource().getUpstream() == null) {
                             continue;
@@ -134,11 +146,27 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                         boolean clusterOk = ups.getCluster() == null
                                 || ups.getCluster().isBlank()
                                 || ups.getCluster().equals(ownClusterName);
-                        if (clusterOk && upstreamName.equals(ups.getName()) && upstreamNs.equals(ups.getNamespace())) {
+                        if (clusterOk && changedName.equals(ups.getName()) && changedNs.equals(ups.getNamespace())) {
                             hits.add(new ResourceID(
                                     ds.getMetadata().getName(), ds.getMetadata().getNamespace()));
                         }
                     }
+
+                    // Reverse: this CR is a downstream → re-reconcile its upstream so upstream
+                    // cleanup observes the (potentially deleted) downstream.
+                    if (changed.getSpec() != null
+                            && changed.getSpec().getType() == ImageSourceType.IMAGE_SOURCE
+                            && changed.getSpec().getImageSource() != null
+                            && changed.getSpec().getImageSource().getUpstream() != null) {
+                        var ups = changed.getSpec().getImageSource().getUpstream();
+                        boolean clusterOk = ups.getCluster() == null
+                                || ups.getCluster().isBlank()
+                                || ups.getCluster().equals(ownClusterName);
+                        if (clusterOk && ups.getName() != null && ups.getNamespace() != null) {
+                            hits.add(new ResourceID(ups.getName(), ups.getNamespace()));
+                        }
+                    }
+
                     return hits;
                 })
                 .build();
@@ -175,6 +203,11 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             applyConfigInvalid(next, validationError.get());
             return finalize(cr, prev, next);
         }
+
+        // Stamp the upstream-protection finalizer on every reconcile so cleanup() runs even
+        // if the CR was created before this controller version. Cleanup removes it once no
+        // downstreams remain.
+        ensureUpstreamProtectionFinalizer(cr, context);
 
         // Auto-bind OwnerReference on the kubectl-apply path. The platform-driven path sets
         // the OwnerReference inline in ApplyResourceBundle; on this path we look up which
@@ -274,9 +307,55 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                                         : null));
     }
 
+    /**
+     * Two-layer deletion protection:
+     *
+     * <ol>
+     *   <li>Same-cluster: list every {@link ImageSourceCrd} cluster-wide and look for a
+     *       {@code type: imageSource} entry whose {@code spec.imageSource.upstream} points back at
+     *       this CR. Any match blocks deletion.
+     *   <li>Cross-cluster: the platform writes
+     *       {@link Labels#ANNOTATION_DOWNSTREAM_REFERENCES} (a JSON array of
+     *       {@code {cluster, namespace, name}}) on this CR via {@code ApplyResourceBundle} on
+     *       every sync batch. A non-empty array blocks deletion.
+     * </ol>
+     *
+     * When blocked, returns {@link DeleteControl#noFinalizerRemoval()} after re-patching the
+     * status with a {@code BlockedByDownstream} condition; the deletion request stays pending
+     * until all downstreams are gone.
+     */
     @Override
     public DeleteControl cleanup(ImageSourceCrd cr, Context<ImageSourceCrd> context) {
         String name = cr.getMetadata().getName();
+        String namespace = cr.getMetadata().getNamespace();
+
+        List<DownstreamReference> blockers = collectBlockers(cr, context);
+        if (!blockers.isEmpty()) {
+            log.info("Blocking deletion of ImageSource {}/{}: {} downstream(s)", namespace, name, blockers.size());
+            try {
+                ImageSourceStatus status = cr.getStatus() != null ? cr.getStatus() : new ImageSourceStatus();
+                upsertCondition(
+                        status,
+                        ImageSourceConditions.TYPE_BLOCKED_BY_DOWNSTREAM,
+                        ImageSourceConditions.STATUS_TRUE,
+                        ImageSourceConditions.REASON_DOWNSTREAMS_EXIST,
+                        formatBlockerMessage(blockers));
+                cr.setStatus(status);
+                context.getClient()
+                        .resources(ImageSourceCrd.class)
+                        .inNamespace(namespace)
+                        .withName(name)
+                        .patchStatus(cr);
+            } catch (Exception e) {
+                log.warn("Failed to patch BlockedByDownstream status on {}/{}: {}", namespace, name, e.getMessage());
+            }
+            return DeleteControl.noFinalizerRemoval();
+        }
+
+        // Drop our own finalizer; JOSDK only removes its configured finalizer, so without this
+        // step the CR would stay around even after cleanup() OK'd deletion.
+        removeUpstreamProtectionFinalizer(cr, context);
+
         try {
             eventPublisher.emitImageSourceDeleted(name);
             log.info("Notified platform of ImageSource deletion: {}", name);
@@ -284,6 +363,181 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             log.warn("Failed to notify platform of ImageSource deletion {}: {}", name, e.getMessage());
         }
         return DeleteControl.defaultDelete();
+    }
+
+    private void removeUpstreamProtectionFinalizer(ImageSourceCrd cr, Context<ImageSourceCrd> context) {
+        if (cr.getMetadata() == null || cr.getMetadata().getFinalizers() == null) return;
+        if (!cr.getMetadata().getFinalizers().contains(Labels.FINALIZER_UPSTREAM_PROTECTION)) return;
+        try {
+            context.getClient()
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cr.getMetadata().getNamespace())
+                    .withName(cr.getMetadata().getName())
+                    .edit(existing -> {
+                        var meta = existing.getMetadata();
+                        if (meta.getFinalizers() != null) {
+                            var fin = new ArrayList<>(meta.getFinalizers());
+                            fin.remove(Labels.FINALIZER_UPSTREAM_PROTECTION);
+                            meta.setFinalizers(fin);
+                        }
+                        return existing;
+                    });
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to remove {} finalizer on {}/{}: {}",
+                    Labels.FINALIZER_UPSTREAM_PROTECTION,
+                    cr.getMetadata().getNamespace(),
+                    cr.getMetadata().getName(),
+                    e.getMessage());
+        }
+    }
+
+    /**
+     * Walk every ImageSource in the cluster looking for {@code type: imageSource} downstreams
+     * that target this CR (cluster matches own or is blank, and namespace+name match). Then
+     * decode the cross-cluster annotation. Returns a deduplicated, sorted list of references.
+     */
+    private List<DownstreamReference> collectBlockers(ImageSourceCrd cr, Context<ImageSourceCrd> context) {
+        var blockers = new ArrayList<DownstreamReference>();
+        String selfName = cr.getMetadata().getName();
+        String selfNamespace = cr.getMetadata().getNamespace();
+        try {
+            var all = context.getClient()
+                    .resources(ImageSourceCrd.class)
+                    .inAnyNamespace()
+                    .list()
+                    .getItems();
+            for (var ds : all) {
+                if (ds.getMetadata() == null) continue;
+                if (selfName.equals(ds.getMetadata().getName())
+                        && selfNamespace.equals(ds.getMetadata().getNamespace())) {
+                    continue; // skip self
+                }
+                if (ds.getSpec() == null
+                        || ds.getSpec().getType() != ImageSourceType.IMAGE_SOURCE
+                        || ds.getSpec().getImageSource() == null
+                        || ds.getSpec().getImageSource().getUpstream() == null) {
+                    continue;
+                }
+                var ups = ds.getSpec().getImageSource().getUpstream();
+                boolean clusterOk = ups.getCluster() == null
+                        || ups.getCluster().isBlank()
+                        || ups.getCluster().equals(ownClusterName);
+                if (clusterOk && selfName.equals(ups.getName()) && selfNamespace.equals(ups.getNamespace())) {
+                    var ref = new DownstreamReference();
+                    ref.setCluster(ownClusterName);
+                    ref.setNamespace(ds.getMetadata().getNamespace());
+                    ref.setName(ds.getMetadata().getName());
+                    blockers.add(ref);
+                }
+            }
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to list ImageSources for downstream check on {}/{}: {}",
+                    selfNamespace,
+                    selfName,
+                    e.getMessage());
+        }
+
+        for (DownstreamReference ref : readDownstreamReferences(cr)) {
+            // Same-cluster entries are already handled by the K8s list above; keeping a stale
+            // same-cluster entry would block deletion forever after the downstream is gone but
+            // before the platform repaints the annotation. Trust the live K8s view for own
+            // cluster; annotations only carry cross-cluster information.
+            boolean isOwnCluster = ref.getCluster() != null && ref.getCluster().equals(ownClusterName);
+            if (isOwnCluster) {
+                continue;
+            }
+            if (!containsRef(blockers, ref)) {
+                blockers.add(ref);
+            }
+        }
+        return blockers;
+    }
+
+    private List<DownstreamReference> readDownstreamReferences(ImageSourceCrd cr) {
+        if (cr.getMetadata() == null || cr.getMetadata().getAnnotations() == null) {
+            return List.of();
+        }
+        String raw = cr.getMetadata().getAnnotations().get(Labels.ANNOTATION_DOWNSTREAM_REFERENCES);
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        try {
+            List<DownstreamReference> parsed =
+                    objectMapper.readValue(raw, new TypeReference<List<DownstreamReference>>() {});
+            return parsed != null ? parsed : List.of();
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to parse {} annotation on {}/{}: {}",
+                    Labels.ANNOTATION_DOWNSTREAM_REFERENCES,
+                    cr.getMetadata().getNamespace(),
+                    cr.getMetadata().getName(),
+                    e.getMessage());
+            return List.of();
+        }
+    }
+
+    private static boolean containsRef(List<DownstreamReference> refs, DownstreamReference ref) {
+        for (var r : refs) {
+            if (Objects.equals(r.getCluster(), ref.getCluster())
+                    && Objects.equals(r.getNamespace(), ref.getNamespace())
+                    && Objects.equals(r.getName(), ref.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String formatBlockerMessage(List<DownstreamReference> blockers) {
+        var sb = new StringBuilder("Blocked by ").append(blockers.size()).append(" downstream(s): ");
+        for (int i = 0; i < blockers.size() && i < 5; i++) {
+            if (i > 0) sb.append(", ");
+            var b = blockers.get(i);
+            sb.append(b.getCluster() == null ? "" : b.getCluster() + "/")
+                    .append(b.getNamespace())
+                    .append("/")
+                    .append(b.getName());
+        }
+        if (blockers.size() > 5) {
+            sb.append(" (+").append(blockers.size() - 5).append(" more)");
+        }
+        return sb.toString();
+    }
+
+    private void ensureUpstreamProtectionFinalizer(ImageSourceCrd cr, Context<ImageSourceCrd> context) {
+        if (cr.getMetadata() == null) return;
+        var existing = cr.getMetadata().getFinalizers();
+        if (existing != null && existing.contains(Labels.FINALIZER_UPSTREAM_PROTECTION)) {
+            return;
+        }
+        var updated = existing == null ? new ArrayList<String>() : new ArrayList<>(existing);
+        updated.add(Labels.FINALIZER_UPSTREAM_PROTECTION);
+        cr.getMetadata().setFinalizers(updated);
+        try {
+            context.getClient()
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cr.getMetadata().getNamespace())
+                    .withName(cr.getMetadata().getName())
+                    .edit(existingCr -> {
+                        var meta = existingCr.getMetadata();
+                        var fin = meta.getFinalizers() == null
+                                ? new ArrayList<String>()
+                                : new ArrayList<>(meta.getFinalizers());
+                        if (!fin.contains(Labels.FINALIZER_UPSTREAM_PROTECTION)) {
+                            fin.add(Labels.FINALIZER_UPSTREAM_PROTECTION);
+                            meta.setFinalizers(fin);
+                        }
+                        return existingCr;
+                    });
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to persist {} finalizer on {}/{}: {}",
+                    Labels.FINALIZER_UPSTREAM_PROTECTION,
+                    cr.getMetadata().getNamespace(),
+                    cr.getMetadata().getName(),
+                    e.getMessage());
+        }
     }
 
     private UpdateControl<ImageSourceCrd> reconcileGit(

@@ -2,6 +2,7 @@ package eu.appbahn.operator.reconciler.imagesource.buildjob;
 
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.operator.tunnel.client.model.BuildLifecycleEvent;
+import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
@@ -9,9 +10,11 @@ import eu.appbahn.shared.crd.imagesource.LatestArtifact;
 import eu.appbahn.shared.crd.imagesource.PendingBuild;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobCondition;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -42,10 +45,13 @@ public class BuildOrchestrator {
 
     private final BuildJobBuilder jobBuilder;
     private final OperatorEventPublisher eventPublisher;
+    private final KubernetesClient kubeClient;
 
-    public BuildOrchestrator(BuildJobBuilder jobBuilder, OperatorEventPublisher eventPublisher) {
+    public BuildOrchestrator(
+            BuildJobBuilder jobBuilder, OperatorEventPublisher eventPublisher, KubernetesClient kubeClient) {
         this.jobBuilder = jobBuilder;
         this.eventPublisher = eventPublisher;
+        this.kubeClient = kubeClient;
     }
 
     /**
@@ -62,6 +68,12 @@ public class BuildOrchestrator {
         if (observedCommit == null || observedCommit.isBlank()) {
             return;
         }
+
+        // 0) If status didn't preserve the in-flight pendingBuild (e.g. previous reconcile's
+        //    status patch raced with this one and we're seeing a stale CR), recover it from the
+        //    K8s Job that the previous reconcile created. This is the durable record across
+        //    reconciles and prevents minting a second deploymentId for the same build.
+        recoverInFlightFromJob(source, observedCommit, next);
 
         // 1) Reconcile in-flight build against its Job (if any). This may transition pending
         //    into a terminal state (BUILT / FAILED).
@@ -80,6 +92,95 @@ public class BuildOrchestrator {
         //    reconcile-precondition watches for jobName!=null, so this is what arms the
         //    workflow to create the Job in the same reconcile pass.
         startQueuedBuild(source, next);
+    }
+
+    /**
+     * When the CR status hasn't yet caught up to a build Job created by a previous reconcile
+     * (informer cache lag, racy patch), look the Job up directly via the K8s API and recover the
+     * deploymentId from its labels. Without this, two reconciles running back-to-back both see
+     * {@code pendingBuild == null} and both mint fresh deploymentIds for the same commit, which
+     * lands as duplicate audit rows on the platform.
+     *
+     * <p>Only acts when {@code next.pendingBuild} is null and there is at least one non-terminal
+     * build Job for {@code (image-source=name, build-commit=shortCommit)}. Terminal Jobs are
+     * ignored — they describe builds the operator has already finished reporting on.
+     */
+    private void recoverInFlightFromJob(ImageSourceCrd source, String observedCommit, ImageSourceStatus next) {
+        if (next.getPendingBuild() != null) {
+            return;
+        }
+        String shortCommit = shortenCommit(observedCommit);
+        if (shortCommit == null) {
+            return;
+        }
+        List<Job> jobs;
+        try {
+            jobs = kubeClient
+                    .batch()
+                    .v1()
+                    .jobs()
+                    .inNamespace(source.getMetadata().getNamespace())
+                    .withLabel(Labels.IMAGE_SOURCE_KEY, source.getMetadata().getName())
+                    .withLabel(Labels.BUILD_COMMIT_KEY, shortCommit)
+                    .list()
+                    .getItems();
+        } catch (Exception e) {
+            log.debug(
+                    "Failed to list Build Jobs for in-flight recovery on {}/{}: {}",
+                    source.getMetadata().getNamespace(),
+                    source.getMetadata().getName(),
+                    e.getMessage());
+            return;
+        }
+        Job inFlight = null;
+        for (Job j : jobs) {
+            BuildLifecycle inferred = inferLifecycleFromJob(j);
+            // null = unknown (still pending/running) — count as in-flight.
+            // BUILT/FAILED = terminal — don't recover, the build is done.
+            if (inferred == null) {
+                inFlight = j;
+                break;
+            }
+            if (inferred == BuildLifecycle.BUILDING) {
+                inFlight = j;
+                break;
+            }
+        }
+        if (inFlight == null) {
+            return;
+        }
+        Map<String, String> labels =
+                inFlight.getMetadata() != null ? inFlight.getMetadata().getLabels() : null;
+        String recoveredId = labels != null ? labels.get(Labels.BUILD_DEPLOYMENT_ID_KEY) : null;
+        if (recoveredId == null || recoveredId.isBlank()) {
+            log.warn(
+                    "Build Job {}/{} has no {} label; cannot recover deploymentId",
+                    inFlight.getMetadata().getNamespace(),
+                    inFlight.getMetadata().getName(),
+                    Labels.BUILD_DEPLOYMENT_ID_KEY);
+            return;
+        }
+        var recovered = new PendingBuild();
+        recovered.setSourceCommit(observedCommit);
+        recovered.setLifecycle(BuildLifecycle.BUILDING);
+        recovered.setDeploymentId(recoveredId);
+        recovered.setJobName(inFlight.getMetadata().getName());
+        recovered.setStartedAt(
+                inFlight.getMetadata().getCreationTimestamp() != null
+                        ? Instant.parse(inFlight.getMetadata().getCreationTimestamp())
+                        : Instant.now());
+        next.setPendingBuild(recovered);
+        log.info(
+                "Recovered in-flight build for {}/{} from Job {}: deploymentId={}",
+                source.getMetadata().getNamespace(),
+                source.getMetadata().getName(),
+                inFlight.getMetadata().getName(),
+                recoveredId);
+    }
+
+    private static String shortenCommit(String commit) {
+        if (commit == null || commit.isBlank()) return null;
+        return commit.substring(0, Math.min(12, commit.length()));
     }
 
     private void promoteIfNeeded(ImageSourceCrd source, ImageSourceStatus next) {

@@ -39,6 +39,21 @@ public interface ImageSourceCacheRepository extends JpaRepository<ImageSourceCac
             @Param("upstreamCluster") String upstreamCluster);
 
     /**
+     * Find every downstream {@code type: imageSource} row pointing at the given upstream
+     * coordinates, regardless of which cluster the downstream itself sits on. Used by the
+     * deletion-protection pre-flight (platform side) and by the broker's annotation-publish
+     * step to compute the full {@code appbahn.eu/downstream-references} list.
+     */
+    @Query(nativeQuery = true, value = """
+                    SELECT * FROM image_source_cache
+                    WHERE spec ->> 'type' = 'imageSource'
+                      AND spec -> 'imageSource' -> 'upstream' ->> 'name' = :upstreamName
+                      AND spec -> 'imageSource' -> 'upstream' ->> 'namespace' = :upstreamNamespace
+                    """)
+    List<ImageSourceCacheEntity> findAllDownstreamsByUpstream(
+            @Param("upstreamName") String upstreamName, @Param("upstreamNamespace") String upstreamNamespace);
+
+    /**
      * UPSERT used by the operator sync: insert on first sight, otherwise overwrite every column
      * regardless of the cache's current optimistic-lock {@code version}. The CR is the source of
      * truth, so an "always wins" write is correct — but {@code version} is bumped so platform

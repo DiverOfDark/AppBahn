@@ -13,6 +13,7 @@ public final class ImageSourceConditions {
     public static final String TYPE_OWNER_NOT_RESOLVED = "OwnerNotResolved";
     public static final String TYPE_UPSTREAM_NOT_READY = "UpstreamNotReady";
     public static final String TYPE_UPSTREAM_MISSING = "UpstreamMissing";
+    public static final String TYPE_BLOCKED_BY_DOWNSTREAM = "BlockedByDownstream";
 
     public static final String STATUS_TRUE = "True";
     public static final String STATUS_FALSE = "False";
@@ -30,4 +31,5 @@ public final class ImageSourceConditions {
     public static final String REASON_NO_UPSTREAM_ARTIFACT = "NoUpstreamArtifact";
     public static final String REASON_UPSTREAM_GONE = "UpstreamGone";
     public static final String REASON_AWAITING_PIN = "AwaitingPin";
+    public static final String REASON_DOWNSTREAMS_EXIST = "DownstreamsExist";
 }

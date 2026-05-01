@@ -18,8 +18,10 @@ import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.common.util.PagedResponseUtil;
 import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.platform.common.web.RetryOnConflict;
+import eu.appbahn.platform.resource.entity.ImageSourceCacheEntity;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
+import eu.appbahn.platform.resource.repository.ImageSourceCacheRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.service.ClusterLivenessProbe;
@@ -64,6 +66,7 @@ public class ResourceService {
     private static final int MAX_SLUG_ATTEMPTS = 3;
 
     private final ResourceCacheRepository resourceCacheRepository;
+    private final ImageSourceCacheRepository imageSourceCacheRepository;
     private final DeploymentRepository deploymentRepository;
     private final EnvironmentRepository environmentRepository;
     private final EnvironmentLookupService environmentLookupService;
@@ -81,6 +84,7 @@ public class ResourceService {
 
     public ResourceService(
             ResourceCacheRepository resourceCacheRepository,
+            ImageSourceCacheRepository imageSourceCacheRepository,
             DeploymentRepository deploymentRepository,
             EnvironmentRepository environmentRepository,
             EnvironmentLookupService environmentLookupService,
@@ -97,6 +101,7 @@ public class ResourceService {
             @org.springframework.beans.factory.annotation.Value("${platform.base-domain:appbahn.local}")
                     String baseDomain) {
         this.resourceCacheRepository = resourceCacheRepository;
+        this.imageSourceCacheRepository = imageSourceCacheRepository;
         this.deploymentRepository = deploymentRepository;
         this.environmentRepository = environmentRepository;
         this.environmentLookupService = environmentLookupService;
@@ -312,9 +317,24 @@ public class ResourceService {
                     "resource_has_dependents", "Cannot delete resource: other resources depend on it", dependentSlugs);
         }
 
+        // Pre-flight: any downstream ImageSource in any cluster pointing at this Resource's
+        // bound ImageSource? Block deletion; the user must remove downstreams first. The
+        // operator-side finalizer protects against direct kubectl deletes; this check covers
+        // the public API and gives a structured response.
+        String namespace = namespaceService.computeNamespace(env.getSlug());
+        var downstreams = imageSourceCacheRepository.findAllDownstreamsByUpstream(slug, namespace);
+        if (!downstreams.isEmpty()) {
+            var blockerSlugs =
+                    downstreams.stream().map(ImageSourceCacheEntity::getSlug).toList();
+            throw new ConflictException(
+                    "resource_has_downstream_image_sources",
+                    "Cannot delete resource: " + downstreams.size()
+                            + " downstream Resource(s) depend on its ImageSource",
+                    blockerSlugs);
+        }
+
         long deploymentCount = deploymentRepository.countByResourceSlug(slug);
 
-        String namespace = namespaceService.computeNamespace(env.getSlug());
         crdClient.delete(slug, namespace);
         log.info("Deleted Resource CRD: {} in namespace {}", slug, namespace);
 

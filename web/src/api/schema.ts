@@ -3611,12 +3611,21 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description OK */
-      200: {
+      /** @description Resource deleted */
+      204: {
         headers: {
           [name: string]: unknown
         }
         content?: never
+      }
+      /** @description Cannot delete: dependent Resources or downstream ImageSources reference this Resource */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
       }
     }
   }
