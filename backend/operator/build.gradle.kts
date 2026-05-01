@@ -34,7 +34,6 @@ val sharedCrdSchemaMappings = mapOf(
     "ResourceCrd" to "eu.appbahn.shared.crd.ResourceCrd",
     "ResourceSpec" to "eu.appbahn.shared.crd.ResourceSpec",
     "ResourceConfig" to "eu.appbahn.shared.crd.ResourceConfig",
-    "ResourceConfigSource" to "eu.appbahn.shared.crd.Source",
     "ResourceStatusDetail" to "eu.appbahn.shared.crd.ResourceStatusDetail",
     // Nested classes inside ResourceConfig / ResourceSpec / ResourceStatusDetail
     "HostingConfig" to "eu.appbahn.shared.crd.ResourceConfig.HostingConfig",
@@ -55,18 +54,6 @@ val sharedCrdSchemaMappings = mapOf(
     "FromImageSource" to "eu.appbahn.shared.crd.Release.FromImageSource",
     "ActiveRelease" to "eu.appbahn.shared.crd.ActiveRelease",
     "RolloutStatus" to "eu.appbahn.shared.crd.RolloutStatus",
-    // Source polymorphism
-    "SourceConfig" to "eu.appbahn.shared.crd.Source",
-    "DockerSource" to "eu.appbahn.shared.crd.DockerSource",
-    "GitSource" to "eu.appbahn.shared.crd.GitSource",
-    "PromotionSource" to "eu.appbahn.shared.crd.PromotionSource",
-    "SourceAuth" to "eu.appbahn.shared.crd.SourceAuth",
-    // BuildConfig polymorphism
-    "BuildConfig" to "eu.appbahn.shared.crd.BuildConfig",
-    "BuildpackBuildConfig" to "eu.appbahn.shared.crd.BuildpackBuildConfig",
-    "DockerfileBuildConfig" to "eu.appbahn.shared.crd.DockerfileBuildConfig",
-    "PeelboxBuildConfig" to "eu.appbahn.shared.crd.PeelboxBuildConfig",
-    "RailpackBuildConfig" to "eu.appbahn.shared.crd.RailpackBuildConfig",
     // ImageSource CRD top-level + nested
     "ImageSourceCrd" to "eu.appbahn.shared.crd.imagesource.ImageSourceCrd",
     "ImageSourceSpec" to "eu.appbahn.shared.crd.imagesource.ImageSourceSpec",

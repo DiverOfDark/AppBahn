@@ -249,8 +249,8 @@ class OpenApiConfig {
             return (io.swagger.v3.oas.models.media.Schema<?>)
                     schema.getProperties().get(fieldName);
         }
-        // GitSource is built via allOf: [$ref(SourceConfig), {properties: {...}}] — walk the
-        // allOf list to find the inline shape.
+        // Schemas synthesised via allOf: [$ref(Parent), {properties: {...}}] — walk the
+        // allOf branches to find the inline shape.
         if (schema.getAllOf() != null) {
             for (Object branch : schema.getAllOf()) {
                 if (branch instanceof io.swagger.v3.oas.models.media.Schema<?> branchSchema) {
