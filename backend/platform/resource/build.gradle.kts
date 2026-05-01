@@ -18,6 +18,9 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.retry)
     implementation(libs.fabric8.kubernetes.client)
+    // springdoc's @Hidden keeps the internal admin endpoint out of the public OpenAPI surface.
+    // Runtime springdoc comes from :platform:app; resource only needs the annotation at compile.
+    compileOnly(libs.springdoc.openapi.starter)
 
     testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.junit.platform.launcher)

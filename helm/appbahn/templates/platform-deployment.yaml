@@ -96,6 +96,13 @@ spec:
               value: {{ .Values.platform.quota.maxMemoryMb | quote }}
             - name: PLATFORM_LICENSE_RESOURCELIMIT
               value: {{ .Values.platform.license.resourceLimit | quote }}
+            # Deployment audit-row retention
+            - name: PLATFORM_DEPLOYMENT_RETENTION_MAXBUILDSPERRESOURCE
+              value: {{ .Values.platform.deployment.retention.maxBuildsPerResource | quote }}
+            - name: PLATFORM_DEPLOYMENT_RETENTION_ENABLED
+              value: {{ .Values.platform.deployment.retention.enabled | quote }}
+            - name: PLATFORM_DEPLOYMENT_RETENTION_SCHEDULECRON
+              value: {{ .Values.platform.deployment.retention.scheduleCron | quote }}
             # Branding
             - name: PLATFORM_BRANDING_INSTANCENAME
               value: {{ .Values.platform.branding.instanceName | quote }}
