@@ -156,6 +156,7 @@ dependencies {
     }
     implementation(libs.spring.boot.starter.jetty)
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.retry)
     implementation(libs.springdoc.openapi.starter)
     implementation(libs.scalar.spring)
     // Quantity is referenced by the springdoc ModelConverter in OpenApiConfig.

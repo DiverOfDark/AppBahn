@@ -43,10 +43,11 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
         var hosting = config != null ? config.getHosting() : null;
 
         // Resolved by DeploymentReconcileCondition before this method runs — but resolve again
-        // because the workflow precondition only checks reachability, not freshness.
+        // because the workflow precondition only checks reachability, not freshness. The bound
+        // ImageSource is the sibling with the same name in the same namespace.
         String containerImage = ResourceReleaseResolver.resolveImageRef(primary, context)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Resource " + name + ": bound ImageSource has no latestArtifact yet"));
+                        "Resource " + name + ": sibling ImageSource has no latestArtifact yet"));
 
         var allPorts = config != null ? config.getPorts() : List.<ResourceConfig.PortConfig>of();
         Integer port = config != null ? config.getLowestPort() : null;

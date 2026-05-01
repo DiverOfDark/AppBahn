@@ -15,7 +15,6 @@ import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
 import eu.appbahn.shared.crd.imagesource.ImageSourceUpstreamSpec;
 import eu.appbahn.shared.crd.imagesource.LatestArtifact;
 import eu.appbahn.shared.crd.imagesource.PendingBuild;
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
@@ -29,11 +28,8 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Workflow;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
-import io.javaoperatorsdk.operator.processing.event.Event;
-import io.javaoperatorsdk.operator.processing.event.EventHandler;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
-import io.javaoperatorsdk.operator.processing.event.source.SecondaryToPrimaryMapper;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -79,13 +75,6 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     private final BuildOrchestrator buildOrchestrator;
     private final String ownClusterName;
 
-    /**
-     * Cache of all watched Resources, populated by the informer event source. Used by
-     * {@link #ensureOwnerReference} to find Resources referencing this ImageSource without
-     * a per-reconcile server-side {@code list()} call. Wired in {@link #prepareEventSources}.
-     */
-    private InformerEventSource<ResourceCrd, ImageSourceCrd> resourceCache;
-
     public ImageSourceReconciler(
             GitClient gitClient,
             OperatorEventPublisher eventPublisher,
@@ -99,34 +88,26 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
 
     /**
      * Watch sibling Resources so an arriving Resource triggers the OwnerReference auto-bind
-     * without waiting for the slow re-reconcile schedule. Also watch upstream ImageSources so a
-     * downstream {@code type: imageSource} promotion reconciles promptly when the upstream's
-     * {@code latestArtifact} changes. Build Jobs are watched via the {@code @Workflow} dependent
-     * (see {@link BuildJobDependentResource}).
-     *
-     * <p>The Resource→ImageSource event source uses {@link RebindAwareInformerEventSource} so a
-     * Resource flipping its bound ImageSource also reconciles the previously-bound ImageSource —
-     * otherwise the old ImageSource keeps its stale {@code OwnerReference} until its slow periodic
-     * reschedule fires.
+     * without waiting for the slow re-reconcile schedule. Binding is by same-name same-namespace
+     * convention — a Resource arriving in namespace N with name X re-reconciles ImageSource N/X.
+     * Also watch upstream ImageSources so a downstream {@code type: imageSource} promotion
+     * reconciles promptly when the upstream's {@code latestArtifact} changes. Build Jobs are
+     * watched via the {@code @Workflow} dependent (see {@link BuildJobDependentResource}).
      */
     @Override
     public List<EventSource<?, ImageSourceCrd>> prepareEventSources(EventSourceContext<ImageSourceCrd> context) {
-        SecondaryToPrimaryMapper<ResourceCrd> resourceMapper = resource -> {
-            if (resource.getMetadata() == null
-                    || resource.getSpec() == null
-                    || resource.getSpec().getRelease() == null
-                    || resource.getSpec().getRelease().getFromImageSource() == null) {
-                return Set.of();
-            }
-            String boundName =
-                    resource.getSpec().getRelease().getFromImageSource().getName();
-            if (boundName == null || boundName.isBlank()) {
-                return Set.of();
-            }
-            return Set.of(new ResourceID(boundName, resource.getMetadata().getNamespace()));
-        };
         var resourceInformerConfig = InformerEventSourceConfiguration.from(ResourceCrd.class, ImageSourceCrd.class)
-                .withSecondaryToPrimaryMapper(resourceMapper)
+                .withSecondaryToPrimaryMapper(resource -> {
+                    if (resource.getMetadata() == null) {
+                        return Set.of();
+                    }
+                    String name = resource.getMetadata().getName();
+                    String namespace = resource.getMetadata().getNamespace();
+                    if (name == null || namespace == null) {
+                        return Set.of();
+                    }
+                    return Set.of(new ResourceID(name, namespace));
+                })
                 .build();
         // Upstream ImageSource → all downstream ImageSources whose spec.imageSource.upstream
         // points at it (cluster matches own; namespace+name match the upstream CR).
@@ -161,49 +142,9 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                     return hits;
                 })
                 .build();
-        var resourceSource = new RebindAwareInformerEventSource<>(resourceInformerConfig, context, resourceMapper);
-        this.resourceCache = resourceSource;
-        return List.of(resourceSource, new InformerEventSource<>(upstreamInformerConfig, context));
-    }
-
-    /**
-     * {@link InformerEventSource} that, on a secondary-resource update, also fires events for any
-     * primary IDs the OLD value mapped to but the new value no longer maps to. This guarantees
-     * that when a {@code Resource} re-binds from {@code ImageSource X} to {@code ImageSource Y},
-     * X reconciles immediately (and clears its stale OwnerReference) instead of waiting for its
-     * next periodic reschedule.
-     */
-    static class RebindAwareInformerEventSource<R extends HasMetadata, P extends HasMetadata>
-            extends InformerEventSource<R, P> {
-
-        private final SecondaryToPrimaryMapper<R> mapper;
-
-        RebindAwareInformerEventSource(
-                InformerEventSourceConfiguration<R> config,
-                EventSourceContext<P> context,
-                SecondaryToPrimaryMapper<R> mapper) {
-            super(config, context);
-            this.mapper = mapper;
-        }
-
-        @Override
-        public void onUpdate(R oldObject, R newObject) {
-            super.onUpdate(oldObject, newObject);
-            Set<ResourceID> oldIds = mapper.toPrimaryResourceIDs(oldObject);
-            if (oldIds.isEmpty()) {
-                return;
-            }
-            Set<ResourceID> newIds = mapper.toPrimaryResourceIDs(newObject);
-            EventHandler handler = getEventHandler();
-            if (handler == null) {
-                return;
-            }
-            for (ResourceID oldId : oldIds) {
-                if (!newIds.contains(oldId)) {
-                    handler.handleEvent(new Event(oldId));
-                }
-            }
-        }
+        return List.of(
+                new InformerEventSource<>(resourceInformerConfig, context),
+                new InformerEventSource<>(upstreamInformerConfig, context));
     }
 
     @Override
@@ -248,62 +189,37 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     }
 
     /**
-     * Reconcile the ImageSource's {@code metadata.ownerReferences} with the current set of
-     * sibling Resources whose {@code spec.release.fromImageSource.name} matches. Strict 1:1.
-     *
-     * <ul>
-     *   <li>Exactly 1 match, no controller owner yet → stamp the owner reference.</li>
-     *   <li>Exactly 1 match, controller owner already correct → no-op.</li>
-     *   <li>Exactly 1 match, controller owner points at a DIFFERENT (or stale) Resource →
-     *       rewrite the owner reference. This is the re-bind path: a Resource flipping its bound
-     *       ImageSource leaves the old IS pointing at the wrong owner; without the rewrite, the
-     *       stale owner could cascade-delete the IS when the (re-bound, no longer related)
-     *       Resource is deleted.</li>
-     *   <li>0 matches → clear our controller owner reference (if any) and surface
-     *       {@code OwnerNotResolved/NoMatch}.</li>
-     *   <li>&gt;1 matches → ambiguous; surface {@code OwnerNotResolved/Ambiguous} and leave the
-     *       existing reference untouched.</li>
-     * </ul>
-     *
-     * <p>Resources are read from the informer cache populated by {@link
-     * RebindAwareInformerEventSource} — no per-reconcile server-side {@code list()}.
+     * Set the ImageSource's controller {@link OwnerReference} to the sibling Resource with the
+     * same name in the same namespace (1:1 binding by convention). If no such Resource exists yet,
+     * surface {@code OwnerNotResolved/NoMatch} and leave ownerReferences untouched — the
+     * Resource→ImageSource informer will re-trigger this reconcile when the Resource arrives.
      */
     private void ensureOwnerReference(ImageSourceCrd cr, Context<ImageSourceCrd> context, ImageSourceStatus next) {
         String namespace = cr.getMetadata().getNamespace();
         String name = cr.getMetadata().getName();
-        List<ResourceCrd> matches = findReferencingResources(namespace, name);
-
-        if (matches.size() > 1) {
-            upsertCondition(
-                    next,
-                    ImageSourceConditions.TYPE_OWNER_NOT_RESOLVED,
-                    ImageSourceConditions.STATUS_TRUE,
-                    ImageSourceConditions.REASON_AMBIGUOUS,
-                    matches.size() + " Resources in namespace " + namespace + " reference this ImageSource");
+        ResourceCrd owner;
+        try {
+            owner = context.getClient()
+                    .resources(ResourceCrd.class)
+                    .inNamespace(namespace)
+                    .withName(name)
+                    .get();
+        } catch (Exception e) {
+            log.debug("OwnerReference lookup failed for {}/{}: {}", namespace, name, e.getMessage());
             return;
         }
-
-        if (matches.isEmpty()) {
-            // Drop our stale controller owner if one exists (Resource was re-bound or removed).
-            if (clearControllerOwnerReference(cr, context, namespace, name)) {
-                log.info("Cleared stale controller OwnerReference on ImageSource {}/{}", namespace, name);
-            }
+        if (owner == null) {
             upsertCondition(
                     next,
                     ImageSourceConditions.TYPE_OWNER_NOT_RESOLVED,
                     ImageSourceConditions.STATUS_TRUE,
                     ImageSourceConditions.REASON_NO_MATCH,
-                    "No Resource in namespace " + namespace + " references this ImageSource");
+                    "No Resource named " + name + " in namespace " + namespace);
             return;
         }
-
-        ResourceCrd owner = matches.get(0);
         String uid = owner.getMetadata() != null ? owner.getMetadata().getUid() : null;
         if (uid == null || uid.isBlank()) {
-            log.debug(
-                    "Owner Resource {}/{} has no UID yet; deferring owner-bind",
-                    namespace,
-                    owner.getMetadata() != null ? owner.getMetadata().getName() : "?");
+            log.debug("Owner Resource {}/{} has no UID yet; deferring owner-bind", namespace, name);
             return;
         }
 
@@ -339,33 +255,6 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     }
 
     /**
-     * List Resources from the informer cache that reference this ImageSource by name in the same
-     * namespace. Returns an empty list if the cache isn't initialised yet (operator starting up)
-     * or if reading the cache fails.
-     */
-    private List<ResourceCrd> findReferencingResources(String namespace, String name) {
-        if (resourceCache == null) {
-            return List.of();
-        }
-        try {
-            return resourceCache
-                    .list(r -> r.getMetadata() != null
-                            && namespace.equals(r.getMetadata().getNamespace())
-                            && r.getSpec() != null
-                            && r.getSpec().getRelease() != null
-                            && r.getSpec().getRelease().getFromImageSource() != null
-                            && name.equals(r.getSpec()
-                                    .getRelease()
-                                    .getFromImageSource()
-                                    .getName()))
-                    .toList();
-        } catch (Exception e) {
-            log.debug("Resource cache read failed for {}/{}: {}", namespace, name, e.getMessage());
-            return List.of();
-        }
-    }
-
-    /**
      * Returns true when the CR's existing controller {@link OwnerReference} already points at the
      * given Resource (matching apiVersion + kind + name). Avoids spurious patches when nothing
      * needs to change.
@@ -383,47 +272,6 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                                 owner.getMetadata() != null
                                         ? owner.getMetadata().getName()
                                         : null));
-    }
-
-    /**
-     * Drop a controller {@link OwnerReference} pointing at an {@code appbahn.eu/v1 Resource}.
-     * Other unrelated owner references (if any) are preserved. Returns true when something was
-     * removed (signal for a log line); false when there was no Resource-controller owner to
-     * clear.
-     */
-    private static boolean clearControllerOwnerReference(
-            ImageSourceCrd cr, Context<ImageSourceCrd> context, String namespace, String name) {
-        if (cr.getMetadata() == null || cr.getMetadata().getOwnerReferences() == null) {
-            return false;
-        }
-        String resourceApiVersion = HasMetadata.getApiVersion(ResourceCrd.class);
-        String resourceKind = HasMetadata.getKind(ResourceCrd.class);
-        boolean hasStaleResourceOwner = cr.getMetadata().getOwnerReferences().stream()
-                .anyMatch(o -> Boolean.TRUE.equals(o.getController())
-                        && resourceKind.equals(o.getKind())
-                        && resourceApiVersion.equals(o.getApiVersion()));
-        if (!hasStaleResourceOwner) {
-            return false;
-        }
-        java.util.List<OwnerReference> retained = cr.getMetadata().getOwnerReferences().stream()
-                .filter(o -> !(Boolean.TRUE.equals(o.getController())
-                        && resourceKind.equals(o.getKind())
-                        && resourceApiVersion.equals(o.getApiVersion())))
-                .toList();
-        cr.getMetadata().setOwnerReferences(retained);
-        try {
-            context.getClient()
-                    .resources(ImageSourceCrd.class)
-                    .inNamespace(namespace)
-                    .withName(name)
-                    .edit(existing -> {
-                        existing.getMetadata().setOwnerReferences(retained);
-                        return existing;
-                    });
-        } catch (Exception e) {
-            log.warn("Failed to clear stale OwnerReference on ImageSource {}/{}: {}", namespace, name, e.getMessage());
-        }
-        return true;
     }
 
     @Override

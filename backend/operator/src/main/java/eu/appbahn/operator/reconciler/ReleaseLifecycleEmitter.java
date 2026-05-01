@@ -148,14 +148,11 @@ public class ReleaseLifecycleEmitter {
     }
 
     private static String boundImageSourceName(ResourceCrd resource) {
-        if (resource.getSpec().getRelease() == null) {
+        if (resource.getMetadata() == null) {
             return null;
         }
-        var fromImageSource = resource.getSpec().getRelease().getFromImageSource();
-        if (fromImageSource == null || fromImageSource.getName() == null) {
-            return null;
-        }
-        return fromImageSource.getName();
+        String name = resource.getMetadata().getName();
+        return (name == null || name.isBlank()) ? null : name;
     }
 
     private static Map<String, String> envOf(ResourceCrd resource) {

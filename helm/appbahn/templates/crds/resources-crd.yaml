@@ -187,18 +187,6 @@ spec:
                 type: string
               projectId:
                 type: string
-              release:
-                properties:
-                  fromImageSource:
-                    properties:
-                      name:
-                        type: string
-                    required:
-                    - name
-                    type: object
-                required:
-                - fromImageSource
-                type: object
               restartGeneration:
                 type: integer
               stopped:
@@ -211,7 +199,6 @@ spec:
             - environmentId
             - name
             - projectId
-            - release
             - type
             - workspaceId
             type: object

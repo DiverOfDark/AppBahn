@@ -8,37 +8,28 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import java.util.Optional;
 
 /**
- * Pure helpers that resolve a Resource → ImageSource binding back to the K8s ImageSource CR and
- * its {@code status.latestArtifact}. Same-namespace lookup only; cross-namespace promotion is
- * a different code path (a downstream {@code type: imageSource} ImageSource).
+ * Pure helpers that resolve a Resource → ImageSource binding. The binding is by convention:
+ * the sibling ImageSource has the same {@code metadata.name} in the same namespace. Same-namespace
+ * lookup only; cross-namespace promotion is a different code path (a downstream
+ * {@code type: imageSource} ImageSource).
  */
 public final class ResourceReleaseResolver {
 
     private ResourceReleaseResolver() {}
 
-    /** True when {@code spec.release.fromImageSource.name} is set on the Resource. */
-    public static boolean usesReleasePath(ResourceCrd primary) {
-        if (primary.getSpec() == null || primary.getSpec().getRelease() == null) {
-            return false;
-        }
-        var fromImageSource = primary.getSpec().getRelease().getFromImageSource();
-        return fromImageSource != null
-                && fromImageSource.getName() != null
-                && !fromImageSource.getName().isBlank();
-    }
-
-    /** Sibling ImageSource name from {@code spec.release.fromImageSource.name}, or null. */
+    /** Sibling ImageSource name = the Resource's own {@code metadata.name}. */
     public static String boundImageSourceName(ResourceCrd primary) {
-        if (!usesReleasePath(primary)) {
+        if (primary == null || primary.getMetadata() == null) {
             return null;
         }
-        return primary.getSpec().getRelease().getFromImageSource().getName();
+        String name = primary.getMetadata().getName();
+        return (name == null || name.isBlank()) ? null : name;
     }
 
     /**
      * Look up the bound ImageSource via the JOSDK Context's K8s client and return its
-     * {@code status.latestArtifact} if present. Returns empty when the binding isn't set, the
-     * ImageSource doesn't exist, or no artifact has been built yet.
+     * {@code status.latestArtifact} if present. Returns empty when the ImageSource doesn't
+     * exist yet or no artifact has been built.
      */
     public static Optional<LatestArtifact> resolveLatestArtifact(ResourceCrd primary, Context<ResourceCrd> context) {
         return resolveImageSource(primary, context)
@@ -57,7 +48,7 @@ public final class ResourceReleaseResolver {
         if (name == null) {
             return Optional.empty();
         }
-        String namespace = primary.getMetadata() != null ? primary.getMetadata().getNamespace() : null;
+        String namespace = primary.getMetadata().getNamespace();
         if (namespace == null) {
             return Optional.empty();
         }

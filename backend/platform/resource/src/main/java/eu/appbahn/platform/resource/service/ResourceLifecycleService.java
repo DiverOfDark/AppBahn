@@ -6,6 +6,7 @@ import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
+import eu.appbahn.platform.common.web.RetryOnConflict;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.model.MemberRole;
 import java.util.UUID;
@@ -40,6 +41,7 @@ public class ResourceLifecycleService {
         this.auditLogService = auditLogService;
     }
 
+    @RetryOnConflict
     @Transactional
     public void stop(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
@@ -67,6 +69,7 @@ public class ResourceLifecycleService {
                 .save();
     }
 
+    @RetryOnConflict
     @Transactional
     public void start(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
@@ -99,6 +102,7 @@ public class ResourceLifecycleService {
                 .save();
     }
 
+    @RetryOnConflict
     @Transactional
     public void restart(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);

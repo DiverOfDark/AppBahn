@@ -3,7 +3,6 @@ package eu.appbahn.platform.resource.entity;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.shared.Labels;
-import eu.appbahn.shared.crd.Release;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
 import eu.appbahn.shared.crd.ResourceSpec;
@@ -39,15 +38,6 @@ public final class ResourceCacheMapper {
         spec.setType(row.getType());
         spec.setConfig(row.getConfig());
         spec.setLinks(row.getLinks());
-
-        // Resource <-> ImageSource pairs share the resource slug — there's no orphan platform-side
-        // edit path that doesn't have a sibling ImageSource to bind to. Hydrate the release block
-        // back so a CR returned to the operator passes admission.
-        var release = new Release();
-        var fromImageSource = new Release.FromImageSource();
-        fromImageSource.setName(row.getSlug());
-        release.setFromImageSource(fromImageSource);
-        spec.setRelease(release);
 
         if (env != null) {
             spec.setEnvironmentId(env.getId().toString());

@@ -43,6 +43,7 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-retry = { module = "org.springframework.retry:spring-retry", version = "2.0.12" }
 
 # Database
 spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
