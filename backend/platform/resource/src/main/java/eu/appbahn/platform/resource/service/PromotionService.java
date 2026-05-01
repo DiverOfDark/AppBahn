@@ -138,7 +138,8 @@ public class PromotionService {
         DeploymentEntity target = deploymentId != null
                 ? deploymentRepository
                         .findByIdAndResourceSlug(deploymentId, slug)
-                        .orElseThrow(() -> new NotFoundException("Deployment not found: " + deploymentId))
+                        .orElseThrow(() -> new NotFoundException("Deployment not found: " + deploymentId
+                                + "; the row may have been pruned by retention policy"))
                 : findPreviousSuccessfulDeployment(slug);
 
         if (target.getImageRef() == null || target.getImageRef().isBlank()) {

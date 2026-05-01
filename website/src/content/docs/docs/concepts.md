@@ -54,6 +54,8 @@ A **Resource** is a deployable unit — a container, database, or other service 
 
 Every resource keeps a deployment history. To roll back to a previous deployment without rebuilding, use `appbahn resource rollback <slug>` (or `--to <deployment-id>` for a specific row). The resource is pinned to the older artifact and re-rolls immediately. To clear the pin and resume tracking new builds, run `appbahn resource unpin <slug>`. Rollback works for every resource type, including those built from a git repo — there's no need to revert your source commit.
 
+The deployment history is bounded by a retention policy. By default, AppBahn keeps the most recent 10 terminal-state deployment rows per resource (those in `superseded`, `failed`, or `canceled` lifecycles) and prunes older rows daily at 03:00. Rows that are referenced by an active `pinnedRelease` are always preserved regardless of age, so rollback never loses its target. In-flight and current rollouts are also never pruned. Retention is configurable via `platform.deployment.retention.maxBuildsPerResource` (default: 10), `platform.deployment.retention.enabled` (default: true), and `platform.deployment.retention.scheduleCron` (default: `0 0 3 * * *`). If you request rollback to a deployment id that has been pruned, the API returns a 404.
+
 ## Environment tokens
 
 **Environment tokens** provide API access scoped to a single environment, intended for CI/CD pipelines. Tokens have the format `abp_` followed by 40 random alphanumeric characters.

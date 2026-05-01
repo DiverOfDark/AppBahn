@@ -89,6 +89,11 @@ platform:
     default-max-memory-mb: 32768
   license:
     resource-limit: 5
+  deployment:
+    retention:
+      max-builds-per-resource: 10
+      enabled: true
+      schedule-cron: "0 0 3 * * *"
   branding:
     instance-name: AppBahn
     tagline: Deploy and manage your applications

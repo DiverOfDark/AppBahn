@@ -66,6 +66,16 @@ platform:
     maxMemoryMb: 32768
   license:
     resourceLimit: 5
+  # Deployment audit-row retention. The `deployment` table grows unbounded otherwise — every
+  # build, restart, env edit, promote, rollback, and unpin appends a row. The pruner keeps the
+  # most recent `maxBuildsPerResource` terminal-state (SUPERSEDED / FAILED / CANCELED) rows per
+  # Resource; in-flight rows and rows referenced by a Resource's `spec.pinnedRelease` are always
+  # preserved regardless of age.
+  deployment:
+    retention:
+      maxBuildsPerResource: 10
+      enabled: true
+      scheduleCron: "0 0 3 * * *"
   branding:
     instanceName: "AppBahn"
     tagline: "Deploy and manage your applications"
