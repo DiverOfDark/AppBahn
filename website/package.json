@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.18",
-    "@astrojs/starlight": "^0.38.3",
-    "astro": "^6.1.6",
+    "@astrojs/starlight": "^0.38.4",
+    "astro": "^6.1.9",
     "sharp": "^0.34.2"
   },
   "devDependencies": {
-    "prettier": "3.8.2",
+    "prettier": "3.8.3",
     "prettier-plugin-astro": "^0.14.1"
   }
 }
