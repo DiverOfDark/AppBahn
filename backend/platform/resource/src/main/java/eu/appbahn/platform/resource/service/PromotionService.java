@@ -39,10 +39,13 @@ import org.springframework.transaction.annotation.Transactional;
  * Implements promote / rollback / unpin semantics. Two distinct layers:
  *
  * <ul>
- *   <li><b>Promote</b> edits the bound ImageSource (sets {@code spec.imageSource.pinnedDigest}
- *       for {@code type=imageSource}, {@code spec.image.ref} for {@code type=image}). Controls
- *       the promotion gate between environments.
- *   <li><b>Rollback / unpin</b> edit the Resource's {@code spec.pinnedRelease}. Pins the
+ *   <li><b>Promote</b> for {@code type=imageSource} sets {@code spec.imageSource.pinnedDigest}
+ *       and for {@code type=image} sets {@code spec.image.ref} (IS-level pin, visible to all
+ *       downstream consumers — controls the promotion gate between environments). For
+ *       {@code type=git} there is no IS-level pin slot; promote uses the Resource-level
+ *       {@code spec.pinnedRelease} instead, requiring an explicit digest that matches a
+ *       historical deployment for that Resource.
+ *   <li><b>Rollback / unpin</b> always edit the Resource's {@code spec.pinnedRelease}. Pins the
  *       Resource to a previous deployment's full snapshot (digest + run command + commit) and
  *       lets the operator re-roll without rebuilding — Vercel/Railway/Heroku-style fast rollback.
  *       Independent of ImageSource type; works for {@code git} too (the load-bearing case).
@@ -94,7 +97,20 @@ public class PromotionService {
 
         ImageSourceCacheEntity boundImageSource = loadBoundImageSource(slug);
         ImageSourceSpec spec = boundImageSource.getSpec();
-        rejectGitTypeForPromote(spec);
+        if (spec == null) {
+            throw new ValidationException("ImageSource spec is missing");
+        }
+
+        // Type-specific paths:
+        //   git         → IS has no pin slot; pin Resource.spec.pinnedRelease to a historical
+        //                 artifact instead (same mechanism rollback uses since PR8).
+        //   image       → write spec.image.ref on the IS; the IS itself becomes the user's pin.
+        //   imageSource → write spec.imageSource.pinnedDigest on the IS; downstream stops
+        //                 tracking upstream's latestArtifact.
+        if (spec.getType() == ImageSourceType.GIT) {
+            promoteGitByPinningResource(slug, resolved, boundImageSource, explicitDigest, ctx);
+            return;
+        }
 
         String targetDigest;
         TriggerType trigger;
@@ -117,6 +133,52 @@ public class PromotionService {
                 .inProject(env.getProjectId())
                 .inEnvironment(env.getId())
                 .change("promotedDigest", "", targetDigest)
+                .save();
+    }
+
+    /**
+     * Git ImageSources have no IS-level pin slot, so promote uses the same Resource-level pin
+     * mechanism rollback uses (PR8). Requires an explicit digest that matches a historical
+     * deployment for this Resource — auto-promote on git is the build pipeline's job, and an
+     * arbitrary external digest belongs on a {@code type: image} ImageSource.
+     */
+    private void promoteGitByPinningResource(
+            String slug,
+            ResourcePermissionHelper.ResolvedResource resolved,
+            ImageSourceCacheEntity boundImageSource,
+            String explicitDigest,
+            AuthContext ctx) {
+        if (explicitDigest == null || explicitDigest.isBlank()) {
+            throw new ValidationException(
+                    "promote on a git ImageSource requires an explicit digest — git auto-promotes via the build pipeline");
+        }
+
+        var env = resolved.env();
+        DeploymentEntity target = deploymentRepository
+                .findFirstByResourceSlugAndImageRefOrderByCreatedAtDesc(slug, explicitDigest)
+                .orElseThrow(() -> new NotFoundException(
+                        "No historical deployment for resource " + slug + " with digest " + explicitDigest));
+
+        List<String> recoveredRunCommand = recoverRunCommand(boundImageSource, target.getSourceRef());
+
+        var pin = new PinnedRelease();
+        pin.setSourceCommit(target.getSourceRef());
+        pin.setImageRef(explicitDigest);
+        pin.setRunCommand(recoveredRunCommand);
+        pin.setPinnedAt(Instant.now());
+        pin.setPinnedFromDeploymentId(target.getId());
+
+        applyResourcePin(slug, env.getSlug(), pin);
+        recordDeploymentRow(slug, env.getId(), boundImageSource, explicitDigest, TriggerType.MANUAL);
+        log.info("Promoted git resource {} to deployment {} (digest {})", slug, target.getId(), explicitDigest);
+
+        auditLogService
+                .audit(ctx, AuditAction.RESOURCE_UPDATED)
+                .target(AuditTargetType.RESOURCE, slug)
+                .inWorkspace(resolved.workspaceId())
+                .inProject(env.getProjectId())
+                .inEnvironment(env.getId())
+                .change("promotedDigest", "", explicitDigest)
                 .save();
     }
 
@@ -237,16 +299,6 @@ public class PromotionService {
         return imageSourceCacheRepository
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Bound ImageSource not found for resource: " + slug));
-    }
-
-    private static void rejectGitTypeForPromote(ImageSourceSpec spec) {
-        if (spec == null) {
-            throw new ValidationException("ImageSource spec is missing");
-        }
-        if (spec.getType() == ImageSourceType.GIT) {
-            throw new ValidationException(
-                    "Cannot promote a git-type ImageSource — git ImageSources roll forward; revert the source commit instead");
-        }
     }
 
     /**
