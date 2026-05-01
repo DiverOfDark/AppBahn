@@ -8,12 +8,11 @@ import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 
 /**
- * Gates the Deployment dependent on two things: (1) a usable image is resolvable via the
- * {@code spec.release.fromImageSource} chain (sibling ImageSource has a
- * {@code latestArtifact.imageRef}) and (2) the Resource is not in a stopped state. When this
- * returns {@code false}, JOSDK deletes any existing Deployment instead of reconciling it.
- * Setting {@code spec.stopped=true} drops the Deployment entirely; the Service, Ingress and
- * ConfigMap stay so restart is fast.
+ * Gates the Deployment dependent on two things: (1) the sibling ImageSource (same name in the
+ * same namespace) has a usable {@code latestArtifact.imageRef} and (2) the Resource is not in
+ * a stopped state. When this returns {@code false}, JOSDK deletes any existing Deployment
+ * instead of reconciling it. Setting {@code spec.stopped=true} drops the Deployment entirely;
+ * the Service, Ingress and ConfigMap stay so restart is fast.
  */
 public class DeploymentReconcileCondition implements Condition<Deployment, ResourceCrd> {
 
@@ -26,9 +25,6 @@ public class DeploymentReconcileCondition implements Condition<Deployment, Resou
             return false;
         }
         if (Boolean.TRUE.equals(primary.getSpec().getStopped())) {
-            return false;
-        }
-        if (!ResourceReleaseResolver.usesReleasePath(primary)) {
             return false;
         }
         return ResourceReleaseResolver.resolveImageRef(primary, context).isPresent();

@@ -428,11 +428,6 @@ components:
             type: string
     FieldsV1:
       type: object
-    FromImageSource:
-      type: object
-      properties:
-        name:
-          type: string
     FullResourceSyncChunk:
       type: object
       allOf:
@@ -858,11 +853,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperatorEvent"
-    Release:
-      type: object
-      properties:
-        fromImageSource:
-          $ref: "#/components/schemas/FromImageSource"
     ReplicaStatus:
       type: object
       properties:
@@ -955,8 +945,6 @@ components:
             $ref: "#/components/schemas/LinkConfig"
         stopped:
           type: boolean
-        release:
-          $ref: "#/components/schemas/Release"
         restartGeneration:
           type: integer
           format: int64

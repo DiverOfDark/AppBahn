@@ -8,6 +8,7 @@ import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
+import eu.appbahn.platform.common.web.RetryOnConflict;
 import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.entity.ImageSourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
@@ -91,6 +92,7 @@ public class PromotionService {
         this.objectMapper = objectMapper;
     }
 
+    @RetryOnConflict
     @Transactional
     public void promote(String slug, String explicitDigest, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
@@ -125,6 +127,7 @@ public class PromotionService {
                 .save();
     }
 
+    @RetryOnConflict
     @Transactional
     public void rollback(String slug, UUID deploymentId, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);

@@ -26,7 +26,6 @@ public final class ImageSourceConditions {
     public static final String REASON_BAD_SPEC = "BadSpec";
     public static final String REASON_VALID = "Valid";
     public static final String REASON_NO_MATCH = "NoMatch";
-    public static final String REASON_AMBIGUOUS = "Ambiguous";
     public static final String REASON_BOUND = "Bound";
     public static final String REASON_NO_UPSTREAM_ARTIFACT = "NoUpstreamArtifact";
     public static final String REASON_UPSTREAM_GONE = "UpstreamGone";

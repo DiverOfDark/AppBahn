@@ -116,7 +116,8 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 })
                 .build();
         // Watch ImageSource → Resource so a fresh latestArtifact triggers re-render of the
-        // bound Resource's pod template without waiting for the next reconcile tick.
+        // bound Resource's pod template without waiting for the next reconcile tick. Binding
+        // is by same name in the same namespace.
         var imageSourceInformerConfig = InformerEventSourceConfiguration.from(ImageSourceCrd.class, ResourceCrd.class)
                 .withSecondaryToPrimaryMapper(imageSource -> {
                     if (imageSource.getMetadata() == null) {
@@ -127,18 +128,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                     if (namespace == null || imageSourceName == null) {
                         return Set.of();
                     }
-                    var matches = new java.util.HashSet<ResourceID>();
-                    var resources = context.getClient()
-                            .resources(ResourceCrd.class)
-                            .inNamespace(namespace)
-                            .list()
-                            .getItems();
-                    for (var r : resources) {
-                        if (imageSourceName.equals(ResourceReleaseResolver.boundImageSourceName(r))) {
-                            matches.add(new ResourceID(r.getMetadata().getName(), namespace));
-                        }
-                    }
-                    return matches;
+                    return Set.of(new ResourceID(imageSourceName, namespace));
                 })
                 .build();
         return List.of(
@@ -158,14 +148,6 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             if (resource.getSpec() == null) {
                 log.debug("Reconcile called with null spec for {}; skipping", name);
                 return UpdateControl.noUpdate();
-            }
-            // The release path is the only path: spec.release.fromImageSource must be set.
-            // Resources without it never make it past admission, but a stale/legacy CR could.
-            if (!ResourceReleaseResolver.usesReleasePath(resource)) {
-                resource.setStatus(createErrorStatus(
-                        resource, "spec.release.fromImageSource.name is required", "LegacySourceRemoved"));
-                syncToPlatform(resource);
-                return UpdateControl.patchStatus(resource);
             }
 
             var k8sDeployment = context.getSecondaryResource(Deployment.class).orElse(null);

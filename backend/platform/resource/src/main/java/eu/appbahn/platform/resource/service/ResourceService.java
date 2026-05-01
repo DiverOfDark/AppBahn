@@ -17,6 +17,7 @@ import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.common.util.PagedResponseUtil;
 import eu.appbahn.platform.common.util.PaginationUtil;
+import eu.appbahn.platform.common.web.RetryOnConflict;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
@@ -26,7 +27,6 @@ import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.NamespaceService;
 import eu.appbahn.platform.workspace.service.PermissionService;
 import eu.appbahn.shared.Labels;
-import eu.appbahn.shared.crd.Release;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourceSpec;
@@ -113,6 +113,7 @@ public class ResourceService {
         this.baseDomain = baseDomain;
     }
 
+    @RetryOnConflict
     @Transactional
     public ResourceCreatedResponse create(CreateResourceRequest req, AuthContext ctx) {
         if (!Labels.RESOURCE_TYPE_DEPLOYMENT.equals(req.getType())) {
@@ -191,6 +192,7 @@ public class ResourceService {
                 PagedResourceResponse::setTotalPages);
     }
 
+    @RetryOnConflict
     @Transactional
     public Resource update(String slug, UpdateResourceRequest req, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
@@ -273,6 +275,7 @@ public class ResourceService {
         return ResourceEntityMapper.toApi(entity, env.getSlug(), objectMapper);
     }
 
+    @RetryOnConflict
     @Transactional
     public void delete(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.EDITOR);
@@ -352,11 +355,6 @@ public class ResourceService {
             spec.setWorkspaceId(workspaceId.toString());
             spec.setConfig(resourceConfig);
             spec.setLinks(resourceLinks);
-            var release = new Release();
-            var fromImageSource = new Release.FromImageSource();
-            fromImageSource.setName(candidate);
-            release.setFromImageSource(fromImageSource);
-            spec.setRelease(release);
             resourceCrd.setSpec(spec);
 
             ImageSourceCrd imageSourceCrd = buildImageSourceCrd(candidate, env.getSlug(), imageSourceSpec);

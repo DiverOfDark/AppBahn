@@ -38,15 +38,6 @@ public class ResourceSpec {
     private Boolean stopped;
 
     /**
-     * Image-source-driven release. The operator resolves the bound sibling ImageSource and
-     * renders the pod template from its {@code status.latestArtifact}. Required —
-     * {@code release.fromImageSource.name} must be set on every Resource; the admission webhook
-     * rejects Resources that lack it.
-     */
-    @Required
-    private Release release;
-
-    /**
      * Bumped to force a re-roll without changing the underlying ImageSource. The operator
      * incorporates this into the pod-template hash so a bump triggers a new revision.
      */
