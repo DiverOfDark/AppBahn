@@ -18,6 +18,7 @@ import eu.appbahn.platform.tunnel.cluster.ClusterRepository;
 import eu.appbahn.platform.tunnel.cluster.ClusterSessionRepository;
 import eu.appbahn.platform.tunnel.cluster.ClusterSessionService;
 import eu.appbahn.platform.tunnel.command.PendingCommandDispatcher;
+import eu.appbahn.platform.tunnel.command.PendingCommandListener;
 import eu.appbahn.platform.tunnel.command.PendingCommandRepository;
 import eu.appbahn.platform.tunnel.events.PushEventsHandler;
 import eu.appbahn.platform.tunnel.push.AdminConfigSnapshotBuilder;
@@ -26,10 +27,12 @@ import eu.appbahn.platform.tunnel.registration.ClusterRegistrationRequest;
 import eu.appbahn.platform.tunnel.registration.ClusterRegistrationService;
 import eu.appbahn.shared.tunnel.OperatorJwt;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +59,19 @@ public class OperatorTunnelController implements TunnelApi {
     private static final long LIVENESS_REFRESH_MS = 10_000;
     /** Spring SSE timeout. The drain loop self-polices and closes cleanly on disconnect. */
     private static final long EMITTER_TIMEOUT_MS = Duration.ofHours(24).toMillis();
+    /**
+     * Max time {@code PendingCommandListener.awaitNotification} parks before returning to
+     * the loop top. Notifications wake it sooner; this is just a periodic re-check so we
+     * notice session-takeover, snapshot mutations on other replicas, and run keepalive.
+     */
+    private static final long LISTEN_AWAIT_MS = 2_000;
+    /**
+     * Belt-and-braces fallback poll cadence used when the listener cannot be opened or
+     * has dropped. Notifications are the primary delivery mechanism; this only fires while
+     * the listener is unavailable so missed wake-ups during a Postgres reconnect don't
+     * leave commands stuck.
+     */
+    private static final long FALLBACK_POLL_MS = 5_000;
 
     private final OperatorJwtVerifier jwtVerifier;
     private final ClusterSessionRepository sessions;
@@ -67,6 +83,7 @@ public class OperatorTunnelController implements TunnelApi {
     private final QuotaRbacSnapshotBuilder snapshotBuilder;
     private final AdminConfigSnapshotBuilder adminConfigBuilder;
     private final ClusterRegistrationService registrationService;
+    private final DataSource dataSource;
     private final String replicaId;
 
     public OperatorTunnelController(
@@ -80,6 +97,7 @@ public class OperatorTunnelController implements TunnelApi {
             QuotaRbacSnapshotBuilder snapshotBuilder,
             AdminConfigSnapshotBuilder adminConfigBuilder,
             ClusterRegistrationService registrationService,
+            DataSource dataSource,
             // Pod name in Kubernetes (always set by the Downward API). Falls back to a random
             // UUID so a misconfigured deployment still produces a unique ID per replica instead
             // of collapsing every replica's session-ownership check to the same key.
@@ -94,6 +112,7 @@ public class OperatorTunnelController implements TunnelApi {
         this.snapshotBuilder = snapshotBuilder;
         this.adminConfigBuilder = adminConfigBuilder;
         this.registrationService = registrationService;
+        this.dataSource = dataSource;
         this.replicaId = replicaId;
     }
 
@@ -216,14 +235,26 @@ public class OperatorTunnelController implements TunnelApi {
     /**
      * Drains {@code pending_command} rows for this cluster onto the open SSE stream. Exits
      * when a write fails (client disconnected) or the session row is no longer ours (a newer
-     * subscription took over). Polling interval is 500ms — LISTEN/NOTIFY can be layered on
-     * later if queue depth justifies it.
+     * subscription took over).
+     *
+     * <p>Wake-ups come from a per-stream {@link PendingCommandListener} parked on
+     * {@code LISTEN cluster_cmd_<slug>}. The loop runs an initial drain (catches commands
+     * inserted before LISTEN was issued, plus any backlog from a reconnect) and then blocks
+     * on the listener with a {@link #LISTEN_AWAIT_MS} ceiling so it can also re-check
+     * session ownership, push snapshot mutations from other replicas, and emit keepalives.
+     * If the listener can't be opened (or breaks mid-stream) the loop falls back to time-
+     * based polling at {@link #FALLBACK_POLL_MS} so commands aren't stuck while Postgres
+     * reconnects.
+     *
+     * <p>Notifications are wake-ups only — the existing {@code SELECT … FOR UPDATE SKIP
+     * LOCKED} claim still runs against {@code pending_command}, preserving claim-contention
+     * semantics across replicas.
      *
      * <p>Snapshot pushes ({@code quota-rbac-cache-push}, {@code admin-config-push}) are
      * revision-gated: the builders hash their content and this loop only emits when the
      * current hash differs from the last sent. A periodic re-check is still needed because
-     * there's no LISTEN/NOTIFY yet — a mutation on a different replica must be picked up by
-     * the subscribing replica's next poll.
+     * those mutations don't go through the command queue — a quota change on a different
+     * replica must be picked up by the subscribing replica's next snapshot tick.
      */
     private void drainCommandLoop(
             SseEmitter emitter,
@@ -242,77 +273,126 @@ public class OperatorTunnelController implements TunnelApi {
         Instant lastObservedCacheMissAt = Instant.EPOCH;
         log.info("drain loop started for cluster={} session={}", clusterName, sessionId);
         sessionService.touchSession(clusterName);
-        while (true) {
-            if (!sessionIsStillOurs(clusterName, sessionId)) {
-                log.info("drain loop exiting — session no longer ours cluster={}", clusterName);
-                return;
-            }
-            iterations++;
-            if (iterations % 40 == 0) {
-                log.info("drain loop alive iter={} cluster={}", iterations, clusterName);
-            }
-            if (System.currentTimeMillis() - lastLivenessAt > LIVENESS_REFRESH_MS) {
-                sessionService.touchSession(clusterName);
-                lastLivenessAt = System.currentTimeMillis();
-            }
-            var batch = commandDispatcher.pollBatch(clusterName, replicaId, 50);
-            if (!batch.isEmpty()) {
-                // Admission webhook is fail-closed on unknown namespaces. If an env mutation
-                // landed since our last check, push the fresh snapshot BEFORE the commands so
-                // the operator's admission cache sees it first.
-                long emitted = maybePushQuotaRbac(emitter, clusterName, lastSentQuotaRbacRevision);
-                if (emitted != lastSentQuotaRbacRevision) {
-                    lastSentQuotaRbacRevision = emitted;
-                    lastWriteAt = System.currentTimeMillis();
-                }
-            }
-            for (var claimed : batch) {
-                try {
-                    emitter.send(SseEmitter.event().name(claimed.eventType()).data(claimed.body()));
-                    commandDispatcher.markDelivered(claimed.commandId());
-                    lastWriteAt = System.currentTimeMillis();
-                } catch (IOException e) {
-                    log.info("client disconnected cluster={}: {}", clusterName, e.getMessage());
+
+        PendingCommandListener listener = openListenerQuietly(clusterName);
+        try {
+            while (true) {
+                if (!sessionIsStillOurs(clusterName, sessionId)) {
+                    log.info("drain loop exiting — session no longer ours cluster={}", clusterName);
                     return;
                 }
-            }
-            if (System.currentTimeMillis() - lastSnapshotCheckAt > SNAPSHOT_REFRESH_MS) {
-                lastSnapshotCheckAt = System.currentTimeMillis();
-                // Operator reported an admission-cache miss since our last check? Force the
-                // next maybePushQuotaRbac to emit regardless of revision match — resetting the
-                // tracker to a sentinel no content-hash can equal.
-                Instant missAt = clusters.findById(clusterName)
-                        .map(ClusterEntity::getLastAdmissionMissAt)
-                        .orElse(null);
-                if (missAt != null && missAt.isAfter(lastObservedCacheMissAt)) {
-                    lastObservedCacheMissAt = missAt;
-                    lastSentQuotaRbacRevision = -1L;
+                iterations++;
+                if (iterations % 40 == 0) {
+                    log.info("drain loop alive iter={} cluster={}", iterations, clusterName);
                 }
-                long emittedQuota = maybePushQuotaRbac(emitter, clusterName, lastSentQuotaRbacRevision);
-                if (emittedQuota != lastSentQuotaRbacRevision) {
-                    lastSentQuotaRbacRevision = emittedQuota;
-                    lastWriteAt = System.currentTimeMillis();
+                if (System.currentTimeMillis() - lastLivenessAt > LIVENESS_REFRESH_MS) {
+                    sessionService.touchSession(clusterName);
+                    lastLivenessAt = System.currentTimeMillis();
                 }
-                long emittedAdmin = maybePushAdminConfig(emitter, lastSentAdminConfigRevision);
-                if (emittedAdmin != lastSentAdminConfigRevision) {
-                    lastSentAdminConfigRevision = emittedAdmin;
-                    lastWriteAt = System.currentTimeMillis();
+                var batch = commandDispatcher.pollBatch(clusterName, replicaId, 50);
+                if (!batch.isEmpty()) {
+                    // Admission webhook is fail-closed on unknown namespaces. If an env mutation
+                    // landed since our last check, push the fresh snapshot BEFORE the commands so
+                    // the operator's admission cache sees it first.
+                    long emitted = maybePushQuotaRbac(emitter, clusterName, lastSentQuotaRbacRevision);
+                    if (emitted != lastSentQuotaRbacRevision) {
+                        lastSentQuotaRbacRevision = emitted;
+                        lastWriteAt = System.currentTimeMillis();
+                    }
                 }
-            }
-            if (batch.isEmpty()) {
-                if (System.currentTimeMillis() - lastWriteAt > KEEPALIVE_MS) {
+                for (var claimed : batch) {
                     try {
-                        emitter.send(SseEmitter.event()
-                                .name(TunnelApi.KEEPALIVE_EVENT)
-                                .data("{}"));
+                        emitter.send(
+                                SseEmitter.event().name(claimed.eventType()).data(claimed.body()));
+                        commandDispatcher.markDelivered(claimed.commandId());
                         lastWriteAt = System.currentTimeMillis();
                     } catch (IOException e) {
-                        log.info("keepalive write failed cluster={}: {}", clusterName, e.getMessage());
+                        log.info("client disconnected cluster={}: {}", clusterName, e.getMessage());
                         return;
                     }
                 }
-                TimeUnit.MILLISECONDS.sleep(500);
+                if (System.currentTimeMillis() - lastSnapshotCheckAt > SNAPSHOT_REFRESH_MS) {
+                    lastSnapshotCheckAt = System.currentTimeMillis();
+                    // Operator reported an admission-cache miss since our last check? Force the
+                    // next maybePushQuotaRbac to emit regardless of revision match — resetting the
+                    // tracker to a sentinel no content-hash can equal.
+                    Instant missAt = clusters.findById(clusterName)
+                            .map(ClusterEntity::getLastAdmissionMissAt)
+                            .orElse(null);
+                    if (missAt != null && missAt.isAfter(lastObservedCacheMissAt)) {
+                        lastObservedCacheMissAt = missAt;
+                        lastSentQuotaRbacRevision = -1L;
+                    }
+                    long emittedQuota = maybePushQuotaRbac(emitter, clusterName, lastSentQuotaRbacRevision);
+                    if (emittedQuota != lastSentQuotaRbacRevision) {
+                        lastSentQuotaRbacRevision = emittedQuota;
+                        lastWriteAt = System.currentTimeMillis();
+                    }
+                    long emittedAdmin = maybePushAdminConfig(emitter, lastSentAdminConfigRevision);
+                    if (emittedAdmin != lastSentAdminConfigRevision) {
+                        lastSentAdminConfigRevision = emittedAdmin;
+                        lastWriteAt = System.currentTimeMillis();
+                    }
+                }
+                if (batch.isEmpty()) {
+                    if (System.currentTimeMillis() - lastWriteAt > KEEPALIVE_MS) {
+                        try {
+                            emitter.send(SseEmitter.event()
+                                    .name(TunnelApi.KEEPALIVE_EVENT)
+                                    .data("{}"));
+                            lastWriteAt = System.currentTimeMillis();
+                        } catch (IOException e) {
+                            log.info("keepalive write failed cluster={}: {}", clusterName, e.getMessage());
+                            return;
+                        }
+                    }
+                    listener = parkUntilWakeup(listener, clusterName);
+                }
             }
+        } finally {
+            if (listener != null) {
+                listener.close();
+            }
+        }
+    }
+
+    /**
+     * Park until a NOTIFY arrives on the listener, the listen-await ceiling elapses, or the
+     * fallback timeout expires (when we have no live listener). Returns the same listener
+     * on success, a freshly opened replacement after a transient failure, or {@code null}
+     * if the listener stays unavailable — in which case the next iteration falls back to a
+     * timed sleep so we still drain.
+     */
+    private PendingCommandListener parkUntilWakeup(PendingCommandListener listener, String clusterName)
+            throws InterruptedException {
+        if (listener == null) {
+            // No listener — fall back to a time-based wait. Drain on every wake-up still
+            // catches commands inserted while the listener was down.
+            TimeUnit.MILLISECONDS.sleep(FALLBACK_POLL_MS);
+            return openListenerQuietly(clusterName);
+        }
+        try {
+            listener.awaitNotification(LISTEN_AWAIT_MS);
+            return listener;
+        } catch (SQLException e) {
+            log.warn(
+                    "LISTEN connection broke for cluster={} ({}); falling back to timed poll until reconnect",
+                    clusterName,
+                    e.getMessage());
+            listener.close();
+            return null;
+        }
+    }
+
+    private PendingCommandListener openListenerQuietly(String clusterName) {
+        try {
+            return PendingCommandListener.open(dataSource, clusterName);
+        } catch (SQLException e) {
+            log.warn(
+                    "Could not open LISTEN for cluster={} ({}); using timed poll fallback",
+                    clusterName,
+                    e.getMessage());
+            return null;
         }
     }
 
