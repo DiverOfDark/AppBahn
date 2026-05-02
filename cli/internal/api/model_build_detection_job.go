@@ -19,12 +19,12 @@ var _ MappedNullable = &BuildDetectionJob{}
 
 // BuildDetectionJob struct for BuildDetectionJob
 type BuildDetectionJob struct {
-	JobId          *string                  `json:"jobId,omitempty"`
-	Status         *string                  `json:"status,omitempty"`
-	Step           *string                  `json:"step,omitempty"`
-	Message        *string                  `json:"message,omitempty"`
-	UniversalBuild []map[string]interface{} `json:"universalBuild,omitempty"`
-	Error          *string                  `json:"error,omitempty"`
+	JobId          *string              `json:"jobId,omitempty"`
+	Status         *string              `json:"status,omitempty"`
+	Step           *string              `json:"step,omitempty"`
+	Message        *string              `json:"message,omitempty"`
+	UniversalBuild *PeelboxBuildOptions `json:"universalBuild,omitempty"`
+	Error          *string              `json:"error,omitempty"`
 }
 
 // NewBuildDetectionJob instantiates a new BuildDetectionJob object
@@ -173,17 +173,17 @@ func (o *BuildDetectionJob) SetMessage(v string) {
 }
 
 // GetUniversalBuild returns the UniversalBuild field value if set, zero value otherwise.
-func (o *BuildDetectionJob) GetUniversalBuild() []map[string]interface{} {
+func (o *BuildDetectionJob) GetUniversalBuild() PeelboxBuildOptions {
 	if o == nil || IsNil(o.UniversalBuild) {
-		var ret []map[string]interface{}
+		var ret PeelboxBuildOptions
 		return ret
 	}
-	return o.UniversalBuild
+	return *o.UniversalBuild
 }
 
 // GetUniversalBuildOk returns a tuple with the UniversalBuild field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BuildDetectionJob) GetUniversalBuildOk() ([]map[string]interface{}, bool) {
+func (o *BuildDetectionJob) GetUniversalBuildOk() (*PeelboxBuildOptions, bool) {
 	if o == nil || IsNil(o.UniversalBuild) {
 		return nil, false
 	}
@@ -199,9 +199,9 @@ func (o *BuildDetectionJob) HasUniversalBuild() bool {
 	return false
 }
 
-// SetUniversalBuild gets a reference to the given []map[string]interface{} and assigns it to the UniversalBuild field.
-func (o *BuildDetectionJob) SetUniversalBuild(v []map[string]interface{}) {
-	o.UniversalBuild = v
+// SetUniversalBuild gets a reference to the given PeelboxBuildOptions and assigns it to the UniversalBuild field.
+func (o *BuildDetectionJob) SetUniversalBuild(v PeelboxBuildOptions) {
+	o.UniversalBuild = &v
 }
 
 // GetError returns the Error field value if set, zero value otherwise.
