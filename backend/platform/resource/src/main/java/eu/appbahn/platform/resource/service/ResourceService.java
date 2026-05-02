@@ -12,7 +12,6 @@ import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
-import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.exception.ValidationException;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.common.util.PagedResponseUtil;
@@ -23,7 +22,6 @@ import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ImageSourceCacheRepository;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
-import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.service.ClusterLivenessProbe;
 import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.NamespaceService;
@@ -68,7 +66,6 @@ public class ResourceService {
     private final ResourceCacheRepository resourceCacheRepository;
     private final ImageSourceCacheRepository imageSourceCacheRepository;
     private final DeploymentRepository deploymentRepository;
-    private final EnvironmentRepository environmentRepository;
     private final EnvironmentLookupService environmentLookupService;
     private final PermissionService permissionService;
     private final ResourcePermissionHelper resourcePermissionHelper;
@@ -86,7 +83,6 @@ public class ResourceService {
             ResourceCacheRepository resourceCacheRepository,
             ImageSourceCacheRepository imageSourceCacheRepository,
             DeploymentRepository deploymentRepository,
-            EnvironmentRepository environmentRepository,
             EnvironmentLookupService environmentLookupService,
             PermissionService permissionService,
             ResourcePermissionHelper resourcePermissionHelper,
@@ -103,7 +99,6 @@ public class ResourceService {
         this.resourceCacheRepository = resourceCacheRepository;
         this.imageSourceCacheRepository = imageSourceCacheRepository;
         this.deploymentRepository = deploymentRepository;
-        this.environmentRepository = environmentRepository;
         this.environmentLookupService = environmentLookupService;
         this.permissionService = permissionService;
         this.resourcePermissionHelper = resourcePermissionHelper;
@@ -128,9 +123,7 @@ public class ResourceService {
             throw new ValidationException("imageSource is required (type, plus type-specific sub-block)");
         }
 
-        var env = environmentRepository
-                .findBySlug(req.getEnvironmentSlug())
-                .orElseThrow(() -> new NotFoundException("Environment not found: " + req.getEnvironmentSlug()));
+        var env = environmentLookupService.findBySlug(req.getEnvironmentSlug());
 
         permissionService.requireEnvironmentRole(ctx, env.getId(), MemberRole.EDITOR);
 
@@ -177,9 +170,7 @@ public class ResourceService {
     @Transactional(readOnly = true)
     public PagedResourceResponse list(
             String environmentSlug, Integer page, Integer size, String sort, AuthContext ctx) {
-        var env = environmentRepository
-                .findBySlug(environmentSlug)
-                .orElseThrow(() -> new NotFoundException("Environment not found: " + environmentSlug));
+        var env = environmentLookupService.findBySlug(environmentSlug);
 
         permissionService.requireEnvironmentRole(ctx, env.getId(), MemberRole.VIEWER);
 

@@ -5,8 +5,7 @@ import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
-import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
-import eu.appbahn.platform.workspace.repository.ProjectRepository;
+import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.PermissionService;
 import eu.appbahn.shared.model.MemberRole;
 import java.util.UUID;
@@ -20,18 +19,15 @@ import org.springframework.stereotype.Component;
 public class ResourcePermissionHelper {
 
     private final ResourceCacheRepository resourceCacheRepository;
-    private final EnvironmentRepository environmentRepository;
-    private final ProjectRepository projectRepository;
+    private final EnvironmentLookupService environmentLookupService;
     private final PermissionService permissionService;
 
     public ResourcePermissionHelper(
             ResourceCacheRepository resourceCacheRepository,
-            EnvironmentRepository environmentRepository,
-            ProjectRepository projectRepository,
+            EnvironmentLookupService environmentLookupService,
             PermissionService permissionService) {
         this.resourceCacheRepository = resourceCacheRepository;
-        this.environmentRepository = environmentRepository;
-        this.projectRepository = projectRepository;
+        this.environmentLookupService = environmentLookupService;
         this.permissionService = permissionService;
     }
 
@@ -40,17 +36,13 @@ public class ResourcePermissionHelper {
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Resource not found: " + slug));
 
-        var env = environmentRepository
-                .findById(entity.getEnvironmentId())
-                .orElseThrow(() -> new NotFoundException("Environment not found for resource: " + slug));
+        var env = environmentLookupService.findById(entity.getEnvironmentId());
 
         permissionService.requireEnvironmentRole(ctx, env.getId(), requiredRole);
 
-        var project = projectRepository
-                .findById(env.getProjectId())
-                .orElseThrow(() -> new NotFoundException("Project not found for environment: " + env.getSlug()));
+        UUID workspaceId = environmentLookupService.getWorkspaceId(env);
 
-        return new ResolvedResource(entity, env, project.getWorkspaceId());
+        return new ResolvedResource(entity, env, workspaceId);
     }
 
     public record ResolvedResource(ResourceCacheEntity entity, EnvironmentEntity env, UUID workspaceId) {}
