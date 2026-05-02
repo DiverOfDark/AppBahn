@@ -18,6 +18,11 @@ coverage:
           - typescript
         target: auto
         threshold: 2%
+      go:
+        flags:
+          - go
+        target: auto
+        threshold: 2%
     patch:
       default:
         target: 70%
@@ -30,6 +35,9 @@ flags:
   typescript:
     paths:
       - web/src/
+  go:
+    paths:
+      - cli/
 
 ignore:
   - "backend/**/build/generated/**"
@@ -42,6 +50,7 @@ ignore:
   - "web/src/env.d.ts"
   - "web/e2e/**"
   - "web/dist/**"
+  - "cli/internal/api/**"
 
 comment:
   layout: "reach,diff,flags,files"

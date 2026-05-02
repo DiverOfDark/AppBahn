@@ -1,3 +1,7 @@
 # Local-build binary used by backend/e2e's CliLifecycleTest — produced by
 # `./gradlew :e2e:buildCliBinary`. The committed artefact ships via GoReleaser.
 appbahn-e2e
+
+# `go test -coverprofile` + gotestsum --junitfile output, uploaded to Codecov from CI.
+coverage.out
+junit.xml
