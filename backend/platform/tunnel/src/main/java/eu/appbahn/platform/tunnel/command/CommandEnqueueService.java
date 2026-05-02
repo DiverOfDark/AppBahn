@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Single entry point for enqueueing platform→operator commands. Callers pick a
  * {@link CommandTypes} tag and a DTO payload; this service JSON-encodes the payload,
- * persists the row, and returns the assigned correlation id. Draining onto the open SSE
- * stream is the concern of {@code PendingCommandDispatcher}.
+ * persists the row, fires a {@code NOTIFY cluster_cmd_<clusterName>} on the same
+ * transaction so the subscribing replica's listener wakes immediately on commit, and
+ * returns the assigned correlation id. Draining onto the open SSE stream is the concern
+ * of {@code PendingCommandDispatcher}.
  */
 @Service
 public class CommandEnqueueService {
@@ -23,10 +25,12 @@ public class CommandEnqueueService {
 
     private final PendingCommandRepository repo;
     private final ObjectMapper mapper;
+    private final PendingCommandNotifier notifier;
 
-    public CommandEnqueueService(PendingCommandRepository repo, ObjectMapper mapper) {
+    public CommandEnqueueService(PendingCommandRepository repo, ObjectMapper mapper, PendingCommandNotifier notifier) {
         this.repo = repo;
         this.mapper = mapper;
+        this.notifier = notifier;
     }
 
     @Transactional
@@ -43,6 +47,9 @@ public class CommandEnqueueService {
         entity.setEnqueuedAt(Instant.now());
         entity.setExpiresAt(Instant.now().plus(DEFAULT_TTL));
         repo.save(entity);
+        // NOTIFY on the same connection — Postgres queues it until commit, so a rolled-back
+        // enqueue produces no wake-up.
+        notifier.notifyCluster(clusterName);
         return correlationId;
     }
 

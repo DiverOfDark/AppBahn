@@ -22,6 +22,9 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.fabric8.kubernetes.client)
     implementation(libs.uuid.creator)
+    // PendingCommandListener uses PGConnection.getNotifications() directly, so the driver
+    // must be on the compile classpath — runtimeOnly is not enough.
+    implementation(libs.postgresql)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.testcontainers.postgresql)
@@ -29,5 +32,4 @@ dependencies {
     testImplementation(libs.assertj.core)
     testImplementation(libs.awaitility)
     testRuntimeOnly(libs.junit.platform.launcher)
-    testRuntimeOnly(libs.postgresql)
 }
