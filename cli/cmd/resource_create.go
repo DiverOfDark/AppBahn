@@ -52,13 +52,14 @@ Examples:
 		}
 
 		if resourceCreateExpose != "" {
-			validExposeValues := map[string]bool{"ingress": true, "tcp": true, "none": true}
-			if !validExposeValues[resourceCreateExpose] {
+			normalized, ok := normalizeExpose(resourceCreateExpose)
+			if !ok {
 				return fmt.Errorf("invalid --expose %q: must be one of ingress, tcp, none", resourceCreateExpose)
 			}
+			resourceCreateExpose = normalized
 		}
 
-		if resourceCreateDomain != "" && resourceCreateExpose != "ingress" {
+		if resourceCreateDomain != "" && resourceCreateExpose != "Ingress" {
 			return fmt.Errorf("custom domain requires --expose ingress")
 		}
 
@@ -96,7 +97,7 @@ Examples:
 			networking := api.NewNetworkingConfig()
 			networking.Ports = []api.PortConfig{*portConfig}
 
-			runMode := "CONTINUOUS"
+			runMode := "Continuous"
 			config.Hosting = hosting
 			config.Networking = networking
 			config.RunMode = &runMode
@@ -132,18 +133,35 @@ Examples:
 	},
 }
 
+// PascalCase wire values match the API's @JsonProperty convention. CLI accepts any case
+// from the user and normalizes here; lookups are case-insensitive against this set.
+var imageSourceTypeWireValues = map[string]string{"image": "Image", "git": "Git"}
+var buildModeWireValues = map[string]string{
+	"dockerfile": "Dockerfile",
+	"peelbox":    "Peelbox",
+	"buildpack":  "Buildpack",
+	"nixpacks":   "Nixpacks",
+	"railpack":   "Railpack",
+}
+var exposeWireValues = map[string]string{"ingress": "Ingress", "tcp": "Tcp", "none": "None"}
+
+func normalizeExpose(input string) (string, bool) {
+	v, ok := exposeWireValues[strings.ToLower(strings.TrimSpace(input))]
+	return v, ok
+}
+
 func buildImageSourceSpec() (*api.ImageSourceSpec, error) {
-	t := strings.ToLower(strings.TrimSpace(resourceCreateImageSourceType))
-	if t == "" {
+	rawType := strings.ToLower(strings.TrimSpace(resourceCreateImageSourceType))
+	if rawType == "" {
 		return nil, fmt.Errorf("--image-source-type is required (one of: git, image)")
 	}
 	spec := api.NewImageSourceSpec()
-	switch t {
+	switch rawType {
 	case "image":
 		if resourceCreateImageRef == "" {
 			return nil, fmt.Errorf("--image-ref is required for --image-source-type=image")
 		}
-		typ := "image"
+		typ := imageSourceTypeWireValues["image"]
 		spec.Type = &typ
 		image := api.NewImageSpec()
 		image.Ref = &resourceCreateImageRef
@@ -155,7 +173,7 @@ func buildImageSourceSpec() (*api.ImageSourceSpec, error) {
 		if resourceCreateGitBranch == "" {
 			return nil, fmt.Errorf("--git-branch is required for --image-source-type=git")
 		}
-		typ := "git"
+		typ := imageSourceTypeWireValues["git"]
 		spec.Type = &typ
 		git := api.NewImageSourceGitSpec()
 		git.Repo = &resourceCreateGitRepo
@@ -164,19 +182,19 @@ func buildImageSourceSpec() (*api.ImageSourceSpec, error) {
 			git.CredentialsSecretRef = &resourceCreateGitCredentials
 		}
 		spec.Git = git
-		mode := strings.ToLower(strings.TrimSpace(resourceCreateBuildMode))
-		if mode == "" {
-			mode = "peelbox"
+		modeIn := strings.ToLower(strings.TrimSpace(resourceCreateBuildMode))
+		if modeIn == "" {
+			modeIn = "peelbox"
 		}
-		valid := map[string]bool{"dockerfile": true, "peelbox": true, "buildpack": true, "nixpacks": true, "railpack": true}
-		if !valid[mode] {
-			return nil, fmt.Errorf("invalid --build-mode %q (one of: dockerfile, peelbox, buildpack, nixpacks, railpack)", mode)
+		mode, ok := buildModeWireValues[modeIn]
+		if !ok {
+			return nil, fmt.Errorf("invalid --build-mode %q (one of: dockerfile, peelbox, buildpack, nixpacks, railpack)", modeIn)
 		}
 		buildSpec := api.NewImageSourceBuildSpec()
 		buildSpec.Mode = &mode
 		spec.Build = buildSpec
 	default:
-		return nil, fmt.Errorf("invalid --image-source-type %q (one of: git, image)", t)
+		return nil, fmt.Errorf("invalid --image-source-type %q (one of: git, image)", rawType)
 	}
 	return spec, nil
 }

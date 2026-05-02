@@ -162,9 +162,9 @@ spec:
                               type: string
                             expose:
                               enum:
-                              - ingress
-                              - none
-                              - tcp
+                              - Ingress
+                              - None
+                              - Tcp
                               type: string
                             port:
                               maximum: 65535.0
@@ -175,8 +175,8 @@ spec:
                     type: object
                   runMode:
                     enum:
-                    - CONTINUOUS
-                    - TASK
+                    - Continuous
+                    - Task
                     type: string
                 type: object
               environmentId:
@@ -261,9 +261,9 @@ spec:
                       type: integer
                     status:
                       enum:
-                      - ACTIVE
-                      - ERROR
-                      - PENDING
+                      - Active
+                      - Error
+                      - Pending
                       type: string
                     tlsExpiresAt:
                       type: string
@@ -300,12 +300,12 @@ spec:
                 type: integer
               phase:
                 enum:
-                - DEGRADED
-                - ERROR
-                - PENDING
-                - READY
-                - RESTARTING
-                - STOPPED
+                - Degraded
+                - Error
+                - Pending
+                - Ready
+                - Restarting
+                - Stopped
                 type: string
               replicas:
                 properties:

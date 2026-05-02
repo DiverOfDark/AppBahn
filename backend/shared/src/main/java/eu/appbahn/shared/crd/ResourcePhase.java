@@ -1,17 +1,23 @@
 package eu.appbahn.shared.crd;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum ResourcePhase {
+    @JsonProperty("Pending")
     PENDING,
-    READY,
-    RESTARTING,
-    DEGRADED,
-    ERROR,
-    STOPPED;
 
-    @JsonValue
-    public String getValue() {
-        return name();
-    }
+    @JsonProperty("Ready")
+    READY,
+
+    @JsonProperty("Restarting")
+    RESTARTING,
+
+    @JsonProperty("Degraded")
+    DEGRADED,
+
+    @JsonProperty("Error")
+    ERROR,
+
+    @JsonProperty("Stopped")
+    STOPPED
 }

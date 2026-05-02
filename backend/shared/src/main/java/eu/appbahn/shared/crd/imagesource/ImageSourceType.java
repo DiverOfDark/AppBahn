@@ -10,10 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * deferred — see #109.
  */
 public enum ImageSourceType {
-    @JsonProperty("git")
+    @JsonProperty("Git")
     GIT,
-    @JsonProperty("image")
+
+    @JsonProperty("Image")
     IMAGE,
-    @JsonProperty("imageSource")
+
+    @JsonProperty("ImageSource")
     IMAGE_SOURCE
 }

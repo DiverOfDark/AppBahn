@@ -19,28 +19,12 @@ import (
 	"strings"
 )
 
-type WebhooksAPI interface {
-
-	/*
-		TriggerWebhook Method for TriggerWebhook
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param resourceSlug
-		@return ApiTriggerWebhookRequest
-	*/
-	TriggerWebhook(ctx context.Context, resourceSlug string) ApiTriggerWebhookRequest
-
-	// TriggerWebhookExecute executes the request
-	//  @return WebhookTriggerResponse
-	TriggerWebhookExecute(r ApiTriggerWebhookRequest) (*WebhookTriggerResponse, *http.Response, error)
-}
-
 // WebhooksAPIService WebhooksAPI service
 type WebhooksAPIService service
 
 type ApiTriggerWebhookRequest struct {
 	ctx            context.Context
-	ApiService     WebhooksAPI
+	ApiService     *WebhooksAPIService
 	resourceSlug   string
 	idempotencyKey *string
 }

@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** All build modes the platform supports. Only the enum lives in this PR; execution lands later. */
 public enum BuildMode {
-    @JsonProperty("dockerfile")
+    @JsonProperty("Dockerfile")
     DOCKERFILE,
-    @JsonProperty("peelbox")
+    @JsonProperty("Peelbox")
     PEELBOX,
-    @JsonProperty("buildpack")
+    @JsonProperty("Buildpack")
     BUILDPACK,
-    @JsonProperty("nixpacks")
+    @JsonProperty("Nixpacks")
     NIXPACKS,
-    @JsonProperty("railpack")
+    @JsonProperty("Railpack")
     RAILPACK
 }

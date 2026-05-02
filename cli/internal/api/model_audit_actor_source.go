@@ -20,18 +20,18 @@ type AuditActorSource string
 
 // List of AuditActorSource
 const (
-	AUDITACTORSOURCE_API     AuditActorSource = "API"
-	AUDITACTORSOURCE_TOKEN   AuditActorSource = "TOKEN"
-	AUDITACTORSOURCE_KUBECTL AuditActorSource = "KUBECTL"
-	AUDITACTORSOURCE_SYSTEM  AuditActorSource = "SYSTEM"
+	API     AuditActorSource = "Api"
+	TOKEN   AuditActorSource = "Token"
+	KUBECTL AuditActorSource = "Kubectl"
+	SYSTEM  AuditActorSource = "System"
 )
 
 // All allowed values of AuditActorSource enum
 var AllowedAuditActorSourceEnumValues = []AuditActorSource{
-	"API",
-	"TOKEN",
-	"KUBECTL",
-	"SYSTEM",
+	"Api",
+	"Token",
+	"Kubectl",
+	"System",
 }
 
 func (v *AuditActorSource) UnmarshalJSON(src []byte) error {

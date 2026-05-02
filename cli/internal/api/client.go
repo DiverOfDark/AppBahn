@@ -48,23 +48,23 @@ type APIClient struct {
 
 	// API Services
 
-	AdminAPI AdminAPI
+	AdminAPI *AdminAPIService
 
-	AuthAPI AuthAPI
+	AuthAPI *AuthAPIService
 
-	EnvironmentsAPI EnvironmentsAPI
+	EnvironmentsAPI *EnvironmentsAPIService
 
-	GitAPI GitAPI
+	GitAPI *GitAPIService
 
-	ProjectsAPI ProjectsAPI
+	ProjectsAPI *ProjectsAPIService
 
-	ResourceTypesAPI ResourceTypesAPI
+	ResourceTypesAPI *ResourceTypesAPIService
 
-	ResourcesAPI ResourcesAPI
+	ResourcesAPI *ResourcesAPIService
 
-	WebhooksAPI WebhooksAPI
+	WebhooksAPI *WebhooksAPIService
 
-	WorkspacesAPI WorkspacesAPI
+	WorkspacesAPI *WorkspacesAPIService
 }
 
 type service struct {

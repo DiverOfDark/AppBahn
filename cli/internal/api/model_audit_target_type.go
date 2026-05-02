@@ -20,20 +20,20 @@ type AuditTargetType string
 
 // List of AuditTargetType
 const (
-	AUDITTARGETTYPE_WORKSPACE   AuditTargetType = "WORKSPACE"
-	AUDITTARGETTYPE_PROJECT     AuditTargetType = "PROJECT"
-	AUDITTARGETTYPE_ENVIRONMENT AuditTargetType = "ENVIRONMENT"
-	AUDITTARGETTYPE_RESOURCE    AuditTargetType = "RESOURCE"
-	AUDITTARGETTYPE_DEPLOYMENT  AuditTargetType = "DEPLOYMENT"
+	WORKSPACE   AuditTargetType = "Workspace"
+	PROJECT     AuditTargetType = "Project"
+	ENVIRONMENT AuditTargetType = "Environment"
+	RESOURCE    AuditTargetType = "Resource"
+	DEPLOYMENT  AuditTargetType = "Deployment"
 )
 
 // All allowed values of AuditTargetType enum
 var AllowedAuditTargetTypeEnumValues = []AuditTargetType{
-	"WORKSPACE",
-	"PROJECT",
-	"ENVIRONMENT",
-	"RESOURCE",
-	"DEPLOYMENT",
+	"Workspace",
+	"Project",
+	"Environment",
+	"Resource",
+	"Deployment",
 }
 
 func (v *AuditTargetType) UnmarshalJSON(src []byte) error {

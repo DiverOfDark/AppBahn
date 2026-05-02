@@ -1,6 +1,6 @@
 package eu.appbahn.platform.resource.service;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.common.exception.ValidationException;
@@ -23,13 +23,13 @@ final class ResourceConfigMerger {
     static ResourceConfig merge(ResourceConfig existing, JsonNode patchNode, ObjectMapper objectMapper) {
         try {
             return doMerge(existing, patchNode, objectMapper);
-        } catch (JsonMappingException e) {
+        } catch (JsonProcessingException e) {
             throw new ValidationException("Invalid config patch: " + e.getMessage());
         }
     }
 
     private static ResourceConfig doMerge(ResourceConfig existing, JsonNode patchNode, ObjectMapper objectMapper)
-            throws JsonMappingException {
+            throws JsonProcessingException {
         ResourceConfig result = existing != null ? DeepClone.of(existing, objectMapper) : new ResourceConfig();
 
         if (patchNode.has("hosting") && !patchNode.get("hosting").isNull()) {
@@ -65,7 +65,7 @@ final class ResourceConfigMerger {
             result.setEnv(merged);
         }
         if (patchNode.has("runMode") && !patchNode.get("runMode").isNull()) {
-            result.setRunMode(RunMode.valueOf(patchNode.get("runMode").asText()));
+            result.setRunMode(objectMapper.treeToValue(patchNode.get("runMode"), RunMode.class));
         }
         return result;
     }

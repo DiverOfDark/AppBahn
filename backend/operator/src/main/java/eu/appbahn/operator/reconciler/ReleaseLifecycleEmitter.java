@@ -29,9 +29,9 @@ import org.springframework.stereotype.Component;
  * {@code observedEnvHash}, and {@code observedPinnedImageRef}. A bump in
  * {@code spec.restartGeneration}, an env-hash change with the same {@code imageRef}, or a
  * change in {@code spec.pinnedRelease.imageRef} (set / swap / clear) flips the operator into
- * "ACTIVATING" for a fresh {@code observedReleaseId} (a UUID minted here), then advances to
- * {@code ACTIVE} once the rollout reaches {@link RolloutStatus#Healthy} (or {@code FAILED} on
- * terminal failure).
+ * {@link BuildLifecycle#ACTIVATING} for a fresh {@code observedReleaseId} (a UUID minted here),
+ * then advances to {@link BuildLifecycle#ACTIVE} once the rollout reaches
+ * {@link RolloutStatus#Healthy} (or {@link BuildLifecycle#FAILED} on terminal failure).
  */
 @Component
 public class ReleaseLifecycleEmitter {

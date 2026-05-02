@@ -20,14 +20,14 @@ type AuditDecision string
 
 // List of AuditDecision
 const (
-	AUDITDECISION_ALLOWED AuditDecision = "ALLOWED"
-	AUDITDECISION_DENIED  AuditDecision = "DENIED"
+	ALLOWED AuditDecision = "Allowed"
+	DENIED  AuditDecision = "Denied"
 )
 
 // All allowed values of AuditDecision enum
 var AllowedAuditDecisionEnumValues = []AuditDecision{
-	"ALLOWED",
-	"DENIED",
+	"Allowed",
+	"Denied",
 }
 
 func (v *AuditDecision) UnmarshalJSON(src []byte) error {

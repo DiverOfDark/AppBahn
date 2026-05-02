@@ -1,6 +1,6 @@
 package eu.appbahn.shared.crd;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Rollout state when the Resource resolves its image via {@code spec.release.fromImageSource}.
@@ -10,14 +10,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * pod-state).
  */
 public enum RolloutStatus {
+    @JsonProperty("Pending")
     Pending,
-    Deploying,
-    Healthy,
-    Degraded,
-    Failed;
 
-    @JsonValue
-    public String getValue() {
-        return name();
-    }
+    @JsonProperty("Deploying")
+    Deploying,
+
+    @JsonProperty("Healthy")
+    Healthy,
+
+    @JsonProperty("Degraded")
+    Degraded,
+
+    @JsonProperty("Failed")
+    Failed
 }
