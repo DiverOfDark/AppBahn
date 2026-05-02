@@ -4170,11 +4170,92 @@ components:
         message:
           type: string
         universalBuild:
-          type: array
-          items:
-            type: object
+          $ref: "#/components/schemas/PeelboxBuildOptions"
         error:
           type: string
+    BuildMetadata:
+      type: object
+      properties:
+        language:
+          type: string
+        framework:
+          type: string
+        reasoning:
+          type: string
+        project_name:
+          type: string
+        build_system:
+          type: string
+    BuildStage:
+      type: object
+      properties:
+        packages:
+          type: array
+          items:
+            type: string
+        env:
+          type: object
+          additionalProperties:
+            type: string
+        commands:
+          type: array
+          items:
+            type: string
+        cache:
+          type: array
+          items:
+            type: string
+    CopySpec:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+    HealthCheck:
+      type: object
+      properties:
+        endpoint:
+          type: string
+    PeelboxBuildOptions:
+      type: object
+      properties:
+        version:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/BuildMetadata"
+        build:
+          $ref: "#/components/schemas/BuildStage"
+        runtime:
+          $ref: "#/components/schemas/RuntimeStage"
+    RuntimeStage:
+      type: object
+      properties:
+        packages:
+          type: array
+          items:
+            type: string
+        env:
+          type: object
+          additionalProperties:
+            type: string
+        copy:
+          type: array
+          items:
+            $ref: "#/components/schemas/CopySpec"
+        command:
+          type: array
+          items:
+            type: string
+        workdir:
+          type: string
+        ports:
+          type: array
+          items:
+            type: integer
+            format: int32
+        health:
+          $ref: "#/components/schemas/HealthCheck"
     PagedEnvironmentResponse:
       type: object
       properties:

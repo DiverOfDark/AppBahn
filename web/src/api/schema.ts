@@ -1964,8 +1964,47 @@ export interface components {
       status?: string
       step?: string
       message?: string
-      universalBuild?: Record<string, never>[]
+      universalBuild?: components['schemas']['PeelboxBuildOptions']
       error?: string
+    }
+    BuildMetadata: {
+      language?: string
+      framework?: string
+      reasoning?: string
+      project_name?: string
+      build_system?: string
+    }
+    BuildStage: {
+      packages?: string[]
+      env?: {
+        [key: string]: string
+      }
+      commands?: string[]
+      cache?: string[]
+    }
+    CopySpec: {
+      from?: string
+      to?: string
+    }
+    HealthCheck: {
+      endpoint?: string
+    }
+    PeelboxBuildOptions: {
+      version?: string
+      metadata?: components['schemas']['BuildMetadata']
+      build?: components['schemas']['BuildStage']
+      runtime?: components['schemas']['RuntimeStage']
+    }
+    RuntimeStage: {
+      packages?: string[]
+      env?: {
+        [key: string]: string
+      }
+      copy?: components['schemas']['CopySpec'][]
+      command?: string[]
+      workdir?: string
+      ports?: number[]
+      health?: components['schemas']['HealthCheck']
     }
     PagedEnvironmentResponse: {
       /** Format: int32 */
