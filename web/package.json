@@ -20,6 +20,7 @@
     "format:check": "prettier --check --experimental-cli src/",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -31,9 +32,11 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.5",
+    "@vitest/coverage-v8": "^4.1.5",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/test-utils": "^2.4.9",
     "@vue/tsconfig": "^0.9.1",
@@ -51,7 +54,6 @@
     "vite": "^8.0.9",
     "vite-plugin-vue-devtools": "^8.1.1",
     "vitest": "^4.1.2",
-    "@playwright/test": "^1.52.0",
     "vue-tsc": "^3.2.7"
   },
   "engines": {
