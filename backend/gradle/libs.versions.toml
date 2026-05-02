@@ -18,6 +18,11 @@ okhttp = "5.3.2"
 # into independent release trains — the CLI is much newer than the latest SDK.
 allure = "2.34.0"
 allure-cli = "2.39.0"
+# Pinned to the same version Gradle's `jacoco` plugin uses (see backend/build.gradle.kts —
+# `JacocoPluginExtension.toolVersion`). Bump both together; the `.exec` binary format must match
+# the agent that wrote the file, and the agent jar is consumed by the e2e suite to instrument
+# the platform/operator JVMs running inside K3s.
+jacoco = "0.8.13"
 littleproxy = "2.7.0"
 git-properties = "2.5.7"
 node-gradle = "7.1.0"
@@ -108,6 +113,13 @@ littleproxy = { module = "io.github.littleproxy:littleproxy", version.ref = "lit
 spring-context = { module = "org.springframework:spring-context" }
 spring-test = { module = "org.springframework:spring-test" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple" }
+
+# JaCoCo runtime + agent — the e2e module dumps coverage from the in-cluster platform/operator
+# JVMs via the agent's TCP-server protocol (RemoteControlReader/Writer in jacoco-core).
+# The standalone agent jar (classifier=runtime) is declared inline in :e2e/build.gradle.kts —
+# the version catalog's `[libraries]` table doesn't support classifiers.
+jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
+jacoco-report = { module = "org.jacoco:org.jacoco.report", version.ref = "jacoco" }
 
 [plugins]
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "git-properties" }

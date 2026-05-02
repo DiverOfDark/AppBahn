@@ -38,11 +38,27 @@ spec:
             - name: webhook
               containerPort: 8443
               protocol: TCP
+            {{- if .Values.operator.coverage.enabled }}
+            - name: jacoco
+              containerPort: {{ .Values.operator.coverage.port }}
+              protocol: TCP
+            {{- end }}
           volumeMounts:
             - name: webhook-tls
               mountPath: /etc/webhook/tls
               readOnly: true
+            {{- if .Values.operator.coverage.enabled }}
+            - name: jacoco-agent
+              mountPath: /jacoco/jacocoagent.jar
+              readOnly: true
+            {{- end }}
           env:
+            {{- if .Values.operator.coverage.enabled }}
+            # Same rationale as platform.coverage — see platform-deployment.yaml. JOSDK + Spring
+            # forward JAVA_TOOL_OPTIONS unchanged through the buildpack launcher.
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/jacoco/jacocoagent.jar=output=tcpserver,address=*,port={{ .Values.operator.coverage.port }},includes={{ .Values.operator.coverage.includes }},append=false"
+            {{- end }}
             - name: OPERATOR_CLUSTERNAME
               value: {{ .Values.operator.clusterName | quote }}
             # Full platform origin (scheme + host[:port]). Defaults to the in-cluster Service.
@@ -118,3 +134,9 @@ spec:
         - name: webhook-tls
           secret:
             secretName: {{ include "appbahn.fullname" . }}-webhook-tls
+        {{- if .Values.operator.coverage.enabled }}
+        - name: jacoco-agent
+          hostPath:
+            path: {{ .Values.operator.coverage.agentHostPath | quote }}
+            type: File
+        {{- end }}

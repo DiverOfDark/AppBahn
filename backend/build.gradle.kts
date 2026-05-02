@@ -44,7 +44,7 @@ subprojects {
     apply(plugin = "jacoco")
 
     configure<JacocoPluginExtension> {
-        toolVersion = "0.8.13"
+        toolVersion = rootProject.libs.versions.jacoco.get()
     }
 
     tasks.withType<JacocoReport>().configureEach {
@@ -125,12 +125,12 @@ subprojects {
     }
 }
 
-// Aggregate JaCoCo report consumed by Codecov, produced via Gradle's first-party
+// Aggregate JaCoCo report consumed by Codecov (flag=java), produced via Gradle's first-party
 // `jacoco-report-aggregation` plugin. :e2e is omitted — its `test` task is disabled (the suite
 // runs through `e2eTest` against a real K3s cluster) and its `src/main` holds test infrastructure,
-// not production code. PR4 in the coverage epic will attach the JaCoCo agent to the
-// platform/operator JVMs running inside the e2e cluster and merge those `.exec` dumps into the
-// `testCodeCoverageReport` task's `executionData`.
+// not production code. The :e2e module produces its own JaCoCo report (flag=java-e2e) via the
+// `e2eCodeCoverageReport` task, instrumenting the platform/operator JVMs running inside K3s and
+// uploading the resulting XML to Codecov as a separate flag — Codecov takes the union per file.
 dependencies {
     jacocoAggregation(project(":shared"))
     jacocoAggregation(project(":platform:api-spec"))

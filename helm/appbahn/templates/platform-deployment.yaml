@@ -35,7 +35,26 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            {{- if .Values.platform.coverage.enabled }}
+            - name: jacoco
+              containerPort: {{ .Values.platform.coverage.port }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.platform.coverage.enabled }}
+          volumeMounts:
+            - name: jacoco-agent
+              mountPath: /jacoco/jacocoagent.jar
+              readOnly: true
+          {{- end }}
           env:
+            {{- if .Values.platform.coverage.enabled }}
+            # Spring Boot honours JAVA_TOOL_OPTIONS at JVM start; the buildpack-built image
+            # forwards it untouched. `output=tcpserver` makes the agent listen on a port we can
+            # connect to mid-suite to dump+reset (vs `output=file` which only writes on JVM exit
+            # and would force a pod restart per dump).
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/jacoco/jacocoagent.jar=output=tcpserver,address=*,port={{ .Values.platform.coverage.port }},includes={{ .Values.platform.coverage.includes }},append=false"
+            {{- end }}
             # Database
             - name: SPRING_DATASOURCE_URL
               value: {{ .Values.platform.database.url | quote }}
@@ -131,3 +150,10 @@ spec:
             {{- toYaml .Values.platform.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.platform.resources | nindent 12 }}
+      {{- if .Values.platform.coverage.enabled }}
+      volumes:
+        - name: jacoco-agent
+          hostPath:
+            path: {{ .Values.platform.coverage.agentHostPath | quote }}
+            type: File
+      {{- end }}
