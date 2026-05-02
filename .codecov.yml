@@ -13,6 +13,11 @@ coverage:
           - java
         target: auto
         threshold: 2%
+      typescript:
+        flags:
+          - typescript
+        target: auto
+        threshold: 2%
     patch:
       default:
         target: 70%
@@ -22,6 +27,9 @@ flags:
   java:
     paths:
       - backend/
+  typescript:
+    paths:
+      - web/src/
 
 ignore:
   - "backend/**/build/generated/**"
@@ -29,6 +37,11 @@ ignore:
   - "**/AppBahnApplication.java"
   - "**/OperatorApplication.java"
   - "backend/e2e/**"
+  - "web/src/api/schema.ts"
+  - "web/src/main.ts"
+  - "web/src/env.d.ts"
+  - "web/e2e/**"
+  - "web/dist/**"
 
 comment:
   layout: "reach,diff,flags,files"
