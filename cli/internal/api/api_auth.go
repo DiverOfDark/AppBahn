@@ -18,39 +18,12 @@ import (
 	"net/url"
 )
 
-type AuthAPI interface {
-
-	/*
-		AuthCallback Method for AuthCallback
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiAuthCallbackRequest
-	*/
-	AuthCallback(ctx context.Context) ApiAuthCallbackRequest
-
-	// AuthCallbackExecute executes the request
-	//  @return map[string]interface{}
-	AuthCallbackExecute(r ApiAuthCallbackRequest) (map[string]interface{}, *http.Response, error)
-
-	/*
-		AuthLogin Method for AuthLogin
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiAuthLoginRequest
-	*/
-	AuthLogin(ctx context.Context) ApiAuthLoginRequest
-
-	// AuthLoginExecute executes the request
-	//  @return map[string]interface{}
-	AuthLoginExecute(r ApiAuthLoginRequest) (map[string]interface{}, *http.Response, error)
-}
-
 // AuthAPIService AuthAPI service
 type AuthAPIService service
 
 type ApiAuthCallbackRequest struct {
 	ctx        context.Context
-	ApiService AuthAPI
+	ApiService *AuthAPIService
 	code       *string
 	state      *string
 }
@@ -166,7 +139,7 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (map[stri
 
 type ApiAuthLoginRequest struct {
 	ctx        context.Context
-	ApiService AuthAPI
+	ApiService *AuthAPIService
 }
 
 func (r ApiAuthLoginRequest) Execute() (map[string]interface{}, *http.Response, error) {

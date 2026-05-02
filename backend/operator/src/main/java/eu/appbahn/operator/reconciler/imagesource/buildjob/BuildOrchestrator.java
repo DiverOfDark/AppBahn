@@ -8,6 +8,7 @@ import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
 import eu.appbahn.shared.crd.imagesource.LatestArtifact;
 import eu.appbahn.shared.crd.imagesource.PendingBuild;
+import eu.appbahn.shared.jackson.JacksonEnums;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobCondition;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -348,7 +349,7 @@ public class BuildOrchestrator {
         event.setImageSourceName(source.getMetadata().getName());
         event.setImageSourceNamespace(source.getMetadata().getNamespace());
         event.setDeploymentId(build.getDeploymentId());
-        event.setLifecycle(BuildLifecycleEvent.LifecycleEnum.fromValue(lifecycle.name()));
+        event.setLifecycle(BuildLifecycleEvent.LifecycleEnum.fromValue(JacksonEnums.wireValue(lifecycle)));
         event.setSourceCommit(build.getSourceCommit());
         event.setImageRef(imageRef);
         event.setErrorMessage(errorMessage);

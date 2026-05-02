@@ -19,207 +19,12 @@ import (
 	"strings"
 )
 
-type EnvironmentsAPI interface {
-
-	/*
-		CreateEnvironment Method for CreateEnvironment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiCreateEnvironmentRequest
-	*/
-	CreateEnvironment(ctx context.Context) ApiCreateEnvironmentRequest
-
-	// CreateEnvironmentExecute executes the request
-	//  @return Environment
-	CreateEnvironmentExecute(r ApiCreateEnvironmentRequest) (*Environment, *http.Response, error)
-
-	/*
-		CreateEnvironmentToken Method for CreateEnvironmentToken
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiCreateEnvironmentTokenRequest
-	*/
-	CreateEnvironmentToken(ctx context.Context, slug string) ApiCreateEnvironmentTokenRequest
-
-	// CreateEnvironmentTokenExecute executes the request
-	//  @return CreateEnvironmentTokenResponse
-	CreateEnvironmentTokenExecute(r ApiCreateEnvironmentTokenRequest) (*CreateEnvironmentTokenResponse, *http.Response, error)
-
-	/*
-		DeleteEnvironment Method for DeleteEnvironment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiDeleteEnvironmentRequest
-	*/
-	DeleteEnvironment(ctx context.Context, slug string) ApiDeleteEnvironmentRequest
-
-	// DeleteEnvironmentExecute executes the request
-	DeleteEnvironmentExecute(r ApiDeleteEnvironmentRequest) (*http.Response, error)
-
-	/*
-		DeleteEnvironmentMemberRole Method for DeleteEnvironmentMemberRole
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param userId
-		@return ApiDeleteEnvironmentMemberRoleRequest
-	*/
-	DeleteEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiDeleteEnvironmentMemberRoleRequest
-
-	// DeleteEnvironmentMemberRoleExecute executes the request
-	DeleteEnvironmentMemberRoleExecute(r ApiDeleteEnvironmentMemberRoleRequest) (*http.Response, error)
-
-	/*
-		DeleteEnvironmentToken Method for DeleteEnvironmentToken
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param tokenId
-		@return ApiDeleteEnvironmentTokenRequest
-	*/
-	DeleteEnvironmentToken(ctx context.Context, slug string, tokenId string) ApiDeleteEnvironmentTokenRequest
-
-	// DeleteEnvironmentTokenExecute executes the request
-	DeleteEnvironmentTokenExecute(r ApiDeleteEnvironmentTokenRequest) (*http.Response, error)
-
-	/*
-		GetEnvironment Method for GetEnvironment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetEnvironmentRequest
-	*/
-	GetEnvironment(ctx context.Context, slug string) ApiGetEnvironmentRequest
-
-	// GetEnvironmentExecute executes the request
-	//  @return Environment
-	GetEnvironmentExecute(r ApiGetEnvironmentRequest) (*Environment, *http.Response, error)
-
-	/*
-		GetEnvironmentQuota Method for GetEnvironmentQuota
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetEnvironmentQuotaRequest
-	*/
-	GetEnvironmentQuota(ctx context.Context, slug string) ApiGetEnvironmentQuotaRequest
-
-	// GetEnvironmentQuotaExecute executes the request
-	//  @return Quota
-	GetEnvironmentQuotaExecute(r ApiGetEnvironmentQuotaRequest) (*Quota, *http.Response, error)
-
-	/*
-		ListEnvironmentTokens Method for ListEnvironmentTokens
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiListEnvironmentTokensRequest
-	*/
-	ListEnvironmentTokens(ctx context.Context, slug string) ApiListEnvironmentTokensRequest
-
-	// ListEnvironmentTokensExecute executes the request
-	//  @return []EnvironmentToken
-	ListEnvironmentTokensExecute(r ApiListEnvironmentTokensRequest) ([]EnvironmentToken, *http.Response, error)
-
-	/*
-		ListEnvironments Method for ListEnvironments
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiListEnvironmentsRequest
-	*/
-	ListEnvironments(ctx context.Context) ApiListEnvironmentsRequest
-
-	// ListEnvironmentsExecute executes the request
-	//  @return PagedEnvironmentResponse
-	ListEnvironmentsExecute(r ApiListEnvironmentsRequest) (*PagedEnvironmentResponse, *http.Response, error)
-
-	/*
-		SetApprovalGates Method for SetApprovalGates
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiSetApprovalGatesRequest
-	*/
-	SetApprovalGates(ctx context.Context, slug string) ApiSetApprovalGatesRequest
-
-	// SetApprovalGatesExecute executes the request
-	//  @return Environment
-	SetApprovalGatesExecute(r ApiSetApprovalGatesRequest) (*Environment, *http.Response, error)
-
-	/*
-		SetEnvironmentMemberRole Method for SetEnvironmentMemberRole
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param userId
-		@return ApiSetEnvironmentMemberRoleRequest
-	*/
-	SetEnvironmentMemberRole(ctx context.Context, slug string, userId string) ApiSetEnvironmentMemberRoleRequest
-
-	// SetEnvironmentMemberRoleExecute executes the request
-	SetEnvironmentMemberRoleExecute(r ApiSetEnvironmentMemberRoleRequest) (*http.Response, error)
-
-	/*
-		SetEnvironmentQuota Method for SetEnvironmentQuota
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiSetEnvironmentQuotaRequest
-	*/
-	SetEnvironmentQuota(ctx context.Context, slug string) ApiSetEnvironmentQuotaRequest
-
-	// SetEnvironmentQuotaExecute executes the request
-	//  @return Quota
-	SetEnvironmentQuotaExecute(r ApiSetEnvironmentQuotaRequest) (*Quota, *http.Response, error)
-
-	/*
-		SetEnvironmentRegistry Method for SetEnvironmentRegistry
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiSetEnvironmentRegistryRequest
-	*/
-	SetEnvironmentRegistry(ctx context.Context, slug string) ApiSetEnvironmentRegistryRequest
-
-	// SetEnvironmentRegistryExecute executes the request
-	//  @return Environment
-	SetEnvironmentRegistryExecute(r ApiSetEnvironmentRegistryRequest) (*Environment, *http.Response, error)
-
-	/*
-		SetTargetCluster Method for SetTargetCluster
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiSetTargetClusterRequest
-	*/
-	SetTargetCluster(ctx context.Context, slug string) ApiSetTargetClusterRequest
-
-	// SetTargetClusterExecute executes the request
-	//  @return Environment
-	SetTargetClusterExecute(r ApiSetTargetClusterRequest) (*Environment, *http.Response, error)
-
-	/*
-		UpdateEnvironment Method for UpdateEnvironment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiUpdateEnvironmentRequest
-	*/
-	UpdateEnvironment(ctx context.Context, slug string) ApiUpdateEnvironmentRequest
-
-	// UpdateEnvironmentExecute executes the request
-	//  @return Environment
-	UpdateEnvironmentExecute(r ApiUpdateEnvironmentRequest) (*Environment, *http.Response, error)
-}
-
 // EnvironmentsAPIService EnvironmentsAPI service
 type EnvironmentsAPIService service
 
 type ApiCreateEnvironmentRequest struct {
 	ctx                      context.Context
-	ApiService               EnvironmentsAPI
+	ApiService               *EnvironmentsAPIService
 	createEnvironmentRequest *CreateEnvironmentRequest
 	idempotencyKey           *string
 }
@@ -338,7 +143,7 @@ func (a *EnvironmentsAPIService) CreateEnvironmentExecute(r ApiCreateEnvironment
 
 type ApiCreateEnvironmentTokenRequest struct {
 	ctx                           context.Context
-	ApiService                    EnvironmentsAPI
+	ApiService                    *EnvironmentsAPIService
 	slug                          string
 	idempotencyKey                *string
 	createEnvironmentTokenRequest *CreateEnvironmentTokenRequest
@@ -458,7 +263,7 @@ func (a *EnvironmentsAPIService) CreateEnvironmentTokenExecute(r ApiCreateEnviro
 
 type ApiDeleteEnvironmentRequest struct {
 	ctx            context.Context
-	ApiService     EnvironmentsAPI
+	ApiService     *EnvironmentsAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -558,7 +363,7 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentExecute(r ApiDeleteEnvironment
 
 type ApiDeleteEnvironmentMemberRoleRequest struct {
 	ctx            context.Context
-	ApiService     EnvironmentsAPI
+	ApiService     *EnvironmentsAPIService
 	slug           string
 	userId         string
 	idempotencyKey *string
@@ -662,7 +467,7 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentMemberRoleExecute(r ApiDeleteE
 
 type ApiDeleteEnvironmentTokenRequest struct {
 	ctx            context.Context
-	ApiService     EnvironmentsAPI
+	ApiService     *EnvironmentsAPIService
 	slug           string
 	tokenId        string
 	idempotencyKey *string
@@ -766,7 +571,7 @@ func (a *EnvironmentsAPIService) DeleteEnvironmentTokenExecute(r ApiDeleteEnviro
 
 type ApiGetEnvironmentRequest struct {
 	ctx        context.Context
-	ApiService EnvironmentsAPI
+	ApiService *EnvironmentsAPIService
 	slug       string
 }
 
@@ -868,7 +673,7 @@ func (a *EnvironmentsAPIService) GetEnvironmentExecute(r ApiGetEnvironmentReques
 
 type ApiGetEnvironmentQuotaRequest struct {
 	ctx        context.Context
-	ApiService EnvironmentsAPI
+	ApiService *EnvironmentsAPIService
 	slug       string
 }
 
@@ -970,7 +775,7 @@ func (a *EnvironmentsAPIService) GetEnvironmentQuotaExecute(r ApiGetEnvironmentQ
 
 type ApiListEnvironmentTokensRequest struct {
 	ctx        context.Context
-	ApiService EnvironmentsAPI
+	ApiService *EnvironmentsAPIService
 	slug       string
 }
 
@@ -1072,7 +877,7 @@ func (a *EnvironmentsAPIService) ListEnvironmentTokensExecute(r ApiListEnvironme
 
 type ApiListEnvironmentsRequest struct {
 	ctx         context.Context
-	ApiService  EnvironmentsAPI
+	ApiService  *EnvironmentsAPIService
 	projectSlug *string
 	page        *int32
 	size        *int32
@@ -1206,7 +1011,7 @@ func (a *EnvironmentsAPIService) ListEnvironmentsExecute(r ApiListEnvironmentsRe
 
 type ApiSetApprovalGatesRequest struct {
 	ctx                 context.Context
-	ApiService          EnvironmentsAPI
+	ApiService          *EnvironmentsAPIService
 	slug                string
 	idempotencyKey      *string
 	approvalGatesConfig *ApprovalGatesConfig
@@ -1326,7 +1131,7 @@ func (a *EnvironmentsAPIService) SetApprovalGatesExecute(r ApiSetApprovalGatesRe
 
 type ApiSetEnvironmentMemberRoleRequest struct {
 	ctx                 context.Context
-	ApiService          EnvironmentsAPI
+	ApiService          *EnvironmentsAPIService
 	slug                string
 	userId              string
 	idempotencyKey      *string
@@ -1438,7 +1243,7 @@ func (a *EnvironmentsAPIService) SetEnvironmentMemberRoleExecute(r ApiSetEnviron
 
 type ApiSetEnvironmentQuotaRequest struct {
 	ctx            context.Context
-	ApiService     EnvironmentsAPI
+	ApiService     *EnvironmentsAPIService
 	slug           string
 	idempotencyKey *string
 	quota          *Quota
@@ -1558,7 +1363,7 @@ func (a *EnvironmentsAPIService) SetEnvironmentQuotaExecute(r ApiSetEnvironmentQ
 
 type ApiSetEnvironmentRegistryRequest struct {
 	ctx            context.Context
-	ApiService     EnvironmentsAPI
+	ApiService     *EnvironmentsAPIService
 	slug           string
 	idempotencyKey *string
 	registryConfig *RegistryConfig
@@ -1678,7 +1483,7 @@ func (a *EnvironmentsAPIService) SetEnvironmentRegistryExecute(r ApiSetEnvironme
 
 type ApiSetTargetClusterRequest struct {
 	ctx                     context.Context
-	ApiService              EnvironmentsAPI
+	ApiService              *EnvironmentsAPIService
 	slug                    string
 	idempotencyKey          *string
 	setTargetClusterRequest *SetTargetClusterRequest
@@ -1798,7 +1603,7 @@ func (a *EnvironmentsAPIService) SetTargetClusterExecute(r ApiSetTargetClusterRe
 
 type ApiUpdateEnvironmentRequest struct {
 	ctx                      context.Context
-	ApiService               EnvironmentsAPI
+	ApiService               *EnvironmentsAPIService
 	slug                     string
 	idempotencyKey           *string
 	updateEnvironmentRequest *UpdateEnvironmentRequest

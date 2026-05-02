@@ -20,398 +20,12 @@ import (
 	"time"
 )
 
-type ResourcesAPI interface {
-
-	/*
-		AddDomain Method for AddDomain
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiAddDomainRequest
-	*/
-	AddDomain(ctx context.Context, slug string) ApiAddDomainRequest
-
-	// AddDomainExecute executes the request
-	//  @return DomainEntry
-	AddDomainExecute(r ApiAddDomainRequest) (*DomainEntry, *http.Response, error)
-
-	/*
-		ApproveDeployment Method for ApproveDeployment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param deploymentId
-		@return ApiApproveDeploymentRequest
-	*/
-	ApproveDeployment(ctx context.Context, slug string, deploymentId string) ApiApproveDeploymentRequest
-
-	// ApproveDeploymentExecute executes the request
-	ApproveDeploymentExecute(r ApiApproveDeploymentRequest) (*http.Response, error)
-
-	/*
-		CreateExposure Method for CreateExposure
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiCreateExposureRequest
-	*/
-	CreateExposure(ctx context.Context, slug string) ApiCreateExposureRequest
-
-	// CreateExposureExecute executes the request
-	//  @return ResourceExposure
-	CreateExposureExecute(r ApiCreateExposureRequest) (*ResourceExposure, *http.Response, error)
-
-	/*
-		CreateResource Method for CreateResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiCreateResourceRequest
-	*/
-	CreateResource(ctx context.Context) ApiCreateResourceRequest
-
-	// CreateResourceExecute executes the request
-	//  @return ResourceCreatedResponse
-	CreateResourceExecute(r ApiCreateResourceRequest) (*ResourceCreatedResponse, *http.Response, error)
-
-	/*
-		DeleteExposure Method for DeleteExposure
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param port
-		@return ApiDeleteExposureRequest
-	*/
-	DeleteExposure(ctx context.Context, slug string, port int32) ApiDeleteExposureRequest
-
-	// DeleteExposureExecute executes the request
-	DeleteExposureExecute(r ApiDeleteExposureRequest) (*http.Response, error)
-
-	/*
-		DeleteResource Method for DeleteResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiDeleteResourceRequest
-	*/
-	DeleteResource(ctx context.Context, slug string) ApiDeleteResourceRequest
-
-	// DeleteResourceExecute executes the request
-	DeleteResourceExecute(r ApiDeleteResourceRequest) (*http.Response, error)
-
-	/*
-		GetDeployment Method for GetDeployment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param deploymentId
-		@return ApiGetDeploymentRequest
-	*/
-	GetDeployment(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentRequest
-
-	// GetDeploymentExecute executes the request
-	//  @return Deployment
-	GetDeploymentExecute(r ApiGetDeploymentRequest) (*Deployment, *http.Response, error)
-
-	/*
-		GetDeploymentApprovals Method for GetDeploymentApprovals
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param deploymentId
-		@return ApiGetDeploymentApprovalsRequest
-	*/
-	GetDeploymentApprovals(ctx context.Context, slug string, deploymentId string) ApiGetDeploymentApprovalsRequest
-
-	// GetDeploymentApprovalsExecute executes the request
-	//  @return []DeploymentApproval
-	GetDeploymentApprovalsExecute(r ApiGetDeploymentApprovalsRequest) ([]DeploymentApproval, *http.Response, error)
-
-	/*
-		GetResource Method for GetResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceRequest
-	*/
-	GetResource(ctx context.Context, slug string) ApiGetResourceRequest
-
-	// GetResourceExecute executes the request
-	//  @return Resource
-	GetResourceExecute(r ApiGetResourceRequest) (*Resource, *http.Response, error)
-
-	/*
-		GetResourceConnection Method for GetResourceConnection
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceConnectionRequest
-	*/
-	GetResourceConnection(ctx context.Context, slug string) ApiGetResourceConnectionRequest
-
-	// GetResourceConnectionExecute executes the request
-	//  @return ConnectionResponse
-	GetResourceConnectionExecute(r ApiGetResourceConnectionRequest) (*ConnectionResponse, *http.Response, error)
-
-	/*
-		GetResourceCpuMetrics Method for GetResourceCpuMetrics
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceCpuMetricsRequest
-	*/
-	GetResourceCpuMetrics(ctx context.Context, slug string) ApiGetResourceCpuMetricsRequest
-
-	// GetResourceCpuMetricsExecute executes the request
-	//  @return MetricsResponse
-	GetResourceCpuMetricsExecute(r ApiGetResourceCpuMetricsRequest) (*MetricsResponse, *http.Response, error)
-
-	/*
-		GetResourceLogs Method for GetResourceLogs
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceLogsRequest
-	*/
-	GetResourceLogs(ctx context.Context, slug string) ApiGetResourceLogsRequest
-
-	// GetResourceLogsExecute executes the request
-	//  @return LogResponse
-	GetResourceLogsExecute(r ApiGetResourceLogsRequest) (*LogResponse, *http.Response, error)
-
-	/*
-		GetResourceNetworkInbound Method for GetResourceNetworkInbound
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceNetworkInboundRequest
-	*/
-	GetResourceNetworkInbound(ctx context.Context, slug string) ApiGetResourceNetworkInboundRequest
-
-	// GetResourceNetworkInboundExecute executes the request
-	//  @return MetricsResponse
-	GetResourceNetworkInboundExecute(r ApiGetResourceNetworkInboundRequest) (*MetricsResponse, *http.Response, error)
-
-	/*
-		GetResourceNetworkOutbound Method for GetResourceNetworkOutbound
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceNetworkOutboundRequest
-	*/
-	GetResourceNetworkOutbound(ctx context.Context, slug string) ApiGetResourceNetworkOutboundRequest
-
-	// GetResourceNetworkOutboundExecute executes the request
-	//  @return MetricsResponse
-	GetResourceNetworkOutboundExecute(r ApiGetResourceNetworkOutboundRequest) (*MetricsResponse, *http.Response, error)
-
-	/*
-		GetResourceRamMetrics Method for GetResourceRamMetrics
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceRamMetricsRequest
-	*/
-	GetResourceRamMetrics(ctx context.Context, slug string) ApiGetResourceRamMetricsRequest
-
-	// GetResourceRamMetricsExecute executes the request
-	//  @return MetricsResponse
-	GetResourceRamMetricsExecute(r ApiGetResourceRamMetricsRequest) (*MetricsResponse, *http.Response, error)
-
-	/*
-		GetResourceWebhook Method for GetResourceWebhook
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiGetResourceWebhookRequest
-	*/
-	GetResourceWebhook(ctx context.Context, slug string) ApiGetResourceWebhookRequest
-
-	// GetResourceWebhookExecute executes the request
-	//  @return WebhookConfig
-	GetResourceWebhookExecute(r ApiGetResourceWebhookRequest) (*WebhookConfig, *http.Response, error)
-
-	/*
-		ListDeployments Method for ListDeployments
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiListDeploymentsRequest
-	*/
-	ListDeployments(ctx context.Context, slug string) ApiListDeploymentsRequest
-
-	// ListDeploymentsExecute executes the request
-	//  @return PagedDeploymentResponse
-	ListDeploymentsExecute(r ApiListDeploymentsRequest) (*PagedDeploymentResponse, *http.Response, error)
-
-	/*
-		ListDomains Method for ListDomains
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiListDomainsRequest
-	*/
-	ListDomains(ctx context.Context, slug string) ApiListDomainsRequest
-
-	// ListDomainsExecute executes the request
-	//  @return []DomainEntry
-	ListDomainsExecute(r ApiListDomainsRequest) ([]DomainEntry, *http.Response, error)
-
-	/*
-		ListExposures Method for ListExposures
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiListExposuresRequest
-	*/
-	ListExposures(ctx context.Context, slug string) ApiListExposuresRequest
-
-	// ListExposuresExecute executes the request
-	//  @return []ResourceExposure
-	ListExposuresExecute(r ApiListExposuresRequest) ([]ResourceExposure, *http.Response, error)
-
-	/*
-		ListResources Method for ListResources
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiListResourcesRequest
-	*/
-	ListResources(ctx context.Context) ApiListResourcesRequest
-
-	// ListResourcesExecute executes the request
-	//  @return PagedResourceResponse
-	ListResourcesExecute(r ApiListResourcesRequest) (*PagedResourceResponse, *http.Response, error)
-
-	/*
-		PromoteResource Method for PromoteResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiPromoteResourceRequest
-	*/
-	PromoteResource(ctx context.Context, slug string) ApiPromoteResourceRequest
-
-	// PromoteResourceExecute executes the request
-	PromoteResourceExecute(r ApiPromoteResourceRequest) (*http.Response, error)
-
-	/*
-		RejectDeployment Method for RejectDeployment
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param deploymentId
-		@return ApiRejectDeploymentRequest
-	*/
-	RejectDeployment(ctx context.Context, slug string, deploymentId string) ApiRejectDeploymentRequest
-
-	// RejectDeploymentExecute executes the request
-	RejectDeploymentExecute(r ApiRejectDeploymentRequest) (*http.Response, error)
-
-	/*
-		RemoveDomain Method for RemoveDomain
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@param domain
-		@return ApiRemoveDomainRequest
-	*/
-	RemoveDomain(ctx context.Context, slug string, domain string) ApiRemoveDomainRequest
-
-	// RemoveDomainExecute executes the request
-	RemoveDomainExecute(r ApiRemoveDomainRequest) (*http.Response, error)
-
-	/*
-		RestartResource Method for RestartResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiRestartResourceRequest
-	*/
-	RestartResource(ctx context.Context, slug string) ApiRestartResourceRequest
-
-	// RestartResourceExecute executes the request
-	RestartResourceExecute(r ApiRestartResourceRequest) (*http.Response, error)
-
-	/*
-		RollbackResource Method for RollbackResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiRollbackResourceRequest
-	*/
-	RollbackResource(ctx context.Context, slug string) ApiRollbackResourceRequest
-
-	// RollbackResourceExecute executes the request
-	RollbackResourceExecute(r ApiRollbackResourceRequest) (*http.Response, error)
-
-	/*
-		RotateWebhookSecret Method for RotateWebhookSecret
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiRotateWebhookSecretRequest
-	*/
-	RotateWebhookSecret(ctx context.Context, slug string) ApiRotateWebhookSecretRequest
-
-	// RotateWebhookSecretExecute executes the request
-	//  @return WebhookConfig
-	RotateWebhookSecretExecute(r ApiRotateWebhookSecretRequest) (*WebhookConfig, *http.Response, error)
-
-	/*
-		StartResource Method for StartResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiStartResourceRequest
-	*/
-	StartResource(ctx context.Context, slug string) ApiStartResourceRequest
-
-	// StartResourceExecute executes the request
-	StartResourceExecute(r ApiStartResourceRequest) (*http.Response, error)
-
-	/*
-		StopResource Method for StopResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiStopResourceRequest
-	*/
-	StopResource(ctx context.Context, slug string) ApiStopResourceRequest
-
-	// StopResourceExecute executes the request
-	StopResourceExecute(r ApiStopResourceRequest) (*http.Response, error)
-
-	/*
-		UnpinResource Method for UnpinResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiUnpinResourceRequest
-	*/
-	UnpinResource(ctx context.Context, slug string) ApiUnpinResourceRequest
-
-	// UnpinResourceExecute executes the request
-	UnpinResourceExecute(r ApiUnpinResourceRequest) (*http.Response, error)
-
-	/*
-		UpdateResource Method for UpdateResource
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param slug
-		@return ApiUpdateResourceRequest
-	*/
-	UpdateResource(ctx context.Context, slug string) ApiUpdateResourceRequest
-
-	// UpdateResourceExecute executes the request
-	//  @return Resource
-	UpdateResourceExecute(r ApiUpdateResourceRequest) (*Resource, *http.Response, error)
-}
-
 // ResourcesAPIService ResourcesAPI service
 type ResourcesAPIService service
 
 type ApiAddDomainRequest struct {
 	ctx              context.Context
-	ApiService       ResourcesAPI
+	ApiService       *ResourcesAPIService
 	slug             string
 	idempotencyKey   *string
 	addDomainRequest *AddDomainRequest
@@ -531,7 +145,7 @@ func (a *ResourcesAPIService) AddDomainExecute(r ApiAddDomainRequest) (*DomainEn
 
 type ApiApproveDeploymentRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	deploymentId   string
 	idempotencyKey *string
@@ -635,7 +249,7 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 
 type ApiCreateExposureRequest struct {
 	ctx                   context.Context
-	ApiService            ResourcesAPI
+	ApiService            *ResourcesAPIService
 	slug                  string
 	idempotencyKey        *string
 	createExposureRequest *CreateExposureRequest
@@ -755,7 +369,7 @@ func (a *ResourcesAPIService) CreateExposureExecute(r ApiCreateExposureRequest) 
 
 type ApiCreateResourceRequest struct {
 	ctx                   context.Context
-	ApiService            ResourcesAPI
+	ApiService            *ResourcesAPIService
 	createResourceRequest *CreateResourceRequest
 	idempotencyKey        *string
 }
@@ -874,7 +488,7 @@ func (a *ResourcesAPIService) CreateResourceExecute(r ApiCreateResourceRequest) 
 
 type ApiDeleteExposureRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	port           int32
 	idempotencyKey *string
@@ -978,7 +592,7 @@ func (a *ResourcesAPIService) DeleteExposureExecute(r ApiDeleteExposureRequest) 
 
 type ApiDeleteResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -1088,7 +702,7 @@ func (a *ResourcesAPIService) DeleteResourceExecute(r ApiDeleteResourceRequest) 
 
 type ApiGetDeploymentRequest struct {
 	ctx          context.Context
-	ApiService   ResourcesAPI
+	ApiService   *ResourcesAPIService
 	slug         string
 	deploymentId string
 }
@@ -1194,7 +808,7 @@ func (a *ResourcesAPIService) GetDeploymentExecute(r ApiGetDeploymentRequest) (*
 
 type ApiGetDeploymentApprovalsRequest struct {
 	ctx          context.Context
-	ApiService   ResourcesAPI
+	ApiService   *ResourcesAPIService
 	slug         string
 	deploymentId string
 }
@@ -1300,7 +914,7 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 
 type ApiGetResourceRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 }
 
@@ -1402,7 +1016,7 @@ func (a *ResourcesAPIService) GetResourceExecute(r ApiGetResourceRequest) (*Reso
 
 type ApiGetResourceConnectionRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 }
 
@@ -1504,7 +1118,7 @@ func (a *ResourcesAPIService) GetResourceConnectionExecute(r ApiGetResourceConne
 
 type ApiGetResourceCpuMetricsRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 	start      *string
 	end        *string
@@ -1642,7 +1256,7 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 
 type ApiGetResourceLogsRequest struct {
 	ctx          context.Context
-	ApiService   ResourcesAPI
+	ApiService   *ResourcesAPIService
 	slug         string
 	deploymentId *string
 	lines        *int32
@@ -1771,7 +1385,7 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 
 type ApiGetResourceNetworkInboundRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 	start      *string
 	end        *string
@@ -1909,7 +1523,7 @@ func (a *ResourcesAPIService) GetResourceNetworkInboundExecute(r ApiGetResourceN
 
 type ApiGetResourceNetworkOutboundRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 	start      *string
 	end        *string
@@ -2047,7 +1661,7 @@ func (a *ResourcesAPIService) GetResourceNetworkOutboundExecute(r ApiGetResource
 
 type ApiGetResourceRamMetricsRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 	start      *string
 	end        *string
@@ -2185,7 +1799,7 @@ func (a *ResourcesAPIService) GetResourceRamMetricsExecute(r ApiGetResourceRamMe
 
 type ApiGetResourceWebhookRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 }
 
@@ -2287,7 +1901,7 @@ func (a *ResourcesAPIService) GetResourceWebhookExecute(r ApiGetResourceWebhookR
 
 type ApiListDeploymentsRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 	page       *int32
 	size       *int32
@@ -2416,7 +2030,7 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 
 type ApiListDomainsRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 }
 
@@ -2518,7 +2132,7 @@ func (a *ResourcesAPIService) ListDomainsExecute(r ApiListDomainsRequest) ([]Dom
 
 type ApiListExposuresRequest struct {
 	ctx        context.Context
-	ApiService ResourcesAPI
+	ApiService *ResourcesAPIService
 	slug       string
 }
 
@@ -2620,7 +2234,7 @@ func (a *ResourcesAPIService) ListExposuresExecute(r ApiListExposuresRequest) ([
 
 type ApiListResourcesRequest struct {
 	ctx             context.Context
-	ApiService      ResourcesAPI
+	ApiService      *ResourcesAPIService
 	environmentSlug *string
 	page            *int32
 	size            *int32
@@ -2754,7 +2368,7 @@ func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*
 
 type ApiPromoteResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 	promoteRequest *PromoteRequest
@@ -2862,7 +2476,7 @@ func (a *ResourcesAPIService) PromoteResourceExecute(r ApiPromoteResourceRequest
 
 type ApiRejectDeploymentRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	deploymentId   string
 	idempotencyKey *string
@@ -2966,7 +2580,7 @@ func (a *ResourcesAPIService) RejectDeploymentExecute(r ApiRejectDeploymentReque
 
 type ApiRemoveDomainRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	domain         string
 	idempotencyKey *string
@@ -3070,7 +2684,7 @@ func (a *ResourcesAPIService) RemoveDomainExecute(r ApiRemoveDomainRequest) (*ht
 
 type ApiRestartResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -3170,7 +2784,7 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 
 type ApiRollbackResourceRequest struct {
 	ctx             context.Context
-	ApiService      ResourcesAPI
+	ApiService      *ResourcesAPIService
 	slug            string
 	idempotencyKey  *string
 	rollbackRequest *RollbackRequest
@@ -3278,7 +2892,7 @@ func (a *ResourcesAPIService) RollbackResourceExecute(r ApiRollbackResourceReque
 
 type ApiRotateWebhookSecretRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -3390,7 +3004,7 @@ func (a *ResourcesAPIService) RotateWebhookSecretExecute(r ApiRotateWebhookSecre
 
 type ApiStartResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -3490,7 +3104,7 @@ func (a *ResourcesAPIService) StartResourceExecute(r ApiStartResourceRequest) (*
 
 type ApiStopResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -3590,7 +3204,7 @@ func (a *ResourcesAPIService) StopResourceExecute(r ApiStopResourceRequest) (*ht
 
 type ApiUnpinResourceRequest struct {
 	ctx            context.Context
-	ApiService     ResourcesAPI
+	ApiService     *ResourcesAPIService
 	slug           string
 	idempotencyKey *string
 }
@@ -3690,7 +3304,7 @@ func (a *ResourcesAPIService) UnpinResourceExecute(r ApiUnpinResourceRequest) (*
 
 type ApiUpdateResourceRequest struct {
 	ctx                   context.Context
-	ApiService            ResourcesAPI
+	ApiService            *ResourcesAPIService
 	slug                  string
 	idempotencyKey        *string
 	updateResourceRequest *UpdateResourceRequest

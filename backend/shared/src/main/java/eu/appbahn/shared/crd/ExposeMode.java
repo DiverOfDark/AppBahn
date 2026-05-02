@@ -3,10 +3,10 @@ package eu.appbahn.shared.crd;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum ExposeMode {
-    @JsonProperty("none")
+    @JsonProperty("None")
     NONE,
-    @JsonProperty("ingress")
+    @JsonProperty("Ingress")
     INGRESS,
-    @JsonProperty("tcp")
+    @JsonProperty("Tcp")
     TCP;
 }

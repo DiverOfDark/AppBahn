@@ -44,11 +44,11 @@ spec:
                     type: object
                   mode:
                     enum:
-                    - buildpack
-                    - dockerfile
-                    - nixpacks
-                    - peelbox
-                    - railpack
+                    - Buildpack
+                    - Dockerfile
+                    - Nixpacks
+                    - Peelbox
+                    - Railpack
                     type: string
                 type: object
               git:
@@ -95,9 +95,9 @@ spec:
                 type: object
               type:
                 enum:
-                - git
-                - image
-                - imageSource
+                - Git
+                - Image
+                - ImageSource
                 type: string
             required:
             - type
@@ -146,14 +146,14 @@ spec:
                     type: string
                   lifecycle:
                     enum:
-                    - ACTIVATING
-                    - ACTIVE
-                    - BUILDING
-                    - BUILT
-                    - CANCELED
-                    - FAILED
-                    - QUEUED
-                    - SUPERSEDED
+                    - Activating
+                    - Active
+                    - Building
+                    - Built
+                    - Canceled
+                    - Failed
+                    - Queued
+                    - Superseded
                     type: string
                   sourceCommit:
                     type: string
@@ -170,14 +170,14 @@ spec:
                     type: string
                   lifecycle:
                     enum:
-                    - ACTIVATING
-                    - ACTIVE
-                    - BUILDING
-                    - BUILT
-                    - CANCELED
-                    - FAILED
-                    - QUEUED
-                    - SUPERSEDED
+                    - Activating
+                    - Active
+                    - Building
+                    - Built
+                    - Canceled
+                    - Failed
+                    - Queued
+                    - Superseded
                     type: string
                   sourceCommit:
                     type: string

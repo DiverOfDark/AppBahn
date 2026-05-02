@@ -208,7 +208,7 @@ async function inviteMember() {
       params: { path: { slug: wsSlug.value } },
       body: { email: inviteEmail.value.trim(), role: inviteRole.value },
     })
-    if (data?.status === 'PENDING') {
+    if (data?.status === 'Pending') {
       inviteResult.value = 'pending'
     }
     showInvite.value = false

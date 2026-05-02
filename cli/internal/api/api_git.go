@@ -19,64 +19,12 @@ import (
 	"strings"
 )
 
-type GitAPI interface {
-
-	/*
-		GetBuildDetectionStatus Method for GetBuildDetectionStatus
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@param jobId
-		@return ApiGetBuildDetectionStatusRequest
-	*/
-	GetBuildDetectionStatus(ctx context.Context, jobId string) ApiGetBuildDetectionStatusRequest
-
-	// GetBuildDetectionStatusExecute executes the request
-	//  @return BuildDetectionJob
-	GetBuildDetectionStatusExecute(r ApiGetBuildDetectionStatusRequest) (*BuildDetectionJob, *http.Response, error)
-
-	/*
-		ListGitRepos Method for ListGitRepos
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiListGitReposRequest
-	*/
-	ListGitRepos(ctx context.Context) ApiListGitReposRequest
-
-	// ListGitReposExecute executes the request
-	//  @return []GitRepo
-	ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo, *http.Response, error)
-
-	/*
-		StartBuildDetection Method for StartBuildDetection
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiStartBuildDetectionRequest
-	*/
-	StartBuildDetection(ctx context.Context) ApiStartBuildDetectionRequest
-
-	// StartBuildDetectionExecute executes the request
-	//  @return BuildDetectionJobCreated
-	StartBuildDetectionExecute(r ApiStartBuildDetectionRequest) (*BuildDetectionJobCreated, *http.Response, error)
-
-	/*
-		ValidateGitRepo Method for ValidateGitRepo
-
-		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiValidateGitRepoRequest
-	*/
-	ValidateGitRepo(ctx context.Context) ApiValidateGitRepoRequest
-
-	// ValidateGitRepoExecute executes the request
-	//  @return GitValidationResult
-	ValidateGitRepoExecute(r ApiValidateGitRepoRequest) (*GitValidationResult, *http.Response, error)
-}
-
 // GitAPIService GitAPI service
 type GitAPIService service
 
 type ApiGetBuildDetectionStatusRequest struct {
 	ctx        context.Context
-	ApiService GitAPI
+	ApiService *GitAPIService
 	jobId      string
 }
 
@@ -178,7 +126,7 @@ func (a *GitAPIService) GetBuildDetectionStatusExecute(r ApiGetBuildDetectionSta
 
 type ApiListGitReposRequest struct {
 	ctx            context.Context
-	ApiService     GitAPI
+	ApiService     *GitAPIService
 	gitAuthRequest *GitAuthRequest
 	idempotencyKey *string
 }
@@ -297,7 +245,7 @@ func (a *GitAPIService) ListGitReposExecute(r ApiListGitReposRequest) ([]GitRepo
 
 type ApiStartBuildDetectionRequest struct {
 	ctx                context.Context
-	ApiService         GitAPI
+	ApiService         *GitAPIService
 	detectBuildRequest *DetectBuildRequest
 	idempotencyKey     *string
 }
@@ -416,7 +364,7 @@ func (a *GitAPIService) StartBuildDetectionExecute(r ApiStartBuildDetectionReque
 
 type ApiValidateGitRepoRequest struct {
 	ctx                    context.Context
-	ApiService             GitAPI
+	ApiService             *GitAPIService
 	validateGitRepoRequest *ValidateGitRepoRequest
 	idempotencyKey         *string
 }

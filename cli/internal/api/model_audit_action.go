@@ -20,86 +20,86 @@ type AuditAction string
 
 // List of AuditAction
 const (
-	AUDITACTION_DEPLOYMENT_TRIGGERED               AuditAction = "DEPLOYMENT_TRIGGERED"
-	AUDITACTION_ENVIRONMENT_APPROVAL_GATES_UPDATED AuditAction = "ENVIRONMENT_APPROVAL_GATES_UPDATED"
-	AUDITACTION_ENVIRONMENT_CREATED                AuditAction = "ENVIRONMENT_CREATED"
-	AUDITACTION_ENVIRONMENT_DELETED                AuditAction = "ENVIRONMENT_DELETED"
-	AUDITACTION_ENVIRONMENT_QUOTA_UPDATED          AuditAction = "ENVIRONMENT_QUOTA_UPDATED"
-	AUDITACTION_ENVIRONMENT_REGISTRY_UPDATED       AuditAction = "ENVIRONMENT_REGISTRY_UPDATED"
-	AUDITACTION_ENVIRONMENT_ROLE_OVERRIDE_REMOVED  AuditAction = "ENVIRONMENT_ROLE_OVERRIDE_REMOVED"
-	AUDITACTION_ENVIRONMENT_ROLE_OVERRIDE_SET      AuditAction = "ENVIRONMENT_ROLE_OVERRIDE_SET"
-	AUDITACTION_ENVIRONMENT_TARGET_CLUSTER_UPDATED AuditAction = "ENVIRONMENT_TARGET_CLUSTER_UPDATED"
-	AUDITACTION_ENVIRONMENT_TOKEN_CREATED          AuditAction = "ENVIRONMENT_TOKEN_CREATED"
-	AUDITACTION_ENVIRONMENT_TOKEN_DELETED          AuditAction = "ENVIRONMENT_TOKEN_DELETED"
-	AUDITACTION_ENVIRONMENT_UPDATED                AuditAction = "ENVIRONMENT_UPDATED"
-	AUDITACTION_GROUP_MAPPING_CREATED              AuditAction = "GROUP_MAPPING_CREATED"
-	AUDITACTION_GROUP_MAPPING_DELETED              AuditAction = "GROUP_MAPPING_DELETED"
-	AUDITACTION_GROUP_MAPPING_UPDATED              AuditAction = "GROUP_MAPPING_UPDATED"
-	AUDITACTION_MEMBER_ADDED                       AuditAction = "MEMBER_ADDED"
-	AUDITACTION_MEMBER_INVITED                     AuditAction = "MEMBER_INVITED"
-	AUDITACTION_MEMBER_REMOVED                     AuditAction = "MEMBER_REMOVED"
-	AUDITACTION_MEMBER_UPDATED                     AuditAction = "MEMBER_UPDATED"
-	AUDITACTION_PROJECT_CREATED                    AuditAction = "PROJECT_CREATED"
-	AUDITACTION_PROJECT_DELETED                    AuditAction = "PROJECT_DELETED"
-	AUDITACTION_PROJECT_QUOTA_UPDATED              AuditAction = "PROJECT_QUOTA_UPDATED"
-	AUDITACTION_PROJECT_REGISTRY_UPDATED           AuditAction = "PROJECT_REGISTRY_UPDATED"
-	AUDITACTION_PROJECT_ROLE_OVERRIDE_REMOVED      AuditAction = "PROJECT_ROLE_OVERRIDE_REMOVED"
-	AUDITACTION_PROJECT_ROLE_OVERRIDE_SET          AuditAction = "PROJECT_ROLE_OVERRIDE_SET"
-	AUDITACTION_PROJECT_UPDATED                    AuditAction = "PROJECT_UPDATED"
-	AUDITACTION_RESOURCE_CREATED                   AuditAction = "RESOURCE_CREATED"
-	AUDITACTION_RESOURCE_DELETED                   AuditAction = "RESOURCE_DELETED"
-	AUDITACTION_RESOURCE_RESTARTED                 AuditAction = "RESOURCE_RESTARTED"
-	AUDITACTION_RESOURCE_STARTED                   AuditAction = "RESOURCE_STARTED"
-	AUDITACTION_RESOURCE_STOPPED                   AuditAction = "RESOURCE_STOPPED"
-	AUDITACTION_RESOURCE_UPDATED                   AuditAction = "RESOURCE_UPDATED"
-	AUDITACTION_WORKSPACE_CREATED                  AuditAction = "WORKSPACE_CREATED"
-	AUDITACTION_WORKSPACE_DELETED                  AuditAction = "WORKSPACE_DELETED"
-	AUDITACTION_WORKSPACE_QUOTA_UPDATED            AuditAction = "WORKSPACE_QUOTA_UPDATED"
-	AUDITACTION_WORKSPACE_REGISTRY_UPDATED         AuditAction = "WORKSPACE_REGISTRY_UPDATED"
-	AUDITACTION_WORKSPACE_SECURITY_UPDATED         AuditAction = "WORKSPACE_SECURITY_UPDATED"
-	AUDITACTION_WORKSPACE_UPDATED                  AuditAction = "WORKSPACE_UPDATED"
+	DEPLOYMENT_TRIGGERED               AuditAction = "DeploymentTriggered"
+	ENVIRONMENT_APPROVAL_GATES_UPDATED AuditAction = "EnvironmentApprovalGatesUpdated"
+	ENVIRONMENT_CREATED                AuditAction = "EnvironmentCreated"
+	ENVIRONMENT_DELETED                AuditAction = "EnvironmentDeleted"
+	ENVIRONMENT_QUOTA_UPDATED          AuditAction = "EnvironmentQuotaUpdated"
+	ENVIRONMENT_REGISTRY_UPDATED       AuditAction = "EnvironmentRegistryUpdated"
+	ENVIRONMENT_ROLE_OVERRIDE_REMOVED  AuditAction = "EnvironmentRoleOverrideRemoved"
+	ENVIRONMENT_ROLE_OVERRIDE_SET      AuditAction = "EnvironmentRoleOverrideSet"
+	ENVIRONMENT_TARGET_CLUSTER_UPDATED AuditAction = "EnvironmentTargetClusterUpdated"
+	ENVIRONMENT_TOKEN_CREATED          AuditAction = "EnvironmentTokenCreated"
+	ENVIRONMENT_TOKEN_DELETED          AuditAction = "EnvironmentTokenDeleted"
+	ENVIRONMENT_UPDATED                AuditAction = "EnvironmentUpdated"
+	GROUP_MAPPING_CREATED              AuditAction = "GroupMappingCreated"
+	GROUP_MAPPING_DELETED              AuditAction = "GroupMappingDeleted"
+	GROUP_MAPPING_UPDATED              AuditAction = "GroupMappingUpdated"
+	MEMBER_ADDED                       AuditAction = "MemberAdded"
+	MEMBER_INVITED                     AuditAction = "MemberInvited"
+	MEMBER_REMOVED                     AuditAction = "MemberRemoved"
+	MEMBER_UPDATED                     AuditAction = "MemberUpdated"
+	PROJECT_CREATED                    AuditAction = "ProjectCreated"
+	PROJECT_DELETED                    AuditAction = "ProjectDeleted"
+	PROJECT_QUOTA_UPDATED              AuditAction = "ProjectQuotaUpdated"
+	PROJECT_REGISTRY_UPDATED           AuditAction = "ProjectRegistryUpdated"
+	PROJECT_ROLE_OVERRIDE_REMOVED      AuditAction = "ProjectRoleOverrideRemoved"
+	PROJECT_ROLE_OVERRIDE_SET          AuditAction = "ProjectRoleOverrideSet"
+	PROJECT_UPDATED                    AuditAction = "ProjectUpdated"
+	RESOURCE_CREATED                   AuditAction = "ResourceCreated"
+	RESOURCE_DELETED                   AuditAction = "ResourceDeleted"
+	RESOURCE_RESTARTED                 AuditAction = "ResourceRestarted"
+	RESOURCE_STARTED                   AuditAction = "ResourceStarted"
+	RESOURCE_STOPPED                   AuditAction = "ResourceStopped"
+	RESOURCE_UPDATED                   AuditAction = "ResourceUpdated"
+	WORKSPACE_CREATED                  AuditAction = "WorkspaceCreated"
+	WORKSPACE_DELETED                  AuditAction = "WorkspaceDeleted"
+	WORKSPACE_QUOTA_UPDATED            AuditAction = "WorkspaceQuotaUpdated"
+	WORKSPACE_REGISTRY_UPDATED         AuditAction = "WorkspaceRegistryUpdated"
+	WORKSPACE_SECURITY_UPDATED         AuditAction = "WorkspaceSecurityUpdated"
+	WORKSPACE_UPDATED                  AuditAction = "WorkspaceUpdated"
 )
 
 // All allowed values of AuditAction enum
 var AllowedAuditActionEnumValues = []AuditAction{
-	"DEPLOYMENT_TRIGGERED",
-	"ENVIRONMENT_APPROVAL_GATES_UPDATED",
-	"ENVIRONMENT_CREATED",
-	"ENVIRONMENT_DELETED",
-	"ENVIRONMENT_QUOTA_UPDATED",
-	"ENVIRONMENT_REGISTRY_UPDATED",
-	"ENVIRONMENT_ROLE_OVERRIDE_REMOVED",
-	"ENVIRONMENT_ROLE_OVERRIDE_SET",
-	"ENVIRONMENT_TARGET_CLUSTER_UPDATED",
-	"ENVIRONMENT_TOKEN_CREATED",
-	"ENVIRONMENT_TOKEN_DELETED",
-	"ENVIRONMENT_UPDATED",
-	"GROUP_MAPPING_CREATED",
-	"GROUP_MAPPING_DELETED",
-	"GROUP_MAPPING_UPDATED",
-	"MEMBER_ADDED",
-	"MEMBER_INVITED",
-	"MEMBER_REMOVED",
-	"MEMBER_UPDATED",
-	"PROJECT_CREATED",
-	"PROJECT_DELETED",
-	"PROJECT_QUOTA_UPDATED",
-	"PROJECT_REGISTRY_UPDATED",
-	"PROJECT_ROLE_OVERRIDE_REMOVED",
-	"PROJECT_ROLE_OVERRIDE_SET",
-	"PROJECT_UPDATED",
-	"RESOURCE_CREATED",
-	"RESOURCE_DELETED",
-	"RESOURCE_RESTARTED",
-	"RESOURCE_STARTED",
-	"RESOURCE_STOPPED",
-	"RESOURCE_UPDATED",
-	"WORKSPACE_CREATED",
-	"WORKSPACE_DELETED",
-	"WORKSPACE_QUOTA_UPDATED",
-	"WORKSPACE_REGISTRY_UPDATED",
-	"WORKSPACE_SECURITY_UPDATED",
-	"WORKSPACE_UPDATED",
+	"DeploymentTriggered",
+	"EnvironmentApprovalGatesUpdated",
+	"EnvironmentCreated",
+	"EnvironmentDeleted",
+	"EnvironmentQuotaUpdated",
+	"EnvironmentRegistryUpdated",
+	"EnvironmentRoleOverrideRemoved",
+	"EnvironmentRoleOverrideSet",
+	"EnvironmentTargetClusterUpdated",
+	"EnvironmentTokenCreated",
+	"EnvironmentTokenDeleted",
+	"EnvironmentUpdated",
+	"GroupMappingCreated",
+	"GroupMappingDeleted",
+	"GroupMappingUpdated",
+	"MemberAdded",
+	"MemberInvited",
+	"MemberRemoved",
+	"MemberUpdated",
+	"ProjectCreated",
+	"ProjectDeleted",
+	"ProjectQuotaUpdated",
+	"ProjectRegistryUpdated",
+	"ProjectRoleOverrideRemoved",
+	"ProjectRoleOverrideSet",
+	"ProjectUpdated",
+	"ResourceCreated",
+	"ResourceDeleted",
+	"ResourceRestarted",
+	"ResourceStarted",
+	"ResourceStopped",
+	"ResourceUpdated",
+	"WorkspaceCreated",
+	"WorkspaceDeleted",
+	"WorkspaceQuotaUpdated",
+	"WorkspaceRegistryUpdated",
+	"WorkspaceSecurityUpdated",
+	"WorkspaceUpdated",
 }
 
 func (v *AuditAction) UnmarshalJSON(src []byte) error {

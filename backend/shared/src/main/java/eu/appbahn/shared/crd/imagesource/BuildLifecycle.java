@@ -1,6 +1,6 @@
 package eu.appbahn.shared.crd.imagesource;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Per-build lifecycle states. Drive the platform's {@code deployment} audit row state machine
@@ -10,17 +10,27 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * half (PR3); the build half emits {@code QUEUED → BUILDING → BUILT/FAILED → SUPERSEDED → CANCELED}.
  */
 public enum BuildLifecycle {
+    @JsonProperty("Queued")
     QUEUED,
-    BUILDING,
-    BUILT,
-    FAILED,
-    ACTIVATING,
-    ACTIVE,
-    SUPERSEDED,
-    CANCELED;
 
-    @JsonValue
-    public String getValue() {
-        return name();
-    }
+    @JsonProperty("Building")
+    BUILDING,
+
+    @JsonProperty("Built")
+    BUILT,
+
+    @JsonProperty("Failed")
+    FAILED,
+
+    @JsonProperty("Activating")
+    ACTIVATING,
+
+    @JsonProperty("Active")
+    ACTIVE,
+
+    @JsonProperty("Superseded")
+    SUPERSEDED,
+
+    @JsonProperty("Canceled")
+    CANCELED
 }

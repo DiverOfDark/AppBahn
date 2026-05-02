@@ -27,7 +27,7 @@ const port = ref(80)
 const cpu = ref(250)
 const memory = ref(256)
 const replicas = ref(1)
-const expose = ref('ingress')
+const expose = ref('Ingress')
 
 const resourceTypes = ref<ResourceTypeInfo[]>([])
 const loading = ref(false)
@@ -43,7 +43,7 @@ function resetForm() {
   cpu.value = 250
   memory.value = 256
   replicas.value = 1
-  expose.value = 'ingress'
+  expose.value = 'Ingress'
   error.value = ''
   errors.value = []
   loading.value = false
@@ -122,7 +122,7 @@ async function submit() {
       environmentSlug: envSlug.value,
       config: {},
       imageSource: {
-        type: 'image',
+        type: 'Image',
         image: { ref: fullImage },
       },
     }
@@ -137,11 +137,11 @@ async function submit() {
           ports: [
             {
               port: port.value,
-              expose: expose.value as 'ingress' | 'none',
+              expose: expose.value as 'Ingress' | 'None',
             },
           ],
         },
-        runMode: 'CONTINUOUS',
+        runMode: 'Continuous',
       }
     }
     const { error: apiError } = await api.POST('/resources', {
@@ -237,12 +237,12 @@ async function submit() {
           <label class="form-label">
             Expose
             <select v-model="expose" class="form-input">
-              <option value="ingress">Ingress</option>
-              <option value="none">None</option>
+              <option value="Ingress">Ingress</option>
+              <option value="None">None</option>
             </select>
           </label>
         </div>
-        <p v-if="expose === 'ingress'" class="form-hint">
+        <p v-if="expose === 'Ingress'" class="form-hint">
           Domain will be auto-generated from the resource slug.
         </p>
       </div>

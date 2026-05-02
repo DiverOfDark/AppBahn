@@ -28,7 +28,7 @@ public interface ImageSourceCacheRepository extends JpaRepository<ImageSourceCac
      */
     @Query(nativeQuery = true, value = """
                     SELECT * FROM image_source_cache
-                    WHERE spec ->> 'type' = 'imageSource'
+                    WHERE spec ->> 'type' = 'ImageSource'
                       AND spec -> 'imageSource' -> 'upstream' ->> 'name' = :upstreamName
                       AND spec -> 'imageSource' -> 'upstream' ->> 'namespace' = :upstreamNamespace
                       AND COALESCE(spec -> 'imageSource' -> 'upstream' ->> 'cluster', '') = :upstreamCluster
@@ -46,7 +46,7 @@ public interface ImageSourceCacheRepository extends JpaRepository<ImageSourceCac
      */
     @Query(nativeQuery = true, value = """
                     SELECT * FROM image_source_cache
-                    WHERE spec ->> 'type' = 'imageSource'
+                    WHERE spec ->> 'type' = 'ImageSource'
                       AND spec -> 'imageSource' -> 'upstream' ->> 'name' = :upstreamName
                       AND spec -> 'imageSource' -> 'upstream' ->> 'namespace' = :upstreamNamespace
                     """)

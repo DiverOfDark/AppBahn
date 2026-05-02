@@ -71,10 +71,11 @@ Example:
 				portCfg.Port = &resourceUpdatePort
 			}
 			if cmd.Flags().Changed("expose") {
-				validExposeValues := map[string]bool{"ingress": true, "tcp": true, "none": true}
-				if !validExposeValues[resourceUpdateExpose] {
+				normalized, ok := normalizeExpose(resourceUpdateExpose)
+				if !ok {
 					return fmt.Errorf("invalid --expose %q: must be one of ingress, tcp, none", resourceUpdateExpose)
 				}
+				resourceUpdateExpose = normalized
 				portCfg.Expose = &resourceUpdateExpose
 			}
 			if cmd.Flags().Changed("domain") {

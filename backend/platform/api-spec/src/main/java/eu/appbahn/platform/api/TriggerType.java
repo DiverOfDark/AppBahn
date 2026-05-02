@@ -2,28 +2,35 @@ package eu.appbahn.platform.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Deployment trigger types — serialized values match the public REST contract (lowercase, hyphenated). */
+/** Deployment trigger types. */
 public enum TriggerType {
-    @JsonProperty("manual")
+    @JsonProperty("Manual")
     MANUAL,
-    @JsonProperty("polling")
+
+    @JsonProperty("Polling")
     POLLING,
-    @JsonProperty("webhook")
+
+    @JsonProperty("Webhook")
     WEBHOOK,
-    @JsonProperty("auto-promotion")
+
+    @JsonProperty("AutoPromotion")
     AUTO_PROMOTION,
-    @JsonProperty("rollback")
+
+    @JsonProperty("Rollback")
     ROLLBACK,
+
     /** User explicitly bumped {@code Resource.spec.restartGeneration} — re-roll, no rebuild. */
-    @JsonProperty("manual-restart")
+    @JsonProperty("ManualRestart")
     MANUAL_RESTART,
+
     /** {@code Resource.spec.config.env} changed and current image is reused — re-roll, no rebuild. */
-    @JsonProperty("env-change")
+    @JsonProperty("EnvChange")
     ENV_CHANGE,
+
     /**
      * User cleared {@code Resource.spec.pinnedRelease}, resuming follow of the bound ImageSource's
      * {@code latestArtifact}. Re-roll, no rebuild.
      */
-    @JsonProperty("unpin")
-    UNPIN;
+    @JsonProperty("Unpin")
+    UNPIN
 }

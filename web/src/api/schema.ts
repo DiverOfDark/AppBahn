@@ -1240,15 +1240,15 @@ export interface components {
       name?: string
       url?: string
       events?: (
-        | 'DEPLOYMENT_SUCCEEDED'
-        | 'DEPLOYMENT_FAILED'
-        | 'DEPLOYMENT_AWAITING_APPROVAL'
-        | 'RESOURCE_ERROR'
-        | 'RESOURCE_DEGRADED'
-        | 'RESOURCE_READY'
-        | 'BUILD_STARTED'
-        | 'EXPOSURE_CREATED'
-        | 'QUOTA_WARNING'
+        | 'DeploymentSucceeded'
+        | 'DeploymentFailed'
+        | 'DeploymentAwaitingApproval'
+        | 'ResourceError'
+        | 'ResourceDegraded'
+        | 'ResourceReady'
+        | 'BuildStarted'
+        | 'ExposureCreated'
+        | 'QuotaWarning'
       )[]
     }
     NotificationWebhook: {
@@ -1259,15 +1259,15 @@ export interface components {
       name?: string
       url?: string
       events?: (
-        | 'DEPLOYMENT_SUCCEEDED'
-        | 'DEPLOYMENT_FAILED'
-        | 'DEPLOYMENT_AWAITING_APPROVAL'
-        | 'RESOURCE_ERROR'
-        | 'RESOURCE_DEGRADED'
-        | 'RESOURCE_READY'
-        | 'BUILD_STARTED'
-        | 'EXPOSURE_CREATED'
-        | 'QUOTA_WARNING'
+        | 'DeploymentSucceeded'
+        | 'DeploymentFailed'
+        | 'DeploymentAwaitingApproval'
+        | 'ResourceError'
+        | 'ResourceDegraded'
+        | 'ResourceReady'
+        | 'BuildStarted'
+        | 'ExposureCreated'
+        | 'QuotaWarning'
       )[]
       /** Format: uuid */
       createdBy?: string
@@ -1279,7 +1279,7 @@ export interface components {
     }
     AddMemberResponse: {
       /** @enum {string} */
-      status?: 'ACTIVE' | 'PENDING'
+      status?: 'Active' | 'Pending'
     }
     CreateGroupMappingRequest: {
       oidcGroup?: string
@@ -1338,7 +1338,7 @@ export interface components {
     }
     ImageSourceBuildSpec: {
       /** @enum {string} */
-      mode?: 'dockerfile' | 'peelbox' | 'buildpack' | 'nixpacks' | 'railpack'
+      mode?: 'Dockerfile' | 'Peelbox' | 'Buildpack' | 'Nixpacks' | 'Railpack'
       dockerfile?: components['schemas']['DockerfileBuildOptions']
       buildpack?: components['schemas']['BuildpackBuildOptions']
     }
@@ -1362,7 +1362,7 @@ export interface components {
     }
     ImageSourceSpec: {
       /** @enum {string} */
-      type?: 'git' | 'image' | 'imageSource'
+      type?: 'Git' | 'Image' | 'ImageSource'
       git?: components['schemas']['ImageSourceGitSpec']
       image?: components['schemas']['ImageSpec']
       imageSource?: components['schemas']['ImageSourcePromotionSpec']
@@ -1394,7 +1394,7 @@ export interface components {
       /** Format: int32 */
       port?: number
       /** @enum {string} */
-      expose?: 'none' | 'ingress' | 'tcp'
+      expose?: 'None' | 'Ingress' | 'Tcp'
       domain?: string
     }
     ProbeConfig: {
@@ -1416,7 +1416,7 @@ export interface components {
         [key: string]: string
       }
       /** @enum {string} */
-      runMode?: 'CONTINUOUS' | 'TASK'
+      runMode?: 'Continuous' | 'Task'
     }
     TcpSocketAction: {
       /** Format: int32 */
@@ -1573,15 +1573,15 @@ export interface components {
       name?: string
       url?: string
       events?: (
-        | 'DEPLOYMENT_SUCCEEDED'
-        | 'DEPLOYMENT_FAILED'
-        | 'DEPLOYMENT_AWAITING_APPROVAL'
-        | 'RESOURCE_ERROR'
-        | 'RESOURCE_DEGRADED'
-        | 'RESOURCE_READY'
-        | 'BUILD_STARTED'
-        | 'EXPOSURE_CREATED'
-        | 'QUOTA_WARNING'
+        | 'DeploymentSucceeded'
+        | 'DeploymentFailed'
+        | 'DeploymentAwaitingApproval'
+        | 'ResourceError'
+        | 'ResourceDegraded'
+        | 'ResourceReady'
+        | 'BuildStarted'
+        | 'ExposureCreated'
+        | 'QuotaWarning'
       )[]
     }
     WorkspaceMember: {
@@ -1591,7 +1591,7 @@ export interface components {
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
       /** @enum {string} */
-      status?: 'ACTIVE' | 'PENDING'
+      status?: 'Active' | 'Pending'
     }
     UpdateGroupMappingRequest: {
       /** @enum {string} */
@@ -1620,7 +1620,7 @@ export interface components {
       /** Format: int32 */
       port?: number
       /** @enum {string} */
-      status?: 'PENDING' | 'ACTIVE' | 'ERROR'
+      status?: 'Pending' | 'Active' | 'Error'
       dnsCname?: string
       tlsIssuer?: string
       /** Format: date-time */
@@ -1650,7 +1650,7 @@ export interface components {
       config?: components['schemas']['ResourceConfig']
       links?: components['schemas']['LinkConfig'][]
       /** @enum {string} */
-      status?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
+      status?: 'Pending' | 'Ready' | 'Restarting' | 'Degraded' | 'Error' | 'Stopped'
       statusDetail?: components['schemas']['ResourceStatusDetail']
       /** Format: date-time */
       lastSyncedAt?: string
@@ -1669,7 +1669,7 @@ export interface components {
     }
     ResourceStatusDetail: {
       /** @enum {string} */
-      phase?: 'PENDING' | 'READY' | 'RESTARTING' | 'DEGRADED' | 'ERROR' | 'STOPPED'
+      phase?: 'Pending' | 'Ready' | 'Restarting' | 'Degraded' | 'Error' | 'Stopped'
       message?: string
       /** Format: int64 */
       observedGeneration?: number
@@ -1745,48 +1745,48 @@ export interface components {
     }
     /** @enum {string} */
     AuditAction:
-      | 'DEPLOYMENT_TRIGGERED'
-      | 'ENVIRONMENT_APPROVAL_GATES_UPDATED'
-      | 'ENVIRONMENT_CREATED'
-      | 'ENVIRONMENT_DELETED'
-      | 'ENVIRONMENT_QUOTA_UPDATED'
-      | 'ENVIRONMENT_REGISTRY_UPDATED'
-      | 'ENVIRONMENT_ROLE_OVERRIDE_REMOVED'
-      | 'ENVIRONMENT_ROLE_OVERRIDE_SET'
-      | 'ENVIRONMENT_TARGET_CLUSTER_UPDATED'
-      | 'ENVIRONMENT_TOKEN_CREATED'
-      | 'ENVIRONMENT_TOKEN_DELETED'
-      | 'ENVIRONMENT_UPDATED'
-      | 'GROUP_MAPPING_CREATED'
-      | 'GROUP_MAPPING_DELETED'
-      | 'GROUP_MAPPING_UPDATED'
-      | 'MEMBER_ADDED'
-      | 'MEMBER_INVITED'
-      | 'MEMBER_REMOVED'
-      | 'MEMBER_UPDATED'
-      | 'PROJECT_CREATED'
-      | 'PROJECT_DELETED'
-      | 'PROJECT_QUOTA_UPDATED'
-      | 'PROJECT_REGISTRY_UPDATED'
-      | 'PROJECT_ROLE_OVERRIDE_REMOVED'
-      | 'PROJECT_ROLE_OVERRIDE_SET'
-      | 'PROJECT_UPDATED'
-      | 'RESOURCE_CREATED'
-      | 'RESOURCE_DELETED'
-      | 'RESOURCE_RESTARTED'
-      | 'RESOURCE_STARTED'
-      | 'RESOURCE_STOPPED'
-      | 'RESOURCE_UPDATED'
-      | 'WORKSPACE_CREATED'
-      | 'WORKSPACE_DELETED'
-      | 'WORKSPACE_QUOTA_UPDATED'
-      | 'WORKSPACE_REGISTRY_UPDATED'
-      | 'WORKSPACE_SECURITY_UPDATED'
-      | 'WORKSPACE_UPDATED'
+      | 'DeploymentTriggered'
+      | 'EnvironmentApprovalGatesUpdated'
+      | 'EnvironmentCreated'
+      | 'EnvironmentDeleted'
+      | 'EnvironmentQuotaUpdated'
+      | 'EnvironmentRegistryUpdated'
+      | 'EnvironmentRoleOverrideRemoved'
+      | 'EnvironmentRoleOverrideSet'
+      | 'EnvironmentTargetClusterUpdated'
+      | 'EnvironmentTokenCreated'
+      | 'EnvironmentTokenDeleted'
+      | 'EnvironmentUpdated'
+      | 'GroupMappingCreated'
+      | 'GroupMappingDeleted'
+      | 'GroupMappingUpdated'
+      | 'MemberAdded'
+      | 'MemberInvited'
+      | 'MemberRemoved'
+      | 'MemberUpdated'
+      | 'ProjectCreated'
+      | 'ProjectDeleted'
+      | 'ProjectQuotaUpdated'
+      | 'ProjectRegistryUpdated'
+      | 'ProjectRoleOverrideRemoved'
+      | 'ProjectRoleOverrideSet'
+      | 'ProjectUpdated'
+      | 'ResourceCreated'
+      | 'ResourceDeleted'
+      | 'ResourceRestarted'
+      | 'ResourceStarted'
+      | 'ResourceStopped'
+      | 'ResourceUpdated'
+      | 'WorkspaceCreated'
+      | 'WorkspaceDeleted'
+      | 'WorkspaceQuotaUpdated'
+      | 'WorkspaceRegistryUpdated'
+      | 'WorkspaceSecurityUpdated'
+      | 'WorkspaceUpdated'
     /** @enum {string} */
-    AuditActorSource: 'API' | 'TOKEN' | 'KUBECTL' | 'SYSTEM'
+    AuditActorSource: 'Api' | 'Token' | 'Kubectl' | 'System'
     /** @enum {string} */
-    AuditDecision: 'ALLOWED' | 'DENIED'
+    AuditDecision: 'Allowed' | 'Denied'
     AuditFieldChange: {
       field?: string
       oldValue?: string
@@ -1821,7 +1821,7 @@ export interface components {
       requestId?: string
     }
     /** @enum {string} */
-    AuditTargetType: 'WORKSPACE' | 'PROJECT' | 'ENVIRONMENT' | 'RESOURCE' | 'DEPLOYMENT'
+    AuditTargetType: 'Workspace' | 'Project' | 'Environment' | 'Resource' | 'Deployment'
     PagedAuditLogResponse: {
       /** Format: int32 */
       page?: number
@@ -1882,24 +1882,24 @@ export interface components {
       imageRef?: string
       /** @enum {string} */
       triggeredBy?:
-        | 'manual'
-        | 'polling'
-        | 'webhook'
-        | 'auto-promotion'
-        | 'rollback'
-        | 'manual-restart'
-        | 'env-change'
-        | 'unpin'
+        | 'Manual'
+        | 'Polling'
+        | 'Webhook'
+        | 'AutoPromotion'
+        | 'Rollback'
+        | 'ManualRestart'
+        | 'EnvChange'
+        | 'Unpin'
       /** @enum {string} */
       lifecycle?:
-        | 'QUEUED'
-        | 'BUILDING'
-        | 'BUILT'
-        | 'FAILED'
-        | 'ACTIVATING'
-        | 'ACTIVE'
-        | 'SUPERSEDED'
-        | 'CANCELED'
+        | 'Queued'
+        | 'Building'
+        | 'Built'
+        | 'Failed'
+        | 'Activating'
+        | 'Active'
+        | 'Superseded'
+        | 'Canceled'
       isPrimary?: boolean
       /** Format: uuid */
       sourceDeploymentId?: string
@@ -1943,7 +1943,7 @@ export interface components {
       displayName?: string
       description?: string
       /** @enum {string} */
-      category?: 'deployment' | 'database' | 'storage' | 'messaging'
+      category?: 'Deployment' | 'Database' | 'Storage' | 'Messaging'
       configSchema?: Record<string, never>
       available?: boolean
     }
