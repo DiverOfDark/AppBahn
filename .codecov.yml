@@ -64,7 +64,30 @@ ignore:
   - "web/dist/**"
   - "cli/internal/api/**"
 
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        threshold: 2%
+  individual_components:
+    - component_id: operator
+      paths:
+        - backend/operator/**
+    - component_id: platform
+      paths:
+        - backend/platform/**
+    - component_id: shared
+      paths:
+        - backend/shared/**
+    - component_id: web
+      paths:
+        - web/src/**
+    - component_id: cli
+      paths:
+        - cli/**
+
 comment:
-  layout: "reach,diff,flags,files"
+  layout: "reach,diff,flags,components,files"
   behavior: default
   require_changes: false
