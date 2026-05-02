@@ -81,6 +81,21 @@ platform:
     tagline: "Deploy and manage your applications"
     logoUrl: ""
     loginButtonText: "Log in with SSO"
+  # JaCoCo agent attach for e2e coverage. OFF by default. The e2e suite flips this on in
+  # backend/e2e/values-e2e.yaml so its Spring tests can dump production-code coverage from the
+  # platform/operator JVMs running inside K3s. Production deploys must leave this disabled — the
+  # agent listens on a TCP port that has no auth and the host-path mount has no business existing
+  # in a customer cluster.
+  coverage:
+    enabled: false
+    # JaCoCo TCP-server port (RemoteControlReader/Writer protocol). Container-only; not exposed
+    # outside the cluster.
+    port: 6300
+    # hostPath where the K3s container has the agent jar staged. The e2e bootstrap copies
+    # jacocoagent.jar there before helm install; the pod mounts it read-only.
+    agentHostPath: "/var/lib/rancher/k3s/jacocoagent.jar"
+    # Patterns the agent should instrument. Matches the per-module JaCoCo reports' scope.
+    includes: "eu.appbahn.*"
 
 operator:
   image:
@@ -164,6 +179,12 @@ operator:
     periodSeconds: 5
     failureThreshold: 3
     timeoutSeconds: 3
+  # Same opt-in JaCoCo agent attach as platform.coverage. See platform.coverage for rationale.
+  coverage:
+    enabled: false
+    port: 6300
+    agentHostPath: "/var/lib/rancher/k3s/jacocoagent.jar"
+    includes: "eu.appbahn.*"
 
 serviceMonitor:
   enabled: false

@@ -13,6 +13,15 @@ coverage:
           - java
         target: auto
         threshold: 2%
+      java-e2e:
+        # The e2e suite drives a real K3s cluster, so its coverage % naturally fluctuates with
+        # what tests happen to run on a given branch (build pipelines, retention sweeps, image
+        # pulls). 5% threshold gives the noise some headroom — the *combined* picture for the
+        # `backend/` paths is what matters, and that's covered by the `java` flag's status.
+        flags:
+          - java-e2e
+        target: auto
+        threshold: 5%
       typescript:
         flags:
           - typescript
@@ -30,6 +39,9 @@ coverage:
 
 flags:
   java:
+    paths:
+      - backend/
+  java-e2e:
     paths:
       - backend/
   typescript:
