@@ -17,7 +17,7 @@ updates:
     directory: "/web"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     groups:
       vue:
         patterns: ["vue*", "@vue*", "pinia*"]
@@ -28,22 +28,22 @@ updates:
     directory: "/website"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "npm"
     directory: "/docs"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "gomod"
     directory: "/cli"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
