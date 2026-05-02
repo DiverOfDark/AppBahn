@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.resource.entity.ResourceCacheEntity;
 import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
-import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
+import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceSpec;
 import eu.appbahn.shared.crd.ResourceStatusDetail;
@@ -29,17 +29,17 @@ public class ResourceSyncService {
     private static final Logger log = LoggerFactory.getLogger(ResourceSyncService.class);
 
     private final ResourceCacheRepository resourceCacheRepository;
-    private final EnvironmentRepository environmentRepository;
+    private final EnvironmentLookupService environmentLookupService;
     private final ObjectMapper objectMapper;
     private final EntityManager entityManager;
 
     public ResourceSyncService(
             ResourceCacheRepository resourceCacheRepository,
-            EnvironmentRepository environmentRepository,
+            EnvironmentLookupService environmentLookupService,
             ObjectMapper objectMapper,
             EntityManager entityManager) {
         this.resourceCacheRepository = resourceCacheRepository;
-        this.environmentRepository = environmentRepository;
+        this.environmentLookupService = environmentLookupService;
         this.objectMapper = objectMapper;
         this.entityManager = entityManager;
     }
@@ -62,8 +62,9 @@ public class ResourceSyncService {
             log.warn("Skipping sync — slug does not match canonical format: {}", request.slug());
             return;
         }
-        EnvironmentEntity env =
-                environmentRepository.findBySlug(request.environmentSlug()).orElse(null);
+        EnvironmentEntity env = environmentLookupService
+                .findBySlugOptional(request.environmentSlug())
+                .orElse(null);
         if (env == null) {
             // Same race documented on syncResource: a CR can outlive its env. Skip silently.
             log.info("Skipping sync for {} — environment {} not found", request.slug(), request.environmentSlug());
@@ -82,7 +83,9 @@ public class ResourceSyncService {
         }
         EnvironmentEntity env = preResolvedEnv != null
                 ? preResolvedEnv
-                : environmentRepository.findBySlug(request.environmentSlug()).orElse(null);
+                : environmentLookupService
+                        .findBySlugOptional(request.environmentSlug())
+                        .orElse(null);
         if (env == null) {
             // Same race as fullSync: a CR can outlive its env (namespace stays Terminating
             // until finalizers clear). Skip the upsert; the operator's full-sync set-diff
@@ -143,7 +146,9 @@ public class ResourceSyncService {
         if (existing == null) {
             return;
         }
-        var env = environmentRepository.findById(existing.getEnvironmentId()).orElse(null);
+        var env = environmentLookupService
+                .findByIdOptional(existing.getEnvironmentId())
+                .orElse(null);
         if (env != null) {
             assertEnvironmentOwnedBy(env, expectedClusterName, slug);
         }
@@ -187,7 +192,7 @@ public class ResourceSyncService {
         for (var res : resources) {
             EnvironmentEntity env = envCache.computeIfAbsent(
                     res.environmentSlug(),
-                    slug -> environmentRepository.findBySlug(slug).orElse(null));
+                    slug -> environmentLookupService.findBySlugOptional(slug).orElse(null));
             if (env == null) {
                 continue;
             }
@@ -217,7 +222,7 @@ public class ResourceSyncService {
         for (var res : resources) {
             envCache.computeIfAbsent(
                     res.environmentSlug(),
-                    slug -> environmentRepository.findBySlug(slug).orElse(null));
+                    slug -> environmentLookupService.findBySlugOptional(slug).orElse(null));
             if (envCache.get(res.environmentSlug()) == null) {
                 missingEnvs.add(res.environmentSlug());
             }
@@ -236,7 +241,7 @@ public class ResourceSyncService {
             syncResource(res, env);
         }
 
-        var clusterEnvIds = environmentRepository.findByTargetCluster(request.clusterName()).stream()
+        var clusterEnvIds = environmentLookupService.findByTargetCluster(request.clusterName()).stream()
                 .map(EnvironmentEntity::getId)
                 .toList();
 
