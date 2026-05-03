@@ -26,6 +26,7 @@ jacoco = "0.8.14"
 littleproxy = "2.7.0"
 git-properties = "2.5.7"
 node-gradle = "7.1.0"
+bmuschko-docker = "10.0.0"
 gson = "2.14.0"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
@@ -132,3 +133,4 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
+bmuschko-docker = { id = "com.bmuschko.docker-remote-api", version.ref = "bmuschko-docker" }

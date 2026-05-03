@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.git.properties)
     alias(libs.plugins.node.gradle)
+    alias(libs.plugins.bmuschko.docker)
 }
 
 extra["dockerImageName"] = "platform"

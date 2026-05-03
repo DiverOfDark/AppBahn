@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.git.properties)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.bmuschko.docker)
 }
 
 extra["dockerImageName"] = "operator"

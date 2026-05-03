@@ -63,8 +63,8 @@ jobs:
       - name: Build and push Docker images
         run: |
           ./gradlew \
-            :platform:app:bootBuildImage \
-            :operator:bootBuildImage \
+            :platform:app:dockerPushImage \
+            :operator:dockerPushImage \
             -PdockerRegistry=ghcr.io/${{ github.repository_owner }} \
             -PdockerTag=${{ steps.version.outputs.semver }} \
             -PdockerExtraTags=${{ steps.version.outputs.extra }} \

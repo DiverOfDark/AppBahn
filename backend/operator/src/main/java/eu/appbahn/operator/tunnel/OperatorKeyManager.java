@@ -2,7 +2,6 @@ package eu.appbahn.operator.tunnel;
 
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import jakarta.annotation.PostConstruct;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -42,8 +41,13 @@ public class OperatorKeyManager {
         this.kubernetesClient = kubernetesClient;
     }
 
-    @PostConstruct
-    public void ensureKey() {
+    // Loads (or generates + persists) the keypair on first read. Invoked
+    // lazily so context refresh — including the AOT cache training run inside
+    // `docker build` — completes without an api-server roundtrip.
+    public synchronized void ensureKey() {
+        if (keyPair != null) {
+            return;
+        }
         var namespace = kubernetesClient.getNamespace();
         var existing = kubernetesClient
                 .secrets()
@@ -61,18 +65,22 @@ public class OperatorKeyManager {
     }
 
     public KeyPair keyPair() {
+        ensureKey();
         return keyPair;
     }
 
     public PrivateKey privateKey() {
+        ensureKey();
         return keyPair.getPrivate();
     }
 
     public String publicKeyPem() {
+        ensureKey();
         return publicKeyPem;
     }
 
     public UUID operatorInstanceId() {
+        ensureKey();
         return operatorInstanceId;
     }
 

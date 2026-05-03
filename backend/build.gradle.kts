@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.bmuschko.docker) apply false
 }
 
 allprojects {
@@ -93,28 +94,58 @@ subprojects {
     }
 
 
-    pluginManager.withPlugin("org.springframework.boot") {
-        tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootBuildImage> {
-            val registryProp = project.providers.gradleProperty("dockerRegistry")
-            val tagProp = project.providers.gradleProperty("dockerTag")
-            val extraTagsProp = project.providers.gradleProperty("dockerExtraTags")
-            val imgName = project.providers.provider { project.extra["dockerImageName"] as String }
+    pluginManager.withPlugin("com.bmuschko.docker-remote-api") {
+        val registryProp = project.providers.gradleProperty("dockerRegistry")
+        val tagProp = project.providers.gradleProperty("dockerTag")
+        val extraTagsProp = project.providers.gradleProperty("dockerExtraTags")
+        val imgName = project.providers.provider { project.extra["dockerImageName"] as String }
 
-            val baseImage = registryProp.zip(imgName) { reg, name ->
-                "${reg.lowercase()}/appbahn/${name}"
+        val baseImage = registryProp.zip(imgName) { reg, name ->
+            "${reg.lowercase()}/appbahn/${name}"
+        }
+        // Default image set: <registry>/appbahn/<name>:<tag> + one entry per
+        // -PdockerExtraTags csv. e2e overrides `images` to a single fixed e2e
+        // tag, so this provider chain is only resolved on release builds.
+        val primaryImage = baseImage.zip(tagProp) { base, tag -> "${base}:${tag}" }
+        val extraImages = baseImage.zip(extraTagsProp.orElse("")) { base, csv ->
+            if (csv.isBlank()) emptyList()
+            else csv.split(",").map { "${base}:${it.trim()}" }
+        }
+        val defaultImages = primaryImage.zip(extraImages) { primary, extras -> listOf(primary) + extras }
+
+        val bootJar = tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar")
+        val dockerSrc = layout.projectDirectory.dir("src/main/docker")
+        val dockerStageDir = layout.buildDirectory.dir("docker")
+
+        val stageDockerContext = tasks.register<Sync>("stageDockerContext") {
+            description = "Stage Dockerfile + bootJar into build/docker/ as the docker build context."
+            group = "docker"
+            from(dockerSrc)
+            from(bootJar.flatMap { it.archiveFile }) {
+                rename { "application.jar" }
             }
-            imageName.set(baseImage.zip(tagProp) { base, tag -> "${base}:${tag}" })
-            tags.set(extraTagsProp.map { csv ->
-                csv.split(",").map { tag -> "${baseImage.get()}:${tag.trim()}" }
-            }.orElse(listOf()))
-            publish.set(project.hasProperty("publishImage"))
-            docker {
-                publishRegistry {
-                    username.set(project.providers.gradleProperty("dockerUsername").orElse(""))
-                    password.set(project.providers.gradleProperty("dockerPassword").orElse(""))
-                    url.set(registryProp.map { "https://${it.substringBefore("/").lowercase()}" }.orElse(""))
-                }
+            into(dockerStageDir)
+        }
+
+        tasks.register<com.bmuschko.gradle.docker.tasks.image.DockerBuildImage>("dockerBuildImage") {
+            description = "Build the OCI image (multi-stage Dockerfile, AOT cache training run)."
+            group = "docker"
+            inputDir.set(dockerStageDir)
+            images.set(defaultImages)
+            dependsOn(stageDockerContext)
+        }
+
+        tasks.register<com.bmuschko.gradle.docker.tasks.image.DockerPushImage>("dockerPushImage") {
+            description = "Push the OCI image (and any extra tags) to the configured registry."
+            group = "docker"
+            images.set(defaultImages)
+            registryCredentials {
+                url.set(registryProp.map { "https://${it.substringBefore("/").lowercase()}" }.orElse(""))
+                username.set(project.providers.gradleProperty("dockerUsername").orElse(""))
+                password.set(project.providers.gradleProperty("dockerPassword").orElse(""))
             }
+            dependsOn(tasks.named("dockerBuildImage"))
+            onlyIf("requires -PpublishImage") { project.hasProperty("publishImage") }
         }
     }
 
