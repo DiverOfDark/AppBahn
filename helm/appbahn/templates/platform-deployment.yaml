@@ -40,11 +40,18 @@ spec:
               containerPort: {{ .Values.platform.coverage.port }}
               protocol: TCP
             {{- end }}
-          {{- if .Values.platform.coverage.enabled }}
+          {{- if or .Values.platform.coverage.enabled .Values.platform.licenseFile .Values.platform.licenseSecretName }}
           volumeMounts:
+            {{- if .Values.platform.coverage.enabled }}
             - name: jacoco-agent
               mountPath: /jacoco/jacocoagent.jar
               readOnly: true
+            {{- end }}
+            {{- if or .Values.platform.licenseFile .Values.platform.licenseSecretName }}
+            - name: license
+              mountPath: /etc/appbahn
+              readOnly: true
+            {{- end }}
           {{- end }}
           env:
             {{- if .Values.platform.coverage.enabled }}
@@ -113,8 +120,10 @@ spec:
               value: {{ .Values.platform.quota.maxCpuCores | quote }}
             - name: PLATFORM_QUOTA_DEFAULTMAXMEMORYMB
               value: {{ .Values.platform.quota.maxMemoryMb | quote }}
-            - name: PLATFORM_LICENSE_RESOURCELIMIT
-              value: {{ .Values.platform.license.resourceLimit | quote }}
+            {{- if or .Values.platform.licenseFile .Values.platform.licenseSecretName }}
+            - name: PLATFORM_LICENSE_FILE
+              value: /etc/appbahn/license.jws
+            {{- end }}
             # Deployment audit-row retention
             - name: PLATFORM_DEPLOYMENT_RETENTION_MAXBUILDSPERRESOURCE
               value: {{ .Values.platform.deployment.retention.maxBuildsPerResource | quote }}
@@ -150,10 +159,20 @@ spec:
             {{- toYaml .Values.platform.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.platform.resources | nindent 12 }}
-      {{- if .Values.platform.coverage.enabled }}
+      {{- if or .Values.platform.coverage.enabled .Values.platform.licenseFile .Values.platform.licenseSecretName }}
       volumes:
+        {{- if .Values.platform.coverage.enabled }}
         - name: jacoco-agent
           hostPath:
             path: {{ .Values.platform.coverage.agentHostPath | quote }}
             type: File
+        {{- end }}
+        {{- if or .Values.platform.licenseFile .Values.platform.licenseSecretName }}
+        - name: license
+          secret:
+            secretName: {{ include "appbahn.platform.licenseSecretName" . }}
+            items:
+              - key: license.jws
+                path: license.jws
+        {{- end }}
       {{- end }}

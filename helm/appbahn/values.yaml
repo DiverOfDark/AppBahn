@@ -64,8 +64,16 @@ platform:
     maxResources: 50
     maxCpuCores: 16.0
     maxMemoryMb: 32768
-  license:
-    resourceLimit: 5
+  # Optional Enterprise license. Two ways to provide it (mutually exclusive):
+  #   licenseFile        — inline contents of a .jws file issued by AppBahn ops; the chart
+  #                        renders a Secret and mounts it at /etc/appbahn/license.jws.
+  #   licenseSecretName  — name of an EXISTING Secret in the release namespace with a key
+  #                        `license.jws`. Use this when an out-of-band tool (External Secrets,
+  #                        Sealed Secrets, sops, vault-agent, etc.) provisions the Secret —
+  #                        keeps the license off `helm install`'s argv and out of values files.
+  # Setting both is an error. Leaving both empty runs in community mode (hardcoded cap of 5).
+  licenseFile: ""
+  licenseSecretName: ""
   # Deployment audit-row retention. The `deployment` table grows unbounded otherwise — every
   # build, restart, env edit, promote, rollback, and unpin appends a row. The pruner keeps the
   # most recent `maxBuildsPerResource` terminal-state (SUPERSEDED / FAILED / CANCELED) rows per

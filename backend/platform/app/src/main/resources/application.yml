@@ -89,7 +89,8 @@ platform:
     default-max-cpu-cores: 16.0
     default-max-memory-mb: 32768
   license:
-    resource-limit: 5
+    # Path to a signed license file (.jws). Empty = community mode (max 5 resources).
+    file:
   deployment:
     retention:
       max-builds-per-resource: 10

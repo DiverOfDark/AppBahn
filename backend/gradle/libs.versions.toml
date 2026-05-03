@@ -32,6 +32,12 @@ gson-fire = "1.9.0"
 jsr305 = "3.0.2"
 jgit = "7.6.0.202603022253-r"
 instancio = "5.5.1"
+# nimbus-jose-jwt arrives transitively via spring-security-oauth2-jose (currently 10.4); pin
+# explicitly here so the licence loader/signing tool compile against a known JOSE API. Nimbus's
+# Ed25519Signer/Verifier delegate to Google Tink's Ed25519 primitives (see Ed25519Verifier source);
+# Tink isn't pulled transitively, so it's declared explicitly below.
+nimbus-jose-jwt = "10.4"
+tink = "1.18.0"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -125,6 +131,10 @@ jacoco-report = { module = "org.jacoco:org.jacoco.report", version.ref = "jacoco
 
 # Instancio — populated test fixture generation for round-trip serialization tests.
 instancio-core = { module = "org.instancio:instancio-core", version.ref = "instancio" }
+
+# License signing/verification (Ed25519 JWS).
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
+tink = { module = "com.google.crypto.tink:tink", version.ref = "tink" }
 
 [plugins]
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "git-properties" }

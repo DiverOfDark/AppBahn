@@ -42,3 +42,13 @@ app.kubernetes.io/component: operator
 app.kubernetes.io/name: appbahn-operator
 app.kubernetes.io/component: operator
 {{- end }}
+
+{{/* Resolved name of the Secret carrying the license JWS — either user-supplied (via
+     platform.licenseSecretName) or the chart-rendered one (when platform.licenseFile is set). */}}
+{{- define "appbahn.platform.licenseSecretName" -}}
+{{- if .Values.platform.licenseSecretName -}}
+{{- .Values.platform.licenseSecretName -}}
+{{- else -}}
+{{- printf "%s-license" (include "appbahn.fullname" .) -}}
+{{- end -}}
+{{- end }}
