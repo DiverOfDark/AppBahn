@@ -30,6 +30,7 @@ gson = "2.14.0"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
 jgit = "7.6.0.202603022253-r"
+instancio = "5.5.1"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -120,6 +121,9 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple" }
 # the version catalog's `[libraries]` table doesn't support classifiers.
 jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
 jacoco-report = { module = "org.jacoco:org.jacoco.report", version.ref = "jacoco" }
+
+# Instancio — populated test fixture generation for round-trip serialization tests.
+instancio-core = { module = "org.instancio:instancio-core", version.ref = "instancio" }
 
 [plugins]
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "git-properties" }

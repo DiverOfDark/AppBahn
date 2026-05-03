@@ -46,6 +46,16 @@ public final class Labels {
      */
     public static final String ANNOTATION_DOWNSTREAM_REFERENCES = "appbahn.eu/downstream-references";
 
+    /**
+     * Per-CR annotation recording which schema migration version the {@code spec} is currently
+     * shaped for. Each CRD kind (Resource, ImageSource, ResourceTypeDefinition) evolves
+     * independently — the same annotation key carries the kind-specific version number. The
+     * operator's startup sweep + mutating admission webhook stamp/migrate this on every CR; the
+     * absence of the annotation is treated either as "current" (if the typed model still
+     * deserializes) or as "v0" (if it doesn't), see {@code MigrationRunner}.
+     */
+    public static final String RESOURCE_SCHEMA_VERSION_KEY = "appbahn.eu/resource-schema-version";
+
     public static final String RESOURCE_TYPE_DEPLOYMENT = "deployment";
 
     public static final int DEFAULT_REPLICAS = 1;

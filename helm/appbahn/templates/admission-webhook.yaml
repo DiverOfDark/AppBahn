@@ -45,6 +45,35 @@ spec:
     - {{ include "appbahn.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.cluster.local
 ---
 apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "appbahn.fullname" . }}-schema-migrator
+  labels:
+    {{- include "appbahn.operator.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "appbahn.fullname" . }}-webhook-cert
+webhooks:
+  - name: schema-migrator.appbahn.eu
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Ignore
+    reinvocationPolicy: Never
+    clientConfig:
+      service:
+        name: {{ include "appbahn.fullname" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /mutate-appbahn-eu-v1-schema
+        port: 443
+    rules:
+      - apiGroups: ["appbahn.eu"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["resources", "imagesources", "resourcetypedefinitions"]
+        scope: "*"
+    matchPolicy: Equivalent
+    timeoutSeconds: 10
+---
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ include "appbahn.fullname" . }}-resource-validator
