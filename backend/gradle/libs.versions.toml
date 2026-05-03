@@ -22,14 +22,14 @@ allure-cli = "2.39.0"
 # `JacocoPluginExtension.toolVersion`). Bump both together; the `.exec` binary format must match
 # the agent that wrote the file, and the agent jar is consumed by the e2e suite to instrument
 # the platform/operator JVMs running inside K3s.
-jacoco = "0.8.13"
+jacoco = "0.8.14"
 littleproxy = "2.7.0"
 git-properties = "2.5.7"
 node-gradle = "7.1.0"
 gson = "2.14.0"
 gson-fire = "1.9.0"
 jsr305 = "3.0.2"
-jgit = "7.3.0.202506031305-r"
+jgit = "7.6.0.202603022253-r"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
