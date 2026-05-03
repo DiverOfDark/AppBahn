@@ -20,12 +20,199 @@ import (
 	"time"
 )
 
+type AdminAPI interface {
+
+	/*
+		CreateNetworkPolicy Method for CreateNetworkPolicy
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateNetworkPolicyRequest
+	*/
+	CreateNetworkPolicy(ctx context.Context) ApiCreateNetworkPolicyRequest
+
+	// CreateNetworkPolicyExecute executes the request
+	//  @return NetworkPolicy
+	CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
+
+	/*
+		DeleteCluster Method for DeleteCluster
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param name
+		@return ApiDeleteClusterRequest
+	*/
+	DeleteCluster(ctx context.Context, name string) ApiDeleteClusterRequest
+
+	// DeleteClusterExecute executes the request
+	DeleteClusterExecute(r ApiDeleteClusterRequest) (*http.Response, error)
+
+	/*
+		DeleteNetworkPolicy Method for DeleteNetworkPolicy
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param id
+		@return ApiDeleteNetworkPolicyRequest
+	*/
+	DeleteNetworkPolicy(ctx context.Context, id string) ApiDeleteNetworkPolicyRequest
+
+	// DeleteNetworkPolicyExecute executes the request
+	DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyRequest) (*http.Response, error)
+
+	/*
+		GetPlatformAuditLog Method for GetPlatformAuditLog
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiGetPlatformAuditLogRequest
+	*/
+	GetPlatformAuditLog(ctx context.Context) ApiGetPlatformAuditLogRequest
+
+	// GetPlatformAuditLogExecute executes the request
+	//  @return PagedAuditLogResponse
+	GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error)
+
+	/*
+		GetPlatformConfig Method for GetPlatformConfig
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiGetPlatformConfigRequest
+	*/
+	GetPlatformConfig(ctx context.Context) ApiGetPlatformConfigRequest
+
+	// GetPlatformConfigExecute executes the request
+	//  @return PlatformConfig
+	GetPlatformConfigExecute(r ApiGetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
+
+	/*
+		GetResourceTypeDefinition Method for GetResourceTypeDefinition
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param type_
+		@return ApiGetResourceTypeDefinitionRequest
+	*/
+	GetResourceTypeDefinition(ctx context.Context, type_ string) ApiGetResourceTypeDefinitionRequest
+
+	// GetResourceTypeDefinitionExecute executes the request
+	//  @return ResourceTypeDefinition
+	GetResourceTypeDefinitionExecute(r ApiGetResourceTypeDefinitionRequest) (*ResourceTypeDefinition, *http.Response, error)
+
+	/*
+		ListClusters Method for ListClusters
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListClustersRequest
+	*/
+	ListClusters(ctx context.Context) ApiListClustersRequest
+
+	// ListClustersExecute executes the request
+	//  @return []Cluster
+	ListClustersExecute(r ApiListClustersRequest) ([]Cluster, *http.Response, error)
+
+	/*
+		ListNetworkPolicies Method for ListNetworkPolicies
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListNetworkPoliciesRequest
+	*/
+	ListNetworkPolicies(ctx context.Context) ApiListNetworkPoliciesRequest
+
+	// ListNetworkPoliciesExecute executes the request
+	//  @return []NetworkPolicy
+	ListNetworkPoliciesExecute(r ApiListNetworkPoliciesRequest) ([]NetworkPolicy, *http.Response, error)
+
+	/*
+		ListResourceTypeDefinitions Method for ListResourceTypeDefinitions
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListResourceTypeDefinitionsRequest
+	*/
+	ListResourceTypeDefinitions(ctx context.Context) ApiListResourceTypeDefinitionsRequest
+
+	// ListResourceTypeDefinitionsExecute executes the request
+	//  @return []ResourceTypeDefinition
+	ListResourceTypeDefinitionsExecute(r ApiListResourceTypeDefinitionsRequest) ([]ResourceTypeDefinition, *http.Response, error)
+
+	/*
+		ListUsers Method for ListUsers
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListUsersRequest
+	*/
+	ListUsers(ctx context.Context) ApiListUsersRequest
+
+	// ListUsersExecute executes the request
+	//  @return PagedUserResponse
+	ListUsersExecute(r ApiListUsersRequest) (*PagedUserResponse, *http.Response, error)
+
+	/*
+		RegisterCluster Method for RegisterCluster
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiRegisterClusterRequest
+	*/
+	RegisterCluster(ctx context.Context) ApiRegisterClusterRequest
+
+	// RegisterClusterExecute executes the request
+	//  @return Cluster
+	RegisterClusterExecute(r ApiRegisterClusterRequest) (*Cluster, *http.Response, error)
+
+	/*
+		SetPlatformConfig Method for SetPlatformConfig
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiSetPlatformConfigRequest
+	*/
+	SetPlatformConfig(ctx context.Context) ApiSetPlatformConfigRequest
+
+	// SetPlatformConfigExecute executes the request
+	//  @return PlatformConfig
+	SetPlatformConfigExecute(r ApiSetPlatformConfigRequest) (*PlatformConfig, *http.Response, error)
+
+	/*
+		UpdateCluster Method for UpdateCluster
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param name
+		@return ApiUpdateClusterRequest
+	*/
+	UpdateCluster(ctx context.Context, name string) ApiUpdateClusterRequest
+
+	// UpdateClusterExecute executes the request
+	//  @return Cluster
+	UpdateClusterExecute(r ApiUpdateClusterRequest) (*Cluster, *http.Response, error)
+
+	/*
+		UpdateNetworkPolicy Method for UpdateNetworkPolicy
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param id
+		@return ApiUpdateNetworkPolicyRequest
+	*/
+	UpdateNetworkPolicy(ctx context.Context, id string) ApiUpdateNetworkPolicyRequest
+
+	// UpdateNetworkPolicyExecute executes the request
+	//  @return NetworkPolicy
+	UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyRequest) (*NetworkPolicy, *http.Response, error)
+
+	/*
+		UpdateResourceTypeAdminConfig Method for UpdateResourceTypeAdminConfig
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param type_
+		@return ApiUpdateResourceTypeAdminConfigRequest
+	*/
+	UpdateResourceTypeAdminConfig(ctx context.Context, type_ string) ApiUpdateResourceTypeAdminConfigRequest
+
+	// UpdateResourceTypeAdminConfigExecute executes the request
+	//  @return ResourceTypeDefinition
+	UpdateResourceTypeAdminConfigExecute(r ApiUpdateResourceTypeAdminConfigRequest) (*ResourceTypeDefinition, *http.Response, error)
+}
+
 // AdminAPIService AdminAPI service
 type AdminAPIService service
 
 type ApiCreateNetworkPolicyRequest struct {
 	ctx                        context.Context
-	ApiService                 *AdminAPIService
+	ApiService                 AdminAPI
 	createNetworkPolicyRequest *CreateNetworkPolicyRequest
 	idempotencyKey             *string
 }
@@ -144,7 +331,7 @@ func (a *AdminAPIService) CreateNetworkPolicyExecute(r ApiCreateNetworkPolicyReq
 
 type ApiDeleteClusterRequest struct {
 	ctx            context.Context
-	ApiService     *AdminAPIService
+	ApiService     AdminAPI
 	name           string
 	idempotencyKey *string
 }
@@ -244,7 +431,7 @@ func (a *AdminAPIService) DeleteClusterExecute(r ApiDeleteClusterRequest) (*http
 
 type ApiDeleteNetworkPolicyRequest struct {
 	ctx            context.Context
-	ApiService     *AdminAPIService
+	ApiService     AdminAPI
 	id             string
 	idempotencyKey *string
 }
@@ -344,7 +531,7 @@ func (a *AdminAPIService) DeleteNetworkPolicyExecute(r ApiDeleteNetworkPolicyReq
 
 type ApiGetPlatformAuditLogRequest struct {
 	ctx           context.Context
-	ApiService    *AdminAPIService
+	ApiService    AdminAPI
 	page          *int32
 	size          *int32
 	action        *string
@@ -514,7 +701,7 @@ func (a *AdminAPIService) GetPlatformAuditLogExecute(r ApiGetPlatformAuditLogReq
 
 type ApiGetPlatformConfigRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 }
 
 func (r ApiGetPlatformConfigRequest) Execute() (*PlatformConfig, *http.Response, error) {
@@ -612,7 +799,7 @@ func (a *AdminAPIService) GetPlatformConfigExecute(r ApiGetPlatformConfigRequest
 
 type ApiGetResourceTypeDefinitionRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 	type_      string
 }
 
@@ -714,7 +901,7 @@ func (a *AdminAPIService) GetResourceTypeDefinitionExecute(r ApiGetResourceTypeD
 
 type ApiListClustersRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 }
 
 func (r ApiListClustersRequest) Execute() ([]Cluster, *http.Response, error) {
@@ -812,7 +999,7 @@ func (a *AdminAPIService) ListClustersExecute(r ApiListClustersRequest) ([]Clust
 
 type ApiListNetworkPoliciesRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 }
 
 func (r ApiListNetworkPoliciesRequest) Execute() ([]NetworkPolicy, *http.Response, error) {
@@ -910,7 +1097,7 @@ func (a *AdminAPIService) ListNetworkPoliciesExecute(r ApiListNetworkPoliciesReq
 
 type ApiListResourceTypeDefinitionsRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 }
 
 func (r ApiListResourceTypeDefinitionsRequest) Execute() ([]ResourceTypeDefinition, *http.Response, error) {
@@ -1008,7 +1195,7 @@ func (a *AdminAPIService) ListResourceTypeDefinitionsExecute(r ApiListResourceTy
 
 type ApiListUsersRequest struct {
 	ctx        context.Context
-	ApiService *AdminAPIService
+	ApiService AdminAPI
 	page       *int32
 	size       *int32
 	email      *string
@@ -1133,7 +1320,7 @@ func (a *AdminAPIService) ListUsersExecute(r ApiListUsersRequest) (*PagedUserRes
 
 type ApiRegisterClusterRequest struct {
 	ctx                  context.Context
-	ApiService           *AdminAPIService
+	ApiService           AdminAPI
 	createClusterRequest *CreateClusterRequest
 	idempotencyKey       *string
 }
@@ -1252,7 +1439,7 @@ func (a *AdminAPIService) RegisterClusterExecute(r ApiRegisterClusterRequest) (*
 
 type ApiSetPlatformConfigRequest struct {
 	ctx            context.Context
-	ApiService     *AdminAPIService
+	ApiService     AdminAPI
 	platformConfig *PlatformConfig
 	idempotencyKey *string
 }
@@ -1371,7 +1558,7 @@ func (a *AdminAPIService) SetPlatformConfigExecute(r ApiSetPlatformConfigRequest
 
 type ApiUpdateClusterRequest struct {
 	ctx                  context.Context
-	ApiService           *AdminAPIService
+	ApiService           AdminAPI
 	name                 string
 	idempotencyKey       *string
 	updateClusterRequest *UpdateClusterRequest
@@ -1491,7 +1678,7 @@ func (a *AdminAPIService) UpdateClusterExecute(r ApiUpdateClusterRequest) (*Clus
 
 type ApiUpdateNetworkPolicyRequest struct {
 	ctx                        context.Context
-	ApiService                 *AdminAPIService
+	ApiService                 AdminAPI
 	id                         string
 	idempotencyKey             *string
 	updateNetworkPolicyRequest *UpdateNetworkPolicyRequest
@@ -1611,7 +1798,7 @@ func (a *AdminAPIService) UpdateNetworkPolicyExecute(r ApiUpdateNetworkPolicyReq
 
 type ApiUpdateResourceTypeAdminConfigRequest struct {
 	ctx                                  context.Context
-	ApiService                           *AdminAPIService
+	ApiService                           AdminAPI
 	type_                                string
 	idempotencyKey                       *string
 	updateResourceTypeAdminConfigRequest *UpdateResourceTypeAdminConfigRequest

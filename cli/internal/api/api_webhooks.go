@@ -19,59 +19,64 @@ import (
 	"strings"
 )
 
+type WebhooksAPI interface {
+
+	/*
+		ReceiveWebhook Method for ReceiveWebhook
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param token
+		@return ApiReceiveWebhookRequest
+	*/
+	ReceiveWebhook(ctx context.Context, token string) ApiReceiveWebhookRequest
+
+	// ReceiveWebhookExecute executes the request
+	ReceiveWebhookExecute(r ApiReceiveWebhookRequest) (*http.Response, error)
+}
+
 // WebhooksAPIService WebhooksAPI service
 type WebhooksAPIService service
 
-type ApiTriggerWebhookRequest struct {
-	ctx            context.Context
-	ApiService     *WebhooksAPIService
-	resourceSlug   string
-	idempotencyKey *string
+type ApiReceiveWebhookRequest struct {
+	ctx        context.Context
+	ApiService WebhooksAPI
+	token      string
 }
 
-// Optional dedup key. Same key + same body within 24h returns the cached response.
-func (r ApiTriggerWebhookRequest) IdempotencyKey(idempotencyKey string) ApiTriggerWebhookRequest {
-	r.idempotencyKey = &idempotencyKey
-	return r
-}
-
-func (r ApiTriggerWebhookRequest) Execute() (*WebhookTriggerResponse, *http.Response, error) {
-	return r.ApiService.TriggerWebhookExecute(r)
+func (r ApiReceiveWebhookRequest) Execute() (*http.Response, error) {
+	return r.ApiService.ReceiveWebhookExecute(r)
 }
 
 /*
-TriggerWebhook Method for TriggerWebhook
+ReceiveWebhook Method for ReceiveWebhook
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param resourceSlug
-	@return ApiTriggerWebhookRequest
+	@param token
+	@return ApiReceiveWebhookRequest
 */
-func (a *WebhooksAPIService) TriggerWebhook(ctx context.Context, resourceSlug string) ApiTriggerWebhookRequest {
-	return ApiTriggerWebhookRequest{
-		ApiService:   a,
-		ctx:          ctx,
-		resourceSlug: resourceSlug,
+func (a *WebhooksAPIService) ReceiveWebhook(ctx context.Context, token string) ApiReceiveWebhookRequest {
+	return ApiReceiveWebhookRequest{
+		ApiService: a,
+		ctx:        ctx,
+		token:      token,
 	}
 }
 
 // Execute executes the request
-//
-//	@return WebhookTriggerResponse
-func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (*WebhookTriggerResponse, *http.Response, error) {
+func (a *WebhooksAPIService) ReceiveWebhookExecute(r ApiReceiveWebhookRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue *WebhookTriggerResponse
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WebhooksAPIService.TriggerWebhook")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WebhooksAPIService.ReceiveWebhook")
 	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+		return nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/webhooks/{resource_slug}"
-	localVarPath = strings.Replace(localVarPath, "{"+"resource_slug"+"}", url.PathEscape(parameterValueToString(r.resourceSlug, "resourceSlug")), -1)
+	localVarPath := localBasePath + "/webhooks/{token}"
+	localVarPath = strings.Replace(localVarPath, "{"+"token"+"}", url.PathEscape(parameterValueToString(r.token, "token")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -87,31 +92,28 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 	}
 
 	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
+	localVarHTTPHeaderAccepts := []string{}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	if r.idempotencyKey != nil {
-		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
-	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return localVarReturnValue, nil, err
+		return nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
+		return localVarHTTPResponse, err
 	}
 
 	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
+		return localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -119,17 +121,8 @@ func (a *WebhooksAPIService) TriggerWebhookExecute(r ApiTriggerWebhookRequest) (
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
+		return localVarHTTPResponse, newErr
 	}
 
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
+	return localVarHTTPResponse, nil
 }

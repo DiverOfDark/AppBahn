@@ -80,6 +80,7 @@ management:
 platform:
   namespace-prefix: abp
   base-domain: appbahn.local
+  public-base-url:
   admin-groups:
   kubernetes:
     enabled: true

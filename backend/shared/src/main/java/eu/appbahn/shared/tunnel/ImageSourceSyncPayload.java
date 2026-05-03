@@ -13,6 +13,10 @@ import java.time.Instant;
 public record ImageSourceSyncPayload(
         String slug,
         String environmentSlug,
+        // Authoritative K8s namespace from the CR's metadata. Carried explicitly so the platform
+        // can still nudge ImageSources whose CR lives outside an env namespace (env-less is a
+        // valid product case — the webhook receiver path must work for them too).
+        String namespace,
         String clusterName,
         ImageSourceSpec spec,
         ImageSourceStatus status,

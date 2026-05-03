@@ -20,10 +20,10 @@ type AuditActorSource string
 
 // List of AuditActorSource
 const (
-	API     AuditActorSource = "Api"
-	TOKEN   AuditActorSource = "Token"
-	KUBECTL AuditActorSource = "Kubectl"
-	SYSTEM  AuditActorSource = "System"
+	AUDITACTORSOURCE_API     AuditActorSource = "Api"
+	AUDITACTORSOURCE_TOKEN   AuditActorSource = "Token"
+	AUDITACTORSOURCE_KUBECTL AuditActorSource = "Kubectl"
+	AUDITACTORSOURCE_SYSTEM  AuditActorSource = "System"
 )
 
 // All allowed values of AuditActorSource enum

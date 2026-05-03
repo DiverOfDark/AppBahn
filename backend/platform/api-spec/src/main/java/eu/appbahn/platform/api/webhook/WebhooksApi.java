@@ -1,7 +1,6 @@
 package eu.appbahn.platform.api.webhook;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -10,17 +9,18 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Webhooks")
 public interface WebhooksApi {
     /**
-     * POST /webhooks/{resource_slug} : TriggerWebhook
+     * POST /webhooks/{token} : ReceiveWebhook
      *
-     * @param resourceSlug  (required)
-     * @return Success (status code 200)
-     *         or Unauthorized (status code 401)
-     *         or Not found (status code 404)
-     *         or Rate limit exceeded (status code 429)
+     * <p>Provider-agnostic webhook receiver. The path token is the entire authentication
+     * signal — no headers checked, no body parsed, no provider-specific shape. On a token hit
+     * the platform enqueues a {@code nudge-image-source} tunnel command for the cluster
+     * owning the bound ImageSource; the operator stamps {@code status.lastWebhookAt} and the
+     * reconciler re-pulls HEAD itself. Always returns {@code 202 Accepted} with empty body on
+     * success; unknown tokens get {@code 404 Not Found} (same response as a non-existent
+     * ImageSource, so the endpoint isn't a token-enumeration oracle).
+     *
+     * @param token per-ImageSource opaque capability token
      */
-    @RequestMapping(
-            method = RequestMethod.POST,
-            value = "/webhooks/{resource_slug}",
-            produces = {"application/json"})
-    ResponseEntity<WebhookTriggerResponse> triggerWebhook(@PathVariable("resource_slug") String resourceSlug);
+    @RequestMapping(method = RequestMethod.POST, value = "/webhooks/{token}")
+    ResponseEntity<Void> receiveWebhook(@PathVariable("token") String token);
 }

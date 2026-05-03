@@ -20,12 +20,328 @@ import (
 	"time"
 )
 
+type WorkspacesAPI interface {
+
+	/*
+		AddWorkspaceMember Method for AddWorkspaceMember
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiAddWorkspaceMemberRequest
+	*/
+	AddWorkspaceMember(ctx context.Context, slug string) ApiAddWorkspaceMemberRequest
+
+	// AddWorkspaceMemberExecute executes the request
+	//  @return AddMemberResponse
+	AddWorkspaceMemberExecute(r ApiAddWorkspaceMemberRequest) (*AddMemberResponse, *http.Response, error)
+
+	/*
+		CreateGroupMapping Method for CreateGroupMapping
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateGroupMappingRequest
+	*/
+	CreateGroupMapping(ctx context.Context, slug string) ApiCreateGroupMappingRequest
+
+	// CreateGroupMappingExecute executes the request
+	//  @return OidcGroupMapping
+	CreateGroupMappingExecute(r ApiCreateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error)
+
+	/*
+		CreateNotificationWebhook Method for CreateNotificationWebhook
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateNotificationWebhookRequest
+	*/
+	CreateNotificationWebhook(ctx context.Context, slug string) ApiCreateNotificationWebhookRequest
+
+	// CreateNotificationWebhookExecute executes the request
+	//  @return NotificationWebhook
+	CreateNotificationWebhookExecute(r ApiCreateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error)
+
+	/*
+		CreateWorkspace Method for CreateWorkspace
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateWorkspaceRequest
+	*/
+	CreateWorkspace(ctx context.Context) ApiCreateWorkspaceRequest
+
+	// CreateWorkspaceExecute executes the request
+	//  @return Workspace
+	CreateWorkspaceExecute(r ApiCreateWorkspaceRequest) (*Workspace, *http.Response, error)
+
+	/*
+		DeleteGroupMapping Method for DeleteGroupMapping
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param mappingId
+		@return ApiDeleteGroupMappingRequest
+	*/
+	DeleteGroupMapping(ctx context.Context, slug string, mappingId string) ApiDeleteGroupMappingRequest
+
+	// DeleteGroupMappingExecute executes the request
+	DeleteGroupMappingExecute(r ApiDeleteGroupMappingRequest) (*http.Response, error)
+
+	/*
+		DeleteNotificationWebhook Method for DeleteNotificationWebhook
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiDeleteNotificationWebhookRequest
+	*/
+	DeleteNotificationWebhook(ctx context.Context, slug string, hookId string) ApiDeleteNotificationWebhookRequest
+
+	// DeleteNotificationWebhookExecute executes the request
+	DeleteNotificationWebhookExecute(r ApiDeleteNotificationWebhookRequest) (*http.Response, error)
+
+	/*
+		DeleteWorkspace Method for DeleteWorkspace
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiDeleteWorkspaceRequest
+	*/
+	DeleteWorkspace(ctx context.Context, slug string) ApiDeleteWorkspaceRequest
+
+	// DeleteWorkspaceExecute executes the request
+	DeleteWorkspaceExecute(r ApiDeleteWorkspaceRequest) (*http.Response, error)
+
+	/*
+		GetWorkspace Method for GetWorkspace
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceRequest
+	*/
+	GetWorkspace(ctx context.Context, slug string) ApiGetWorkspaceRequest
+
+	// GetWorkspaceExecute executes the request
+	//  @return Workspace
+	GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*Workspace, *http.Response, error)
+
+	/*
+		GetWorkspaceAuditLog Method for GetWorkspaceAuditLog
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceAuditLogRequest
+	*/
+	GetWorkspaceAuditLog(ctx context.Context, slug string) ApiGetWorkspaceAuditLogRequest
+
+	// GetWorkspaceAuditLogExecute executes the request
+	//  @return PagedAuditLogResponse
+	GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAuditLogRequest) (*PagedAuditLogResponse, *http.Response, error)
+
+	/*
+		GetWorkspaceQuota Method for GetWorkspaceQuota
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceQuotaRequest
+	*/
+	GetWorkspaceQuota(ctx context.Context, slug string) ApiGetWorkspaceQuotaRequest
+
+	// GetWorkspaceQuotaExecute executes the request
+	//  @return Quota
+	GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRequest) (*Quota, *http.Response, error)
+
+	/*
+		GetWorkspaceSecurity Method for GetWorkspaceSecurity
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetWorkspaceSecurityRequest
+	*/
+	GetWorkspaceSecurity(ctx context.Context, slug string) ApiGetWorkspaceSecurityRequest
+
+	// GetWorkspaceSecurityExecute executes the request
+	//  @return SecuritySettings
+	GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error)
+
+	/*
+		ListGroupMappings Method for ListGroupMappings
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListGroupMappingsRequest
+	*/
+	ListGroupMappings(ctx context.Context, slug string) ApiListGroupMappingsRequest
+
+	// ListGroupMappingsExecute executes the request
+	//  @return []OidcGroupMapping
+	ListGroupMappingsExecute(r ApiListGroupMappingsRequest) ([]OidcGroupMapping, *http.Response, error)
+
+	/*
+		ListNotificationWebhooks Method for ListNotificationWebhooks
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListNotificationWebhooksRequest
+	*/
+	ListNotificationWebhooks(ctx context.Context, slug string) ApiListNotificationWebhooksRequest
+
+	// ListNotificationWebhooksExecute executes the request
+	//  @return []NotificationWebhook
+	ListNotificationWebhooksExecute(r ApiListNotificationWebhooksRequest) ([]NotificationWebhook, *http.Response, error)
+
+	/*
+		ListWebhookDeliveries Method for ListWebhookDeliveries
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiListWebhookDeliveriesRequest
+	*/
+	ListWebhookDeliveries(ctx context.Context, slug string, hookId string) ApiListWebhookDeliveriesRequest
+
+	// ListWebhookDeliveriesExecute executes the request
+	//  @return []WebhookDelivery
+	ListWebhookDeliveriesExecute(r ApiListWebhookDeliveriesRequest) ([]WebhookDelivery, *http.Response, error)
+
+	/*
+		ListWorkspaceMembers Method for ListWorkspaceMembers
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListWorkspaceMembersRequest
+	*/
+	ListWorkspaceMembers(ctx context.Context, slug string) ApiListWorkspaceMembersRequest
+
+	// ListWorkspaceMembersExecute executes the request
+	//  @return []WorkspaceMember
+	ListWorkspaceMembersExecute(r ApiListWorkspaceMembersRequest) ([]WorkspaceMember, *http.Response, error)
+
+	/*
+		ListWorkspaces Method for ListWorkspaces
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListWorkspacesRequest
+	*/
+	ListWorkspaces(ctx context.Context) ApiListWorkspacesRequest
+
+	// ListWorkspacesExecute executes the request
+	//  @return PagedWorkspaceResponse
+	ListWorkspacesExecute(r ApiListWorkspacesRequest) (*PagedWorkspaceResponse, *http.Response, error)
+
+	/*
+		RemoveWorkspaceMember Method for RemoveWorkspaceMember
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiRemoveWorkspaceMemberRequest
+	*/
+	RemoveWorkspaceMember(ctx context.Context, slug string, userId string) ApiRemoveWorkspaceMemberRequest
+
+	// RemoveWorkspaceMemberExecute executes the request
+	RemoveWorkspaceMemberExecute(r ApiRemoveWorkspaceMemberRequest) (*http.Response, error)
+
+	/*
+		SetWorkspaceQuota Method for SetWorkspaceQuota
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceQuotaRequest
+	*/
+	SetWorkspaceQuota(ctx context.Context, slug string) ApiSetWorkspaceQuotaRequest
+
+	// SetWorkspaceQuotaExecute executes the request
+	//  @return Quota
+	SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRequest) (*Quota, *http.Response, error)
+
+	/*
+		SetWorkspaceRegistry Method for SetWorkspaceRegistry
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceRegistryRequest
+	*/
+	SetWorkspaceRegistry(ctx context.Context, slug string) ApiSetWorkspaceRegistryRequest
+
+	// SetWorkspaceRegistryExecute executes the request
+	//  @return Workspace
+	SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegistryRequest) (*Workspace, *http.Response, error)
+
+	/*
+		SetWorkspaceSecurity Method for SetWorkspaceSecurity
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetWorkspaceSecurityRequest
+	*/
+	SetWorkspaceSecurity(ctx context.Context, slug string) ApiSetWorkspaceSecurityRequest
+
+	// SetWorkspaceSecurityExecute executes the request
+	//  @return SecuritySettings
+	SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecurityRequest) (*SecuritySettings, *http.Response, error)
+
+	/*
+		UpdateGroupMapping Method for UpdateGroupMapping
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param mappingId
+		@return ApiUpdateGroupMappingRequest
+	*/
+	UpdateGroupMapping(ctx context.Context, slug string, mappingId string) ApiUpdateGroupMappingRequest
+
+	// UpdateGroupMappingExecute executes the request
+	//  @return OidcGroupMapping
+	UpdateGroupMappingExecute(r ApiUpdateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error)
+
+	/*
+		UpdateNotificationWebhook Method for UpdateNotificationWebhook
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param hookId
+		@return ApiUpdateNotificationWebhookRequest
+	*/
+	UpdateNotificationWebhook(ctx context.Context, slug string, hookId string) ApiUpdateNotificationWebhookRequest
+
+	// UpdateNotificationWebhookExecute executes the request
+	//  @return NotificationWebhook
+	UpdateNotificationWebhookExecute(r ApiUpdateNotificationWebhookRequest) (*NotificationWebhook, *http.Response, error)
+
+	/*
+		UpdateWorkspace Method for UpdateWorkspace
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiUpdateWorkspaceRequest
+	*/
+	UpdateWorkspace(ctx context.Context, slug string) ApiUpdateWorkspaceRequest
+
+	// UpdateWorkspaceExecute executes the request
+	//  @return Workspace
+	UpdateWorkspaceExecute(r ApiUpdateWorkspaceRequest) (*Workspace, *http.Response, error)
+
+	/*
+		UpdateWorkspaceMember Method for UpdateWorkspaceMember
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiUpdateWorkspaceMemberRequest
+	*/
+	UpdateWorkspaceMember(ctx context.Context, slug string, userId string) ApiUpdateWorkspaceMemberRequest
+
+	// UpdateWorkspaceMemberExecute executes the request
+	//  @return WorkspaceMember
+	UpdateWorkspaceMemberExecute(r ApiUpdateWorkspaceMemberRequest) (*WorkspaceMember, *http.Response, error)
+}
+
 // WorkspacesAPIService WorkspacesAPI service
 type WorkspacesAPIService service
 
 type ApiAddWorkspaceMemberRequest struct {
 	ctx              context.Context
-	ApiService       *WorkspacesAPIService
+	ApiService       WorkspacesAPI
 	slug             string
 	idempotencyKey   *string
 	addMemberRequest *AddMemberRequest
@@ -145,7 +461,7 @@ func (a *WorkspacesAPIService) AddWorkspaceMemberExecute(r ApiAddWorkspaceMember
 
 type ApiCreateGroupMappingRequest struct {
 	ctx                       context.Context
-	ApiService                *WorkspacesAPIService
+	ApiService                WorkspacesAPI
 	slug                      string
 	idempotencyKey            *string
 	createGroupMappingRequest *CreateGroupMappingRequest
@@ -265,7 +581,7 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 
 type ApiCreateNotificationWebhookRequest struct {
 	ctx                              context.Context
-	ApiService                       *WorkspacesAPIService
+	ApiService                       WorkspacesAPI
 	slug                             string
 	idempotencyKey                   *string
 	createNotificationWebhookRequest *CreateNotificationWebhookRequest
@@ -385,7 +701,7 @@ func (a *WorkspacesAPIService) CreateNotificationWebhookExecute(r ApiCreateNotif
 
 type ApiCreateWorkspaceRequest struct {
 	ctx                    context.Context
-	ApiService             *WorkspacesAPIService
+	ApiService             WorkspacesAPI
 	createWorkspaceRequest *CreateWorkspaceRequest
 	idempotencyKey         *string
 }
@@ -504,7 +820,7 @@ func (a *WorkspacesAPIService) CreateWorkspaceExecute(r ApiCreateWorkspaceReques
 
 type ApiDeleteGroupMappingRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	mappingId      string
 	idempotencyKey *string
@@ -608,7 +924,7 @@ func (a *WorkspacesAPIService) DeleteGroupMappingExecute(r ApiDeleteGroupMapping
 
 type ApiDeleteNotificationWebhookRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	hookId         string
 	idempotencyKey *string
@@ -712,7 +1028,7 @@ func (a *WorkspacesAPIService) DeleteNotificationWebhookExecute(r ApiDeleteNotif
 
 type ApiDeleteWorkspaceRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	idempotencyKey *string
 }
@@ -812,7 +1128,7 @@ func (a *WorkspacesAPIService) DeleteWorkspaceExecute(r ApiDeleteWorkspaceReques
 
 type ApiGetWorkspaceRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -914,7 +1230,7 @@ func (a *WorkspacesAPIService) GetWorkspaceExecute(r ApiGetWorkspaceRequest) (*W
 
 type ApiGetWorkspaceAuditLogRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 	page       *int32
 	size       *int32
@@ -1079,7 +1395,7 @@ func (a *WorkspacesAPIService) GetWorkspaceAuditLogExecute(r ApiGetWorkspaceAudi
 
 type ApiGetWorkspaceQuotaRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -1181,7 +1497,7 @@ func (a *WorkspacesAPIService) GetWorkspaceQuotaExecute(r ApiGetWorkspaceQuotaRe
 
 type ApiGetWorkspaceSecurityRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -1283,7 +1599,7 @@ func (a *WorkspacesAPIService) GetWorkspaceSecurityExecute(r ApiGetWorkspaceSecu
 
 type ApiListGroupMappingsRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -1385,7 +1701,7 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 
 type ApiListNotificationWebhooksRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -1487,7 +1803,7 @@ func (a *WorkspacesAPIService) ListNotificationWebhooksExecute(r ApiListNotifica
 
 type ApiListWebhookDeliveriesRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 	hookId     string
 }
@@ -1593,7 +1909,7 @@ func (a *WorkspacesAPIService) ListWebhookDeliveriesExecute(r ApiListWebhookDeli
 
 type ApiListWorkspaceMembersRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	slug       string
 }
 
@@ -1695,7 +2011,7 @@ func (a *WorkspacesAPIService) ListWorkspaceMembersExecute(r ApiListWorkspaceMem
 
 type ApiListWorkspacesRequest struct {
 	ctx        context.Context
-	ApiService *WorkspacesAPIService
+	ApiService WorkspacesAPI
 	page       *int32
 	size       *int32
 	sort       *string
@@ -1820,7 +2136,7 @@ func (a *WorkspacesAPIService) ListWorkspacesExecute(r ApiListWorkspacesRequest)
 
 type ApiRemoveWorkspaceMemberRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	userId         string
 	idempotencyKey *string
@@ -1924,7 +2240,7 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 
 type ApiSetWorkspaceQuotaRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	idempotencyKey *string
 	quota          *Quota
@@ -2044,7 +2360,7 @@ func (a *WorkspacesAPIService) SetWorkspaceQuotaExecute(r ApiSetWorkspaceQuotaRe
 
 type ApiSetWorkspaceRegistryRequest struct {
 	ctx            context.Context
-	ApiService     *WorkspacesAPIService
+	ApiService     WorkspacesAPI
 	slug           string
 	idempotencyKey *string
 	registryConfig *RegistryConfig
@@ -2164,7 +2480,7 @@ func (a *WorkspacesAPIService) SetWorkspaceRegistryExecute(r ApiSetWorkspaceRegi
 
 type ApiSetWorkspaceSecurityRequest struct {
 	ctx              context.Context
-	ApiService       *WorkspacesAPIService
+	ApiService       WorkspacesAPI
 	slug             string
 	idempotencyKey   *string
 	securitySettings *SecuritySettings
@@ -2284,7 +2600,7 @@ func (a *WorkspacesAPIService) SetWorkspaceSecurityExecute(r ApiSetWorkspaceSecu
 
 type ApiUpdateGroupMappingRequest struct {
 	ctx                       context.Context
-	ApiService                *WorkspacesAPIService
+	ApiService                WorkspacesAPI
 	slug                      string
 	mappingId                 string
 	idempotencyKey            *string
@@ -2408,7 +2724,7 @@ func (a *WorkspacesAPIService) UpdateGroupMappingExecute(r ApiUpdateGroupMapping
 
 type ApiUpdateNotificationWebhookRequest struct {
 	ctx                              context.Context
-	ApiService                       *WorkspacesAPIService
+	ApiService                       WorkspacesAPI
 	slug                             string
 	hookId                           string
 	idempotencyKey                   *string
@@ -2532,7 +2848,7 @@ func (a *WorkspacesAPIService) UpdateNotificationWebhookExecute(r ApiUpdateNotif
 
 type ApiUpdateWorkspaceRequest struct {
 	ctx                    context.Context
-	ApiService             *WorkspacesAPIService
+	ApiService             WorkspacesAPI
 	slug                   string
 	updateWorkspaceRequest *UpdateWorkspaceRequest
 	idempotencyKey         *string
@@ -2655,7 +2971,7 @@ func (a *WorkspacesAPIService) UpdateWorkspaceExecute(r ApiUpdateWorkspaceReques
 
 type ApiUpdateWorkspaceMemberRequest struct {
 	ctx                 context.Context
-	ApiService          *WorkspacesAPIService
+	ApiService          WorkspacesAPI
 	slug                string
 	userId              string
 	idempotencyKey      *string

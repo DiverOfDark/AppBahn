@@ -19,6 +19,7 @@ public class TunnelImageSourceMapper {
             return new ImageSourceSyncPayload(
                     "",
                     "",
+                    null,
                     clusterName,
                     null,
                     null,
@@ -31,10 +32,12 @@ public class TunnelImageSourceMapper {
         String envSlug = meta != null && meta.getLabels() != null
                 ? meta.getLabels().getOrDefault(Labels.ENVIRONMENT_SLUG_KEY, "")
                 : "";
+        String namespace = meta != null ? emptyToNull(meta.getNamespace()) : null;
         Instant createdAt = parseCreationTimestamp(meta != null ? meta.getCreationTimestamp() : null);
         return new ImageSourceSyncPayload(
                 slug,
                 envSlug,
+                namespace,
                 clusterName,
                 crd.getSpec(),
                 crd.getStatus(),

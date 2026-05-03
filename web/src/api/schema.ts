@@ -212,7 +212,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/webhooks/{resource_slug}': {
+  '/webhooks/{token}': {
     parameters: {
       query?: never
       header?: never
@@ -221,7 +221,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    post: operations['triggerWebhook']
+    post: operations['receiveWebhook']
     delete?: never
     options?: never
     head?: never
@@ -430,6 +430,22 @@ export interface paths {
     get: operations['listProjects']
     put?: never
     post: operations['createProject']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/image-sources/{slug}/webhook/rotate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['rotateImageSourceWebhook']
     delete?: never
     options?: never
     head?: never
@@ -980,6 +996,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/image-sources/{slug}/webhook': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getImageSourceWebhook']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/git/detect-build/{job_id}': {
     parameters: {
       query?: never
@@ -1295,11 +1327,6 @@ export interface components {
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
-    WebhookTriggerResponse: {
-      changed?: boolean
-      /** Format: uuid */
-      deploymentId?: string
-    }
     BuildpackBuildOptions: {
       builder?: string
     }
@@ -1479,6 +1506,10 @@ export interface components {
     CreateProjectRequest: {
       name: string
       workspaceSlug: string
+    }
+    ImageSourceWebhookSecret: {
+      secret?: string
+      url?: string
     }
     GitAuth: {
       type: string
@@ -1957,6 +1988,10 @@ export interface components {
       /** Format: int32 */
       totalPages?: number
       content?: components['schemas']['Project'][]
+    }
+    ImageSourceWebhookView: {
+      url?: string
+      maskedSecret?: string
     }
     BuildDetectionJob: {
       /** Format: uuid */
@@ -2621,15 +2656,12 @@ export interface operations {
       }
     }
   }
-  triggerWebhook: {
+  receiveWebhook: {
     parameters: {
       query?: never
-      header?: {
-        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
-        'Idempotency-Key'?: string
-      }
+      header?: never
       path: {
-        resource_slug: string
+        token: string
       }
       cookie?: never
     }
@@ -2640,9 +2672,7 @@ export interface operations {
         headers: {
           [name: string]: unknown
         }
-        content: {
-          'application/json': components['schemas']['WebhookTriggerResponse']
-        }
+        content?: never
       }
     }
   }
@@ -3045,6 +3075,31 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Project']
+        }
+      }
+    }
+  }
+  rotateImageSourceWebhook: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ImageSourceWebhookSecret']
         }
       }
     }
@@ -4423,6 +4478,28 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ResourceTypeInfo'][]
+        }
+      }
+    }
+  }
+  getImageSourceWebhook: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ImageSourceWebhookView']
         }
       }
     }

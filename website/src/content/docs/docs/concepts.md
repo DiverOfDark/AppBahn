@@ -56,6 +56,24 @@ The image's own `ENTRYPOINT`/`CMD` is what the resource runs by default. Built i
 
 To run a different command, set a Resource-level **command override**: `appbahn resource update <slug> --command /bin/sh,-c --args "alternate process"`. The override maps directly to the K8s container's `command` and `args`. Either may be set independently. Clear the override with `appbahn resource update <slug> --clear-command-override`; the container goes back to running the image's defaults on the next reconcile.
 
+### Git webhook triggers
+
+Resources backed by a git repository poll the upstream branch every 60 seconds by default. To skip the poll wait when you push, mint a webhook URL and paste it into your git provider (or any tool that can POST):
+
+```
+POST /api/v1/image-sources/{slug}/webhook/rotate
+```
+
+The response carries the full webhook URL once — store it now, it isn't readable again. The URL pattern is:
+
+```
+POST https://<your-appbahn-host>/api/v1/webhooks/<token>
+```
+
+The path token is the entire authentication signal — no headers, no signature, no body. Any tool that can issue a POST works (GitHub, GitLab, Bitbucket, Gitea, raw `curl` from a CI script). The operator re-pulls HEAD itself on every nudge, so there's no payload format to match.
+
+Once a webhook arrives, the polling cadence relaxes to `intervalSecondsAfterWebhook` (1 hour by default) for as long as `webhookFreshnessSeconds` (1 day by default) — connected repos drop to near-zero polling traffic in steady state. If the webhook stops arriving, the operator automatically falls back to the fast cadence. Re-issuing `rotate` invalidates the previous token immediately.
+
 ### Rollback
 
 Every resource keeps a deployment history. To roll back to a previous deployment without rebuilding, use `appbahn resource rollback <slug>` (or `--to <deployment-id>` for a specific row). The resource is pinned to the older artifact and re-rolls immediately. To clear the pin and resume tracking new builds, run `appbahn resource unpin <slug>`. Rollback works for every resource type, including those built from a git repo — there's no need to revert your source commit.

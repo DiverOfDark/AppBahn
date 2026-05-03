@@ -563,31 +563,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OidcGroupMapping"
-  /webhooks/{resource_slug}:
+  /webhooks/{token}:
     post:
       tags:
       - Webhooks
-      operationId: triggerWebhook
+      operationId: receiveWebhook
       parameters:
-      - name: resource_slug
+      - name: token
         in: path
         required: true
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        description: Optional dedup key. Same key + same body within 24h returns the
-          cached response.
-        required: false
         schema:
           type: string
       responses:
         "200":
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebhookTriggerResponse"
+      x-appbahn-idempotency-opt-out: true
   /resources:
     get:
       tags:
@@ -1002,6 +992,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+  /image-sources/{slug}/webhook/rotate:
+    post:
+      tags:
+      - ImageSourceWebhook
+      operationId: rotateImageSourceWebhook
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageSourceWebhookSecret"
   /git/validate:
     post:
       tags:
@@ -2441,6 +2456,24 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResourceTypeInfo"
+  /image-sources/{slug}/webhook:
+    get:
+      tags:
+      - ImageSourceWebhook
+      operationId: getImageSourceWebhook
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageSourceWebhookView"
   /git/detect-build/{job_id}:
     get:
       tags:
@@ -2962,14 +2995,6 @@ components:
           - ADMIN
           - EDITOR
           - VIEWER
-    WebhookTriggerResponse:
-      type: object
-      properties:
-        changed:
-          type: boolean
-        deploymentId:
-          type: string
-          format: uuid
     BuildpackBuildOptions:
       type: object
       properties:
@@ -3293,6 +3318,13 @@ components:
         name:
           type: string
         workspaceSlug:
+          type: string
+    ImageSourceWebhookSecret:
+      type: object
+      properties:
+        secret:
+          type: string
+        url:
           type: string
     GitAuth:
       required:
@@ -4157,6 +4189,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Project"
+    ImageSourceWebhookView:
+      type: object
+      properties:
+        url:
+          type: string
+        maskedSecret:
+          type: string
     BuildDetectionJob:
       type: object
       properties:

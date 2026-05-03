@@ -18,12 +18,27 @@ import (
 	"net/url"
 )
 
+type ResourceTypesAPI interface {
+
+	/*
+		ListResourceTypes Method for ListResourceTypes
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListResourceTypesRequest
+	*/
+	ListResourceTypes(ctx context.Context) ApiListResourceTypesRequest
+
+	// ListResourceTypesExecute executes the request
+	//  @return []ResourceTypeInfo
+	ListResourceTypesExecute(r ApiListResourceTypesRequest) ([]ResourceTypeInfo, *http.Response, error)
+}
+
 // ResourceTypesAPIService ResourceTypesAPI service
 type ResourceTypesAPIService service
 
 type ApiListResourceTypesRequest struct {
 	ctx        context.Context
-	ApiService *ResourceTypesAPIService
+	ApiService ResourceTypesAPI
 	cluster    *string
 }
 

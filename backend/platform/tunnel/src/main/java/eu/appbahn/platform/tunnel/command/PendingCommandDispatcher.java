@@ -5,6 +5,7 @@ import eu.appbahn.platform.api.tunnel.ApplyNamespace;
 import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
+import eu.appbahn.platform.api.tunnel.NudgeImageSource;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -91,6 +92,11 @@ public class PendingCommandDispatcher {
                     DeleteNamespace body = mapper.readValue(row.getPayload(), DeleteNamespace.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
                     yield new Claimed(row.getId(), row.getCorrelationId(), DeleteNamespace.EVENT_NAME, body);
+                }
+                case CommandTypes.NUDGE_IMAGE_SOURCE -> {
+                    NudgeImageSource body = mapper.readValue(row.getPayload(), NudgeImageSource.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), NudgeImageSource.EVENT_NAME, body);
                 }
                 default -> {
                     log.warn("Unknown pending_command.command_type: {}", row.getCommandType());

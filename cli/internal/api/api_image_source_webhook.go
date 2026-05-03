@@ -16,100 +16,89 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
-type AuthAPI interface {
+type ImageSourceWebhookAPI interface {
 
 	/*
-		AuthCallback Method for AuthCallback
+		GetImageSourceWebhook Method for GetImageSourceWebhook
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiAuthCallbackRequest
+		@param slug
+		@return ApiGetImageSourceWebhookRequest
 	*/
-	AuthCallback(ctx context.Context) ApiAuthCallbackRequest
+	GetImageSourceWebhook(ctx context.Context, slug string) ApiGetImageSourceWebhookRequest
 
-	// AuthCallbackExecute executes the request
-	//  @return map[string]interface{}
-	AuthCallbackExecute(r ApiAuthCallbackRequest) (map[string]interface{}, *http.Response, error)
+	// GetImageSourceWebhookExecute executes the request
+	//  @return ImageSourceWebhookView
+	GetImageSourceWebhookExecute(r ApiGetImageSourceWebhookRequest) (*ImageSourceWebhookView, *http.Response, error)
 
 	/*
-		AuthLogin Method for AuthLogin
+		RotateImageSourceWebhook Method for RotateImageSourceWebhook
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-		@return ApiAuthLoginRequest
+		@param slug
+		@return ApiRotateImageSourceWebhookRequest
 	*/
-	AuthLogin(ctx context.Context) ApiAuthLoginRequest
+	RotateImageSourceWebhook(ctx context.Context, slug string) ApiRotateImageSourceWebhookRequest
 
-	// AuthLoginExecute executes the request
-	//  @return map[string]interface{}
-	AuthLoginExecute(r ApiAuthLoginRequest) (map[string]interface{}, *http.Response, error)
+	// RotateImageSourceWebhookExecute executes the request
+	//  @return ImageSourceWebhookSecret
+	RotateImageSourceWebhookExecute(r ApiRotateImageSourceWebhookRequest) (*ImageSourceWebhookSecret, *http.Response, error)
 }
 
-// AuthAPIService AuthAPI service
-type AuthAPIService service
+// ImageSourceWebhookAPIService ImageSourceWebhookAPI service
+type ImageSourceWebhookAPIService service
 
-type ApiAuthCallbackRequest struct {
+type ApiGetImageSourceWebhookRequest struct {
 	ctx        context.Context
-	ApiService AuthAPI
-	code       *string
-	state      *string
+	ApiService ImageSourceWebhookAPI
+	slug       string
 }
 
-func (r ApiAuthCallbackRequest) Code(code string) ApiAuthCallbackRequest {
-	r.code = &code
-	return r
-}
-
-func (r ApiAuthCallbackRequest) State(state string) ApiAuthCallbackRequest {
-	r.state = &state
-	return r
-}
-
-func (r ApiAuthCallbackRequest) Execute() (map[string]interface{}, *http.Response, error) {
-	return r.ApiService.AuthCallbackExecute(r)
+func (r ApiGetImageSourceWebhookRequest) Execute() (*ImageSourceWebhookView, *http.Response, error) {
+	return r.ApiService.GetImageSourceWebhookExecute(r)
 }
 
 /*
-AuthCallback Method for AuthCallback
+GetImageSourceWebhook Method for GetImageSourceWebhook
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiAuthCallbackRequest
+	@param slug
+	@return ApiGetImageSourceWebhookRequest
 */
-func (a *AuthAPIService) AuthCallback(ctx context.Context) ApiAuthCallbackRequest {
-	return ApiAuthCallbackRequest{
+func (a *ImageSourceWebhookAPIService) GetImageSourceWebhook(ctx context.Context, slug string) ApiGetImageSourceWebhookRequest {
+	return ApiGetImageSourceWebhookRequest{
 		ApiService: a,
 		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 //
-//	@return map[string]interface{}
-func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (map[string]interface{}, *http.Response, error) {
+//	@return ImageSourceWebhookView
+func (a *ImageSourceWebhookAPIService) GetImageSourceWebhookExecute(r ApiGetImageSourceWebhookRequest) (*ImageSourceWebhookView, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodGet
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarReturnValue *ImageSourceWebhookView
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthCallback")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ImageSourceWebhookAPIService.GetImageSourceWebhook")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/auth/callback"
+	localVarPath := localBasePath + "/image-sources/{slug}/webhook"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if r.code != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
-	}
-	if r.state != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "state", r.state, "form", "")
-	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -164,45 +153,56 @@ func (a *AuthAPIService) AuthCallbackExecute(r ApiAuthCallbackRequest) (map[stri
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiAuthLoginRequest struct {
-	ctx        context.Context
-	ApiService AuthAPI
+type ApiRotateImageSourceWebhookRequest struct {
+	ctx            context.Context
+	ApiService     ImageSourceWebhookAPI
+	slug           string
+	idempotencyKey *string
 }
 
-func (r ApiAuthLoginRequest) Execute() (map[string]interface{}, *http.Response, error) {
-	return r.ApiService.AuthLoginExecute(r)
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRotateImageSourceWebhookRequest) IdempotencyKey(idempotencyKey string) ApiRotateImageSourceWebhookRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiRotateImageSourceWebhookRequest) Execute() (*ImageSourceWebhookSecret, *http.Response, error) {
+	return r.ApiService.RotateImageSourceWebhookExecute(r)
 }
 
 /*
-AuthLogin Method for AuthLogin
+RotateImageSourceWebhook Method for RotateImageSourceWebhook
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiAuthLoginRequest
+	@param slug
+	@return ApiRotateImageSourceWebhookRequest
 */
-func (a *AuthAPIService) AuthLogin(ctx context.Context) ApiAuthLoginRequest {
-	return ApiAuthLoginRequest{
+func (a *ImageSourceWebhookAPIService) RotateImageSourceWebhook(ctx context.Context, slug string) ApiRotateImageSourceWebhookRequest {
+	return ApiRotateImageSourceWebhookRequest{
 		ApiService: a,
 		ctx:        ctx,
+		slug:       slug,
 	}
 }
 
 // Execute executes the request
 //
-//	@return map[string]interface{}
-func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (map[string]interface{}, *http.Response, error) {
+//	@return ImageSourceWebhookSecret
+func (a *ImageSourceWebhookAPIService) RotateImageSourceWebhookExecute(r ApiRotateImageSourceWebhookRequest) (*ImageSourceWebhookSecret, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodGet
+		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarReturnValue *ImageSourceWebhookSecret
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.AuthLogin")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ImageSourceWebhookAPIService.RotateImageSourceWebhook")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/auth/login"
+	localVarPath := localBasePath + "/image-sources/{slug}/webhook/rotate"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -224,6 +224,9 @@ func (a *AuthAPIService) AuthLoginExecute(r ApiAuthLoginRequest) (map[string]int
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {

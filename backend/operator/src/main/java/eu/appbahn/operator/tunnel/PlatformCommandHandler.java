@@ -10,11 +10,13 @@ import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
 import eu.appbahn.operator.tunnel.client.model.DeleteNamespace;
 import eu.appbahn.operator.tunnel.client.model.DeleteResource;
 import eu.appbahn.operator.tunnel.client.model.HelloAck;
+import eu.appbahn.operator.tunnel.client.model.NudgeImageSource;
 import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -68,6 +70,8 @@ public class PlatformCommandHandler {
                     handleApplyNamespace(mapper.readValue(data, ApplyNamespace.class));
                 case TunnelEventNames.DELETE_NAMESPACE ->
                     handleDeleteNamespace(mapper.readValue(data, DeleteNamespace.class));
+                case TunnelEventNames.NUDGE_IMAGE_SOURCE ->
+                    handleNudgeImageSource(mapper.readValue(data, NudgeImageSource.class));
                 case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
                 case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
                     var push = mapper.readValue(data, QuotaRbacCachePush.class);
@@ -251,6 +255,39 @@ public class PlatformCommandHandler {
             ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         } catch (Exception e) {
             log.warn("DeleteNamespace {} failed: {}", cmd.getNamespace(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Patches {@code status.lastWebhookAt} on the named ImageSource so the reconciler observes
+     * the webhook arrival and triggers a fresh reconcile (which re-pulls HEAD itself — there
+     * is no payload to consume).
+     */
+    private void handleNudgeImageSource(NudgeImageSource cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var existing = kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getName())
+                    .get();
+            if (existing == null) {
+                ack(correlationId, StatusEnum.NOT_FOUND, "ImageSource not found");
+                return;
+            }
+            var status = existing.getStatus() != null ? existing.getStatus() : new ImageSourceStatus();
+            status.setLastWebhookAt(java.time.Instant.now());
+            existing.setStatus(status);
+            kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getName())
+                    .patchStatus(existing);
+            log.info("Stamped lastWebhookAt on ImageSource {}/{}", cmd.getNamespace(), cmd.getName());
+            ack(correlationId, StatusEnum.OK, "");
+        } catch (Exception e) {
+            log.warn("NudgeImageSource {}/{} failed: {}", cmd.getNamespace(), cmd.getName(), e.getMessage());
             ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
         }
     }

@@ -72,6 +72,8 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     private static final Logger log = LoggerFactory.getLogger(ImageSourceReconciler.class);
 
     static final int DEFAULT_INTERVAL_SECONDS = 60;
+    static final int DEFAULT_INTERVAL_AFTER_WEBHOOK_SECONDS = 3600;
+    static final int DEFAULT_WEBHOOK_FRESHNESS_SECONDS = 86400;
     static final int IMAGE_TYPE_RESCHEDULE_SECONDS = 300;
     static final int IMAGE_SOURCE_TYPE_RESCHEDULE_SECONDS = 30;
 
@@ -591,7 +593,7 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                     truncate(e.getMessage()));
         }
         UpdateControl<ImageSourceCrd> control = finalize(cr, prev, next);
-        return control.rescheduleAfter(intervalSeconds(spec), TimeUnit.SECONDS);
+        return control.rescheduleAfter(intervalSeconds(spec, next, Instant.now()), TimeUnit.SECONDS);
     }
 
     private UpdateControl<ImageSourceCrd> reconcileImage(
@@ -884,15 +886,37 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         return UpdateControl.patchStatus(cr);
     }
 
-    private static int intervalSeconds(ImageSourceSpec spec) {
+    /**
+     * Pick the next reschedule cadence. When a webhook arrived within the freshness window,
+     * fall back to {@code intervalSecondsAfterWebhook} (slow); otherwise the standard
+     * {@code intervalSeconds} cadence. Net effect: a connected repo with a working webhook
+     * generates near-zero polling traffic; a disconnected repo keeps the 60s default.
+     */
+    static int intervalSeconds(ImageSourceSpec spec, ImageSourceStatus status, Instant now) {
         var trigger = spec.getTrigger();
-        if (trigger != null
-                && trigger.getPoll() != null
-                && trigger.getPoll().getIntervalSeconds() != null
-                && trigger.getPoll().getIntervalSeconds() > 0) {
-            return trigger.getPoll().getIntervalSeconds();
+        var poll = trigger != null ? trigger.getPoll() : null;
+        int fast = poll != null && poll.getIntervalSeconds() != null && poll.getIntervalSeconds() > 0
+                ? poll.getIntervalSeconds()
+                : DEFAULT_INTERVAL_SECONDS;
+        Instant lastWebhookAt = status != null ? status.getLastWebhookAt() : null;
+        if (lastWebhookAt == null) {
+            return fast;
         }
-        return DEFAULT_INTERVAL_SECONDS;
+        int freshness =
+                poll != null && poll.getWebhookFreshnessSeconds() != null && poll.getWebhookFreshnessSeconds() > 0
+                        ? poll.getWebhookFreshnessSeconds()
+                        : DEFAULT_WEBHOOK_FRESHNESS_SECONDS;
+        if (now.isAfter(lastWebhookAt.plusSeconds(freshness))) {
+            return fast;
+        }
+        int slow = poll != null
+                        && poll.getIntervalSecondsAfterWebhook() != null
+                        && poll.getIntervalSecondsAfterWebhook() > 0
+                ? poll.getIntervalSecondsAfterWebhook()
+                : DEFAULT_INTERVAL_AFTER_WEBHOOK_SECONDS;
+        // Never go *slower* than the user-asked-for fast cadence (a misconfigured slow value
+        // shouldn't break their visibility into a freshly-connected repo).
+        return Math.max(slow, fast);
     }
 
     private static void applyReady(ImageSourceStatus status, String boolStatus, String reason, String message) {

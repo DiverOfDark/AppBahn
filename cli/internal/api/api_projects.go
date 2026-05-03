@@ -19,12 +19,142 @@ import (
 	"strings"
 )
 
+type ProjectsAPI interface {
+
+	/*
+		CreateProject Method for CreateProject
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiCreateProjectRequest
+	*/
+	CreateProject(ctx context.Context) ApiCreateProjectRequest
+
+	// CreateProjectExecute executes the request
+	//  @return Project
+	CreateProjectExecute(r ApiCreateProjectRequest) (*Project, *http.Response, error)
+
+	/*
+		DeleteProject Method for DeleteProject
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiDeleteProjectRequest
+	*/
+	DeleteProject(ctx context.Context, slug string) ApiDeleteProjectRequest
+
+	// DeleteProjectExecute executes the request
+	DeleteProjectExecute(r ApiDeleteProjectRequest) (*http.Response, error)
+
+	/*
+		DeleteProjectMemberRole Method for DeleteProjectMemberRole
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiDeleteProjectMemberRoleRequest
+	*/
+	DeleteProjectMemberRole(ctx context.Context, slug string, userId string) ApiDeleteProjectMemberRoleRequest
+
+	// DeleteProjectMemberRoleExecute executes the request
+	DeleteProjectMemberRoleExecute(r ApiDeleteProjectMemberRoleRequest) (*http.Response, error)
+
+	/*
+		GetProject Method for GetProject
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetProjectRequest
+	*/
+	GetProject(ctx context.Context, slug string) ApiGetProjectRequest
+
+	// GetProjectExecute executes the request
+	//  @return Project
+	GetProjectExecute(r ApiGetProjectRequest) (*Project, *http.Response, error)
+
+	/*
+		GetProjectQuota Method for GetProjectQuota
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetProjectQuotaRequest
+	*/
+	GetProjectQuota(ctx context.Context, slug string) ApiGetProjectQuotaRequest
+
+	// GetProjectQuotaExecute executes the request
+	//  @return Quota
+	GetProjectQuotaExecute(r ApiGetProjectQuotaRequest) (*Quota, *http.Response, error)
+
+	/*
+		ListProjects Method for ListProjects
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiListProjectsRequest
+	*/
+	ListProjects(ctx context.Context) ApiListProjectsRequest
+
+	// ListProjectsExecute executes the request
+	//  @return PagedProjectResponse
+	ListProjectsExecute(r ApiListProjectsRequest) (*PagedProjectResponse, *http.Response, error)
+
+	/*
+		SetProjectMemberRole Method for SetProjectMemberRole
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param userId
+		@return ApiSetProjectMemberRoleRequest
+	*/
+	SetProjectMemberRole(ctx context.Context, slug string, userId string) ApiSetProjectMemberRoleRequest
+
+	// SetProjectMemberRoleExecute executes the request
+	SetProjectMemberRoleExecute(r ApiSetProjectMemberRoleRequest) (*http.Response, error)
+
+	/*
+		SetProjectQuota Method for SetProjectQuota
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetProjectQuotaRequest
+	*/
+	SetProjectQuota(ctx context.Context, slug string) ApiSetProjectQuotaRequest
+
+	// SetProjectQuotaExecute executes the request
+	//  @return Quota
+	SetProjectQuotaExecute(r ApiSetProjectQuotaRequest) (*Quota, *http.Response, error)
+
+	/*
+		SetProjectRegistry Method for SetProjectRegistry
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiSetProjectRegistryRequest
+	*/
+	SetProjectRegistry(ctx context.Context, slug string) ApiSetProjectRegistryRequest
+
+	// SetProjectRegistryExecute executes the request
+	//  @return Project
+	SetProjectRegistryExecute(r ApiSetProjectRegistryRequest) (*Project, *http.Response, error)
+
+	/*
+		UpdateProject Method for UpdateProject
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiUpdateProjectRequest
+	*/
+	UpdateProject(ctx context.Context, slug string) ApiUpdateProjectRequest
+
+	// UpdateProjectExecute executes the request
+	//  @return Project
+	UpdateProjectExecute(r ApiUpdateProjectRequest) (*Project, *http.Response, error)
+}
+
 // ProjectsAPIService ProjectsAPI service
 type ProjectsAPIService service
 
 type ApiCreateProjectRequest struct {
 	ctx                  context.Context
-	ApiService           *ProjectsAPIService
+	ApiService           ProjectsAPI
 	createProjectRequest *CreateProjectRequest
 	idempotencyKey       *string
 }
@@ -143,7 +273,7 @@ func (a *ProjectsAPIService) CreateProjectExecute(r ApiCreateProjectRequest) (*P
 
 type ApiDeleteProjectRequest struct {
 	ctx            context.Context
-	ApiService     *ProjectsAPIService
+	ApiService     ProjectsAPI
 	slug           string
 	idempotencyKey *string
 }
@@ -243,7 +373,7 @@ func (a *ProjectsAPIService) DeleteProjectExecute(r ApiDeleteProjectRequest) (*h
 
 type ApiDeleteProjectMemberRoleRequest struct {
 	ctx            context.Context
-	ApiService     *ProjectsAPIService
+	ApiService     ProjectsAPI
 	slug           string
 	userId         string
 	idempotencyKey *string
@@ -347,7 +477,7 @@ func (a *ProjectsAPIService) DeleteProjectMemberRoleExecute(r ApiDeleteProjectMe
 
 type ApiGetProjectRequest struct {
 	ctx        context.Context
-	ApiService *ProjectsAPIService
+	ApiService ProjectsAPI
 	slug       string
 }
 
@@ -449,7 +579,7 @@ func (a *ProjectsAPIService) GetProjectExecute(r ApiGetProjectRequest) (*Project
 
 type ApiGetProjectQuotaRequest struct {
 	ctx        context.Context
-	ApiService *ProjectsAPIService
+	ApiService ProjectsAPI
 	slug       string
 }
 
@@ -551,7 +681,7 @@ func (a *ProjectsAPIService) GetProjectQuotaExecute(r ApiGetProjectQuotaRequest)
 
 type ApiListProjectsRequest struct {
 	ctx           context.Context
-	ApiService    *ProjectsAPIService
+	ApiService    ProjectsAPI
 	workspaceSlug *string
 	page          *int32
 	size          *int32
@@ -685,7 +815,7 @@ func (a *ProjectsAPIService) ListProjectsExecute(r ApiListProjectsRequest) (*Pag
 
 type ApiSetProjectMemberRoleRequest struct {
 	ctx                 context.Context
-	ApiService          *ProjectsAPIService
+	ApiService          ProjectsAPI
 	slug                string
 	userId              string
 	idempotencyKey      *string
@@ -797,7 +927,7 @@ func (a *ProjectsAPIService) SetProjectMemberRoleExecute(r ApiSetProjectMemberRo
 
 type ApiSetProjectQuotaRequest struct {
 	ctx            context.Context
-	ApiService     *ProjectsAPIService
+	ApiService     ProjectsAPI
 	slug           string
 	idempotencyKey *string
 	quota          *Quota
@@ -917,7 +1047,7 @@ func (a *ProjectsAPIService) SetProjectQuotaExecute(r ApiSetProjectQuotaRequest)
 
 type ApiSetProjectRegistryRequest struct {
 	ctx            context.Context
-	ApiService     *ProjectsAPIService
+	ApiService     ProjectsAPI
 	slug           string
 	idempotencyKey *string
 	registryConfig *RegistryConfig
@@ -1037,7 +1167,7 @@ func (a *ProjectsAPIService) SetProjectRegistryExecute(r ApiSetProjectRegistryRe
 
 type ApiUpdateProjectRequest struct {
 	ctx                  context.Context
-	ApiService           *ProjectsAPIService
+	ApiService           ProjectsAPI
 	slug                 string
 	idempotencyKey       *string
 	updateProjectRequest *UpdateProjectRequest

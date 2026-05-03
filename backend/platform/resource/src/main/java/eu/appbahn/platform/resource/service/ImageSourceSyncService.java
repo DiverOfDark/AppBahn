@@ -60,12 +60,10 @@ public class ImageSourceSyncService {
         var entity = existing != null ? existing : new ImageSourceCacheEntity();
         entity.setSlug(payload.slug());
         entity.setEnvironmentId(env != null ? env.getId() : null);
-        // Derived from envSlug because the wire payload doesn't carry namespace explicitly;
-        // an ImageSource CR sitting outside any environment namespace produces null here.
-        entity.setNamespace(
-                payload.environmentSlug() != null && !payload.environmentSlug().isBlank()
-                        ? "abp-" + payload.environmentSlug()
-                        : null);
+        // Authoritative namespace from the CR's metadata (carried explicitly on the wire so
+        // env-less ImageSources still record their real namespace, which the nudge path needs
+        // to address the CR by ns/name).
+        entity.setNamespace(payload.namespace());
         entity.setSpec(payload.spec());
         entity.setStatus(payload.status());
         entity.setObservedCommit(payload.status() != null ? payload.status().getObservedCommit() : null);

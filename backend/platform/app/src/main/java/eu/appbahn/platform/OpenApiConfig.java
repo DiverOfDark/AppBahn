@@ -279,6 +279,7 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.DeleteResource.class,
             eu.appbahn.platform.api.tunnel.ApplyNamespace.class,
             eu.appbahn.platform.api.tunnel.DeleteNamespace.class,
+            eu.appbahn.platform.api.tunnel.NudgeImageSource.class,
             eu.appbahn.platform.api.tunnel.SubscribeCommandsRequest.class,
             // Audit enums are inlined inside AuditLogEvent by default; promote them to
             // top-level components so the operator's generated client gets them as plain
@@ -350,8 +351,9 @@ class OpenApiConfig {
                 for (Operation op : mutatingOps.apply(item).values()) {
                     if (op.getExtensions() != null
                             && Boolean.TRUE.equals(op.getExtensions().get(IDEMPOTENCY_OPT_OUT_EXT))) {
-                        op.getExtensions().remove(IDEMPOTENCY_OPT_OUT_EXT);
-                        if (op.getExtensions().isEmpty()) op.setExtensions(null);
+                        // Leave the vendor extension on the emitted op so the spec carries the
+                        // opt-out signal — clients (and our own conformance tests) can see why
+                        // the header is absent.
                         continue;
                     }
                     Parameter param = new HeaderParameter()

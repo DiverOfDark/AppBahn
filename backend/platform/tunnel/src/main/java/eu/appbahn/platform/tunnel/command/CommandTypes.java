@@ -10,6 +10,7 @@ public final class CommandTypes {
     public static final String DELETE_RESOURCE = "DELETE_RESOURCE";
     public static final String APPLY_NAMESPACE = "APPLY_NAMESPACE";
     public static final String DELETE_NAMESPACE = "DELETE_NAMESPACE";
+    public static final String NUDGE_IMAGE_SOURCE = "NUDGE_IMAGE_SOURCE";
 
     private CommandTypes() {}
 }

@@ -1249,6 +1249,15 @@ components:
           type: string
         namespace:
           type: string
+    NudgeImageSource:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        name:
+          type: string
     SubscribeCommandsRequest:
       required:
       - clusterName

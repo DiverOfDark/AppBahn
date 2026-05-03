@@ -20,8 +20,8 @@ type AuditDecision string
 
 // List of AuditDecision
 const (
-	ALLOWED AuditDecision = "Allowed"
-	DENIED  AuditDecision = "Denied"
+	AUDITDECISION_ALLOWED AuditDecision = "Allowed"
+	AUDITDECISION_DENIED  AuditDecision = "Denied"
 )
 
 // All allowed values of AuditDecision enum

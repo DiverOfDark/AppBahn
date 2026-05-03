@@ -20,11 +20,11 @@ type AuditTargetType string
 
 // List of AuditTargetType
 const (
-	WORKSPACE   AuditTargetType = "Workspace"
-	PROJECT     AuditTargetType = "Project"
-	ENVIRONMENT AuditTargetType = "Environment"
-	RESOURCE    AuditTargetType = "Resource"
-	DEPLOYMENT  AuditTargetType = "Deployment"
+	AUDITTARGETTYPE_WORKSPACE   AuditTargetType = "Workspace"
+	AUDITTARGETTYPE_PROJECT     AuditTargetType = "Project"
+	AUDITTARGETTYPE_ENVIRONMENT AuditTargetType = "Environment"
+	AUDITTARGETTYPE_RESOURCE    AuditTargetType = "Resource"
+	AUDITTARGETTYPE_DEPLOYMENT  AuditTargetType = "Deployment"
 )
 
 // All allowed values of AuditTargetType enum
