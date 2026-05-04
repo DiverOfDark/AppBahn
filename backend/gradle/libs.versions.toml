@@ -38,6 +38,7 @@ instancio = "5.5.1"
 # Tink isn't pulled transitively, so it's declared explicitly below.
 nimbus-jose-jwt = "10.4"
 tink = "1.18.0"
+javaparser = "3.27.0"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):
@@ -135,6 +136,10 @@ instancio-core = { module = "org.instancio:instancio-core", version.ref = "insta
 # License signing/verification (Ed25519 JWS).
 nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
 tink = { module = "com.google.crypto.tink:tink", version.ref = "tink" }
+
+# JavaParser — used by the e2e visual-review meta-test to hash @Test method bodies. The
+# hash gates `lastValidated` markers in scenarios.yaml so a code change forces a re-review.
+javaparser-core = { module = "com.github.javaparser:javaparser-core", version.ref = "javaparser" }
 
 [plugins]
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "git-properties" }

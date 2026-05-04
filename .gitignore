@@ -20,3 +20,8 @@ cli/dist/
 helm/values-production.yaml
 # Allure raw results (run output, not artefacts)
 allure-results/
+
+# Visual review traces — captured by VisualCaptureExtension during :e2e:e2eTest. The
+# `lastValidated` markers in backend/e2e/src/test/resources/scenarios.yaml ARE committed;
+# the trace.zip / metadata.json / review.md artefacts beneath are not.
+backend/e2e/.ai-review/
