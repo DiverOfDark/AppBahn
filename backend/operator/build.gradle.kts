@@ -124,7 +124,7 @@ val generateTunnelClient = tasks.register<org.openapitools.generator.gradle.plug
     generatorName.set("java")
     library.set("native")
     inputSpec.set(tunnelSpec.asFile.absolutePath)
-    outputDir.set(generatedTunnelClientDir.map { it.asFile.absolutePath })
+    outputDir.set(generatedTunnelClientDir)
     apiPackage.set("eu.appbahn.operator.tunnel.client.api")
     modelPackage.set("eu.appbahn.operator.tunnel.client.model")
     invokerPackage.set("eu.appbahn.operator.tunnel.client")

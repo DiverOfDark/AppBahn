@@ -1,7 +1,7 @@
 [versions]
 spring-boot = "4.0.6"
 spring-dependency-management = "1.1.7"
-openapi-generator = "7.21.0"
+openapi-generator = "7.22.0"
 spotless = "8.4.0"
 springdoc = "3.0.3"
 fabric8 = "7.6.1"
@@ -9,8 +9,8 @@ josdk-spring-boot = "6.4.1"
 # flyway kept explicit: catalog 12.5.0 is newer than the spring-boot-dependencies BOM value.
 flyway = "12.5.0"
 uuid-creator = "6.1.1"
-scalar-webmvc = "0.6.29"
-swagger-annotations = "2.2.48"
+scalar-webmvc = "0.6.30"
+swagger-annotations = "2.2.49"
 jackson-databind-nullable = "0.2.10"
 playwright = "1.59.0"
 okhttp = "5.3.2"
@@ -36,9 +36,9 @@ instancio = "5.5.1"
 # explicitly here so the licence loader/signing tool compile against a known JOSE API. Nimbus's
 # Ed25519Signer/Verifier delegate to Google Tink's Ed25519 primitives (see Ed25519Verifier source);
 # Tink isn't pulled transitively, so it's declared explicitly below.
-nimbus-jose-jwt = "10.4"
-tink = "1.18.0"
-javaparser = "3.27.0"
+nimbus-jose-jwt = "10.9"
+tink = "1.21.0"
+javaparser = "3.28.0"
 
 # Versions NOT declared here are supplied by the spring-boot-dependencies BOM
 # (imported centrally via io.spring.dependency-management in the root build):

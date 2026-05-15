@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.23
 
 # Common base: Chainguard Wolfi + OpenJDK 25 JRE. All three subsequent
 # stages FROM `jre` so the AOT cache is binary-compatible — same `lib/modules`
