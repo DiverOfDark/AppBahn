@@ -86,6 +86,20 @@ public class BuildLifecycleHandler {
             if (existing == null) {
                 return;
             }
+        } else if (existing.getLifecycle() != null && existing.getLifecycle().isTerminal()) {
+            // A terminal row (SUPERSEDED / FAILED / CANCELED) is the audit record of a
+            // closed-out build and must never transition out of that state. Late events
+            // arriving after a row was superseded by a newer release, for example, would
+            // otherwise resurrect the row and (for ACTIVE) reclaim primary — corrupting
+            // the deploy timeline. Drop the event silently.
+            log.info(
+                    "Ignoring lifecycle transition {} → {} for deployment {} (slug={}) — "
+                            + "row is terminal; event arrived after supersede/fail/cancel",
+                    existing.getLifecycle(),
+                    lifecycle,
+                    existing.getId(),
+                    existing.getResourceSlug());
+            return;
         }
         // When the event's deploymentId doesn't match the existing row's id, the event is
         // from a "ghost build" produced by an operator-side race. Don't let it regress the
@@ -102,11 +116,24 @@ public class BuildLifecycleHandler {
         if (errorMessage != null) {
             existing.setErrorMessage(errorMessage);
         }
-        if (lifecycle == BuildLifecycle.ACTIVE) {
-            existing.setPrimary(true);
-        }
+        // For ACTIVE events, atomically flip the primary flag via transferPrimary:
+        // setting primary=true here without clearing the previously-primary row would
+        // trip the partial unique index idx_deployment_primary (one primary row per
+        // resource_slug). transferPrimary issues a single UPDATE that flips the new
+        // id to primary and any other row for the same slug to non-primary in one go.
+        // Also mark any in-flight predecessors (BUILT / ACTIVATING) as SUPERSEDED so
+        // the Deploys tab doesn't show them stuck on "Activating" forever after a
+        // newer release takes over. Gate on the row's POST-update lifecycle (not the
+        // event parameter): on the ghost-build path advancesLifecycle may have refused
+        // the transition, in which case the row never became ACTIVE and must not be
+        // promoted to primary.
+        UUID newPrimaryId = existing.getLifecycle() == BuildLifecycle.ACTIVE ? existing.getId() : null;
         try {
             deploymentRepository.save(existing);
+            if (newPrimaryId != null) {
+                deploymentRepository.transferPrimary(existing.getResourceSlug(), newPrimaryId);
+                deploymentRepository.supersedeInFlight(existing.getResourceSlug(), existing.getId());
+            }
         } catch (DataIntegrityViolationException e) {
             // Concurrent transaction beat us to inserting a row for this (ns, name, commit).
             // Re-read and retry the update in a fresh tx so the operator's HTTP push can ack.

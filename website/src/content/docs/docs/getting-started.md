@@ -239,7 +239,7 @@ Create a `values.yaml` with your configuration:
 | `platform.auth.existingSecret`      | No       |                                           | Name of an existing Secret containing `client-id` and `client-secret` keys       |
 | `platform.auth.platformAdminGroups` | No       | `[]`                                      | OIDC group names that grant platform admin access                                |
 | `platform.namespacePrefix`          | No       | `abp`                                     | Prefix for Kubernetes namespaces (`{prefix}-{envSlug}`)                          |
-| `platform.domain.base`              | No       | `appbahn.example.com`                     | Base domain for auto-generated resource URLs (`{slug}.{baseDomain}`)             |
+| `platform.baseDomain`               | No       | `appbahn.example.com`                     | Base domain for auto-generated resource URLs (`{slug}.{baseDomain}`)             |
 | `platform.branding.instanceName`    | No       | `AppBahn`                                 | Instance name shown in the console UI                                            |
 | `platform.branding.tagline`         | No       | `Deploy and manage your applications`     | Tagline shown on the login page                                                  |
 | `platform.branding.logoUrl`         | No       |                                           | URL to a custom logo image                                                       |

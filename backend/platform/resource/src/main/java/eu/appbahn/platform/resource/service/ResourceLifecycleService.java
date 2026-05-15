@@ -48,14 +48,15 @@ public class ResourceLifecycleService {
         var env = resolved.env();
         UUID workspaceId = resolved.workspaceId();
 
-        // Gate on spec.stopped — authoritative; cache status is a proxy that breaks mid-transition.
         var existingCrd = crdLookup.get(slug, env.getSlug());
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        if (Boolean.TRUE.equals(existingCrd.getSpec().getStopped())) {
-            return;
-        }
+        // Always enqueue the update — short-circuiting on the cached spec/status is unsafe under
+        // concurrent stop/start: a pending start command in the operator's queue could land after
+        // we no-op here, flipping the final state away from STOPPED. The operator's server-side
+        // apply is idempotent, so a redundant enqueue is cheap; correctness wins over the audit
+        // trail being a touch noisier.
         existingCrd.getSpec().setStopped(true);
         crdClient.update(existingCrd, null);
         log.info("Stopped Resource CRD: {}", slug);
@@ -80,15 +81,11 @@ public class ResourceLifecycleService {
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        // Reconcile against status: spec.stopped can race ahead of the operator under concurrent
-        // stop/start. If the resource is still STOPPED, write spec.stopped=false even when the
-        // spec already shows it — operator reconciliation is idempotent.
-        boolean specSaysStopped = Boolean.TRUE.equals(existingCrd.getSpec().getStopped());
-        boolean statusSaysStopped =
-                existingCrd.getStatus() != null && existingCrd.getStatus().getPhase() == ResourcePhase.STOPPED;
-        if (!specSaysStopped && !statusSaysStopped) {
-            return;
-        }
+        // Always enqueue the update — short-circuiting on the cached spec/status is unsafe under
+        // concurrent stop/start: a pending stop command in the operator's queue could land after
+        // we no-op here, flipping the final state to STOPPED. The operator's server-side apply
+        // is idempotent, so a redundant enqueue is cheap; correctness wins over the audit trail
+        // being a touch noisier.
         existingCrd.getSpec().setStopped(false);
         crdClient.update(existingCrd, null);
         log.info("Started Resource CRD: {}", slug);
@@ -118,8 +115,13 @@ public class ResourceLifecycleService {
         if (existingCrd == null) {
             throw new NotFoundException("Resource CRD not found in Kubernetes: " + slug);
         }
-        Long current = existingCrd.getSpec().getRestartGeneration();
-        existingCrd.getSpec().setRestartGeneration(current == null ? 1L : current + 1);
+        // crdLookup reads from resource_cache, which doesn't carry restartGeneration —
+        // so reading the current value and incrementing always yielded `1`, and a
+        // second restart would server-side-apply an unchanged spec (no metadata.generation
+        // bump → no informer event → no ACTIVATING). Use a monotonically-increasing
+        // timestamp instead; the reconciler only checks inequality vs the prior
+        // observedRestartGeneration, and any new value triggers the re-roll path.
+        existingCrd.getSpec().setRestartGeneration(System.currentTimeMillis());
         crdClient.update(existingCrd, null);
         log.info("Restarted Resource CRD: {}", slug);
 

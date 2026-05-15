@@ -110,7 +110,7 @@ spec:
             - name: PLATFORM_NAMESPACEPREFIX
               value: {{ .Values.platform.namespacePrefix | default "abp" | quote }}
             - name: PLATFORM_BASEDOMAIN
-              value: {{ .Values.platform.domain.base | quote }}
+              value: {{ .Values.platform.baseDomain | quote }}
             - name: PLATFORM_ADMINGROUPS
               value: {{ join "," .Values.platform.auth.platformAdminGroups | quote }}
             # Quota / License

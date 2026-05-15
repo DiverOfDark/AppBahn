@@ -1,0 +1,34 @@
+# Profile: dev — operator runs from IDEA against the K3s cluster booted by
+# tools/dev-stack/docker-compose.yml. Activate via:
+#   • IntelliJ run config: Active profiles = dev (no env vars needed)
+#   • CLI: ./gradlew :operator:bootRun --args='--spring.profiles.active=dev'
+#
+# Inert when the dev profile isn't active, so it's safe to ship in the JAR.
+
+operator:
+  cluster-name: local-dev
+  tunnel:
+    platform-base-url: http://localhost:8080
+    cluster-name: local-dev
+  # DevCrdInstaller installs the AppBahn CRDs from the classpath
+  # (META-INF/fabric8/*-v1.yml, emitted by the fabric8 APT during build) on
+  # operator startup. Replaces the k3s-bootstrap one-shot in compose.
+  install-crds: true
+  # Relax pod SecurityContext for dev so off-the-shelf Docker images that run
+  # as root (the canonical `nginx`, `postgres`, most Bitnami images, …) start
+  # without a CreateContainerConfigError. Production keeps the strict defaults
+  # (runAsNonRoot=true, read-only rootfs, drop ALL caps) — those are tested in
+  # `:e2e:e2eTest` against the helm chart's defaults.
+  security:
+    run-as-non-root: false
+    read-only-root-filesystem: false
+    allow-privilege-escalation: true
+    drop-capabilities: []
+
+server:
+  # Operator and platform both default to :8080 — bump operator off the clash.
+  port: 8082
+
+logging:
+  level:
+    eu.appbahn: DEBUG

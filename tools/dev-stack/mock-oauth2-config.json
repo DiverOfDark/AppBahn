@@ -1,0 +1,40 @@
+{
+  "interactiveLogin": true,
+  "httpServer": "NettyWrapper",
+  "tokenCallbacks": [
+    {
+      "issuerId": "default",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "username",
+          "match": ".+",
+          "claims": {
+            "sub": "dev-admin",
+            "preferred_username": "dev-admin",
+            "groups": ["admin"],
+            "email": "dev-admin@dev.local"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "appbahn-platform",
+          "claims": {
+            "sub": "dev-admin",
+            "preferred_username": "dev-admin",
+            "groups": ["admin"],
+            "email": "dev-admin@dev.local"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "appbahn-operator",
+          "claims": {
+            "sub": "operator-service",
+            "scope": "internal"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -21,7 +21,7 @@ public class AdminConfigSnapshotBuilder {
     private final SnapshotRevisions revisions;
 
     public AdminConfigSnapshotBuilder(
-            @Value("${platform.domain.base:appbahn.local}") String baseDomain,
+            @Value("${platform.base-domain:appbahn.local}") String baseDomain,
             @Value("${platform.registry.url:}") String registryUrl,
             @Value("${platform.registry.repository-prefix:}") String registryRepositoryPrefix,
             @Value("${platform.namespace-prefix:abp}") String namespacePrefix,

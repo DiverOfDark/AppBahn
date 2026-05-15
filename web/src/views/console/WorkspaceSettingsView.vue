@@ -12,6 +12,7 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { formatDate } from '@/utils/format'
+import { extractApiErrorMessage } from '@/utils/apiError'
 import { usePageTitle } from '@/composables/usePageTitle'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
@@ -204,10 +205,14 @@ async function inviteMember() {
   inviteLoading.value = true
   inviteResult.value = null
   try {
-    const { data } = await api.POST('/workspaces/{slug}/members', {
+    const { data, error: apiError } = await api.POST('/workspaces/{slug}/members', {
       params: { path: { slug: wsSlug.value } },
       body: { email: inviteEmail.value.trim(), role: inviteRole.value },
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to invite member')
+      return
+    }
     if (data?.status === 'Pending') {
       inviteResult.value = 'pending'
     }
@@ -224,24 +229,35 @@ async function inviteMember() {
 
 async function updateMemberRole(userId: string, role: Role) {
   try {
-    await api.PATCH('/workspaces/{slug}/members/{user_id}', {
+    const { error: apiError } = await api.PATCH('/workspaces/{slug}/members/{user_id}', {
       params: { path: { slug: wsSlug.value, user_id: userId } },
       body: { role },
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to update member role')
+      return
+    }
     await fetchMembers()
   } catch {
     error.value = 'Failed to update member role'
   }
 }
 
-async function removeMember(userId: string) {
+// Throws on failure so ConfirmButton's handler-pattern can re-arm.
+async function removeMember(userId: string): Promise<void> {
   try {
-    await api.DELETE('/workspaces/{slug}/members/{user_id}', {
+    const { error: apiError } = await api.DELETE('/workspaces/{slug}/members/{user_id}', {
       params: { path: { slug: wsSlug.value, user_id: userId } },
     })
+    if (apiError) {
+      const msg = extractApiErrorMessage(apiError, 'Failed to remove member')
+      error.value = msg
+      throw new Error(msg)
+    }
     await fetchMembers()
-  } catch {
-    error.value = 'Failed to remove member'
+  } catch (e) {
+    if (!error.value) error.value = 'Failed to remove member'
+    throw e
   }
 }
 
@@ -251,10 +267,14 @@ async function addGroupMapping() {
   if (!newMappingGroup.value.trim()) return
   addMappingLoading.value = true
   try {
-    await api.POST('/workspaces/{slug}/group-mappings', {
+    const { error: apiError } = await api.POST('/workspaces/{slug}/group-mappings', {
       params: { path: { slug: wsSlug.value } },
       body: { oidcGroup: newMappingGroup.value.trim(), role: newMappingRole.value },
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to create group mapping')
+      return
+    }
     showAddMapping.value = false
     newMappingGroup.value = ''
     newMappingRole.value = 'VIEWER'
@@ -268,24 +288,35 @@ async function addGroupMapping() {
 
 async function updateMappingRole(mappingId: string, role: Role) {
   try {
-    await api.PATCH('/workspaces/{slug}/group-mappings/{mapping_id}', {
+    const { error: apiError } = await api.PATCH('/workspaces/{slug}/group-mappings/{mapping_id}', {
       params: { path: { slug: wsSlug.value, mapping_id: mappingId } },
       body: { role },
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to update group mapping')
+      return
+    }
     await fetchGroupMappings()
   } catch {
     error.value = 'Failed to update group mapping'
   }
 }
 
-async function deleteMapping(mappingId: string) {
+// Throws on failure so ConfirmButton's handler-pattern can re-arm.
+async function deleteMapping(mappingId: string): Promise<void> {
   try {
-    await api.DELETE('/workspaces/{slug}/group-mappings/{mapping_id}', {
+    const { error: apiError } = await api.DELETE('/workspaces/{slug}/group-mappings/{mapping_id}', {
       params: { path: { slug: wsSlug.value, mapping_id: mappingId } },
     })
+    if (apiError) {
+      const msg = extractApiErrorMessage(apiError, 'Failed to delete group mapping')
+      error.value = msg
+      throw new Error(msg)
+    }
     await fetchGroupMappings()
-  } catch {
-    error.value = 'Failed to delete group mapping'
+  } catch (e) {
+    if (!error.value) error.value = 'Failed to delete group mapping'
+    throw e
   }
 }
 
@@ -295,10 +326,14 @@ async function saveQuota() {
   saving.value = true
   saveSuccess.value = ''
   try {
-    await api.PATCH('/workspaces/{slug}/quota', {
+    const { error: apiError } = await api.PATCH('/workspaces/{slug}/quota', {
       params: { path: { slug: wsSlug.value } },
       body: quota.value,
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to save quota')
+      return
+    }
     saveSuccess.value = 'Quota saved.'
   } catch {
     error.value = 'Failed to save quota'
@@ -313,10 +348,14 @@ async function saveRegistry() {
   saving.value = true
   saveSuccess.value = ''
   try {
-    await api.PUT('/workspaces/{slug}/registry', {
+    const { error: apiError } = await api.PUT('/workspaces/{slug}/registry', {
       params: { path: { slug: wsSlug.value } },
       body: registry.value,
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to save registry configuration')
+      return
+    }
     saveSuccess.value = 'Registry configuration saved.'
   } catch {
     error.value = 'Failed to save registry configuration'
@@ -331,10 +370,14 @@ async function saveSecurity() {
   saving.value = true
   saveSuccess.value = ''
   try {
-    await api.PATCH('/workspaces/{slug}', {
+    const { error: apiError } = await api.PATCH('/workspaces/{slug}', {
       params: { path: { slug: wsSlug.value } },
       body: { name: workspace.value?.name },
     })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to save security settings')
+      return
+    }
     await fetchWorkspace()
     refreshSidebar()
     saveSuccess.value = 'Security settings saved.'
@@ -453,7 +496,7 @@ onMounted(fetchTabData)
                 label="Remove"
                 confirm-label="Confirm Remove"
                 btn-class="btn-danger btn-sm"
-                @confirm="removeMember(member.userId!)"
+                :handler="() => removeMember(member.userId!)"
               />
             </td>
           </tr>
@@ -518,7 +561,10 @@ onMounted(fetchTabData)
               </select>
             </td>
             <td>
-              <ConfirmButton btn-class="btn-danger btn-sm" @confirm="deleteMapping(mapping.id!)" />
+              <ConfirmButton
+                btn-class="btn-danger btn-sm"
+                :handler="() => deleteMapping(mapping.id!)"
+              />
             </td>
           </tr>
         </template>

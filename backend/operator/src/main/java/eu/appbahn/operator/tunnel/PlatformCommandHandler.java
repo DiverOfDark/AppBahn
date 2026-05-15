@@ -131,6 +131,7 @@ public class PlatformCommandHandler {
                         .resources(ImageSourceCrd.class)
                         .inNamespace(bundle.getNamespace())
                         .resource(imageSource)
+                        .forceConflicts()
                         .serverSideApply();
                 log.info(
                         "Applied ImageSource (no Resource update) {}/{}",
@@ -139,10 +140,15 @@ public class PlatformCommandHandler {
                 ack(correlationId, StatusEnum.OK, "");
                 return;
             }
+            // forceConflicts so the platform's apply takes ownership when another
+            // field manager (e.g. an ad-hoc `kubectl patch`) previously claimed
+            // the same field. The platform is the canonical source for spec; the
+            // operator applies whatever it sends without re-litigating ownership.
             ResourceCrd applied = kubernetesClient
                     .resources(ResourceCrd.class)
                     .inNamespace(bundle.getNamespace())
                     .resource(resource)
+                    .forceConflicts()
                     .serverSideApply();
             // Resource-only edits (stop/start/restart) carry a null imageSource — the operator
             // applies just the Resource and skips the ImageSource step. The bundle stays the
@@ -176,6 +182,7 @@ public class PlatformCommandHandler {
                     .resources(ImageSourceCrd.class)
                     .inNamespace(bundle.getNamespace())
                     .resource(imageSource)
+                    .forceConflicts()
                     .serverSideApply();
             log.info(
                     "Applied Resource+ImageSource bundle {}/{}",
@@ -230,7 +237,7 @@ public class PlatformCommandHandler {
                     .endMetadata()
                     .build();
             // Server-side apply is idempotent; re-sending the same command is a no-op.
-            kubernetesClient.namespaces().resource(ns).serverSideApply();
+            kubernetesClient.namespaces().resource(ns).forceConflicts().serverSideApply();
             log.info("Applied namespace {} for env {}", cmd.getNamespace(), cmd.getEnvironmentSlug());
             ack(correlationId, StatusEnum.OK, "");
         } catch (Exception e) {

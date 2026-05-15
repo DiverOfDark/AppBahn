@@ -1,24 +1,39 @@
 <script setup lang="ts">
+/**
+ * Resource detail page — orchestrator. Owns the resource + deployments fetch
+ * loop and the cross-tab action state (pause/resume/restart pending). Tab
+ * content is delegated to per-tab components under `./resource-tabs/`.
+ */
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
-import PageHeader from '@/components/PageHeader.vue'
-import EmptyState from '@/components/EmptyState.vue'
-import DataTable from '@/components/DataTable.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import ConfirmButton from '@/components/ConfirmButton.vue'
+import ResourceHeader from '@/components/resource/ResourceHeader.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
-import { statusClass, getDomain } from '@/composables/useResourceHelpers'
-import { formatDate } from '@/utils/format'
+import { extractApiErrorMessage } from '@/utils/apiError'
 import { usePageTitle } from '@/composables/usePageTitle'
+import ResourceOverviewTab from './resource-tabs/ResourceOverviewTab.vue'
+import ResourceDeploysTab from './resource-tabs/ResourceDeploysTab.vue'
+import ResourceEnvTab from './resource-tabs/ResourceEnvTab.vue'
+import ResourceDomainsTab from './resource-tabs/ResourceDomainsTab.vue'
+import ResourceSettingsTab from './resource-tabs/ResourceSettingsTab.vue'
 
 type Resource = components['schemas']['Resource']
 type Deployment = components['schemas']['Deployment']
+type Tab = 'overview' | 'deploys' | 'environment' | 'domains' | 'settings'
+type PendingActionKind = 'pause' | 'resume' | 'restart'
+
+const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'deploys', label: 'Deploys' },
+  { id: 'environment', label: 'Environment' },
+  { id: 'domains', label: 'Domains' },
+  { id: 'settings', label: 'Settings' },
+]
 
 const route = useRoute()
 const router = useRouter()
-
 const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
@@ -27,13 +42,55 @@ const { setPageTitle } = usePageTitle()
 
 const resource = ref<Resource | null>(null)
 const deployments = ref<Deployment[]>([])
-const deploymentsPage = ref(0)
-const deploymentsTotalPages = ref(0)
 const loading = ref(true)
 const error = ref('')
-const deleteBtn = ref<InstanceType<typeof ConfirmButton> | null>(null)
-const deployLoading = ref(false)
+const tab = ref<Tab>(readInitialTab())
 let pollInterval: ReturnType<typeof setInterval> | null = null
+
+// Cross-tab pending-action lifecycle (Pause / Resume / Restart). Spans from
+// click → operator pickup → 60s timeout. Drives the page header's Restart
+// button AND the danger-zone buttons inside the Settings tab.
+interface PendingState {
+  action: PendingActionKind
+  baselineStatus: string | undefined
+  startedAt: number
+  hasLeftBaseline: boolean
+}
+const pendingState = ref<PendingState | null>(null)
+const PENDING_TIMEOUT_MS = 60_000
+const pendingAction = computed(() => pendingState.value?.action ?? null)
+const effectiveStopped = computed(() => {
+  if (pendingState.value?.action === 'pause') return true
+  if (pendingState.value?.action === 'resume') return false
+  return resource.value?.status === 'Stopped'
+})
+
+function readInitialTab(): Tab {
+  const q = route.query.tab
+  if (typeof q === 'string' && TABS.some((t) => t.id === q)) return q as Tab
+  return 'overview'
+}
+
+watch(tab, (next) => {
+  if (route.query.tab === next) return
+  void router.replace({ query: { ...route.query, tab: next } })
+})
+
+watch(
+  () => route.query.tab,
+  (q) => {
+    if (typeof q === 'string' && TABS.some((t) => t.id === q) && tab.value !== q) {
+      tab.value = q as Tab
+    }
+  },
+)
+
+// Counts shown next to tab labels.
+const envEntries = computed(() => Object.entries(resource.value?.config?.env ?? {}))
+const ingressPorts = computed(
+  () => resource.value?.config?.networking?.ports?.filter((p) => p.expose === 'Ingress') ?? [],
+)
+const customDomains = computed(() => resource.value?.statusDetail?.customDomains ?? [])
 
 async function fetchResource() {
   try {
@@ -54,13 +111,10 @@ async function fetchDeployments() {
     const { data } = await api.GET('/resources/{slug}/deployments', {
       params: {
         path: { slug: resSlug.value },
-        query: { page: deploymentsPage.value, size: 10 },
+        query: { page: 0, size: 20 },
       },
     })
-    if (data?.content) {
-      deployments.value = data.content
-    }
-    deploymentsTotalPages.value = data?.totalPages ?? 0
+    if (data?.content) deployments.value = data.content
   } catch {
     error.value = 'Failed to load deployments'
   }
@@ -72,37 +126,132 @@ async function fetchAll() {
   loading.value = false
 }
 
-async function triggerDeploy() {
-  // Manual deployment trigger has moved to the ImageSource side; the legacy POST
-  // /resources/{slug}/deployments endpoint is gone. Stub kept so the existing UI
-  // wiring compiles; rebuild flow lands in a follow-up PR.
-  deployLoading.value = true
-  await fetchDeployments()
-  deployLoading.value = false
+// ── Pause / Resume / Restart ────────────────────────────────────────────
+function beginPending(action: PendingActionKind) {
+  pendingState.value = {
+    action,
+    baselineStatus: resource.value?.status,
+    startedAt: Date.now(),
+    hasLeftBaseline: false,
+  }
+}
+function clearPending() {
+  pendingState.value = null
 }
 
-async function deleteResource() {
+async function restartResource() {
+  beginPending('restart')
   try {
-    await api.DELETE('/resources/{slug}', {
+    const { error: apiError } = await api.POST('/resources/{slug}/restart', {
       params: { path: { slug: resSlug.value } },
     })
-    router.push({
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to restart resource')
+      clearPending()
+      return
+    }
+    await fetchResource()
+  } catch {
+    error.value = 'Failed to restart resource'
+    clearPending()
+  }
+}
+async function pauseResource() {
+  beginPending('pause')
+  try {
+    const { error: apiError } = await api.POST('/resources/{slug}/stop', {
+      params: { path: { slug: resSlug.value } },
+    })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to pause resource')
+      clearPending()
+      return
+    }
+    await fetchResource()
+  } catch {
+    error.value = 'Failed to pause resource'
+    clearPending()
+  }
+}
+async function resumeResource() {
+  beginPending('resume')
+  try {
+    const { error: apiError } = await api.POST('/resources/{slug}/start', {
+      params: { path: { slug: resSlug.value } },
+    })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to resume resource')
+      clearPending()
+      return
+    }
+    await fetchResource()
+  } catch {
+    error.value = 'Failed to resume resource'
+    clearPending()
+  }
+}
+// Throws on failure so the ConfirmButton that triggered it can re-arm.
+// Two ConfirmButtons (header + danger-zone) share this single handler;
+// rejecting lets each instance reset itself.
+async function deleteResource(): Promise<void> {
+  try {
+    const { error: apiError } = await api.DELETE('/resources/{slug}', {
+      params: { path: { slug: resSlug.value } },
+    })
+    if (apiError) {
+      const msg = extractApiErrorMessage(apiError, 'Failed to delete resource')
+      error.value = msg
+      throw new Error(msg)
+    }
+    void router.push({
       name: 'environment',
       params: { wsSlug: wsSlug.value, projSlug: projSlug.value, envSlug: envSlug.value },
     })
-  } catch {
-    error.value = 'Failed to delete resource'
-    deleteBtn.value?.reset()
+  } catch (e) {
+    if (!error.value) error.value = 'Failed to delete resource'
+    throw e
   }
 }
 
+// Clear the pending state once the operator's observed status converges.
+// `restart` waits for the full round-trip (baseline → off-baseline → back),
+// matching the backend's "must be READY to restart" precondition.
+watch(
+  () => resource.value?.status,
+  (s) => {
+    const ps = pendingState.value
+    if (!ps || !s) return
+    if (s !== ps.baselineStatus) ps.hasLeftBaseline = true
+    if (ps.action === 'pause' && s === 'Stopped') {
+      clearPending()
+    } else if (ps.action === 'resume' && s !== 'Stopped' && s !== ps.baselineStatus) {
+      clearPending()
+    } else if (ps.action === 'restart' && ps.hasLeftBaseline && s === ps.baselineStatus) {
+      clearPending()
+    }
+  },
+)
+
+// 60s timeout fallback for stalled operators.
+let pendingTimer: ReturnType<typeof setTimeout> | null = null
+watch(pendingState, (ps) => {
+  if (pendingTimer) {
+    clearTimeout(pendingTimer)
+    pendingTimer = null
+  }
+  if (ps) {
+    const startedAt = ps.startedAt
+    pendingTimer = setTimeout(() => {
+      if (pendingState.value?.startedAt === startedAt) clearPending()
+    }, PENDING_TIMEOUT_MS)
+  }
+})
+
+// ── Lifecycle ────────────────────────────────────────────────────────────
 watch(resSlug, () => {
   error.value = ''
-  deleteBtn.value?.reset()
-  deployLoading.value = false
   resource.value = null
   deployments.value = []
-  deploymentsPage.value = 0
   fetchAll()
 })
 
@@ -113,14 +262,12 @@ function startPolling() {
     fetchDeployments()
   }, 30000)
 }
-
 function stopPolling() {
   if (pollInterval) {
     clearInterval(pollInterval)
     pollInterval = null
   }
 }
-
 function handleVisibilityChange() {
   if (document.hidden) {
     stopPolling()
@@ -140,124 +287,132 @@ onMounted(() => {
 onUnmounted(() => {
   stopPolling()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (pendingTimer) clearTimeout(pendingTimer)
 })
 </script>
 
 <template>
-  <div class="page">
-    <PageHeader :title="resource?.name ?? resSlug">
-      <template #actions>
-        <button class="btn-secondary" :disabled="deployLoading" @click="triggerDeploy">
-          {{ deployLoading ? 'Deploying...' : 'Deploy' }}
-        </button>
-        <ConfirmButton ref="deleteBtn" @confirm="deleteResource" />
-      </template>
-    </PageHeader>
-
+  <div class="resource-detail">
     <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug, projSlug, envSlug }, resSlug, true)" />
 
-    <div v-if="error" class="error-banner">{{ error }}</div>
+    <ResourceHeader
+      v-if="resource"
+      :resource="resource"
+      :pending-action="pendingAction"
+      :on-delete="deleteResource"
+      @restart="restartResource"
+    />
 
+    <div v-if="error" class="error-banner">{{ error }}</div>
     <div v-if="loading" class="loading">Loading...</div>
 
     <template v-else-if="resource">
-      <!-- Overview -->
-      <div class="summary-bar">
-        <div class="summary-item">
-          <span class="summary-label">Status</span>
-          <span class="status-badge" :class="statusClass(resource.status)">
-            {{ resource.status ?? 'UNKNOWN' }}
+      <nav class="tabs" role="tablist" aria-label="Resource section">
+        <button
+          v-for="t in TABS"
+          :key="t.id"
+          type="button"
+          class="tab-btn"
+          :class="{ on: tab === t.id }"
+          role="tab"
+          :aria-selected="tab === t.id"
+          @click="tab = t.id"
+        >
+          {{ t.label }}
+          <span v-if="t.id === 'deploys' && deployments.length" class="tab-ct">
+            {{ deployments.length }}
           </span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Type</span>
-          <span class="summary-value">{{ resource.type }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Slug</span>
-          <span class="summary-value summary-value--mono">{{ resource.slug }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Domain</span>
-          <span class="summary-value summary-value--mono">{{ getDomain(resource) }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Last Synced</span>
-          <span class="summary-value">{{ formatDate(resource.lastSyncedAt) }}</span>
-        </div>
-      </div>
-
-      <!-- Config -->
-      <h2 class="section-title">Configuration</h2>
-      <pre class="config-block">{{ JSON.stringify(resource.config, null, 2) }}</pre>
-
-      <!-- Deployments -->
-      <h2 class="section-title">Deployments</h2>
-
-      <EmptyState v-if="deployments.length === 0" message="No deployments yet." />
-
-      <DataTable v-else>
-        <template #header>
-          <th>Status</th>
-          <th>Image</th>
-          <th>Triggered By</th>
-          <th>Primary</th>
-          <th>Created</th>
-        </template>
-        <template #body>
-          <tr v-for="dep in deployments" :key="dep.id">
-            <td>
-              <span class="status-badge" :class="statusClass(dep.lifecycle)">
-                {{ dep.lifecycle }}
-              </span>
-            </td>
-            <td class="cell-mono">{{ dep.imageRef ?? '-' }}</td>
-            <td>{{ dep.triggeredBy }}</td>
-            <td>{{ dep.isPrimary ? 'Yes' : 'No' }}</td>
-            <td>{{ formatDate(dep.createdAt) }}</td>
-          </tr>
-        </template>
-      </DataTable>
-
-      <div v-if="deploymentsTotalPages > 1" class="pagination">
-        <button
-          class="btn-secondary btn-sm"
-          :disabled="deploymentsPage === 0"
-          @click="(deploymentsPage--, fetchDeployments())"
-        >
-          Previous
+          <span v-if="t.id === 'environment' && envEntries.length" class="tab-ct">
+            {{ envEntries.length }}
+          </span>
+          <span
+            v-if="t.id === 'domains' && customDomains.length + ingressPorts.length"
+            class="tab-ct"
+          >
+            {{ customDomains.length + ingressPorts.length }}
+          </span>
         </button>
-        <span class="pagination-info"
-          >Page {{ deploymentsPage + 1 }} of {{ deploymentsTotalPages }}</span
-        >
-        <button
-          class="btn-secondary btn-sm"
-          :disabled="deploymentsPage >= deploymentsTotalPages - 1"
-          @click="(deploymentsPage++, fetchDeployments())"
-        >
-          Next
-        </button>
-      </div>
+      </nav>
+
+      <ResourceOverviewTab
+        v-if="tab === 'overview'"
+        :resource="resource"
+        :deployments="deployments"
+        @navigate-deploys="tab = 'deploys'"
+        @navigate-environment="tab = 'environment'"
+      />
+
+      <ResourceDeploysTab v-else-if="tab === 'deploys'" :deployments="deployments" />
+
+      <ResourceEnvTab
+        v-else-if="tab === 'environment'"
+        :resource="resource"
+        @navigate-settings="tab = 'settings'"
+      />
+
+      <ResourceDomainsTab v-else-if="tab === 'domains'" :resource="resource" />
+
+      <ResourceSettingsTab
+        v-else-if="tab === 'settings'"
+        :resource="resource"
+        :pending-action="pendingAction"
+        :effective-stopped="effectiveStopped"
+        :on-delete="deleteResource"
+        @saved="fetchResource"
+        @restart="restartResource"
+        @pause="pauseResource"
+        @resume="resumeResource"
+      />
     </template>
   </div>
 </template>
 
 <style scoped>
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 12px;
+.resource-detail {
+  display: contents;
 }
 
-.pagination-info {
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  margin: 14px 0 22px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 12px 16px 10px;
+  font-family: var(--font-body);
   font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  letter-spacing: -0.005em;
+}
+.tab-btn:hover {
   color: var(--color-text-secondary);
 }
-
-.btn-sm {
-  padding: 4px 10px;
-  font-size: 12px;
+.tab-btn.on {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-accent);
+}
+.tab-ct {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-surface);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.06em;
+}
+.tab-btn.on .tab-ct {
+  color: var(--color-accent);
+  background: oklch(20% 0.04 80);
 }
 </style>

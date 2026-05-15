@@ -86,6 +86,12 @@ public class OperatorTunnelController implements TunnelApi {
     private final DataSource dataSource;
     private final String replicaId;
 
+    // Active SSE streams, tracked so we can complete them on @PreDestroy. Without
+    // this, the drain virtual thread keeps the emitter open forever and Jetty's
+    // graceful shutdown waits indefinitely for the async response to finish.
+    private final java.util.Map<UUID, SseEmitter> activeEmitters = new java.util.concurrent.ConcurrentHashMap<>();
+    private volatile boolean shuttingDown = false;
+
     public OperatorTunnelController(
             OperatorJwtVerifier jwtVerifier,
             ClusterSessionRepository sessions,
@@ -216,20 +222,70 @@ public class OperatorTunnelController implements TunnelApi {
             return emitter;
         }
 
-        Thread.ofVirtual().name("tunnel-drain-" + clusterName).start(() -> {
-            try {
-                drainCommandLoop(
-                        emitter, clusterName, sessionId, initialQuota.getRevision(), initialAdmin.getRevision());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                completeQuietly(emitter, clusterName);
-            }
+        // Register SSE callbacks BEFORE publishing the emitter to activeEmitters and BEFORE
+        // starting the drain thread. Each callback removes the entry from the map so a
+        // completion / timeout / error fired between put() and start() can't strand the
+        // emitter. If Thread.ofVirtual().start() itself throws, we also clean up the map
+        // entry and signal the client so the leak window collapses to zero.
+        emitter.onCompletion(() -> {
+            log.debug("SSE emitter completed for cluster={}", clusterName);
+            activeEmitters.remove(sessionId);
         });
-        emitter.onCompletion(() -> log.debug("SSE emitter completed for cluster={}", clusterName));
-        emitter.onTimeout(emitter::complete);
-        emitter.onError(e -> log.debug("SSE emitter error cluster={}: {}", clusterName, e.getMessage()));
+        emitter.onTimeout(() -> {
+            emitter.complete();
+            activeEmitters.remove(sessionId);
+        });
+        emitter.onError(e -> {
+            log.debug("SSE emitter error cluster={}: {}", clusterName, e.getMessage());
+            activeEmitters.remove(sessionId);
+        });
+        activeEmitters.put(sessionId, emitter);
+        try {
+            Thread.ofVirtual().name("tunnel-drain-" + clusterName).start(() -> {
+                try {
+                    drainCommandLoop(
+                            emitter, clusterName, sessionId, initialQuota.getRevision(), initialAdmin.getRevision());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    completeQuietly(emitter, clusterName);
+                    activeEmitters.remove(sessionId);
+                }
+            });
+        } catch (Throwable t) {
+            activeEmitters.remove(sessionId);
+            emitter.completeWithError(t);
+            log.warn("Failed to start tunnel-drain virtual thread for cluster={}: {}", clusterName, t.getMessage());
+            return emitter;
+        }
         return emitter;
+    }
+
+    /**
+     * Complete every active SSE emitter and signal the drain loops to exit so
+     * Jetty's graceful shutdown doesn't wait forever for streams that never
+     * close on their own. Drain threads check {@link #shuttingDown} at the top
+     * of each iteration and return; the {@code complete()} call also makes
+     * the next emit-write fail with IOException, which is the existing exit
+     * path. Worst-case wait: one {@code LISTEN_AWAIT_MS} window (~2s) per
+     * stream while drain threads are parked on the listener.
+     */
+    @jakarta.annotation.PreDestroy
+    public void shutdownActiveStreams() {
+        shuttingDown = true;
+        int count = activeEmitters.size();
+        if (count == 0) {
+            return;
+        }
+        log.info("Completing {} active SSE emitter(s) on shutdown", count);
+        for (var entry : activeEmitters.entrySet()) {
+            try {
+                entry.getValue().complete();
+            } catch (Exception e) {
+                log.debug("SSE emitter complete on shutdown failed: {}", e.getMessage());
+            }
+        }
+        activeEmitters.clear();
     }
 
     /**
@@ -277,6 +333,10 @@ public class OperatorTunnelController implements TunnelApi {
         PendingCommandListener listener = openListenerQuietly(clusterName);
         try {
             while (true) {
+                if (shuttingDown) {
+                    log.info("drain loop exiting — platform shutting down cluster={}", clusterName);
+                    return;
+                }
                 if (!sessionIsStillOurs(clusterName, sessionId)) {
                     log.info("drain loop exiting — session no longer ours cluster={}", clusterName);
                     return;

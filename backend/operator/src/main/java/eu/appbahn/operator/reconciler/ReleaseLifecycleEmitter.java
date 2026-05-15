@@ -74,13 +74,41 @@ public class ReleaseLifecycleEmitter {
         boolean envChanged = previous != null && !Objects.equals(specEnvHash, prevEnvHash) && imageRef != null;
         boolean pinChanged = previous != null && !Objects.equals(specPinImageRef, prevPinImageRef);
 
-        // First reconcile of a new resource — seed the trackers without emitting (the build-half
-        // already minted a row for the initial activation). A Resource that is born with a pin
-        // already set (e.g. created from a CRD apply) is treated the same way.
+        // First reconcile of a new resource. Seed the trackers, and — when an active
+        // artifact is already resolved — mint an ACTIVATING row so the Deploys tab is
+        // not empty even for source types that have no build half (Image / ImageSource
+        // promotion). For Git source, the build-half emitted BUILDING/BUILT against
+        // its own deploymentId; the platform's correlator-mismatch fallback matches by
+        // (imageSourceName, namespace, sourceCommit) and merges this ACTIVATING into
+        // that existing row instead of creating a duplicate.
         if (previous == null) {
             newStatus.setObservedRestartGeneration(specRestartGen);
             newStatus.setObservedEnvHash(specEnvHash);
             newStatus.setObservedPinnedImageRef(specPinImageRef);
+            if (imageRef != null) {
+                String newReleaseId = UUID.randomUUID().toString();
+                newStatus.setObservedReleaseId(newReleaseId);
+                // Force rolloutStatus=Deploying for this initial patch so the
+                // next reconcile sees a Deploying → Healthy transition and emits
+                // ACTIVE. Otherwise — when the deployment is already Healthy at
+                // mint time (e.g. operator restart on top of running pods) —
+                // prevRollout would equal Healthy and ACTIVE would never fire.
+                newStatus.setRolloutStatus(RolloutStatus.Deploying);
+                emit(
+                        boundImageSourceName,
+                        resource.getMetadata().getNamespace(),
+                        newReleaseId,
+                        BuildLifecycleEvent.LifecycleEnum.ACTIVATING,
+                        active != null ? active.getSourceCommit() : null,
+                        imageRef,
+                        null,
+                        BuildLifecycleEvent.TriggeredByEnum.MANUAL);
+                log.info(
+                        "Emitted BuildLifecycleEvent(ACTIVATING, triggeredBy=MANUAL) for {}/{} releaseId={} (initial)",
+                        resource.getMetadata().getNamespace(),
+                        resource.getMetadata().getName(),
+                        newReleaseId);
+            }
             return;
         }
 
@@ -100,6 +128,13 @@ public class ReleaseLifecycleEmitter {
             // rollout outcome and emit ACTIVE/FAILED.
             String newReleaseId = UUID.randomUUID().toString();
             newStatus.setObservedReleaseId(newReleaseId);
+            // Force rolloutStatus=Deploying on the ACTIVATING patch. Otherwise
+            // — when the in-flight roll hasn't dropped the old replica yet, so
+            // deriveStatus still sees phase=READY → rolloutStatus=Healthy — the
+            // next reconcile's prevRollout would equal Healthy and the
+            // Deploying → Healthy transition that fires ACTIVE would be lost,
+            // leaving the audit row stuck at ACTIVATING forever.
+            newStatus.setRolloutStatus(RolloutStatus.Deploying);
             emit(
                     boundImageSourceName,
                     resource.getMetadata().getNamespace(),
@@ -140,6 +175,34 @@ public class ReleaseLifecycleEmitter {
         newStatus.setObservedRestartGeneration(specRestartGen);
         newStatus.setObservedEnvHash(specEnvHash);
         newStatus.setObservedPinnedImageRef(specPinImageRef);
+
+        // Late-arriving artifact: the first reconcile ran before latestArtifact was resolved
+        // (imageRef == null), so the first-reconcile branch only seeded trackers without
+        // minting a release id. Now that imageRef is available, mint ACTIVATING here too —
+        // otherwise the Deploys tab stays empty forever for resources whose ImageSource
+        // resolves on a later reconcile (Git-source first build, slow upstream promotion).
+        if (prevReleaseId == null && imageRef != null) {
+            String newReleaseId = UUID.randomUUID().toString();
+            newStatus.setObservedReleaseId(newReleaseId);
+            // Same Deploying override as the first-reconcile and trigger paths: forces the
+            // next reconcile to observe a Deploying → Healthy transition and emit ACTIVE.
+            newStatus.setRolloutStatus(RolloutStatus.Deploying);
+            emit(
+                    boundImageSourceName,
+                    resource.getMetadata().getNamespace(),
+                    newReleaseId,
+                    BuildLifecycleEvent.LifecycleEnum.ACTIVATING,
+                    active != null ? active.getSourceCommit() : null,
+                    imageRef,
+                    null,
+                    BuildLifecycleEvent.TriggeredByEnum.MANUAL);
+            log.info(
+                    "Emitted BuildLifecycleEvent(ACTIVATING, triggeredBy=MANUAL) for {}/{} releaseId={} (late artifact)",
+                    resource.getMetadata().getNamespace(),
+                    resource.getMetadata().getName(),
+                    newReleaseId);
+            return;
+        }
 
         RolloutStatus rollout = newStatus.getRolloutStatus();
         if (prevReleaseId != null && imageRef != null) {

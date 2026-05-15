@@ -3,11 +3,19 @@ package eu.appbahn.platform.tunnel.rpc;
 import eu.appbahn.platform.resource.service.ClusterOwnershipException;
 import eu.appbahn.platform.tunnel.auth.OperatorJwtVerifier;
 import java.util.Map;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+// HIGHEST_PRECEDENCE so this advice is consulted before GlobalExceptionHandler.
+// Without it, Spring may pick GlobalExceptionHandler.handleGeneric(Exception) for
+// TunnelApiException / TunnelAuthException / ClusterOwnershipException — the
+// catch-all handler logs them as ERROR with a full stack trace, which makes
+// every routine "cluster not approved" registration retry look like a bug.
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(assignableTypes = OperatorTunnelController.class)
 public class TunnelExceptionHandler {
 

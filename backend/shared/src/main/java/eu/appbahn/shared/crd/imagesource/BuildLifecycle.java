@@ -32,5 +32,14 @@ public enum BuildLifecycle {
     SUPERSEDED,
 
     @JsonProperty("Canceled")
-    CANCELED
+    CANCELED;
+
+    /**
+     * True for lifecycles that are end-of-life for a deployment row. Terminal rows are an audit
+     * record of what happened and must never transition to another lifecycle — late events that
+     * arrive after a row has been superseded, failed, or canceled are ignored.
+     */
+    public boolean isTerminal() {
+        return this == SUPERSEDED || this == FAILED || this == CANCELED;
+    }
 }

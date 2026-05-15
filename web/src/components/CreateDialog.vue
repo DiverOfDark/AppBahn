@@ -3,6 +3,7 @@ defineProps<{
   title: string
   open: boolean
   loading: boolean
+  error?: string
 }>()
 
 const emit = defineEmits<{
@@ -32,6 +33,7 @@ function onSubmit(e: Event) {
         </div>
         <form @submit="onSubmit">
           <div class="dialog-body">
+            <div v-if="error" class="dialog-error" role="alert">{{ error }}</div>
             <slot />
           </div>
           <div class="dialog-footer">
@@ -105,6 +107,18 @@ function onSubmit(e: Event) {
 
 .dialog-body {
   padding: 20px;
+}
+
+.dialog-error {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-status-error);
+  border: 1px solid var(--color-status-error);
+  background-color: var(--color-bg-error);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 14px;
 }
 
 .dialog-footer {

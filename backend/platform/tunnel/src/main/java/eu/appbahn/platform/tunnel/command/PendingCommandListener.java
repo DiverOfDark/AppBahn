@@ -51,8 +51,11 @@ public class PendingCommandListener implements AutoCloseable {
             conn.setAutoCommit(true);
             PGConnection pg = conn.unwrap(PGConnection.class);
             try (Statement st = conn.createStatement()) {
-                // Identifier — slugs are DNS-1123-lower so concat is safe.
-                st.execute("LISTEN " + channel);
+                // Slugs allow hyphens (`SlugFormat#SLUG_REGEX`), and unquoted PostgreSQL
+                // identifiers do not — wrap the channel in double quotes so hyphenated
+                // cluster names like `prod-fra-1` parse correctly. Symmetric with the
+                // NOTIFY in PendingCommandNotifier and with UNLISTEN in close() below.
+                st.execute("LISTEN " + PendingCommandNotifier.quoteIdentifier(channel));
             }
             ok = true;
             return new PendingCommandListener(conn, pg, channel);
@@ -91,7 +94,7 @@ public class PendingCommandListener implements AutoCloseable {
         }
         closed = true;
         try (Statement st = connection.createStatement()) {
-            st.execute("UNLISTEN " + channel);
+            st.execute("UNLISTEN " + PendingCommandNotifier.quoteIdentifier(channel));
         } catch (SQLException e) {
             log.debug("UNLISTEN {} failed (closing anyway): {}", channel, e.getMessage());
         }

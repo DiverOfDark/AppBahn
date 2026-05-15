@@ -61,6 +61,25 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UU
             + "WHERE d.resourceSlug = :slug AND (d.primary = true OR d.id = :newPrimaryId)")
     void transferPrimary(@Param("slug") String resourceSlug, @Param("newPrimaryId") UUID newPrimaryId);
 
+    /**
+     * When a new release becomes ACTIVE, any older in-flight rows for the same resource_slug
+     * are by definition obsolete — their rollout was overtaken before it could reach ACTIVE.
+     * Flip their lifecycle to {@link eu.appbahn.shared.crd.imagesource.BuildLifecycle#SUPERSEDED}
+     * in one SQL pass so the Deploys tab doesn't keep showing them stuck on {@code Activating}.
+     * Only in-flight rows are touched ({@code BUILT}, {@code ACTIVATING}); terminal rows
+     * (previous {@code ACTIVE}, {@code FAILED}, …) keep their historical lifecycle.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE DeploymentEntity d "
+            + "SET d.lifecycle = eu.appbahn.shared.crd.imagesource.BuildLifecycle.SUPERSEDED, "
+            + "    d.updatedAt = CURRENT_TIMESTAMP "
+            + "WHERE d.resourceSlug = :slug "
+            + "  AND d.id <> :exceptId "
+            + "  AND d.lifecycle IN ("
+            + "      eu.appbahn.shared.crd.imagesource.BuildLifecycle.BUILT,"
+            + "      eu.appbahn.shared.crd.imagesource.BuildLifecycle.ACTIVATING)")
+    int supersedeInFlight(@Param("slug") String resourceSlug, @Param("exceptId") UUID exceptId);
+
     long countByResourceSlug(String resourceSlug);
 
     /**

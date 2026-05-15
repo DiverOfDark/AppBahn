@@ -4,9 +4,7 @@ platform:
     tag: ""
     pullPolicy: IfNotPresent
   replicas: 1
-  domain:
-    base: "appbahn.example.com"
-    apps: "appbahn.example.com"
+  baseDomain: "appbahn.example.com"
   namespacePrefix: "abp"
   auth:
     issuerUrl: ""

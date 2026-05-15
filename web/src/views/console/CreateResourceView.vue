@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+/**
+ * Create-resource page — orchestrator. The reactive form state, validation,
+ * and POST /resources pipeline live in `useResourceCreateForm`; the five
+ * sections of the page are split into sub-components under
+ * `./create-resource/`. This file owns layout, header/breadcrumb wiring,
+ * error display, and the submit action bar.
+ */
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { api } from '@/api/client'
-import type { components } from '@/api/schema'
 import PageHeader from '@/components/PageHeader.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
-
-type ResourceTypeInfo = components['schemas']['ResourceTypeInfo']
-type CreateResourceRequest = components['schemas']['CreateResourceRequest']
-
-const DEPLOYMENT_TYPE = 'deployment'
+import { useResourceCreateForm } from '@/composables/resource/useResourceCreateForm'
+import SourcePicker from './create-resource/SourcePicker.vue'
+import KindPicker from './create-resource/KindPicker.vue'
+import ResourceForm from './create-resource/ResourceForm.vue'
+import CreateSummary from './create-resource/CreateSummary.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,156 +24,45 @@ const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
 
-const name = ref('')
-const type = ref(DEPLOYMENT_TYPE)
-const image = ref('')
-const tag = ref('latest')
-const port = ref(80)
-const cpu = ref(250)
-const memory = ref(256)
-const replicas = ref(1)
-const expose = ref('Ingress')
-
-const resourceTypes = ref<ResourceTypeInfo[]>([])
-const loading = ref(false)
-const error = ref('')
-const errors = ref<string[]>([])
-
-function resetForm() {
-  name.value = ''
-  type.value = DEPLOYMENT_TYPE
-  image.value = ''
-  tag.value = 'latest'
-  port.value = 80
-  cpu.value = 250
-  memory.value = 256
-  replicas.value = 1
-  expose.value = 'Ingress'
-  error.value = ''
-  errors.value = []
-  loading.value = false
-}
-
-const DNS_NAME_REGEX = /^[a-z][a-z0-9-]*$/
-
-function validate(): boolean {
-  const result: string[] = []
-
-  if (!name.value.trim()) {
-    result.push('Name is required')
-  } else if (!DNS_NAME_REGEX.test(name.value.trim())) {
-    result.push(
-      'Name must start with a lowercase letter and contain only lowercase letters, digits, and hyphens',
-    )
-  }
-
-  if (type.value !== DEPLOYMENT_TYPE) {
-    result.push('Only deployment resources can be created from the console at this time')
-  } else {
-    if (!image.value.trim()) {
-      result.push('Image URL is required')
-    }
-    if (port.value < 1 || port.value > 65535 || !Number.isInteger(port.value)) {
-      result.push('Port must be an integer between 1 and 65535')
-    }
-    if (cpu.value < 1 || !Number.isInteger(cpu.value)) {
-      result.push('CPU must be a positive integer')
-    }
-    if (memory.value < 1 || !Number.isInteger(memory.value)) {
-      result.push('Memory must be a positive integer')
-    }
-    if (replicas.value < 1 || !Number.isInteger(replicas.value)) {
-      result.push('Replicas must be a positive integer (>= 1)')
-    }
-  }
-
-  errors.value = result
-  return result.length === 0
-}
-
-watch(envSlug, () => {
-  resetForm()
+const {
+  source,
+  kind,
+  name,
+  image,
+  tag,
+  cpu,
+  memory,
+  minReplicas,
+  maxReplicas,
+  ports,
+  envVars,
+  health,
+  loading,
+  error,
+  errors,
+  fullImage,
+  submit,
+} = useResourceCreateForm(envSlug, () => {
+  void router.push({
+    name: 'environment',
+    params: { wsSlug: wsSlug.value, projSlug: projSlug.value, envSlug: envSlug.value },
+  })
 })
-
-onMounted(async () => {
-  try {
-    const { data } = await api.GET('/resource-types', {
-      params: { query: {} },
-    })
-    if (data) {
-      resourceTypes.value = data
-    }
-  } catch {
-    error.value = 'Failed to load resource types'
-  }
-})
-
-async function submit() {
-  if (!validate()) {
-    error.value = errors.value[0] ?? ''
-    return
-  }
-
-  loading.value = true
-  error.value = ''
-
-  try {
-    const fullImage = tag.value.trim()
-      ? `${image.value.trim()}:${tag.value.trim()}`
-      : image.value.trim()
-    const body: CreateResourceRequest = {
-      name: name.value.trim(),
-      type: type.value,
-      environmentSlug: envSlug.value,
-      config: {},
-      imageSource: {
-        type: 'Image',
-        image: { ref: fullImage },
-      },
-    }
-    if (type.value === DEPLOYMENT_TYPE) {
-      body.config = {
-        hosting: {
-          cpu: cpu.value + 'm',
-          memory: memory.value + 'Mi',
-          minReplicas: replicas.value,
-        },
-        networking: {
-          ports: [
-            {
-              port: port.value,
-              expose: expose.value as 'Ingress' | 'None',
-            },
-          ],
-        },
-        runMode: 'Continuous',
-      }
-    }
-    const { error: apiError } = await api.POST('/resources', {
-      body,
-    })
-
-    if (apiError) {
-      const err = apiError as { message?: string; error?: string }
-      error.value = err.message?.toString() || err.error?.toString() || 'Failed to create resource'
-      return
-    }
-
-    router.push({
-      name: 'environment',
-      params: { wsSlug: wsSlug.value, projSlug: projSlug.value, envSlug: envSlug.value },
-    })
-  } catch {
-    error.value = 'Failed to create resource'
-  } finally {
-    loading.value = false
-  }
-}
 </script>
 
 <template>
-  <div class="page">
-    <PageHeader title="Create Resource" />
+  <div class="create-resource">
+    <PageHeader title="Create Resource">
+      <template #subtitle>
+        <span class="flow-meta">
+          <span class="num">01</span>
+          <span class="sep">·</span>
+          <span>Resource provisioning</span>
+          <span class="sep">·</span>
+          <span class="mono">{{ projSlug }} / {{ envSlug }}</span>
+        </span>
+      </template>
+    </PageHeader>
 
     <AppBreadcrumb :items="buildBreadcrumbChain({ wsSlug, projSlug, envSlug }, 'Create', true)" />
 
@@ -178,97 +72,157 @@ async function submit() {
     <div v-else-if="error" class="error-banner">{{ error }}</div>
 
     <form class="create-form" @submit.prevent="submit">
-      <div class="form-section">
-        <h3 class="form-section-title">Basic</h3>
-        <div class="form-stack">
-          <label class="form-label">
-            Name
-            <input v-model="name" class="form-input" placeholder="my-nginx" required />
-          </label>
-          <label class="form-label">
-            Type
-            <select v-model="type" class="form-input">
-              <option :value="DEPLOYMENT_TYPE">Deployment</option>
-              <option
-                v-for="rt in resourceTypes.filter((t) => t.type !== DEPLOYMENT_TYPE)"
-                :key="rt.type"
-                :value="rt.type"
-              >
-                {{ rt.displayName || rt.type }}
-              </option>
-            </select>
-          </label>
+      <div class="layout-grid">
+        <div class="main-col">
+          <SourcePicker v-model="source" />
+          <KindPicker v-model="kind" />
+          <ResourceForm
+            v-model:name="name"
+            v-model:image="image"
+            v-model:tag="tag"
+            v-model:cpu="cpu"
+            v-model:memory="memory"
+            v-model:min-replicas="minReplicas"
+            v-model:max-replicas="maxReplicas"
+            v-model:ports="ports"
+            v-model:env-vars="envVars"
+            v-model:health="health"
+            :source="source"
+            :proj-slug="projSlug"
+            :env-slug="envSlug"
+            :full-image="fullImage"
+          />
         </div>
+
+        <CreateSummary
+          :name="name"
+          :kind="kind"
+          :source="source"
+          :full-image="fullImage"
+          :ports="ports"
+          :cpu="cpu"
+          :memory="memory"
+          :min-replicas="minReplicas"
+          :max-replicas="maxReplicas"
+          :health="health"
+          :env-vars="envVars"
+          :env-slug="envSlug"
+        />
       </div>
 
-      <div v-if="type === DEPLOYMENT_TYPE" class="form-section">
-        <h3 class="form-section-title">Docker Source</h3>
-        <div class="form-stack">
-          <label class="form-label">
-            Image
-            <input v-model="image" class="form-input" placeholder="nginx" required />
-          </label>
-          <label class="form-label">
-            Tag
-            <input v-model="tag" class="form-input" placeholder="latest" />
-          </label>
+      <div class="actbar">
+        <div class="actbar-l">
+          <span class="actbar-flow mono">
+            ▸ source · <b>{{ source }}</b>
+            <span class="sep">·</span>
+            kind · <b>{{ kind }}</b>
+          </span>
         </div>
-      </div>
-
-      <div v-if="type === DEPLOYMENT_TYPE" class="form-section">
-        <h3 class="form-section-title">Hosting & Networking</h3>
-        <div class="form-grid">
-          <label class="form-label">
-            Port
-            <input v-model.number="port" type="number" class="form-input" min="1" max="65535" />
-          </label>
-          <label class="form-label">
-            CPU (millicores)
-            <input v-model.number="cpu" type="number" class="form-input" min="50" step="50" />
-          </label>
-          <label class="form-label">
-            Memory (MB)
-            <input v-model.number="memory" type="number" class="form-input" min="64" step="64" />
-          </label>
-          <label class="form-label">
-            Replicas
-            <input v-model.number="replicas" type="number" class="form-input" min="1" max="10" />
-          </label>
-          <label class="form-label">
-            Expose
-            <select v-model="expose" class="form-input">
-              <option value="Ingress">Ingress</option>
-              <option value="None">None</option>
-            </select>
-          </label>
+        <div class="actbar-r">
+          <router-link
+            :to="{ name: 'environment', params: { wsSlug, projSlug, envSlug } }"
+            class="btn-secondary"
+          >
+            Cancel
+          </router-link>
+          <button type="submit" class="btn-primary" :disabled="loading">
+            {{ loading ? 'Creating...' : 'Create Resource' }}
+          </button>
         </div>
-        <p v-if="expose === 'Ingress'" class="form-hint">
-          Domain will be auto-generated from the resource slug.
-        </p>
-      </div>
-
-      <div class="form-actions">
-        <router-link
-          :to="{ name: 'environment', params: { wsSlug, projSlug, envSlug } }"
-          class="btn-secondary"
-          >Cancel</router-link
-        >
-        <button type="submit" class="btn-primary" :disabled="loading">
-          {{ loading ? 'Creating...' : 'Create Resource' }}
-        </button>
       </div>
     </form>
   </div>
 </template>
 
 <style scoped>
-.page {
-  max-width: 640px;
+.create-resource {
+  display: contents;
+}
+
+.flow-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+.flow-meta .num {
+  color: var(--color-accent);
+}
+.flow-meta .sep {
+  color: var(--color-text-tertiary);
+}
+.flow-meta .mono {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
 }
 
 .create-form {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  margin-top: 8px;
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+  padding-bottom: 24px;
+}
+
+.main-col {
+  display: flex;
+  flex-direction: column;
   gap: 24px;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bottom action bar */
+.actbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 14px 32px;
+  margin: 0 -32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+}
+.actbar-l {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.actbar-flow b {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.actbar-flow .sep {
+  margin: 0 4px;
+  color: var(--color-text-tertiary);
+}
+.actbar-r {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 </style>

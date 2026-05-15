@@ -11,6 +11,7 @@ import DataTable from '@/components/DataTable.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { formatDate } from '@/utils/format'
+import { extractApiErrorMessage } from '@/utils/apiError'
 import { usePageTitle } from '@/composables/usePageTitle'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 
@@ -26,8 +27,15 @@ const page = ref(0)
 const totalPages = ref(0)
 const showCreate = ref(false)
 const createLoading = ref(false)
+const createError = ref('')
 const newName = ref('')
 const error = ref('')
+
+function openCreate() {
+  createError.value = ''
+  newName.value = ''
+  showCreate.value = true
+}
 
 const { setPageTitle } = usePageTitle()
 const { refreshSidebar } = useSidebarRefresh()
@@ -64,16 +72,21 @@ async function fetchData() {
 async function createEnvironment() {
   if (!newName.value.trim()) return
   createLoading.value = true
+  createError.value = ''
   try {
-    await api.POST('/environments', {
+    const { error: apiError } = await api.POST('/environments', {
       body: { name: newName.value.trim(), projectSlug: projSlug.value },
     })
+    if (apiError) {
+      createError.value = extractApiErrorMessage(apiError, 'Failed to create environment')
+      return
+    }
     showCreate.value = false
     newName.value = ''
     await fetchData()
     refreshSidebar()
   } catch {
-    error.value = 'Failed to create environment'
+    createError.value = 'Failed to create environment'
   } finally {
     createLoading.value = false
   }
@@ -103,7 +116,7 @@ onMounted(fetchData)
   <div>
     <PageHeader :title="project?.name ?? 'Project'">
       <template #actions>
-        <button class="btn-primary" @click="showCreate = true">+ Create Environment</button>
+        <button class="btn-primary" @click="openCreate">+ Create Environment</button>
       </template>
     </PageHeader>
 
@@ -126,7 +139,7 @@ onMounted(fetchData)
       message="No environments in this project yet. Create one to get started."
     >
       <template #action>
-        <button class="btn-primary" @click="showCreate = true">+ Create Environment</button>
+        <button class="btn-primary" @click="openCreate">+ Create Environment</button>
       </template>
     </EmptyState>
 
@@ -174,6 +187,7 @@ onMounted(fetchData)
       title="Create Environment"
       :open="showCreate"
       :loading="createLoading"
+      :error="createError"
       @close="showCreate = false"
       @submit="createEnvironment"
     >

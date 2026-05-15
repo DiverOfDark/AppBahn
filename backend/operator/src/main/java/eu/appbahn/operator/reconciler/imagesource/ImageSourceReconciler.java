@@ -599,14 +599,33 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
     private UpdateControl<ImageSourceCrd> reconcileImage(
             ImageSourceCrd cr, ImageSourceSpec spec, ImageSourceStatus prev, ImageSourceStatus next) {
         var artifact = new LatestArtifact();
-        artifact.setImageRef(spec.getImage().getRef());
-        artifact.setBuiltAt(Instant.now());
+        String imageRef = spec.getImage().getRef();
+        artifact.setImageRef(imageRef);
+        artifact.setBuiltAt(carriedBuiltAt(prev, imageRef));
         next.setLatestArtifact(artifact);
         applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PINNED, null);
         UpdateControl<ImageSourceCrd> control = finalize(cr, prev, next);
         // Image-type ImageSources don't need fast polling — schedule a slow re-reconcile so
         // observability stays alive without burning the apiserver.
         return control.rescheduleAfter(IMAGE_TYPE_RESCHEDULE_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Preserve the previous {@code builtAt} when {@code imageRef} hasn't changed; otherwise mint
+     * {@code Instant.now()}. Setting {@code builtAt} to a fresh {@code Instant.now()} on every
+     * reconcile makes {@code statusEquals} false on every cycle — patchStatus triggers a watch
+     * event that triggers reconcile, ad infinitum.
+     */
+    static Instant carriedBuiltAt(ImageSourceStatus prev, String imageRef) {
+        if (prev == null || prev.getLatestArtifact() == null) {
+            return Instant.now();
+        }
+        var prevArtifact = prev.getLatestArtifact();
+        if (!Objects.equals(imageRef, prevArtifact.getImageRef())) {
+            return Instant.now();
+        }
+        Instant prevBuiltAt = prevArtifact.getBuiltAt();
+        return prevBuiltAt != null ? prevBuiltAt : Instant.now();
     }
 
     /**
@@ -635,9 +654,9 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
                 || upstream.getCluster().isBlank()
                 || upstream.getCluster().equals(ownClusterName);
         if (sameCluster) {
-            applyImageSourceSameCluster(cr, promo, upstream, next, context);
+            applyImageSourceSameCluster(cr, promo, upstream, prev, next, context);
         } else {
-            applyImageSourceCrossCluster(promo, next);
+            applyImageSourceCrossCluster(promo, prev, next);
         }
         UpdateControl<ImageSourceCrd> control = finalize(cr, prev, next);
         return control.rescheduleAfter(IMAGE_SOURCE_TYPE_RESCHEDULE_SECONDS, TimeUnit.SECONDS);
@@ -652,6 +671,7 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             ImageSourceCrd cr,
             ImageSourcePromotionSpec promo,
             ImageSourceUpstreamSpec upstream,
+            ImageSourceStatus prev,
             ImageSourceStatus next,
             Context<ImageSourceCrd> context) {
         ImageSourceCrd upstreamCr;
@@ -708,7 +728,7 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         boolean autoPromote = Boolean.TRUE.equals(promo.getAutoPromote());
         if (autoPromote) {
             // Mirror upstream's artifact (digest + sourceCommit).
-            mirrorArtifact(next, upstreamArtifact);
+            mirrorArtifact(prev, next, upstreamArtifact);
             applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PROMOTED, null);
             return;
         }
@@ -728,11 +748,11 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
             return;
         }
         if (digestMatches(upstreamArtifact.getImageRef(), pinned)) {
-            mirrorArtifact(next, upstreamArtifact);
+            mirrorArtifact(prev, next, upstreamArtifact);
         } else {
             var artifact = new LatestArtifact();
             artifact.setImageRef(pinned);
-            artifact.setBuiltAt(Instant.now());
+            artifact.setBuiltAt(carriedBuiltAt(prev, pinned));
             next.setLatestArtifact(artifact);
         }
         applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PINNED, null);
@@ -745,7 +765,8 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
      * simply mirrors pinnedDigest into {@code status.latestArtifact} — BYO registry assumption
      * means the digest is reachable from this cluster's nodes.
      */
-    private void applyImageSourceCrossCluster(ImageSourcePromotionSpec promo, ImageSourceStatus next) {
+    private void applyImageSourceCrossCluster(
+            ImageSourcePromotionSpec promo, ImageSourceStatus prev, ImageSourceStatus next) {
         String pinned = promo.getPinnedDigest();
         if (pinned == null || pinned.isBlank()) {
             upsertCondition(
@@ -759,21 +780,25 @@ public class ImageSourceReconciler implements Reconciler<ImageSourceCrd>, Cleane
         }
         removeCondition(next, ImageSourceConditions.TYPE_UPSTREAM_NOT_READY);
         removeCondition(next, ImageSourceConditions.TYPE_UPSTREAM_MISSING);
-        var artifact = next.getLatestArtifact() != null ? next.getLatestArtifact() : new LatestArtifact();
+        // Build a fresh artifact rather than mutating next.getLatestArtifact() — the parent
+        // reconcile carries prev.latestArtifact forward by reference, so in-place mutation would
+        // alias prev's artifact and defeat statusEquals (no patch would fire on a pin change).
+        Instant builtAt = carriedBuiltAt(prev, pinned);
+        var artifact = new LatestArtifact();
         // pinnedDigest may be either a bare "sha256:..." digest or a full "registry/path@sha256:..."
         // ref — pass through as imageRef when it's already a full ref, otherwise this is just the
         // digest part and we have nothing else to attach.
         artifact.setImageRef(pinned);
-        artifact.setBuiltAt(Instant.now());
+        artifact.setBuiltAt(builtAt);
         next.setLatestArtifact(artifact);
         applyReady(next, ImageSourceConditions.STATUS_TRUE, ImageSourceConditions.REASON_PROMOTED, null);
     }
 
-    private static void mirrorArtifact(ImageSourceStatus next, LatestArtifact upstream) {
+    private static void mirrorArtifact(ImageSourceStatus prev, ImageSourceStatus next, LatestArtifact upstream) {
         var copy = new LatestArtifact();
         copy.setImageRef(upstream.getImageRef());
         copy.setSourceCommit(upstream.getSourceCommit());
-        copy.setBuiltAt(Instant.now());
+        copy.setBuiltAt(carriedBuiltAt(prev, upstream.getImageRef()));
         next.setLatestArtifact(copy);
     }
 

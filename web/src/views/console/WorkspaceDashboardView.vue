@@ -1,36 +1,69 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
 import PageHeader from '@/components/PageHeader.vue'
 import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
-import EntityCard from '@/components/EntityCard.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { usePageTitle } from '@/composables/usePageTitle'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
+import { formatDateShort } from '@/utils/format'
+import { extractApiErrorMessage } from '@/utils/apiError'
+import { initials } from '@/utils/resource'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
+type ViewMode = 'grid' | 'table'
+
+const VIEW_PREF_KEY = 'appbahn.projectsView'
 
 const route = useRoute()
+const router = useRouter()
 
 const workspace = ref<Workspace | null>(null)
 const projects = ref<Project[]>([])
 const loading = ref(true)
 const page = ref(0)
 const totalPages = ref(0)
+const totalElements = ref(0)
 const showCreate = ref(false)
 const createLoading = ref(false)
+const createError = ref('')
+
+function openCreate() {
+  createError.value = ''
+  newName.value = ''
+  showCreate.value = true
+}
 const newName = ref('')
 const error = ref('')
+const searchQuery = ref('')
+const viewMode = ref<ViewMode>(readSavedView())
 
 const { setPageTitle } = usePageTitle()
 const { refreshSidebar } = useSidebarRefresh()
 const wsSlug = ref(route.params.wsSlug as string)
+
+function readSavedView(): ViewMode {
+  if (typeof localStorage === 'undefined') return 'grid'
+  return localStorage.getItem(VIEW_PREF_KEY) === 'table' ? 'table' : 'grid'
+}
+
+watch(viewMode, (m) => {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(VIEW_PREF_KEY, m)
+})
+
+const filteredProjects = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return projects.value
+  return projects.value.filter(
+    (p) => (p.name ?? '').toLowerCase().includes(q) || (p.slug ?? '').toLowerCase().includes(q),
+  )
+})
 
 async function fetchData() {
   loading.value = true
@@ -51,6 +84,7 @@ async function fetchData() {
     if (projRes.data) {
       projects.value = projRes.data.content ?? []
       totalPages.value = projRes.data.totalPages ?? 0
+      totalElements.value = projRes.data.totalElements ?? projects.value.length
     }
   } catch {
     error.value = 'Failed to load workspace data'
@@ -62,16 +96,21 @@ async function fetchData() {
 async function createProject() {
   if (!newName.value.trim()) return
   createLoading.value = true
+  createError.value = ''
   try {
-    await api.POST('/projects', {
+    const { error: apiError } = await api.POST('/projects', {
       body: { name: newName.value.trim(), workspaceSlug: wsSlug.value },
     })
+    if (apiError) {
+      createError.value = extractApiErrorMessage(apiError, 'Failed to create project')
+      return
+    }
     showCreate.value = false
     newName.value = ''
     await fetchData()
     refreshSidebar()
   } catch {
-    error.value = 'Failed to create project'
+    createError.value = 'Failed to create project'
   } finally {
     createLoading.value = false
   }
@@ -80,6 +119,10 @@ async function createProject() {
 function onPageChange(p: number) {
   page.value = p
   fetchData()
+}
+
+function openProject(slug?: string) {
+  if (slug) router.push(`/console/${wsSlug.value}/${slug}`)
 }
 
 watch(
@@ -97,10 +140,19 @@ onMounted(fetchData)
 </script>
 
 <template>
-  <div>
+  <div class="projects-view">
     <PageHeader :title="workspace?.name ?? 'Workspace'">
+      <template #subtitle>
+        <span v-if="!loading && projects.length > 0">
+          <b class="sub-strong">{{ totalElements }}</b>
+          {{ totalElements === 1 ? 'project' : 'projects' }}
+          <span class="sub-sep">·</span>
+          workspace <span class="sub-mono">{{ wsSlug }}</span>
+        </span>
+        <span v-else-if="!loading" class="sub-mono">{{ wsSlug }}</span>
+      </template>
       <template #actions>
-        <button class="btn-primary" @click="showCreate = true">+ Create Project</button>
+        <button class="btn-primary" @click="openCreate">+ Create Project</button>
       </template>
     </PageHeader>
 
@@ -123,21 +175,116 @@ onMounted(fetchData)
       message="No projects in this workspace yet. Create one to get started."
     >
       <template #action>
-        <button class="btn-primary" @click="showCreate = true">+ Create Project</button>
+        <button class="btn-primary" @click="openCreate">+ Create Project</button>
       </template>
     </EmptyState>
 
-    <!-- Project grid -->
+    <!-- Filters + grid/table -->
     <template v-else>
-      <div class="card-grid">
-        <EntityCard
-          v-for="proj in projects"
+      <div class="filters">
+        <div class="count">
+          <b>{{ filteredProjects.length }}</b>
+          {{ filteredProjects.length === 1 ? 'project' : 'projects' }}
+          <span v-if="searchQuery" class="count-mut">of {{ projects.length }}</span>
+        </div>
+        <label class="search">
+          <span class="search-ic">⌕</span>
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            type="search"
+            placeholder="Filter on this page…"
+            aria-label="Filter projects"
+          />
+        </label>
+        <div class="view-toggle" role="tablist" aria-label="View mode">
+          <button
+            type="button"
+            class="view-btn"
+            :class="{ on: viewMode === 'grid' }"
+            role="tab"
+            :aria-selected="viewMode === 'grid'"
+            @click="viewMode = 'grid'"
+          >
+            Grid
+          </button>
+          <button
+            type="button"
+            class="view-btn"
+            :class="{ on: viewMode === 'table' }"
+            role="tab"
+            :aria-selected="viewMode === 'table'"
+            @click="viewMode = 'table'"
+          >
+            Table
+          </button>
+        </div>
+      </div>
+
+      <div v-if="filteredProjects.length === 0" class="filter-empty">
+        No projects match <span class="mono">"{{ searchQuery }}"</span>.
+      </div>
+
+      <!-- Grid view -->
+      <div v-else-if="viewMode === 'grid'" class="card-grid">
+        <router-link
+          v-for="proj in filteredProjects"
           :key="proj.slug"
-          :name="proj.name ?? ''"
-          :slug="proj.slug ?? ''"
           :to="`/console/${wsSlug}/${proj.slug}`"
-          :date="proj.createdAt"
-        />
+          class="card"
+        >
+          <div class="card-h">
+            <div class="card-ic">{{ initials(proj.name) }}</div>
+            <div class="card-info">
+              <div class="card-name">{{ proj.name }}</div>
+              <div class="card-slug">{{ proj.slug }}</div>
+            </div>
+          </div>
+          <div class="card-foot">
+            <span class="card-foot-l">project</span>
+            <span v-if="proj.createdAt" class="card-date">
+              created {{ formatDateShort(proj.createdAt) }}
+            </span>
+          </div>
+        </router-link>
+      </div>
+
+      <!-- Table view -->
+      <div v-else class="table-wrap">
+        <table class="proj-table">
+          <thead>
+            <tr>
+              <th class="col-name">Project</th>
+              <th class="col-slug">Slug</th>
+              <th class="col-date">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="proj in filteredProjects"
+              :key="proj.slug"
+              class="proj-row"
+              tabindex="0"
+              @click="openProject(proj.slug)"
+              @keydown="(e: KeyboardEvent) => e.key === 'Enter' && openProject(proj.slug)"
+            >
+              <td>
+                <div class="proj-cell">
+                  <div class="proj-ic">{{ initials(proj.name) }}</div>
+                  <div class="card-name">{{ proj.name }}</div>
+                </div>
+              </td>
+              <td>
+                <span class="card-slug">{{ proj.slug }}</span>
+              </td>
+              <td>
+                <span class="card-date">
+                  {{ proj.createdAt ? formatDateShort(proj.createdAt) : '—' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
@@ -148,6 +295,7 @@ onMounted(fetchData)
       title="Create Project"
       :open="showCreate"
       :loading="createLoading"
+      :error="createError"
       @close="showCreate = false"
       @submit="createProject"
     >
@@ -164,3 +312,290 @@ onMounted(fetchData)
     </CreateDialog>
   </div>
 </template>
+
+<style scoped>
+.projects-view {
+  display: contents;
+}
+
+.sub-strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.sub-sep {
+  margin: 0 6px;
+  color: var(--color-text-tertiary);
+}
+.sub-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+/* filters bar */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 14px;
+  flex-wrap: wrap;
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.count b {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.count-mut {
+  color: var(--color-text-tertiary);
+  margin-left: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-body);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 320px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  color: var(--color-text-tertiary);
+}
+.search:focus-within {
+  border-color: var(--color-accent-muted);
+}
+.search-ic {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+.search-input {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  outline: none;
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 0;
+  min-width: 0;
+}
+.search-input::-webkit-search-cancel-button {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-left: auto;
+}
+.view-btn {
+  padding: 6px 14px;
+  background: var(--color-bg-surface);
+  color: var(--color-text-tertiary);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-right: 1px solid var(--color-border-strong);
+}
+.view-btn:last-child {
+  border-right: none;
+}
+.view-btn:hover {
+  color: var(--color-text-secondary);
+}
+.view-btn.on {
+  background: var(--color-bg-raised);
+  color: var(--color-text-primary);
+}
+
+.filter-empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+.filter-empty .mono {
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+/* grid + cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.card {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  padding: 0;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+.card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+.card-h {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 18px 20px 14px;
+}
+.card-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.card-info {
+  min-width: 0;
+  flex: 1;
+}
+.card-name {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px;
+}
+.card-slug {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+}
+.card-foot {
+  padding: 10px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-base);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.card-foot-l {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.card-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+/* table view */
+.table-wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+}
+.proj-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.proj-table th {
+  padding: 11px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-strong);
+  background: var(--color-bg-surface);
+}
+.proj-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-weight: 300;
+  vertical-align: middle;
+}
+.proj-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.proj-row {
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.proj-row:hover td,
+.proj-row:focus-visible td {
+  background: var(--color-bg-raised);
+}
+.proj-row:focus-visible {
+  outline: none;
+}
+.proj-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.proj-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.col-date {
+  width: 160px;
+}
+.col-slug {
+  width: 280px;
+}
+</style>

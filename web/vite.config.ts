@@ -15,7 +15,16 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
+      // API surface + the OIDC kickoff (GET /oauth2/authorization/{reg}) and
+      // callback (/login/oauth2/code/{reg}). All proxied to the platform on
+      // :8080 with `xfwd: true` so X-Forwarded-{Host,Proto,Port} headers are
+      // sent — combined with `server.forward-headers-strategy=FRAMEWORK` in
+      // application-dev.yml, that makes Spring's `response.sendRedirect("/...")`
+      // resolve to `localhost:5173` rather than the listening `localhost:8080`.
+      // Without this, post-login lands on :8080 instead of staying on :5173.
+      '/api': { target: 'http://localhost:8080', changeOrigin: false, xfwd: true },
+      '/oauth2': { target: 'http://localhost:8080', changeOrigin: false, xfwd: true },
+      '/login/oauth2': { target: 'http://localhost:8080', changeOrigin: false, xfwd: true },
     },
   },
   build: {

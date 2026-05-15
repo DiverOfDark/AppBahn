@@ -1,0 +1,64 @@
+# Profile: dev — local desktop runs against tools/dev-stack/docker-compose.yml
+# (Postgres on :5432, mock-oauth2 on :8081). Mirrors the env vars set by
+# tools/dev-stack/run-platform.sh, but expressed as YAML so it just works
+# from IntelliJ IDEA / VS Code / `bootRun` with no shell scripting.
+#
+# Activate via:
+#   • IntelliJ run config: Active profiles = dev
+#   • CLI: `./gradlew :platform:app:bootRun --args='--spring.profiles.active=dev'`
+#   • Env: `SPRING_PROFILES_ACTIVE=dev ./gradlew :platform:app:bootRun`
+#
+# Inert when the dev profile isn't active, so it's safe to ship in the JAR.
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/appbahn
+    username: appbahn
+    password: appbahn
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/default
+      client:
+        registration:
+          appbahn:
+            client-id: appbahn-platform
+            client-secret: dev-secret
+            # mock-oauth2's `requestMappings.requestParam: client_id` matchers
+            # only fire when client_id is in the request body. Spring's default
+            # is `client_secret_basic` (Authorization header) — force POST so
+            # the mock's claim mappings actually run.
+            client-authentication-method: client_secret_post
+        provider:
+          appbahn:
+            issuer-uri: http://localhost:8081/default
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+platform:
+  # `platform.kubernetes.enabled` defaults to true and the platform builds a
+  # KubernetesClient from $KUBECONFIG. Set $KUBECONFIG to
+  # tools/dev-stack/kubeconfig/kubeconfig.yaml in the IDEA run config so
+  # OperatorPubkeyReader auto-promotes the operator's registration to APPROVED
+  # (matches the prod single-cluster flow).
+  admin-groups: admin
+  base-domain: apps.local.dev
+
+# Verbose logs so 500s actually print a stack trace and you can see which
+# controller method handled the request.
+logging:
+  level:
+    eu.appbahn: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+
+server:
+  error:
+    include-stacktrace: always
+    include-message: always
+  # Honor X-Forwarded-{Host,Proto,Port} when Vite proxies /api, /oauth2,
+  # /login/oauth2 over from :5173 to :8080. Spring's `sendRedirect("/auth/
+  # complete?token=...")` would otherwise resolve against the listening port
+  # (:8080) and the user would land on the wrong origin after OIDC login.
+  forward-headers-strategy: framework

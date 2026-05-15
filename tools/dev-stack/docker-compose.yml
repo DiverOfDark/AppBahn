@@ -1,0 +1,97 @@
+# Local dev stack — Postgres + mock-oauth2-server + a throwaway K3s cluster.
+#
+# The platform JAR and operator JAR are intentionally NOT in this compose —
+# both run from IntelliJ IDEA with `Active profiles = dev`. The operator's
+# DevCrdInstaller installs the AppBahn CRDs on startup from the same
+# fabric8-emitted YAML the helm chart ships, so no separate bootstrap
+# service is needed.
+#
+# Postgres + mock-oauth2 use `network_mode: host` so the OIDC issuer URL is
+# the same for the browser and the platform's server-side calls. K3s uses
+# bridge networking + a port mapping for 6443 because k3s is far happier
+# managing its own iptables in a private netns. Linux only.
+
+name: appbahn-dev
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: appbahn-dev-postgres
+    network_mode: host
+    environment:
+      POSTGRES_USER: appbahn
+      POSTGRES_PASSWORD: appbahn
+      POSTGRES_DB: appbahn
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appbahn -d appbahn"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  mock-oauth2:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    container_name: appbahn-dev-mock-oauth2
+    network_mode: host
+    environment:
+      SERVER_PORT: "8081"
+      JSON_CONFIG_PATH: "/config/mock-oauth2-config.json"
+    volumes:
+      - ./mock-oauth2-config.json:/config/mock-oauth2-config.json:ro
+      - ./MockOauth2Healthcheck.java:/healthcheck/MockOauth2Healthcheck.java:ro
+    # The mock-oauth2 image is distroless (jib-based, only `java` on PATH —
+    # no wget/curl/nc/sh), so the healthcheck runs a tiny Java single-file
+    # source script that probes the OIDC discovery document.
+    healthcheck:
+      test: ["CMD", "java", "/healthcheck/MockOauth2Healthcheck.java"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # K3s — single-node Kubernetes for the operator to reconcile against.
+  # `--disable=traefik,servicelb,metrics-server` because we don't need ingress
+  # / loadbalancer / metrics in dev; pods + services are enough. Kubeconfig is
+  # written to `./kubeconfig/kubeconfig.yaml` on the host; platform + operator
+  # (both on host, both with `Active profiles = dev`) auto-resolve it via
+  # DevKubernetesClientConfig. CRDs are installed by the operator on startup,
+  # not by a separate bootstrap container.
+  k3s:
+    image: rancher/k3s:v1.36.0-k3s1
+    container_name: appbahn-dev-k3s
+    privileged: true
+    command:
+      - server
+      - --disable=traefik
+      - --disable=servicelb
+      - --disable=metrics-server
+      - --tls-san=localhost
+      - --tls-san=127.0.0.1
+      - --write-kubeconfig-mode=666
+      - --write-kubeconfig=/output/kubeconfig.yaml
+    environment:
+      K3S_KUBECONFIG_OUTPUT: /output/kubeconfig.yaml
+      K3S_KUBECONFIG_MODE: "666"
+    ports:
+      - "6443:6443"
+    volumes:
+      - ./kubeconfig:/output
+      - k3s-server:/var/lib/rancher/k3s
+      - k3s-containerd:/var/lib/rancher/k3s/agent/containerd
+    # Healthcheck: a node line with "Ready" in `kubectl get nodes` output.
+    # `/readyz` would also work but doesn't prove the local node finished
+    # joining; on a single-node cluster the platform/operator need nodes
+    # Ready before they can place pods.
+    healthcheck:
+      test: ["CMD-SHELL", "kubectl --kubeconfig=/output/kubeconfig.yaml get nodes --no-headers | grep -E ' Ready ' > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres-data:
+  k3s-server:
+  k3s-containerd:

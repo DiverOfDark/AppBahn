@@ -77,25 +77,32 @@ public class IngressDependentResource extends KubernetesDependentResource<Ingres
             annotations.put(Labels.CERT_MANAGER_CLUSTER_ISSUER_ANNOTATION, clusterIssuer);
         }
 
-        var builder = new IngressBuilder()
+        var spec = new IngressBuilder()
                 .withNewMetadata()
                 .withName(ingressName)
                 .withNamespace(namespace)
                 .withLabels(labels)
                 .withAnnotations(annotations)
                 .endMetadata()
-                .withNewSpec()
-                .withIngressClassName(ingressClassName);
+                .withNewSpec();
+
+        // Empty / blank ingress-class-name (the dev-stack default) makes
+        // Kubernetes reject the Ingress with "spec.ingressClassName: Invalid
+        // value: \"\"". Leave the field unset and the cluster picks the
+        // default IngressClass (or accepts the Ingress unclassified).
+        if (ingressClassName != null && !ingressClassName.isBlank()) {
+            spec.withIngressClassName(ingressClassName);
+        }
 
         if (clusterIssuer != null) {
             String tlsSecretName = ingressName + "-tls";
-            builder.withTls(List.of(new IngressTLSBuilder()
+            spec.withTls(List.of(new IngressTLSBuilder()
                     .withHosts(domain)
                     .withSecretName(tlsSecretName)
                     .build()));
         }
 
-        return builder.addNewRule()
+        return spec.addNewRule()
                 .withHost(domain)
                 .withNewHttp()
                 .addNewPath()
