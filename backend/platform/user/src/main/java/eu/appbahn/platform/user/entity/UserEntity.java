@@ -18,4 +18,10 @@ public class UserEntity extends BaseEntity {
 
     @Column(nullable = false)
     private String email;
+
+    @Column
+    private String name;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 }

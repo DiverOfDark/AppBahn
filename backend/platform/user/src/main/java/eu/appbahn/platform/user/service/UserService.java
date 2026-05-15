@@ -39,6 +39,8 @@ public class UserService {
             var user = new UserEntity();
             user.setOidcSubjectId(subject);
             user.setEmail(jwt.getClaimAsString("email"));
+            user.setName(jwt.getClaimAsString("name"));
+            user.setAvatarUrl(jwt.getClaimAsString("picture"));
             var saved = userRepository.save(user);
             eventPublisher.publishEvent(new UserCreatedEvent(saved.getId(), saved.getEmail()));
             return saved;

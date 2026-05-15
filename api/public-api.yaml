@@ -2103,6 +2103,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PagedAuditLogResponse"
+  /users/me:
+    get:
+      tags:
+      - Users
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
   /resources/{slug}/webhook:
     get:
       tags:
@@ -3979,6 +3991,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AuditLogEntry"
+    CurrentUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
     PagedResourceResponse:
       type: object
       properties:

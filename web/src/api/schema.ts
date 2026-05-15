@@ -804,6 +804,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/users/me': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getCurrentUser']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/webhook': {
     parameters: {
       query?: never
@@ -1863,6 +1879,13 @@ export interface components {
       /** Format: int32 */
       totalPages?: number
       content?: components['schemas']['AuditLogEntry'][]
+    }
+    CurrentUserResponse: {
+      /** Format: uuid */
+      id?: string
+      email?: string
+      name?: string
+      avatarUrl?: string
     }
     PagedResourceResponse: {
       /** Format: int32 */
@@ -4184,6 +4207,26 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PagedAuditLogResponse']
+        }
+      }
+    }
+  }
+  getCurrentUser: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CurrentUserResponse']
         }
       }
     }
