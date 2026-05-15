@@ -47,8 +47,8 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
   const type = ref(DEPLOYMENT_TYPE)
   const image = ref('')
   const tag = ref('latest')
-  const cpu = ref(250)
-  const memory = ref(256)
+  const cpu = ref(100)
+  const memory = ref(128)
   const minReplicas = ref(1)
   const maxReplicas = ref<number | undefined>(undefined)
 

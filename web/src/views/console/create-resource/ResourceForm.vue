@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import PortRowsEditor, { type PortRow } from '@/components/resource/PortRowsEditor.vue'
 import EnvVarsEditor, { type EnvVarRow } from '@/components/resource/EnvVarsEditor.vue'
 import HealthCheckEditor, {
   type HealthCheckState,
 } from '@/components/resource/HealthCheckEditor.vue'
 import type { SourceKind } from '@/composables/resource/useResourceCreateForm'
+import { INSTANCE_SIZE_PRESETS, detectPreset, type PresetId } from '@/utils/instanceSizePresets'
 
 const props = defineProps<{
   source: SourceKind
@@ -27,6 +28,26 @@ const health = defineModel<HealthCheckState>('health', { required: true })
 
 const firstPort = computed(() => ports.value[0]?.port)
 const isDocker = computed(() => props.source === 'docker')
+
+const activePreset = ref<PresetId>(detectPreset(cpu.value, memory.value))
+
+function selectPreset(id: PresetId) {
+  activePreset.value = id
+  const preset = INSTANCE_SIZE_PRESETS.find((p) => p.id === id)
+  if (preset) {
+    cpu.value = preset.cpu
+    memory.value = preset.memory
+  }
+}
+
+watch([cpu, memory], ([newCpu, newMem]) => {
+  if (activePreset.value !== 'custom') {
+    const matched = detectPreset(newCpu, newMem)
+    if (matched !== activePreset.value) {
+      activePreset.value = 'custom'
+    }
+  }
+})
 </script>
 
 <template>
@@ -101,40 +122,73 @@ const isDocker = computed(() => props.source === 'docker')
       <div class="panel-body">
         <div class="field">
           <div class="field-l">
-            <span class="lbl">CPU</span>
-            <span class="desc">millicores</span>
+            <span class="lbl">Size</span>
+            <span class="desc">cpu · memory</span>
           </div>
           <div class="field-c">
-            <div class="row">
-              <input
-                v-model.number="cpu"
-                type="number"
-                class="form-input field-num"
-                min="50"
-                step="50"
-              />
-              <span class="hint mono">m</span>
+            <div class="preset-row">
+              <button
+                v-for="preset in INSTANCE_SIZE_PRESETS"
+                :key="preset.id"
+                type="button"
+                class="preset-chip"
+                :class="{ on: activePreset === preset.id }"
+                @click="selectPreset(preset.id)"
+              >
+                {{ preset.label }}
+              </button>
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: activePreset === 'custom' }"
+                @click="activePreset = 'custom'"
+              >
+                custom
+              </button>
             </div>
+            <span v-if="activePreset !== 'custom'" class="hint mono">
+              {{ cpu }}m · {{ memory }}Mi
+            </span>
           </div>
         </div>
-        <div class="field">
-          <div class="field-l">
-            <span class="lbl">Memory</span>
-            <span class="desc">megabytes</span>
-          </div>
-          <div class="field-c">
-            <div class="row">
-              <input
-                v-model.number="memory"
-                type="number"
-                class="form-input field-num"
-                min="64"
-                step="64"
-              />
-              <span class="hint mono">Mi</span>
+        <template v-if="activePreset === 'custom'">
+          <div class="field">
+            <div class="field-l">
+              <span class="lbl">CPU</span>
+              <span class="desc">millicores</span>
+            </div>
+            <div class="field-c">
+              <div class="row">
+                <input
+                  v-model.number="cpu"
+                  type="number"
+                  class="form-input field-num"
+                  min="50"
+                  step="50"
+                />
+                <span class="hint mono">m</span>
+              </div>
             </div>
           </div>
-        </div>
+          <div class="field">
+            <div class="field-l">
+              <span class="lbl">Memory</span>
+              <span class="desc">megabytes</span>
+            </div>
+            <div class="field-c">
+              <div class="row">
+                <input
+                  v-model.number="memory"
+                  type="number"
+                  class="form-input field-num"
+                  min="64"
+                  step="64"
+                />
+                <span class="hint mono">Mi</span>
+              </div>
+            </div>
+          </div>
+        </template>
         <div class="field">
           <div class="field-l">
             <span class="lbl">Replicas</span>
@@ -209,6 +263,39 @@ const isDocker = computed(() => props.source === 'docker')
 
 <style scoped>
 @import '@/assets/form-fields.css';
+
+.preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.preset-chip {
+  padding: 5px 12px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.preset-chip:hover:not(.on) {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
+}
+
+.preset-chip.on {
+  background: var(--color-bg-raised);
+  border-color: var(--color-accent-muted);
+  color: var(--color-accent);
+}
 
 .section {
   display: flex;
