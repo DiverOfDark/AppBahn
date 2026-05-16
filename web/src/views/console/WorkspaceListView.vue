@@ -13,6 +13,7 @@ import { initials } from '@/utils/resource'
 
 type Workspace = components['schemas']['Workspace']
 type ViewMode = 'cards' | 'list'
+type RoleFilter = 'all' | 'owned' | 'member'
 
 const VIEW_PREF_KEY = 'appbahn.workspacesView'
 
@@ -34,6 +35,7 @@ const newName = ref('')
 const error = ref('')
 const searchQuery = ref('')
 const viewMode = ref<ViewMode>(readSavedView())
+const roleFilter = ref<RoleFilter>('all')
 const { refreshSidebar } = useSidebarRefresh()
 
 function readSavedView(): ViewMode {
@@ -45,10 +47,38 @@ watch(viewMode, (m) => {
   if (typeof localStorage !== 'undefined') localStorage.setItem(VIEW_PREF_KEY, m)
 })
 
+const ROLE_LABEL: Record<string, string> = {
+  OWNER: 'Owner',
+  ADMIN: 'Admin',
+  EDITOR: 'Editor',
+  VIEWER: 'Viewer',
+}
+
+function roleChipTone(role?: string): string {
+  switch (role) {
+    case 'OWNER':
+      return 'owner'
+    case 'ADMIN':
+      return 'admin'
+    case 'EDITOR':
+      return 'editor'
+    default:
+      return 'viewer'
+  }
+}
+
 const filtered = computed(() => {
+  let list = workspaces.value
+
+  if (roleFilter.value === 'owned') {
+    list = list.filter((w) => w.callerRole === 'OWNER')
+  } else if (roleFilter.value === 'member') {
+    list = list.filter((w) => w.callerRole !== 'OWNER')
+  }
+
   const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return workspaces.value
-  return workspaces.value.filter(
+  if (!q) return list
+  return list.filter(
     (w) => (w.name ?? '').toLowerCase().includes(q) || (w.slug ?? '').toLowerCase().includes(q),
   )
 })
@@ -157,6 +187,21 @@ onMounted(fetchWorkspaces)
           aria-label="Filter workspaces"
         />
         <div class="bar-sep" aria-hidden="true"></div>
+        <div class="vw" role="tablist" aria-label="Role filter">
+          <button
+            v-for="tab in ['all', 'owned', 'member'] as RoleFilter[]"
+            :key="tab"
+            type="button"
+            class="vw-btn"
+            :class="{ on: roleFilter === tab }"
+            role="tab"
+            :aria-selected="roleFilter === tab"
+            @click="roleFilter = tab"
+          >
+            {{ tab === 'all' ? 'All' : tab === 'owned' ? 'Owned' : 'Member' }}
+          </button>
+        </div>
+        <div class="bar-sep" aria-hidden="true"></div>
         <div class="vw" role="tablist" aria-label="View mode">
           <button
             type="button"
@@ -201,6 +246,9 @@ onMounted(fetchWorkspaces)
                 <div class="card-slug">{{ ws.slug }}</div>
               </div>
             </div>
+            <span v-if="ws.callerRole" class="role-chip" :data-role="roleChipTone(ws.callerRole)">
+              {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
+            </span>
           </div>
           <div class="ws-foot">
             <span class="ws-foot-l">workspace</span>
@@ -234,6 +282,9 @@ onMounted(fetchWorkspaces)
             <div class="card-name">{{ ws.name }}</div>
             <div class="card-slug">{{ ws.slug }}</div>
           </div>
+          <span v-if="ws.callerRole" class="role-chip" :data-role="roleChipTone(ws.callerRole)">
+            {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
+          </span>
           <span class="ws-row-date">
             {{ ws.createdAt ? `created ${formatDateShort(ws.createdAt)}` : '' }}
           </span>
@@ -528,7 +579,7 @@ onMounted(fetchWorkspaces)
 }
 .ws-row {
   display: grid;
-  grid-template-columns: 32px 1fr auto 24px;
+  grid-template-columns: 32px 1fr auto auto 24px;
   gap: 14px;
   align-items: center;
   padding: 12px 16px;
@@ -557,5 +608,40 @@ onMounted(fetchWorkspaces)
   font-family: var(--font-mono);
   color: var(--color-text-tertiary);
   text-align: right;
+}
+
+/* role chip */
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.role-chip[data-role='owner'] {
+  background: oklch(26% 0.06 80 / 0.5);
+  color: var(--color-accent);
+  border: 1px solid oklch(40% 0.1 80 / 0.4);
+}
+.role-chip[data-role='admin'] {
+  background: oklch(24% 0.05 250 / 0.5);
+  color: oklch(78% 0.1 250);
+  border: 1px solid oklch(40% 0.08 250 / 0.4);
+}
+.role-chip[data-role='editor'] {
+  background: oklch(24% 0.05 150 / 0.5);
+  color: oklch(76% 0.1 150);
+  border: 1px solid oklch(40% 0.08 150 / 0.4);
+}
+.role-chip[data-role='viewer'] {
+  background: oklch(22% 0.02 80 / 0.4);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border);
 }
 </style>

@@ -1,5 +1,6 @@
 package eu.appbahn.platform.api;
 
+import eu.appbahn.shared.model.MemberRole;
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -37,4 +38,7 @@ public class Workspace {
     @Valid
     @Nullable
     private OffsetDateTime updatedAt;
+
+    @Nullable
+    private MemberRole callerRole;
 }

@@ -6,6 +6,7 @@ import eu.appbahn.platform.api.Workspace;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
 import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
+import eu.appbahn.shared.model.MemberRole;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -14,12 +15,17 @@ public final class EntityMapper {
     private EntityMapper() {}
 
     public static Workspace toApi(WorkspaceEntity entity) {
+        return toApi(entity, null);
+    }
+
+    public static Workspace toApi(WorkspaceEntity entity, MemberRole callerRole) {
         var ws = new Workspace();
         ws.setId(entity.getId());
         ws.setName(entity.getName());
         ws.setSlug(entity.getSlug());
         ws.setCreatedAt(toOffset(entity.getCreatedAt()));
         ws.setUpdatedAt(toOffset(entity.getUpdatedAt()));
+        ws.setCallerRole(callerRole);
         return ws;
     }
 

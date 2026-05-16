@@ -11,6 +11,7 @@ import eu.appbahn.platform.api.workspace.PagedWorkspaceResponse;
 import eu.appbahn.platform.api.workspace.UpdateWorkspaceRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
+import eu.appbahn.platform.common.exception.ForbiddenException;
 import eu.appbahn.platform.common.exception.NotFoundException;
 import eu.appbahn.platform.common.security.AuthContext;
 import eu.appbahn.platform.common.util.PaginationUtil;
@@ -21,7 +22,10 @@ import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -77,20 +81,25 @@ public class WorkspaceService {
         var pageable = PaginationUtil.toPageable(page, size, sort);
 
         Page<WorkspaceEntity> result;
+        Map<UUID, MemberRole> roleByWorkspaceId;
+
         if (ctx.platformAdmin()) {
             result = workspaceRepository.findAll(pageable);
+            roleByWorkspaceId = Collections.emptyMap();
         } else {
-            List<UUID> workspaceIds = memberRepository.findByUserId(ctx.userId()).stream()
-                    .map(WorkspaceMemberEntity::getWorkspaceId)
-                    .collect(Collectors.toList());
+            List<WorkspaceMemberEntity> memberships = memberRepository.findByUserId(ctx.userId());
+            roleByWorkspaceId = memberships.stream()
+                    .collect(Collectors.toMap(
+                            WorkspaceMemberEntity::getWorkspaceId, m -> MemberRole.valueOf(m.getRole())));
 
+            List<UUID> workspaceIds = new ArrayList<>(roleByWorkspaceId.keySet());
             if (workspaceIds.isEmpty()) {
                 return emptyPage(page, size);
             }
             result = workspaceRepository.findAllByIdIn(workspaceIds, pageable);
         }
 
-        return toPagedResponse(result);
+        return toPagedResponse(result, roleByWorkspaceId, ctx);
     }
 
     public UUID getWorkspaceId(String slug, AuthContext ctx) {
@@ -105,8 +114,11 @@ public class WorkspaceService {
         var entity = workspaceRepository
                 .findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Workspace not found: " + slug));
-        permissionService.requireWorkspaceRole(ctx, entity.getId(), MemberRole.VIEWER);
-        return EntityMapper.toApi(entity);
+        MemberRole role = permissionService.resolveWorkspaceRole(ctx, entity.getId());
+        if (role == null || role.ordinal() > MemberRole.VIEWER.ordinal()) {
+            throw new ForbiddenException("Insufficient permissions on workspace");
+        }
+        return EntityMapper.toApi(entity, role);
     }
 
     @Transactional
@@ -222,9 +234,15 @@ public class WorkspaceService {
         return EntityMapper.toApi(entity);
     }
 
-    private PagedWorkspaceResponse toPagedResponse(Page<WorkspaceEntity> page) {
+    private PagedWorkspaceResponse toPagedResponse(
+            Page<WorkspaceEntity> page, Map<UUID, MemberRole> roleByWorkspaceId, AuthContext ctx) {
         var response = new PagedWorkspaceResponse();
-        response.setContent(page.getContent().stream().map(EntityMapper::toApi).collect(Collectors.toList()));
+        response.setContent(page.getContent().stream()
+                .map(e -> {
+                    MemberRole role = ctx.platformAdmin() ? MemberRole.OWNER : roleByWorkspaceId.get(e.getId());
+                    return EntityMapper.toApi(e, role);
+                })
+                .collect(Collectors.toList()));
         response.setPage(page.getNumber());
         response.setSize(page.getSize());
         response.setTotalElements(page.getTotalElements());

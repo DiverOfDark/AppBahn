@@ -1224,6 +1224,8 @@ export interface components {
       createdAt?: string
       /** Format: date-time */
       updatedAt?: string
+      /** @enum {string} */
+      callerRole?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
     Project: {
       /** Format: uuid */

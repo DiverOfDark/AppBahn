@@ -2796,6 +2796,13 @@ components:
         updatedAt:
           type: string
           format: date-time
+        callerRole:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - EDITOR
+          - VIEWER
     Project:
       type: object
       properties:
