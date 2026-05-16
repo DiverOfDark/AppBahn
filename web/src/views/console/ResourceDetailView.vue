@@ -8,6 +8,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
+import { useActiveEnvironmentStore } from '@/stores/activeEnvironment'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import ResourceHeader from '@/components/resource/ResourceHeader.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
@@ -34,6 +35,7 @@ const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
 
 const route = useRoute()
 const router = useRouter()
+const activeEnvStore = useActiveEnvironmentStore()
 const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
@@ -117,6 +119,17 @@ async function fetchDeployments() {
     if (data?.content) deployments.value = data.content
   } catch {
     error.value = 'Failed to load deployments'
+  }
+}
+
+async function fetchEnvironment() {
+  try {
+    const { data } = await api.GET('/environments/{slug}', {
+      params: { path: { slug: envSlug.value } },
+    })
+    if (data) activeEnvStore.set(data)
+  } catch {
+    // Non-fatal: footer degrades gracefully without the env context
   }
 }
 
@@ -280,6 +293,7 @@ function handleVisibilityChange() {
 
 onMounted(() => {
   fetchAll()
+  fetchEnvironment()
   startPolling()
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
@@ -288,6 +302,7 @@ onUnmounted(() => {
   stopPolling()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (pendingTimer) clearTimeout(pendingTimer)
+  activeEnvStore.clear()
 })
 </script>
 

@@ -2,12 +2,16 @@
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
+import { usePlatformConfigStore } from '@/stores/platformConfig'
+import { useActiveEnvironmentStore } from '@/stores/activeEnvironment'
 import { useAuth } from '@/composables/useAuth'
 import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { getAccessToken } from '@/api/client'
 import SidebarTree from '@/components/SidebarTree.vue'
 
 const themeStore = useThemeStore()
+const platformConfigStore = usePlatformConfigStore()
+const activeEnvStore = useActiveEnvironmentStore()
 const { logout } = useAuth()
 const router = useRouter()
 const { items: crumbs } = useBreadcrumb()
@@ -77,6 +81,7 @@ function handleEscape(event: KeyboardEvent) {
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
   document.addEventListener('keydown', handleEscape)
+  platformConfigStore.load()
 })
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
@@ -148,6 +153,24 @@ onBeforeUnmount(() => {
         <router-view />
       </main>
     </div>
+
+    <footer
+      v-if="platformConfigStore.config?.version || activeEnvStore.environment?.targetCluster"
+      class="console-footer"
+    >
+      <span v-if="platformConfigStore.config?.version" class="footer-item">
+        v{{ platformConfigStore.config.version }}
+      </span>
+      <span
+        v-if="platformConfigStore.config?.version && activeEnvStore.environment?.targetCluster"
+        class="footer-sep"
+        aria-hidden="true"
+        >&middot;</span
+      >
+      <span v-if="activeEnvStore.environment?.targetCluster" class="footer-item">
+        {{ activeEnvStore.environment.targetCluster }}
+      </span>
+    </footer>
   </div>
 </template>
 
@@ -319,5 +342,31 @@ onBeforeUnmount(() => {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+
+.console-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  flex-shrink: 0;
+}
+
+.footer-item {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+.footer-sep {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
 }
 </style>

@@ -2888,6 +2888,8 @@ components:
           $ref: "#/components/schemas/Quota"
         buildConfig:
           type: object
+        version:
+          type: string
     PlatformConfigBranding:
       type: object
       properties:

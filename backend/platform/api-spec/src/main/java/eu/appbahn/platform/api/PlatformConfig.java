@@ -30,4 +30,7 @@ public class PlatformConfig {
 
     @Nullable
     private Object buildConfig;
+
+    @Nullable
+    private String version;
 }

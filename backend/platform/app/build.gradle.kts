@@ -10,6 +10,10 @@ plugins {
 
 extra["dockerImageName"] = "platform"
 
+springBoot {
+    buildInfo()
+}
+
 gitProperties {
     dotGitDirectory.set(rootProject.layout.projectDirectory.dir("../.git"))
     // git-properties fails hard inside a worktree where `.git` is a file, not a

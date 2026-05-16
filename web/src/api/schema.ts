@@ -1274,6 +1274,7 @@ export interface components {
       auth?: Record<string, never>
       defaultQuota?: components['schemas']['Quota']
       buildConfig?: Record<string, never>
+      version?: string
     }
     PlatformConfigBranding: {
       instanceName?: string

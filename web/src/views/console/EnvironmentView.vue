@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
+import { useActiveEnvironmentStore } from '@/stores/activeEnvironment'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import CreateDialog from '@/components/CreateDialog.vue'
@@ -27,6 +28,7 @@ type TokenRole = (typeof TOKEN_ROLES)[number]
 
 const route = useRoute()
 const router = useRouter()
+const activeEnvStore = useActiveEnvironmentStore()
 
 const environment = ref<Environment | null>(null)
 const projectEnvs = ref<Environment[]>([])
@@ -69,6 +71,7 @@ async function fetchEnvironment() {
     })
     if (data) {
       environment.value = data
+      activeEnvStore.set(data)
       setPageTitle(data.name ?? envSlug.value)
     }
   } catch {
@@ -258,6 +261,7 @@ onMounted(() => {
 onUnmounted(() => {
   stopPolling()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  activeEnvStore.clear()
 })
 </script>
 

@@ -21,7 +21,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,8 +48,12 @@ public class AdminController implements AdminApi {
 
     private final AuditLogService auditLogService;
 
-    public AdminController(AuditLogService auditLogService) {
+    @Nullable
+    private final BuildProperties buildProperties;
+
+    public AdminController(AuditLogService auditLogService, @Nullable BuildProperties buildProperties) {
         this.auditLogService = auditLogService;
+        this.buildProperties = buildProperties;
     }
 
     @Override
@@ -61,6 +67,9 @@ public class AdminController implements AdminApi {
         PlatformConfig config = new PlatformConfig();
         config.setBranding(branding);
         config.setNamespacePrefix(namespacePrefix);
+        if (buildProperties != null) {
+            config.setVersion(buildProperties.getVersion());
+        }
         return ResponseEntity.ok(config);
     }
 
