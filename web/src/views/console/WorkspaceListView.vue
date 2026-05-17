@@ -12,14 +12,17 @@ import { useUserPreferences } from '@/composables/useUserPreferences'
 import { formatDateShort } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { initials } from '@/utils/resource'
+import { useRouter } from 'vue-router'
 
 type Workspace = components['schemas']['Workspace']
+type WorkspaceInvite = components['schemas']['WorkspaceInvite']
 type ViewMode = 'cards' | 'list'
 type RoleFilter = 'all' | 'owned' | 'member'
 
 const VIEW_PREF_KEY = 'appbahn.workspacesView'
 
 const { preferences: userPrefs, fetch: fetchPrefs, setDefaultWorkspace } = useUserPreferences()
+const router = useRouter()
 
 const workspaces = ref<Workspace[]>([])
 const loading = ref(true)
@@ -51,6 +54,16 @@ const defaultWorkspace = computed<Workspace | undefined>(() => {
   if (!slug) return undefined
   return workspaces.value.find((w) => w.slug === slug)
 })
+
+// --- Pending invites ---
+const pendingInvites = ref<WorkspaceInvite[]>([])
+const inviteActionLoading = ref<string | null>(null)
+
+// --- Join with code ---
+const showJoinCode = ref(false)
+const joinCode = ref('')
+const joinCodeLoading = ref(false)
+const joinCodeError = ref('')
 
 function readSavedView(): ViewMode {
   if (typeof localStorage === 'undefined') return 'cards'
@@ -108,18 +121,95 @@ async function fetchWorkspaces() {
   loading.value = true
   error.value = ''
   try {
-    const { data } = await api.GET('/workspaces', {
-      params: { query: { page: page.value, size: 20 } },
-    })
-    if (data) {
-      workspaces.value = data.content ?? []
-      totalPages.value = data.totalPages ?? 0
-      totalElements.value = data.totalElements ?? workspaces.value.length
+    const [wsRes, invRes] = await Promise.all([
+      api.GET('/workspaces', { params: { query: { page: page.value, size: 20 } } }),
+      api.GET('/users/me/invites'),
+    ])
+    if (wsRes.data) {
+      workspaces.value = wsRes.data.content ?? []
+      totalPages.value = wsRes.data.totalPages ?? 0
+      totalElements.value = wsRes.data.totalElements ?? workspaces.value.length
+    }
+    if (invRes.data) {
+      pendingInvites.value = invRes.data
     }
   } catch {
     error.value = 'Failed to load workspaces'
   } finally {
     loading.value = false
+  }
+}
+
+async function acceptInvite(inviteId: string) {
+  inviteActionLoading.value = inviteId
+  try {
+    const { data, error: apiError } = await api.POST('/invites/{id}/accept', {
+      params: { path: { id: inviteId } },
+    })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to accept invitation')
+      return
+    }
+    pendingInvites.value = pendingInvites.value.filter((i) => i.id !== inviteId)
+    await fetchWorkspaces()
+    refreshSidebar()
+    if (data?.workspaceSlug) {
+      router.push(`/console/${data.workspaceSlug}`)
+    }
+  } catch {
+    error.value = 'Failed to accept invitation'
+  } finally {
+    inviteActionLoading.value = null
+  }
+}
+
+async function declineInvite(inviteId: string) {
+  inviteActionLoading.value = inviteId
+  try {
+    const { error: apiError } = await api.POST('/invites/{id}/decline', {
+      params: { path: { id: inviteId } },
+    })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to decline invitation')
+      return
+    }
+    pendingInvites.value = pendingInvites.value.filter((i) => i.id !== inviteId)
+  } catch {
+    error.value = 'Failed to decline invitation'
+  } finally {
+    inviteActionLoading.value = null
+  }
+}
+
+function closeJoinDialog() {
+  showJoinCode.value = false
+  joinCode.value = ''
+  joinCodeError.value = ''
+}
+
+async function redeemCode() {
+  if (!joinCode.value.trim()) return
+  joinCodeLoading.value = true
+  joinCodeError.value = ''
+  try {
+    const { data, error: apiError } = await api.POST('/invites/redeem', {
+      body: { code: joinCode.value.trim() },
+    })
+    if (apiError) {
+      joinCodeError.value = extractApiErrorMessage(apiError, 'Failed to redeem code')
+      return
+    }
+    showJoinCode.value = false
+    joinCode.value = ''
+    await fetchWorkspaces()
+    refreshSidebar()
+    if (data?.workspaceSlug) {
+      router.push(`/console/${data.workspaceSlug}`)
+    }
+  } catch {
+    joinCodeError.value = 'Failed to redeem invite code'
+  } finally {
+    joinCodeLoading.value = false
   }
 }
 
@@ -181,9 +271,49 @@ onMounted(() => {
         <span v-else-if="!loading">no workspaces yet</span>
       </template>
       <template #actions>
+        <button class="btn-secondary" @click="showJoinCode = true">Join with code</button>
         <button class="btn-primary" @click="openCreate">+ Create Workspace</button>
       </template>
     </PageHeader>
+
+    <!-- Pending invitations -->
+    <template v-if="pendingInvites.length > 0">
+      <div class="invites-section">
+        <div class="invites-label">Pending invitations</div>
+        <div class="invites-list">
+          <div v-for="inv in pendingInvites" :key="inv.id" class="invite-card">
+            <div class="invite-body">
+              <div class="invite-ws">{{ inv.workspaceName }}</div>
+              <div class="invite-meta">
+                <span v-if="inv.invitedBy" class="invite-by">
+                  Invited by {{ inv.invitedBy.name || inv.invitedBy.email }}
+                </span>
+                <span class="invite-role">{{ inv.role }}</span>
+                <span v-if="inv.expiresAt" class="invite-exp">
+                  expires {{ formatDateShort(inv.expiresAt) }}
+                </span>
+              </div>
+            </div>
+            <div class="invite-actions">
+              <button
+                class="btn-primary btn-sm"
+                :disabled="inviteActionLoading === inv.id"
+                @click="acceptInvite(inv.id!)"
+              >
+                Accept
+              </button>
+              <button
+                class="btn-secondary btn-sm"
+                :disabled="inviteActionLoading === inv.id"
+                @click="declineInvite(inv.id!)"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
@@ -382,6 +512,27 @@ onMounted(() => {
           class="form-input"
           type="text"
           placeholder="e.g. My Team"
+          autofocus
+        />
+      </label>
+    </CreateDialog>
+
+    <!-- Join with code dialog -->
+    <CreateDialog
+      title="Join with invite code"
+      :open="showJoinCode"
+      :loading="joinCodeLoading"
+      :error="joinCodeError"
+      @close="closeJoinDialog"
+      @submit="redeemCode"
+    >
+      <label class="form-label">
+        Invite Code
+        <input
+          v-model="joinCode"
+          class="form-input"
+          type="text"
+          placeholder="e.g. abp_xY3…"
           autofocus
         />
       </label>
@@ -783,9 +934,75 @@ onMounted(() => {
   flex: 1;
   min-width: 0;
 }
-.default-banner-actions {
+.default-banner-actions,
+.invite-actions {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* pending invitations */
+.invites-section {
+  margin-bottom: 24px;
+}
+.invites-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: 10px;
+}
+.invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.invite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+.invite-body {
+  min-width: 0;
+}
+.invite-ws {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.invite-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.invite-by,
+.invite-exp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.03em;
+}
+.invite-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 12px;
 }
 </style>

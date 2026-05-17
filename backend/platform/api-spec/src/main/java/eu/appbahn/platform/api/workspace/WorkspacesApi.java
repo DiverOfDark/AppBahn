@@ -10,6 +10,8 @@ import eu.appbahn.platform.api.UpdateMemberRequest;
 import eu.appbahn.platform.api.WebhookDelivery;
 import eu.appbahn.platform.api.Workspace;
 import eu.appbahn.platform.api.WorkspaceMember;
+import eu.appbahn.platform.api.invite.CreateInviteCodeRequest;
+import eu.appbahn.platform.api.invite.WorkspaceInviteCode;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -456,4 +458,53 @@ public interface WorkspacesApi {
             @PathVariable("slug") String slug,
             @PathVariable("user_id") UUID userId,
             @Valid @RequestBody(required = false) @Nullable UpdateMemberRequest updateMemberRequest);
+
+    /**
+     * POST /workspaces/{slug}/invites/codes : Mint an invite code (Owner only)
+     *
+     * @param slug  (required)
+     * @param createInviteCodeRequest  (required)
+     * @return Created invite code (status code 201)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/workspaces/{slug}/invites/codes",
+            produces = {"application/json"},
+            consumes = {"application/json"})
+    ResponseEntity<WorkspaceInviteCode> createInviteCode(
+            @PathVariable("slug") String slug, @Valid @RequestBody CreateInviteCodeRequest createInviteCodeRequest);
+
+    /**
+     * GET /workspaces/{slug}/invites/codes : List invite codes for the workspace (Owner only)
+     *
+     * @param slug  (required)
+     * @return List of invite codes (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/workspaces/{slug}/invites/codes",
+            produces = {"application/json"})
+    ResponseEntity<List<WorkspaceInviteCode>> listInviteCodes(@PathVariable("slug") String slug);
+
+    /**
+     * DELETE /workspaces/{slug}/invites/codes/{code_id} : Revoke an invite code (Owner only)
+     *
+     * @param slug  (required)
+     * @param codeId  (required)
+     * @return Revoked (status code 204)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.DELETE,
+            value = "/workspaces/{slug}/invites/codes/{code_id}",
+            produces = {"application/json"})
+    ResponseEntity<Void> revokeInviteCode(@PathVariable("slug") String slug, @PathVariable("code_id") UUID codeId);
 }

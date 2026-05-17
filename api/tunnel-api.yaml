@@ -234,6 +234,11 @@ components:
       - GroupMappingCreated
       - GroupMappingDeleted
       - GroupMappingUpdated
+      - InviteAccepted
+      - InviteCodeCreated
+      - InviteCodeRevoked
+      - InviteDeclined
+      - InviteRedeemed
       - MemberAdded
       - MemberInvited
       - MemberRemoved

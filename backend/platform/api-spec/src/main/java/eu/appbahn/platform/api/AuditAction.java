@@ -51,6 +51,21 @@ public enum AuditAction {
     @JsonProperty("GroupMappingUpdated")
     GROUP_MAPPING_UPDATED,
 
+    @JsonProperty("InviteAccepted")
+    INVITE_ACCEPTED,
+
+    @JsonProperty("InviteCodeCreated")
+    INVITE_CODE_CREATED,
+
+    @JsonProperty("InviteCodeRevoked")
+    INVITE_CODE_REVOKED,
+
+    @JsonProperty("InviteDeclined")
+    INVITE_DECLINED,
+
+    @JsonProperty("InviteRedeemed")
+    INVITE_REDEEMED,
+
     @JsonProperty("MemberAdded")
     MEMBER_ADDED,
 

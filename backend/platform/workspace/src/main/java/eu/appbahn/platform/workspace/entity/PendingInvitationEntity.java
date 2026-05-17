@@ -4,6 +4,7 @@ import eu.appbahn.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,4 +26,7 @@ public class PendingInvitationEntity extends BaseEntity {
 
     @Column(name = "invited_by")
     private UUID invitedBy;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
 }

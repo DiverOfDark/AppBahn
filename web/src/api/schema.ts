@@ -196,6 +196,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/workspaces/{slug}/invites/codes': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listInviteCodes']
+    put?: never
+    post: operations['createInviteCode']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/workspaces/{slug}/group-mappings': {
     parameters: {
       query?: never
@@ -430,6 +446,54 @@ export interface paths {
     get: operations['listProjects']
     put?: never
     post: operations['createProject']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/invites/{id}/decline': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['declineInvite']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/invites/{id}/accept': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['acceptInvite']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/invites/redeem': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['redeemInvite']
     delete?: never
     options?: never
     head?: never
@@ -836,6 +900,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/users/me/invites': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listMyInvites']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/webhook': {
     parameters: {
       query?: never
@@ -1156,6 +1236,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/workspaces/{slug}/invites/codes/{code_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: operations['revokeInviteCode']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/exposures/{port}': {
     parameters: {
       query?: never
@@ -1347,6 +1443,31 @@ export interface components {
     AddMemberResponse: {
       /** @enum {string} */
       status?: 'Active' | 'Pending'
+    }
+    CreateInviteCodeRequest: {
+      /** @enum {string} */
+      role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** Format: date-time */
+      expiresAt?: string
+      /** Format: int32 */
+      maxUses?: number
+    }
+    WorkspaceInviteCode: {
+      /** Format: uuid */
+      id?: string
+      code?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      /** Format: date-time */
+      expiresAt?: string
+      /** Format: int32 */
+      maxUses?: number
+      /** Format: int32 */
+      useCount?: number
+      /** Format: date-time */
+      createdAt?: string
+      /** Format: uuid */
+      createdBy?: string
     }
     CreateGroupMappingRequest: {
       oidcGroup?: string
@@ -1541,6 +1662,28 @@ export interface components {
     CreateProjectRequest: {
       name: string
       workspaceSlug: string
+    }
+    InvitedBy: {
+      /** Format: uuid */
+      id?: string
+      name?: string
+      email?: string
+    }
+    WorkspaceInvite: {
+      /** Format: uuid */
+      id?: string
+      workspaceSlug?: string
+      workspaceName?: string
+      /** @enum {string} */
+      role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+      invitedBy?: components['schemas']['InvitedBy']
+      /** Format: date-time */
+      invitedAt?: string
+      /** Format: date-time */
+      expiresAt?: string
+    }
+    RedeemInviteRequest: {
+      code: string
     }
     ImageSourceWebhookSecret: {
       secret?: string
@@ -1832,6 +1975,11 @@ export interface components {
       | 'GroupMappingCreated'
       | 'GroupMappingDeleted'
       | 'GroupMappingUpdated'
+      | 'InviteAccepted'
+      | 'InviteCodeCreated'
+      | 'InviteCodeRevoked'
+      | 'InviteDeclined'
+      | 'InviteRedeemed'
       | 'MemberAdded'
       | 'MemberInvited'
       | 'MemberRemoved'
@@ -2654,6 +2802,57 @@ export interface operations {
       }
     }
   }
+  listInviteCodes: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceInviteCode'][]
+        }
+      }
+    }
+  }
+  createInviteCode: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateInviteCodeRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceInviteCode']
+        }
+      }
+    }
+  }
   listGroupMappings: {
     parameters: {
       query?: never
@@ -3124,6 +3323,81 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Project']
+        }
+      }
+    }
+  }
+  declineInvite: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  acceptInvite: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceInvite']
+        }
+      }
+    }
+  }
+  redeemInvite: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RedeemInviteRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceInvite']
         }
       }
     }
@@ -4304,6 +4578,26 @@ export interface operations {
       }
     }
   }
+  listMyInvites: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceInvite'][]
+        }
+      }
+    }
+  }
   getResourceWebhook: {
     parameters: {
       query?: never
@@ -4777,6 +5071,30 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PagedAuditLogResponse']
         }
+      }
+    }
+  }
+  revokeInviteCode: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+        code_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
       }
     }
   }

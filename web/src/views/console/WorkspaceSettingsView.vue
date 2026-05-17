@@ -22,15 +22,25 @@ type OidcGroupMapping = components['schemas']['OidcGroupMapping']
 type Quota = components['schemas']['Quota']
 type RegistryConfig = components['schemas']['RegistryConfig']
 type AuditLogEntry = components['schemas']['AuditLogEntry']
+type WorkspaceInviteCode = components['schemas']['WorkspaceInviteCode']
 
 const ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'VIEWER'] as const
 type Role = (typeof ROLES)[number]
 
-const TABS = ['members', 'group-mappings', 'quotas', 'registry', 'security', 'audit-log'] as const
+const TABS = [
+  'members',
+  'invites',
+  'group-mappings',
+  'quotas',
+  'registry',
+  'security',
+  'audit-log',
+] as const
 type Tab = (typeof TABS)[number]
 
 const TAB_LABELS: Record<Tab, string> = {
   members: 'Members',
+  invites: 'Invites',
   'group-mappings': 'Group Mappings',
   quotas: 'Quotas',
   registry: 'Registry',
@@ -91,6 +101,14 @@ const credentialSecretKey = computed({
 
 // -- Security --
 const runtimeClassName = ref('')
+
+// -- Invite Codes --
+const inviteCodes = ref<WorkspaceInviteCode[]>([])
+const showMintCode = ref(false)
+const mintCodeLoading = ref(false)
+const mintCodeRole = ref<Role>('VIEWER')
+const mintCodeMaxUses = ref(1)
+const mintCodeExpiry = ref('')
 
 // -- Audit Log --
 const auditEntries = ref<AuditLogEntry[]>([])
@@ -173,6 +191,19 @@ async function fetchAuditLog() {
   }
 }
 
+async function fetchInviteCodes() {
+  try {
+    const { data } = await api.GET('/workspaces/{slug}/invites/codes', {
+      params: { path: { slug: wsSlug.value } },
+    })
+    if (data) {
+      inviteCodes.value = data
+    }
+  } catch {
+    error.value = 'Failed to load invite codes'
+  }
+}
+
 async function fetchTabData() {
   error.value = ''
   loading.value = true
@@ -181,6 +212,9 @@ async function fetchTabData() {
     switch (activeTab.value) {
       case 'members':
         await fetchMembers()
+        break
+      case 'invites':
+        await fetchInviteCodes()
         break
       case 'group-mappings':
         await fetchGroupMappings()
@@ -316,6 +350,56 @@ async function deleteMapping(mappingId: string): Promise<void> {
     await fetchGroupMappings()
   } catch (e) {
     if (!error.value) error.value = 'Failed to delete group mapping'
+    throw e
+  }
+}
+
+// ── Invite Code actions ──────────────────────────────────────────────
+
+async function mintInviteCode() {
+  mintCodeLoading.value = true
+  try {
+    const body: { role: Role; maxUses: number; expiresAt?: string } = {
+      role: mintCodeRole.value,
+      maxUses: mintCodeMaxUses.value,
+    }
+    if (mintCodeExpiry.value) {
+      body.expiresAt = new Date(mintCodeExpiry.value).toISOString()
+    }
+    const { error: apiError } = await api.POST('/workspaces/{slug}/invites/codes', {
+      params: { path: { slug: wsSlug.value } },
+      body,
+    })
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to mint invite code')
+      return
+    }
+    showMintCode.value = false
+    mintCodeRole.value = 'VIEWER'
+    mintCodeMaxUses.value = 1
+    mintCodeExpiry.value = ''
+    await fetchInviteCodes()
+  } catch {
+    error.value = 'Failed to mint invite code'
+  } finally {
+    mintCodeLoading.value = false
+  }
+}
+
+// Throws on failure so ConfirmButton's handler-pattern can re-arm.
+async function revokeInviteCode(codeId: string): Promise<void> {
+  try {
+    const { error: apiError } = await api.DELETE('/workspaces/{slug}/invites/codes/{code_id}', {
+      params: { path: { slug: wsSlug.value, code_id: codeId } },
+    })
+    if (apiError) {
+      const msg = extractApiErrorMessage(apiError, 'Failed to revoke invite code')
+      error.value = msg
+      throw new Error(msg)
+    }
+    await fetchInviteCodes()
+  } catch (e) {
+    if (!error.value) error.value = 'Failed to revoke invite code'
     throw e
   }
 }
@@ -526,6 +610,69 @@ onMounted(fetchTabData)
             <select v-model="inviteRole" class="form-input">
               <option v-for="r in ROLES" :key="r" :value="r">{{ r }}</option>
             </select>
+          </label>
+        </div>
+      </CreateDialog>
+    </template>
+
+    <!-- ═══════════════ INVITES TAB ═══════════════ -->
+    <template v-else-if="activeTab === 'invites'">
+      <div class="tab-header">
+        <h2 class="section-title">Invite Codes</h2>
+        <button class="btn-primary" @click="showMintCode = true">+ Mint Code</button>
+      </div>
+
+      <EmptyState v-if="inviteCodes.length === 0" message="No invite codes. Mint one to share." />
+
+      <DataTable v-else>
+        <template #header>
+          <th>Code</th>
+          <th>Role</th>
+          <th>Uses</th>
+          <th>Expires</th>
+          <th>Actions</th>
+        </template>
+        <template #body>
+          <tr v-for="code in inviteCodes" :key="code.id">
+            <td>
+              <span class="invite-code-val">{{ code.code }}</span>
+            </td>
+            <td>{{ code.role }}</td>
+            <td class="cell-mono">{{ code.useCount }} / {{ code.maxUses }}</td>
+            <td class="cell-mono">{{ code.expiresAt ? formatDate(code.expiresAt) : '—' }}</td>
+            <td>
+              <ConfirmButton
+                label="Revoke"
+                confirm-label="Confirm Revoke"
+                btn-class="btn-danger btn-sm"
+                :handler="() => revokeInviteCode(code.id!)"
+              />
+            </td>
+          </tr>
+        </template>
+      </DataTable>
+
+      <CreateDialog
+        title="Mint Invite Code"
+        :open="showMintCode"
+        :loading="mintCodeLoading"
+        @close="showMintCode = false"
+        @submit="mintInviteCode"
+      >
+        <div class="form-stack">
+          <label class="form-label">
+            Role
+            <select v-model="mintCodeRole" class="form-input">
+              <option v-for="r in ROLES" :key="r" :value="r">{{ r }}</option>
+            </select>
+          </label>
+          <label class="form-label">
+            Max uses
+            <input v-model.number="mintCodeMaxUses" class="form-input" type="number" min="1" />
+          </label>
+          <label class="form-label">
+            Expires (optional)
+            <input v-model="mintCodeExpiry" class="form-input" type="datetime-local" />
           </label>
         </div>
       </CreateDialog>
@@ -825,6 +972,24 @@ onMounted(fetchTabData)
   letter-spacing: 0.03em;
   border-radius: var(--radius-sm);
   background-color: var(--color-bg-raised);
+  color: var(--color-text-secondary);
+}
+
+.invite-code-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  background: var(--color-bg-raised);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  user-select: all;
+}
+
+.cell-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 

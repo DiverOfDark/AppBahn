@@ -10,6 +10,8 @@ import eu.appbahn.platform.api.UpdateMemberRequest;
 import eu.appbahn.platform.api.WebhookDelivery;
 import eu.appbahn.platform.api.Workspace;
 import eu.appbahn.platform.api.WorkspaceMember;
+import eu.appbahn.platform.api.invite.CreateInviteCodeRequest;
+import eu.appbahn.platform.api.invite.WorkspaceInviteCode;
 import eu.appbahn.platform.api.workspace.AddMemberRequest;
 import eu.appbahn.platform.api.workspace.AddMemberResponse;
 import eu.appbahn.platform.api.workspace.CreateGroupMappingRequest;
@@ -23,6 +25,7 @@ import eu.appbahn.platform.api.workspace.WorkspacesApi;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.GroupMappingService;
+import eu.appbahn.platform.workspace.service.InviteService;
 import eu.appbahn.platform.workspace.service.MemberService;
 import eu.appbahn.platform.workspace.service.WorkspaceService;
 import java.time.OffsetDateTime;
@@ -39,16 +42,19 @@ public class WorkspacesController implements WorkspacesApi {
     private final WorkspaceService workspaceService;
     private final MemberService memberService;
     private final GroupMappingService groupMappingService;
+    private final InviteService inviteService;
     private final AuditLogService auditLogService;
 
     public WorkspacesController(
             WorkspaceService workspaceService,
             MemberService memberService,
             GroupMappingService groupMappingService,
+            InviteService inviteService,
             AuditLogService auditLogService) {
         this.workspaceService = workspaceService;
         this.memberService = memberService;
         this.groupMappingService = groupMappingService;
+        this.inviteService = inviteService;
         this.auditLogService = auditLogService;
     }
 
@@ -206,5 +212,25 @@ public class WorkspacesController implements WorkspacesApi {
     public ResponseEntity<NotificationWebhook> updateNotificationWebhook(
             String slug, UUID hookId, UpdateNotificationWebhookRequest updateNotificationWebhookRequest) {
         return ResponseEntity.status(501).build();
+    }
+
+    // --- Invite code management ---
+
+    @Override
+    public ResponseEntity<WorkspaceInviteCode> createInviteCode(
+            String slug, CreateInviteCodeRequest createInviteCodeRequest) {
+        return ResponseEntity.status(201)
+                .body(inviteService.createInviteCode(slug, createInviteCodeRequest, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<List<WorkspaceInviteCode>> listInviteCodes(String slug) {
+        return ResponseEntity.ok(inviteService.listInviteCodes(slug, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<Void> revokeInviteCode(String slug, UUID codeId) {
+        inviteService.revokeInviteCode(slug, codeId, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -514,6 +514,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AddMemberResponse"
+  /workspaces/{slug}/invites/codes:
+    get:
+      tags:
+      - Workspaces
+      operationId: listInviteCodes
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkspaceInviteCode"
+    post:
+      tags:
+      - Workspaces
+      operationId: createInviteCode
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInviteCodeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceInviteCode"
   /workspaces/{slug}/group-mappings:
     get:
       tags:
@@ -992,6 +1042,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+  /invites/{id}/decline:
+    post:
+      tags:
+      - Invites
+      operationId: declineInvite
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /invites/{id}/accept:
+    post:
+      tags:
+      - Invites
+      operationId: acceptInvite
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceInvite"
+  /invites/redeem:
+    post:
+      tags:
+      - Invites
+      operationId: redeemInvite
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedeemInviteRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceInvite"
   /image-sources/{slug}/webhook/rotate:
     post:
       tags:
@@ -2152,6 +2276,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CurrentUserResponse"
+  /users/me/invites:
+    get:
+      tags:
+      - Invites
+      operationId: listMyInvites
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkspaceInvite"
   /resources/{slug}/webhook:
     get:
       tags:
@@ -2697,6 +2835,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PagedAuditLogResponse"
+  /workspaces/{slug}/invites/codes/{code_id}:
+    delete:
+      tags:
+      - Workspaces
+      operationId: revokeInviteCode
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: code_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
   /resources/{slug}/exposures/{port}:
     delete:
       tags:
@@ -3023,6 +3188,55 @@ components:
           enum:
           - Active
           - Pending
+    CreateInviteCodeRequest:
+      required:
+      - role
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - EDITOR
+          - VIEWER
+        expiresAt:
+          type: string
+          format: date-time
+        maxUses:
+          minimum: 1
+          type: integer
+          format: int32
+    WorkspaceInviteCode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - EDITOR
+          - VIEWER
+        expiresAt:
+          type: string
+          format: date-time
+        maxUses:
+          type: integer
+          format: int32
+        useCount:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
     CreateGroupMappingRequest:
       type: object
       properties:
@@ -3376,6 +3590,49 @@ components:
         name:
           type: string
         workspaceSlug:
+          type: string
+    InvitedBy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+    WorkspaceInvite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceSlug:
+          type: string
+        workspaceName:
+          type: string
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - EDITOR
+          - VIEWER
+        invitedBy:
+          $ref: "#/components/schemas/InvitedBy"
+        invitedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    RedeemInviteRequest:
+      required:
+      - code
+      type: object
+      properties:
+        code:
+          minLength: 1
           type: string
     ImageSourceWebhookSecret:
       type: object
@@ -3928,6 +4185,11 @@ components:
       - GroupMappingCreated
       - GroupMappingDeleted
       - GroupMappingUpdated
+      - InviteAccepted
+      - InviteCodeCreated
+      - InviteCodeRevoked
+      - InviteDeclined
+      - InviteRedeemed
       - MemberAdded
       - MemberInvited
       - MemberRemoved
