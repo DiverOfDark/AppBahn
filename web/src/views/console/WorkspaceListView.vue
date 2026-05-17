@@ -8,6 +8,7 @@ import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 import { useCurrentUser } from '@/composables/useCurrentUser'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 import { formatDateShort } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { initials } from '@/utils/resource'
@@ -17,6 +18,8 @@ type ViewMode = 'cards' | 'list'
 type RoleFilter = 'all' | 'owned' | 'member'
 
 const VIEW_PREF_KEY = 'appbahn.workspacesView'
+
+const { preferences: userPrefs, fetch: fetchPrefs, setDefaultWorkspace } = useUserPreferences()
 
 const workspaces = ref<Workspace[]>([])
 const loading = ref(true)
@@ -37,10 +40,17 @@ const error = ref('')
 const searchQuery = ref('')
 const viewMode = ref<ViewMode>(readSavedView())
 const roleFilter = ref<RoleFilter>('all')
+const pinning = ref<string | null>(null)
 const { refreshSidebar } = useSidebarRefresh()
 const { user, fetch: fetchCurrentUser } = useCurrentUser()
 
 const userLabel = computed(() => user.value?.name ?? user.value?.email ?? null)
+
+const defaultWorkspace = computed<Workspace | undefined>(() => {
+  const slug = userPrefs.value?.defaultWorkspaceSlug
+  if (!slug) return undefined
+  return workspaces.value.find((w) => w.slug === slug)
+})
 
 function readSavedView(): ViewMode {
   if (typeof localStorage === 'undefined') return 'cards'
@@ -141,9 +151,20 @@ function onPageChange(p: number) {
   fetchWorkspaces()
 }
 
+async function pinWorkspace(slug: string | null) {
+  if (pinning.value) return
+  pinning.value = slug ?? ''
+  try {
+    await setDefaultWorkspace(slug)
+  } finally {
+    pinning.value = null
+  }
+}
+
 onMounted(() => {
   fetchWorkspaces()
   fetchCurrentUser()
+  fetchPrefs()
 })
 </script>
 
@@ -187,6 +208,36 @@ onMounted(() => {
 
     <!-- Workspace list -->
     <template v-else>
+      <!-- Default workspace banner -->
+      <div v-if="defaultWorkspace" class="default-banner">
+        <div class="default-banner-label">Default workspace</div>
+        <div class="default-banner-body">
+          <div class="ws-ic default-banner-ic" :data-tone="paletteSlot(defaultWorkspace.slug)">
+            {{ initials(defaultWorkspace.name) }}
+          </div>
+          <div class="default-banner-info">
+            <div class="card-name">{{ defaultWorkspace.name }}</div>
+            <div class="card-slug">{{ defaultWorkspace.slug }}</div>
+          </div>
+          <div class="default-banner-actions">
+            <router-link :to="`/console/${defaultWorkspace.slug}`" class="btn-primary">
+              Open
+            </router-link>
+            <router-link :to="`/console/${defaultWorkspace.slug}/settings`" class="btn-secondary">
+              Settings
+            </router-link>
+            <button
+              type="button"
+              class="btn-ghost"
+              :disabled="pinning !== null"
+              @click="pinWorkspace(null)"
+            >
+              Unpin
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="bar">
         <input
           v-model="searchQuery"
@@ -278,27 +329,38 @@ onMounted(() => {
 
       <!-- List -->
       <div v-else class="ws-list">
-        <router-link
-          v-for="ws in filtered"
-          :key="ws.slug"
-          :to="`/console/${ws.slug}`"
-          class="ws-row"
-        >
-          <div class="ws-ic ws-ic-sm" :data-tone="paletteSlot(ws.slug)">
-            {{ initials(ws.name) }}
-          </div>
-          <div class="ws-row-info">
-            <div class="card-name">{{ ws.name }}</div>
-            <div class="card-slug">{{ ws.slug }}</div>
-          </div>
-          <span v-if="ws.callerRole" class="role-chip" :data-role="roleChipTone(ws.callerRole)">
-            {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
-          </span>
-          <span class="ws-row-date">
-            {{ ws.createdAt ? `created ${formatDateShort(ws.createdAt)}` : '' }}
-          </span>
-          <span class="ws-row-arrow" aria-hidden="true">→</span>
-        </router-link>
+        <div v-for="ws in filtered" :key="ws.slug" class="ws-row-wrap">
+          <router-link :to="`/console/${ws.slug}`" class="ws-row">
+            <div class="ws-ic ws-ic-sm" :data-tone="paletteSlot(ws.slug)">
+              {{ initials(ws.name) }}
+            </div>
+            <div class="ws-row-info">
+              <div class="card-name">{{ ws.name }}</div>
+              <div class="card-slug">{{ ws.slug }}</div>
+            </div>
+            <span v-if="ws.callerRole" class="role-chip" :data-role="roleChipTone(ws.callerRole)">
+              {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
+            </span>
+            <span class="ws-row-date">
+              {{ ws.createdAt ? `created ${formatDateShort(ws.createdAt)}` : '' }}
+            </span>
+            <span class="ws-row-arrow" aria-hidden="true">→</span>
+          </router-link>
+          <button
+            type="button"
+            class="ws-row-pin"
+            :class="{ pinned: userPrefs?.defaultWorkspaceSlug === ws.slug }"
+            :disabled="pinning !== null"
+            :title="
+              userPrefs?.defaultWorkspaceSlug === ws.slug ? 'Unpin default' : 'Pin as default'
+            "
+            @click="
+              pinWorkspace(userPrefs?.defaultWorkspaceSlug === ws.slug ? null : (ws.slug ?? null))
+            "
+          >
+            {{ userPrefs?.defaultWorkspaceSlug === ws.slug ? '★' : '☆' }}
+          </button>
+        </div>
       </div>
 
       <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
@@ -594,19 +656,25 @@ onMounted(() => {
   overflow: hidden;
   background: var(--color-bg-surface);
 }
+.ws-row-wrap {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-border);
+}
+.ws-row-wrap:last-child {
+  border-bottom: none;
+}
 .ws-row {
   display: grid;
   grid-template-columns: 32px 1fr auto auto 24px;
   gap: 14px;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border);
   text-decoration: none;
   color: inherit;
   transition: background-color 120ms ease;
-}
-.ws-row:last-child {
-  border-bottom: none;
+  flex: 1;
+  min-width: 0;
 }
 .ws-row:hover {
   background: var(--color-bg-raised);
@@ -660,5 +728,64 @@ onMounted(() => {
   background: oklch(22% 0.02 80 / 0.4);
   color: var(--color-text-tertiary);
   border: 1px solid var(--color-border);
+}
+
+.ws-row-pin {
+  border: none;
+  border-left: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  padding: 0 14px;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+  flex-shrink: 0;
+}
+.ws-row-pin:hover:not(:disabled) {
+  color: var(--color-accent);
+  background: var(--color-bg-raised);
+}
+.ws-row-pin.pinned {
+  color: var(--color-accent);
+}
+.ws-row-pin:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* default workspace banner */
+.default-banner {
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: oklch(20% 0.04 80 / 0.15);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.default-banner-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 10px;
+}
+.default-banner-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.default-banner-ic {
+  flex-shrink: 0;
+}
+.default-banner-info {
+  flex: 1;
+  min-width: 0;
+}
+.default-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 </style>

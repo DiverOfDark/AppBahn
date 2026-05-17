@@ -18,5 +18,8 @@ public enum AuditTargetType {
     RESOURCE,
 
     @JsonProperty("Deployment")
-    DEPLOYMENT
+    DEPLOYMENT,
+
+    @JsonProperty("User")
+    USER
 }

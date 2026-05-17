@@ -257,6 +257,7 @@ components:
       - WorkspaceRegistryUpdated
       - WorkspaceSecurityUpdated
       - WorkspaceUpdated
+      - UserPreferencesUpdated
     AuditActorSource:
       type: string
       enum:
@@ -328,6 +329,7 @@ components:
       - Environment
       - Resource
       - Deployment
+      - User
     BuildLifecycleEvent:
       type: object
       allOf:

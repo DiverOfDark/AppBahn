@@ -118,5 +118,8 @@ public enum AuditAction {
     WORKSPACE_SECURITY_UPDATED,
 
     @JsonProperty("WorkspaceUpdated")
-    WORKSPACE_UPDATED
+    WORKSPACE_UPDATED,
+
+    @JsonProperty("UserPreferencesUpdated")
+    USER_PREFERENCES_UPDATED
 }

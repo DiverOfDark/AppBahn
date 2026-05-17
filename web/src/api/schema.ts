@@ -644,6 +644,22 @@ export interface paths {
     patch: operations['updateGroupMapping']
     trace?: never
   }
+  '/users/me/preferences': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getUserPreferences']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: operations['updateUserPreferences']
+    trace?: never
+  }
   '/resources/{slug}': {
     parameters: {
       query?: never
@@ -1647,6 +1663,12 @@ export interface components {
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
     }
+    UpdateUserPreferencesRequest: {
+      defaultWorkspaceSlug?: string
+    }
+    UserPreferences: {
+      defaultWorkspaceSlug?: string
+    }
     CommandOverride: {
       command?: string[]
       args?: string[]
@@ -1833,6 +1855,7 @@ export interface components {
       | 'WorkspaceRegistryUpdated'
       | 'WorkspaceSecurityUpdated'
       | 'WorkspaceUpdated'
+      | 'UserPreferencesUpdated'
     /** @enum {string} */
     AuditActorSource: 'Api' | 'Token' | 'Kubectl' | 'System'
     /** @enum {string} */
@@ -1871,7 +1894,7 @@ export interface components {
       requestId?: string
     }
     /** @enum {string} */
-    AuditTargetType: 'Workspace' | 'Project' | 'Environment' | 'Resource' | 'Deployment'
+    AuditTargetType: 'Workspace' | 'Project' | 'Environment' | 'Resource' | 'Deployment' | 'User'
     PagedAuditLogResponse: {
       /** Format: int32 */
       page?: number
@@ -3691,6 +3714,53 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OidcGroupMapping']
+        }
+      }
+    }
+  }
+  getUserPreferences: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UserPreferences']
+        }
+      }
+    }
+  }
+  updateUserPreferences: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateUserPreferencesRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UserPreferences']
         }
       }
     }

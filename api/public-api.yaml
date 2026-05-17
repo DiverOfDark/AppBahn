@@ -1585,6 +1585,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OidcGroupMapping"
+  /users/me/preferences:
+    get:
+      tags:
+      - Users
+      operationId: getUserPreferences
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferences"
+    patch:
+      tags:
+      - Users
+      operationId: updateUserPreferences
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserPreferencesRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferences"
   /resources/{slug}:
     get:
       tags:
@@ -3583,6 +3620,16 @@ components:
           - ADMIN
           - EDITOR
           - VIEWER
+    UpdateUserPreferencesRequest:
+      type: object
+      properties:
+        defaultWorkspaceSlug:
+          type: string
+    UserPreferences:
+      type: object
+      properties:
+        defaultWorkspaceSlug:
+          type: string
     CommandOverride:
       type: object
       properties:
@@ -3904,6 +3951,7 @@ components:
       - WorkspaceRegistryUpdated
       - WorkspaceSecurityUpdated
       - WorkspaceUpdated
+      - UserPreferencesUpdated
     AuditActorSource:
       type: string
       enum:
@@ -3981,6 +4029,7 @@ components:
       - Environment
       - Resource
       - Deployment
+      - User
     PagedAuditLogResponse:
       type: object
       properties:
