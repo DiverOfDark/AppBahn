@@ -7,7 +7,7 @@ springdoc = "3.0.3"
 fabric8 = "7.6.1"
 josdk-spring-boot = "6.4.1"
 # flyway kept explicit: catalog 12.5.0 is newer than the spring-boot-dependencies BOM value.
-flyway = "12.5.0"
+flyway = "12.6.0"
 uuid-creator = "6.1.1"
 scalar-webmvc = "0.6.30"
 swagger-annotations = "2.2.49"
@@ -17,7 +17,7 @@ okhttp = "5.3.2"
 # Allure splits its SDK (allure-junit5, allure-okhttp3) and CLI (allure-commandline)
 # into independent release trains — the CLI is much newer than the latest SDK.
 allure = "2.34.0"
-allure-cli = "2.39.0"
+allure-cli = "2.40.0"
 # Pinned to the same version Gradle's `jacoco` plugin uses (see backend/build.gradle.kts —
 # `JacocoPluginExtension.toolVersion`). Bump both together; the `.exec` binary format must match
 # the agent that wrote the file, and the agent jar is consumed by the e2e suite to instrument
