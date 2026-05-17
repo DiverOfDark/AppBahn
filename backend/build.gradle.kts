@@ -135,6 +135,7 @@ subprojects {
             dependsOn(stageDockerContext)
         }
 
+        val publishImageFlag = project.providers.gradleProperty("publishImage").isPresent
         tasks.register<com.bmuschko.gradle.docker.tasks.image.DockerPushImage>("dockerPushImage") {
             description = "Push the OCI image (and any extra tags) to the configured registry."
             group = "docker"
@@ -145,7 +146,7 @@ subprojects {
                 password.set(project.providers.gradleProperty("dockerPassword").orElse(""))
             }
             dependsOn(tasks.named("dockerBuildImage"))
-            onlyIf("requires -PpublishImage") { project.hasProperty("publishImage") }
+            onlyIf("requires -PpublishImage") { publishImageFlag }
         }
     }
 
