@@ -86,6 +86,13 @@ public class MemberService {
         return result;
     }
 
+    /**
+     * Adding a member always lands in {@link MemberStatus#PENDING}. The invitee accepts via
+     * {@code InviteService.acceptInvite} (existing users, in their console) or via the
+     * auto-conversion path triggered when a brand-new email first authenticates and a
+     * {@code UserEntity} is provisioned. Adding an existing user directly to active membership
+     * would join them to a workspace without consent.
+     */
     @Transactional
     public AddMemberResponse addMember(String slug, AddMemberRequest req, AuthContext ctx) {
         var ws = findWorkspace(slug);
@@ -97,49 +104,31 @@ public class MemberService {
         }
 
         UserEntity user = userRepository.findByEmail(req.getEmail()).orElse(null);
-
         if (user != null) {
             var existing = memberRepository.findByWorkspaceIdAndUserId(ws.getId(), user.getId());
             if (existing.isPresent()) {
                 throw new ConflictException("User is already a member", List.of(req.getEmail()));
             }
-            var member = new WorkspaceMemberEntity();
-            member.setWorkspaceId(ws.getId());
-            member.setUserId(user.getId());
-            member.setRole(req.getRole().name());
-            memberRepository.save(member);
-
-            auditLogService
-                    .audit(ctx, AuditAction.MEMBER_ADDED)
-                    .target(AuditTargetType.WORKSPACE, ws.getSlug())
-                    .inWorkspace(ws.getId())
-                    .detail("email", req.getEmail())
-                    .detail("role", req.getRole().name())
-                    .save();
-
-            var resp = new AddMemberResponse();
-            resp.setStatus(MemberStatus.ACTIVE);
-            return resp;
-        } else {
-            var invitation = new PendingInvitationEntity();
-            invitation.setWorkspaceId(ws.getId());
-            invitation.setEmail(req.getEmail());
-            invitation.setRole(req.getRole().name());
-            invitation.setInvitedBy(ctx.userId());
-            pendingInvitationRepository.save(invitation);
-
-            auditLogService
-                    .audit(ctx, AuditAction.MEMBER_INVITED)
-                    .target(AuditTargetType.WORKSPACE, ws.getSlug())
-                    .inWorkspace(ws.getId())
-                    .detail("email", req.getEmail())
-                    .detail("role", req.getRole().name())
-                    .save();
-
-            var resp = new AddMemberResponse();
-            resp.setStatus(MemberStatus.PENDING);
-            return resp;
         }
+
+        var invitation = new PendingInvitationEntity();
+        invitation.setWorkspaceId(ws.getId());
+        invitation.setEmail(req.getEmail());
+        invitation.setRole(req.getRole().name());
+        invitation.setInvitedBy(ctx.userId());
+        pendingInvitationRepository.save(invitation);
+
+        auditLogService
+                .audit(ctx, AuditAction.MEMBER_INVITED)
+                .target(AuditTargetType.WORKSPACE, ws.getSlug())
+                .inWorkspace(ws.getId())
+                .detail("email", req.getEmail())
+                .detail("role", req.getRole().name())
+                .save();
+
+        var resp = new AddMemberResponse();
+        resp.setStatus(MemberStatus.PENDING);
+        return resp;
     }
 
     @Transactional
