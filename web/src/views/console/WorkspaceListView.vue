@@ -7,6 +7,7 @@ import CreateDialog from '@/components/CreateDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
+import { useCurrentUser } from '@/composables/useCurrentUser'
 import { formatDateShort } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { initials } from '@/utils/resource'
@@ -37,6 +38,9 @@ const searchQuery = ref('')
 const viewMode = ref<ViewMode>(readSavedView())
 const roleFilter = ref<RoleFilter>('all')
 const { refreshSidebar } = useSidebarRefresh()
+const { user, fetch: fetchCurrentUser } = useCurrentUser()
+
+const userLabel = computed(() => user.value?.name ?? user.value?.email ?? null)
 
 function readSavedView(): ViewMode {
   if (typeof localStorage === 'undefined') return 'cards'
@@ -137,11 +141,16 @@ function onPageChange(p: number) {
   fetchWorkspaces()
 }
 
-onMounted(fetchWorkspaces)
+onMounted(() => {
+  fetchWorkspaces()
+  fetchCurrentUser()
+})
 </script>
 
 <template>
   <div class="workspaces-view">
+    <div v-if="userLabel" class="signed-in-line">Signed in as {{ userLabel }}</div>
+
     <PageHeader title="Workspaces">
       <template #subtitle>
         <span v-if="!loading && workspaces.length > 0">
@@ -321,6 +330,14 @@ onMounted(fetchWorkspaces)
 <style scoped>
 .workspaces-view {
   display: contents;
+}
+
+.signed-in-line {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
 }
 
 .sub-strong {
