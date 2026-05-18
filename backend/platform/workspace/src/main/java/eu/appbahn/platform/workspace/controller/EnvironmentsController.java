@@ -16,6 +16,7 @@ import eu.appbahn.platform.api.environment.UpdateEnvironmentRequest;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.workspace.service.EnvironmentService;
 import eu.appbahn.platform.workspace.service.EnvironmentTokenService;
+import eu.appbahn.shared.crd.NodePool;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,11 @@ public class EnvironmentsController implements EnvironmentsApi {
     @Override
     public ResponseEntity<Environment> getEnvironment(String slug) {
         return ResponseEntity.ok(environmentService.getBySlug(slug, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<List<NodePool>> listEnvironmentNodePools(String slug) {
+        return ResponseEntity.ok(environmentService.listNodePools(slug, AuthContextHolder.get()));
     }
 
     @Override

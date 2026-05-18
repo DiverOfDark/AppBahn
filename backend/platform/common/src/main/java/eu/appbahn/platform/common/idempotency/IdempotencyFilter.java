@@ -156,9 +156,11 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         } finally {
             int status = responseWrapper.getStatus();
             byte[] capturedBody = responseWrapper.getContentAsByteArray();
-            // Always copy first so the client sees the body regardless of caching outcome.
-            responseWrapper.copyBodyToResponse();
 
+            // Persist before flushing the body to the client: a retry that arrives the moment
+            // the first response lands must find the row already committed, otherwise the
+            // second call re-runs the handler and creates a duplicate. Persist failures are
+            // swallowed in persist(), so this never blocks the response.
             if (status >= 200 && status < 300 && capturedBody.length <= IdempotencyConstants.MAX_BODY_BYTES) {
                 persist(key, actorId, request, fingerprint, status, capturedBody, responseWrapper, now);
             } else if (capturedBody.length > IdempotencyConstants.MAX_BODY_BYTES) {
@@ -168,6 +170,8 @@ public class IdempotencyFilter extends OncePerRequestFilter {
                         IdempotencyConstants.MAX_BODY_BYTES);
                 response.setHeader(IdempotencyConstants.REPLAYED_HEADER, "false");
             }
+
+            responseWrapper.copyBodyToResponse();
         }
     }
 

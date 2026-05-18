@@ -36,6 +36,7 @@ export default defineConfig({
           items: [
             { label: 'Concepts', slug: 'docs/concepts' },
             { label: 'Resource Types', slug: 'docs/resource-types' },
+            { label: 'Scaling and Placement', slug: 'docs/scaling-and-placement' },
           ],
         },
         {

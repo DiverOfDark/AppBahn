@@ -1156,6 +1156,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/environments/{slug}/node-pools': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listEnvironmentNodePools']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/auth/login': {
     parameters: {
       query?: never
@@ -1531,6 +1547,10 @@ export interface components {
       minReplicas?: number
       /** Format: int32 */
       maxReplicas?: number
+      nodePool?: string
+      /** @enum {string} */
+      deployStrategy?: 'Recreate' | 'Rolling'
+      pdb?: components['schemas']['PdbConfig']
     }
     HttpGetAction: {
       path?: string
@@ -1590,6 +1610,10 @@ export interface components {
     }
     NetworkingConfig: {
       ports?: components['schemas']['PortConfig'][]
+    }
+    PdbConfig: {
+      /** Format: int32 */
+      minAvailable?: number
     }
     PortConfig: {
       /** Format: int32 */
@@ -1792,6 +1816,26 @@ export interface components {
       kubeconfigSecret?: string
       /** Format: date-time */
       createdAt?: string
+      config?: components['schemas']['ClusterConfig']
+    }
+    ClusterConfig: {
+      nodePools?: components['schemas']['NodePool'][]
+    }
+    NodePool: {
+      name?: string
+      displayName?: string
+      nodeSelector?: {
+        [key: string]: string
+      }
+      tolerations?: components['schemas']['Toleration'][]
+    }
+    Toleration: {
+      key?: string
+      operator?: string
+      value?: string
+      effect?: string
+      /** Format: int64 */
+      tolerationSeconds?: number
     }
     UpdateWorkspaceRequest: {
       name?: string
@@ -1954,6 +1998,7 @@ export interface components {
     }
     UpdateClusterRequest: {
       description?: string
+      config?: components['schemas']['ClusterConfig']
     }
     PagedWorkspaceResponse: {
       /** Format: int32 */
@@ -4983,6 +5028,28 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['BuildDetectionJob']
+        }
+      }
+    }
+  }
+  listEnvironmentNodePools: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['NodePool'][]
         }
       }
     }

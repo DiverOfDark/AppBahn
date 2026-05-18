@@ -63,6 +63,10 @@ import org.springframework.stereotype.Component;
                     name = "ingress",
                     type = IngressDependentResource.class,
                     reconcilePrecondition = ExposeIngressCondition.class),
+            @Dependent(
+                    name = "pdb",
+                    type = PdbDependentResource.class,
+                    reconcilePrecondition = PdbReconcileCondition.class),
         })
 public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<ResourceCrd> {
 

@@ -141,6 +141,11 @@ spec:
                         - type: integer
                         - type: string
                         x-kubernetes-int-or-string: true
+                      deployStrategy:
+                        enum:
+                        - Recreate
+                        - Rolling
+                        type: string
                       maxReplicas:
                         minimum: 0.0
                         type: integer
@@ -152,6 +157,14 @@ spec:
                       minReplicas:
                         minimum: 0.0
                         type: integer
+                      nodePool:
+                        type: string
+                      pdb:
+                        properties:
+                          minAvailable:
+                            minimum: 0.0
+                            type: integer
+                        type: object
                     type: object
                   networking:
                     properties:

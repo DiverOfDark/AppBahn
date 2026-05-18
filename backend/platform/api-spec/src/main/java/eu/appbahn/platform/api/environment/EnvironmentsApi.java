@@ -6,6 +6,7 @@ import eu.appbahn.platform.api.EnvironmentToken;
 import eu.appbahn.platform.api.Quota;
 import eu.appbahn.platform.api.RegistryConfig;
 import eu.appbahn.platform.api.UpdateMemberRequest;
+import eu.appbahn.shared.crd.NodePool;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -146,6 +147,24 @@ public interface EnvironmentsApi {
             value = "/environments/{slug}/tokens",
             produces = {"application/json"})
     ResponseEntity<List<EnvironmentToken>> listEnvironmentTokens(@PathVariable("slug") String slug);
+    /**
+     * GET /environments/{slug}/node-pools : List node pools available on the environment's target cluster
+     *
+     * <p>Returns the catalogue of node pools the operator stamps onto pods scheduled on this
+     * environment. Empty list when the target cluster declares none (any {@code nodePool} pin is
+     * then rejected on resource create).
+     *
+     * @param slug  (required)
+     * @return Success (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/environments/{slug}/node-pools",
+            produces = {"application/json"})
+    ResponseEntity<List<NodePool>> listEnvironmentNodePools(@PathVariable("slug") String slug);
     /**
      * GET /environments : List environments
      *

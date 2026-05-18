@@ -6,16 +6,20 @@
  * `./create-resource/`. This file owns layout, header/breadcrumb wiring,
  * error display, and the submit action bar.
  */
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { useResourceCreateForm } from '@/composables/resource/useResourceCreateForm'
+import { api } from '@/api/client'
+import type { components } from '@/api/schema'
 import SourcePicker from './create-resource/SourcePicker.vue'
 import KindPicker from './create-resource/KindPicker.vue'
 import ResourceForm from './create-resource/ResourceForm.vue'
 import CreateSummary from './create-resource/CreateSummary.vue'
+
+type NodePool = components['schemas']['NodePool']
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +27,27 @@ const router = useRouter()
 const wsSlug = computed(() => route.params.wsSlug as string)
 const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
+
+const nodePools = ref<NodePool[]>([])
+
+async function fetchNodePools() {
+  if (!envSlug.value) {
+    nodePools.value = []
+    return
+  }
+  try {
+    const { data } = await api.GET('/environments/{slug}/node-pools', {
+      params: { path: { slug: envSlug.value } },
+    })
+    nodePools.value = data ?? []
+  } catch {
+    // Node-pool catalogue is optional. On failure the Placement & rollout
+    // panel auto-hides; the resource still creates with any-pool placement.
+    nodePools.value = []
+  }
+}
+
+watch(envSlug, fetchNodePools, { immediate: true })
 
 const {
   source,
@@ -34,6 +59,9 @@ const {
   memory,
   minReplicas,
   maxReplicas,
+  nodePool,
+  deployStrategy,
+  pdbMinAvailable,
   ports,
   envVars,
   health,
@@ -84,6 +112,9 @@ const {
             v-model:memory="memory"
             v-model:min-replicas="minReplicas"
             v-model:max-replicas="maxReplicas"
+            v-model:node-pool="nodePool"
+            v-model:deploy-strategy="deployStrategy"
+            v-model:pdb-min-available="pdbMinAvailable"
             v-model:ports="ports"
             v-model:env-vars="envVars"
             v-model:health="health"
@@ -91,6 +122,7 @@ const {
             :proj-slug="projSlug"
             :env-slug="envSlug"
             :full-image="fullImage"
+            :node-pools="nodePools"
           />
         </div>
 

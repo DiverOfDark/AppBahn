@@ -5,15 +5,22 @@ import EnvVarsEditor, { type EnvVarRow } from '@/components/resource/EnvVarsEdit
 import HealthCheckEditor, {
   type HealthCheckState,
 } from '@/components/resource/HealthCheckEditor.vue'
-import type { SourceKind } from '@/composables/resource/useResourceCreateForm'
+import type { SourceKind, DeployStrategy } from '@/composables/resource/useResourceCreateForm'
+import type { components } from '@/api/schema'
 import { INSTANCE_SIZE_PRESETS, detectPreset, type PresetId } from '@/utils/instanceSizePresets'
 
-const props = defineProps<{
-  source: SourceKind
-  projSlug: string
-  envSlug: string
-  fullImage: string
-}>()
+type NodePoolOption = components['schemas']['NodePool']
+
+const props = withDefaults(
+  defineProps<{
+    source: SourceKind
+    projSlug: string
+    envSlug: string
+    fullImage: string
+    nodePools?: NodePoolOption[]
+  }>(),
+  { nodePools: () => [] },
+)
 
 const name = defineModel<string>('name', { required: true })
 const image = defineModel<string>('image', { required: true })
@@ -22,6 +29,9 @@ const cpu = defineModel<number>('cpu', { required: true })
 const memory = defineModel<number>('memory', { required: true })
 const minReplicas = defineModel<number>('minReplicas', { required: true })
 const maxReplicas = defineModel<number | undefined>('maxReplicas', { required: true })
+const nodePool = defineModel<string | undefined>('nodePool', { required: true })
+const deployStrategy = defineModel<DeployStrategy>('deployStrategy', { required: true })
+const pdbMinAvailable = defineModel<number | undefined>('pdbMinAvailable', { required: true })
 const ports = defineModel<PortRow[]>('ports', { required: true })
 const envVars = defineModel<EnvVarRow[]>('envVars', { required: true })
 const health = defineModel<HealthCheckState>('health', { required: true })
@@ -229,6 +239,95 @@ watch([cpu, memory], ([newCpu, newMem]) => {
               Public → HTTP Ingress with auto-domain · TCP → load-balancer for raw TCP · Private →
               in-cluster only.
             </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="nodePools.length > 0" class="panel">
+      <div class="panel-h">
+        <h3>Placement &amp; rollout</h3>
+        <p>Pick a node pool and choose how K8s rolls new revisions.</p>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Node pool</span>
+            <span class="desc">where pods land</span>
+          </div>
+          <div class="field-c">
+            <div class="preset-row">
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: !nodePool }"
+                @click="nodePool = undefined"
+              >
+                any
+              </button>
+              <button
+                v-for="pool in nodePools"
+                :key="pool.name"
+                type="button"
+                class="preset-chip"
+                :class="{ on: nodePool === pool.name }"
+                @click="nodePool = pool.name"
+              >
+                {{ pool.displayName ?? pool.name }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Deploy strategy</span>
+            <span class="desc">rolling or recreate</span>
+          </div>
+          <div class="field-c">
+            <div class="preset-row">
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: deployStrategy === 'Rolling' }"
+                @click="deployStrategy = 'Rolling'"
+              >
+                rolling
+              </button>
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: deployStrategy === 'Recreate' }"
+                @click="deployStrategy = 'Recreate'"
+              >
+                recreate
+              </button>
+            </div>
+            <span class="hint">
+              Rolling = swap pods one at a time. Recreate = tear all down before starting any new.
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Min available</span>
+            <span class="desc">pod disruption budget</span>
+          </div>
+          <div class="field-c">
+            <div class="row">
+              <input
+                v-model.number="pdbMinAvailable"
+                type="number"
+                class="form-input field-num"
+                min="0"
+                max="50"
+                placeholder="off"
+                aria-label="Pod disruption budget minAvailable"
+              />
+              <span class="hint">
+                Blank disables the PDB. Set to keep at least N replicas during voluntary
+                disruptions.
+              </span>
+            </div>
           </div>
         </div>
       </div>

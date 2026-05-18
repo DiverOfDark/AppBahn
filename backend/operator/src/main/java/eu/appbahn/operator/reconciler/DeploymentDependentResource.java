@@ -1,8 +1,11 @@
 package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.reconciler.imagesource.ResourceReleaseResolver;
+import eu.appbahn.operator.tunnel.AdminConfigCache;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.CommandOverride;
+import eu.appbahn.shared.crd.DeployStrategy;
+import eu.appbahn.shared.crd.NodePool;
 import eu.appbahn.shared.crd.ResourceConfig;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.ResourcePhase;
@@ -11,6 +14,7 @@ import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvFromSourceBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.TolerationBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -20,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @KubernetesDependent
 public class DeploymentDependentResource extends CRUDKubernetesDependentResource<Deployment, ResourceCrd> {
@@ -28,10 +33,12 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
     private static final Quantity DEFAULT_MEMORY = new Quantity("256Mi");
 
     private final OperatorConfig operatorConfig;
+    private final AdminConfigCache adminConfigCache;
 
-    public DeploymentDependentResource(OperatorConfig operatorConfig) {
+    public DeploymentDependentResource(OperatorConfig operatorConfig, AdminConfigCache adminConfigCache) {
         super(Deployment.class);
         this.operatorConfig = operatorConfig;
+        this.adminConfigCache = adminConfigCache;
     }
 
     @Override
@@ -81,6 +88,11 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 ? override.getArgs()
                 : null;
 
+        DeployStrategy deployStrategy = hosting != null ? hosting.effectiveDeployStrategy() : DeployStrategy.ROLLING;
+        Optional<NodePool> matchingPool = hosting != null && hosting.getNodePool() != null
+                ? resolveNodePool(hosting.getNodePool())
+                : Optional.empty();
+
         var deploymentBuilder = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(name)
@@ -90,6 +102,9 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .withNewSpec()
                 .withReplicas(replicas)
                 .withProgressDeadlineSeconds(120)
+                .withNewStrategy()
+                .withType(deployStrategy == DeployStrategy.RECREATE ? "Recreate" : "RollingUpdate")
+                .endStrategy()
                 .withNewSelector()
                 .withMatchLabels(Labels.forResource(name))
                 .endSelector()
@@ -145,8 +160,41 @@ public class DeploymentDependentResource extends CRUDKubernetesDependentResource
                 .endSpec();
 
         addHealthProbes(deploymentBuilder, config, port);
+        applyNodePool(deploymentBuilder, matchingPool.orElse(null));
 
         return deploymentBuilder.build();
+    }
+
+    private Optional<NodePool> resolveNodePool(String name) {
+        return adminConfigCache.snapshot().stream()
+                .flatMap(s -> {
+                    List<NodePool> pools = s.getNodePools();
+                    return pools == null ? java.util.stream.Stream.<NodePool>empty() : pools.stream();
+                })
+                .filter(p -> name.equals(p.getName()))
+                .findFirst();
+    }
+
+    private void applyNodePool(DeploymentBuilder builder, NodePool pool) {
+        if (pool == null) {
+            return;
+        }
+        var spec = builder.editSpec().editTemplate().editSpec();
+        if (pool.getNodeSelector() != null && !pool.getNodeSelector().isEmpty()) {
+            spec.withNodeSelector(pool.getNodeSelector());
+        }
+        if (pool.getTolerations() != null && !pool.getTolerations().isEmpty()) {
+            spec.withTolerations(pool.getTolerations().stream()
+                    .map(t -> new TolerationBuilder()
+                            .withKey(t.getKey())
+                            .withOperator(t.getOperator())
+                            .withValue(t.getValue())
+                            .withEffect(t.getEffect())
+                            .withTolerationSeconds(t.getTolerationSeconds())
+                            .build())
+                    .toList());
+        }
+        spec.endSpec().endTemplate().endSpec();
     }
 
     private void addHealthProbes(DeploymentBuilder builder, ResourceConfig config, Integer port) {

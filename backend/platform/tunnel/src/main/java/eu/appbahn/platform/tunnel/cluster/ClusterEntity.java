@@ -1,5 +1,6 @@
 package eu.appbahn.platform.tunnel.cluster;
 
+import eu.appbahn.shared.crd.ClusterConfig;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +11,8 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -56,4 +59,12 @@ public class ClusterEntity {
 
     @Column(name = "last_admission_miss_at")
     private Instant lastAdmissionMissAt;
+
+    /**
+     * Admin-managed per-cluster configuration (node-pool catalogue, …). Typed POJO persisted as
+     * JSONB so the operator + SPA can evolve the shape without a schema migration.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "config", columnDefinition = "jsonb")
+    private ClusterConfig config;
 }

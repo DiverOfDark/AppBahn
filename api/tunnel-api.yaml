@@ -482,6 +482,15 @@ components:
         maxReplicas:
           type: integer
           format: int32
+        nodePool:
+          type: string
+        deployStrategy:
+          type: string
+          enum:
+          - Recreate
+          - Rolling
+        pdb:
+          $ref: "#/components/schemas/PdbConfig"
     HttpGetAction:
       type: object
       properties:
@@ -789,6 +798,12 @@ components:
           type: string
         uid:
           type: string
+    PdbConfig:
+      type: object
+      properties:
+        minAvailable:
+          type: integer
+          format: int32
     PendingBuild:
       type: object
       properties:
@@ -1127,6 +1142,10 @@ components:
           type: string
         namespacePrefix:
           type: string
+        nodePools:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodePool"
     EnvironmentEntry:
       type: object
       properties:
@@ -1159,6 +1178,21 @@ components:
           $ref: "#/components/schemas/AdminConfigPush"
         quotaRbac:
           $ref: "#/components/schemas/QuotaRbacCachePush"
+    NodePool:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        tolerations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Toleration"
     ProjectEntry:
       type: object
       properties:
@@ -1213,6 +1247,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WorkspaceEntry"
+    Toleration:
+      type: object
+      properties:
+        key:
+          type: string
+        operator:
+          type: string
+        value:
+          type: string
+        effect:
+          type: string
+        tolerationSeconds:
+          type: integer
+          format: int64
     WorkspaceEntry:
       type: object
       properties:

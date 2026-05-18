@@ -90,6 +90,26 @@ public class ResourceConfig {
         private Integer maxReplicas;
 
         /**
+         * Name of the {@link NodePool} (declared in the target cluster's {@link ClusterConfig})
+         * to schedule pods on. The operator stamps the pool's nodeSelector + tolerations onto
+         * the pod template. Null means "no placement constraint" — pods land on any schedulable
+         * node. Validated server-side against the cluster's catalogue on create/update.
+         */
+        private String nodePool;
+
+        /**
+         * Deployment update strategy. Defaults to {@link DeployStrategy#ROLLING}.
+         */
+        private DeployStrategy deployStrategy;
+
+        /**
+         * Optional pod-disruption budget. Null means "no PDB managed by the operator"; setting
+         * {@link PdbConfig#getMinAvailable()} causes the operator to reconcile a
+         * {@code policy/v1 PodDisruptionBudget} alongside the Deployment.
+         */
+        private PdbConfig pdb;
+
+        /**
          * Returns the effective replica count for quota calculation.
          * Uses maxReplicas (worst-case for autoscaling) if set, otherwise replicas.
          */
@@ -99,6 +119,12 @@ public class ResourceConfig {
                 return maxReplicas;
             }
             return minReplicas;
+        }
+
+        /** Resolves to {@link DeployStrategy#ROLLING} when {@link #deployStrategy} is unset. */
+        @JsonIgnore
+        public DeployStrategy effectiveDeployStrategy() {
+            return deployStrategy != null ? deployStrategy : DeployStrategy.ROLLING;
         }
     }
 

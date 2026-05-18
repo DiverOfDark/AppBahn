@@ -203,7 +203,7 @@ public class OperatorTunnelController implements TunnelApi {
 
         SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT_MS);
         QuotaRbacCachePush initialQuota = snapshotBuilder.buildFor(clusterName);
-        AdminConfigPush initialAdmin = adminConfigBuilder.build();
+        AdminConfigPush initialAdmin = adminConfigBuilder.buildFor(clusterName);
 
         // Send the HelloAck synchronously on the request thread so clients see it before
         // the handler returns. Any subsequent frames come from the drain-loop thread.
@@ -388,7 +388,7 @@ public class OperatorTunnelController implements TunnelApi {
                         lastSentQuotaRbacRevision = emittedQuota;
                         lastWriteAt = System.currentTimeMillis();
                     }
-                    long emittedAdmin = maybePushAdminConfig(emitter, lastSentAdminConfigRevision);
+                    long emittedAdmin = maybePushAdminConfig(emitter, clusterName, lastSentAdminConfigRevision);
                     if (emittedAdmin != lastSentAdminConfigRevision) {
                         lastSentAdminConfigRevision = emittedAdmin;
                         lastWriteAt = System.currentTimeMillis();
@@ -469,8 +469,8 @@ public class OperatorTunnelController implements TunnelApi {
         return snap.getRevision();
     }
 
-    private long maybePushAdminConfig(SseEmitter emitter, long lastSentRevision) {
-        AdminConfigPush cfg = adminConfigBuilder.build();
+    private long maybePushAdminConfig(SseEmitter emitter, String clusterName, long lastSentRevision) {
+        AdminConfigPush cfg = adminConfigBuilder.buildFor(clusterName);
         if (cfg.getRevision() == lastSentRevision) {
             return lastSentRevision;
         }

@@ -50,6 +50,12 @@ val sharedCrdSchemaMappings = mapOf(
     "ReplicaStatus" to "eu.appbahn.shared.crd.ResourceStatusDetail.ReplicaStatus",
     "ResourceCondition" to "eu.appbahn.shared.crd.ResourceStatusDetail.ResourceCondition",
     "CustomDomainStatus" to "eu.appbahn.shared.crd.ResourceStatusDetail.CustomDomainStatus",
+    // Hosting extensions (node-pool / deploy-strategy / PDB)
+    "NodePool" to "eu.appbahn.shared.crd.NodePool",
+    "ClusterConfig" to "eu.appbahn.shared.crd.ClusterConfig",
+    "Toleration" to "eu.appbahn.shared.crd.Toleration",
+    "PdbConfig" to "eu.appbahn.shared.crd.PdbConfig",
+    "DeployStrategy" to "eu.appbahn.shared.crd.DeployStrategy",
     // Release / ImageSource binding
     "Release" to "eu.appbahn.shared.crd.Release",
     "FromImageSource" to "eu.appbahn.shared.crd.Release.FromImageSource",

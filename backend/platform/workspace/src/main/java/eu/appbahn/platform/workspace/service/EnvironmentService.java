@@ -24,6 +24,7 @@ import eu.appbahn.platform.workspace.repository.EnvironmentAggregateStatusReposi
 import eu.appbahn.platform.workspace.repository.EnvironmentMemberOverrideRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
+import eu.appbahn.shared.crd.NodePool;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
@@ -45,6 +46,7 @@ public class EnvironmentService {
     private final NamespaceService namespaceService;
     private final NamespaceCrdClient namespaceCrdClient;
     private final TargetClusterResolver targetClusterResolver;
+    private final NodePoolCatalogue nodePoolCatalogue;
     private final AuditLogService auditLogService;
 
     public EnvironmentService(
@@ -56,6 +58,7 @@ public class EnvironmentService {
             NamespaceService namespaceService,
             NamespaceCrdClient namespaceCrdClient,
             TargetClusterResolver targetClusterResolver,
+            NodePoolCatalogue nodePoolCatalogue,
             AuditLogService auditLogService) {
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
@@ -65,6 +68,7 @@ public class EnvironmentService {
         this.namespaceService = namespaceService;
         this.namespaceCrdClient = namespaceCrdClient;
         this.targetClusterResolver = targetClusterResolver;
+        this.nodePoolCatalogue = nodePoolCatalogue;
         this.auditLogService = auditLogService;
     }
 
@@ -123,6 +127,17 @@ public class EnvironmentService {
                 .map(ProjectEntity::getSlug)
                 .orElse(null);
         return EntityMapper.toApi(entity, projectSlug);
+    }
+
+    public List<NodePool> listNodePools(String slug, AuthContext ctx) {
+        var entity = environmentRepository
+                .findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Environment not found: " + slug));
+        permissionService.requireEnvironmentRole(ctx, entity.getId(), MemberRole.VIEWER);
+        if (entity.getTargetCluster() == null || entity.getTargetCluster().isBlank()) {
+            return List.of();
+        }
+        return nodePoolCatalogue.nodePools(entity.getTargetCluster());
     }
 
     @Transactional

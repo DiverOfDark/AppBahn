@@ -2,6 +2,7 @@ package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobBuilder;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildJobDependentResource;
+import eu.appbahn.operator.tunnel.AdminConfigCache;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import java.util.function.Consumer;
 import org.springframework.context.ApplicationContext;
@@ -28,8 +29,9 @@ public class DependentResourceConfig {
 
     @Bean
     @Scope("prototype")
-    public DeploymentDependentResource deploymentDependentResource(OperatorConfig operatorConfig) {
-        return new DeploymentDependentResource(operatorConfig);
+    public DeploymentDependentResource deploymentDependentResource(
+            OperatorConfig operatorConfig, AdminConfigCache adminConfigCache) {
+        return new DeploymentDependentResource(operatorConfig, adminConfigCache);
     }
 
     @Bean
@@ -42,5 +44,11 @@ public class DependentResourceConfig {
     @Scope("prototype")
     public BuildJobDependentResource buildJobDependentResource(BuildJobBuilder jobBuilder) {
         return new BuildJobDependentResource(jobBuilder);
+    }
+
+    @Bean
+    @Scope("prototype")
+    public PdbDependentResource pdbDependentResource() {
+        return new PdbDependentResource();
     }
 }

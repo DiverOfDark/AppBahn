@@ -2708,6 +2708,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BuildDetectionJob"
+  /environments/{slug}/node-pools:
+    get:
+      tags:
+      - Environments
+      operationId: listEnvironmentNodePools
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NodePool"
   /auth/login:
     get:
       tags:
@@ -3367,6 +3387,15 @@ components:
         maxReplicas:
           type: integer
           format: int32
+        nodePool:
+          type: string
+        deployStrategy:
+          type: string
+          enum:
+          - Recreate
+          - Rolling
+        pdb:
+          $ref: "#/components/schemas/PdbConfig"
     HttpGetAction:
       type: object
       properties:
@@ -3476,6 +3505,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PortConfig"
+    PdbConfig:
+      type: object
+      properties:
+        minAvailable:
+          type: integer
+          format: int32
     PortConfig:
       type: object
       properties:
@@ -3857,6 +3892,44 @@ components:
         createdAt:
           type: string
           format: date-time
+        config:
+          $ref: "#/components/schemas/ClusterConfig"
+    ClusterConfig:
+      type: object
+      properties:
+        nodePools:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodePool"
+    NodePool:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        nodeSelector:
+          type: object
+          additionalProperties:
+            type: string
+        tolerations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Toleration"
+    Toleration:
+      type: object
+      properties:
+        key:
+          type: string
+        operator:
+          type: string
+        value:
+          type: string
+        effect:
+          type: string
+        tolerationSeconds:
+          type: integer
+          format: int64
     UpdateWorkspaceRequest:
       type: object
       properties:
@@ -4169,6 +4242,8 @@ components:
       properties:
         description:
           type: string
+        config:
+          $ref: "#/components/schemas/ClusterConfig"
     PagedWorkspaceResponse:
       type: object
       properties:

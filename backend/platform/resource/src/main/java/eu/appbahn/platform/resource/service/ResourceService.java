@@ -25,6 +25,7 @@ import eu.appbahn.platform.resource.repository.ResourceCacheRepository;
 import eu.appbahn.platform.workspace.service.ClusterLivenessProbe;
 import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
 import eu.appbahn.platform.workspace.service.NamespaceService;
+import eu.appbahn.platform.workspace.service.NodePoolCatalogue;
 import eu.appbahn.platform.workspace.service.PermissionService;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceConfig;
@@ -77,6 +78,7 @@ public class ResourceService {
     private final ResourceCrdClient crdClient;
     private final ResourceCrdLookup crdLookup;
     private final ObjectMapper objectMapper;
+    private final NodePoolCatalogue nodePoolCatalogue;
     private final String baseDomain;
 
     public ResourceService(
@@ -94,6 +96,7 @@ public class ResourceService {
             ResourceCrdClient crdClient,
             ResourceCrdLookup crdLookup,
             ObjectMapper objectMapper,
+            NodePoolCatalogue nodePoolCatalogue,
             @org.springframework.beans.factory.annotation.Value("${platform.base-domain:appbahn.local}")
                     String baseDomain) {
         this.resourceCacheRepository = resourceCacheRepository;
@@ -110,6 +113,7 @@ public class ResourceService {
         this.crdClient = crdClient;
         this.crdLookup = crdLookup;
         this.objectMapper = objectMapper;
+        this.nodePoolCatalogue = nodePoolCatalogue;
         this.baseDomain = baseDomain;
     }
 
@@ -134,6 +138,7 @@ public class ResourceService {
         // There's a small soft-overshoot window between this check and the operator's first sync.
         quotaService.checkQuota(env.getId(), null, resourceConfig);
         licenseService.checkLicense();
+        validateNodePool(resourceConfig, env.getTargetCluster());
 
         // Reject synchronously if the target cluster is unreachable.
         clusterLivenessProbe.requireReachable(env.getTargetCluster());
@@ -208,6 +213,7 @@ public class ResourceService {
             if (ResourceConfigMerger.hasHostingChange(oldConfig, mergedConfig)) {
                 quotaService.checkQuota(env.getId(), slug, mergedConfig);
             }
+            validateNodePool(mergedConfig, env.getTargetCluster());
         }
 
         List<ResourceSpec.LinkConfig> mergedLinks = null;
@@ -453,6 +459,23 @@ public class ResourceService {
             } else {
                 port.setDomain(slug + "-" + port.getPort() + "." + baseDomain);
             }
+        }
+    }
+
+    private void validateNodePool(ResourceConfig resourceConfig, String targetCluster) {
+        if (resourceConfig == null
+                || resourceConfig.getHosting() == null
+                || resourceConfig.getHosting().getNodePool() == null) {
+            return;
+        }
+        String pool = resourceConfig.getHosting().getNodePool();
+        if (pool.isBlank()) {
+            throw new ValidationException("hosting.nodePool must not be blank");
+        }
+        var declared = nodePoolCatalogue.nodePoolNames(targetCluster);
+        if (!declared.contains(pool)) {
+            throw new ValidationException("Unknown node pool '" + pool + "' on cluster '" + targetCluster
+                    + "'. Available: " + (declared.isEmpty() ? "<none>" : String.join(", ", declared)));
         }
     }
 

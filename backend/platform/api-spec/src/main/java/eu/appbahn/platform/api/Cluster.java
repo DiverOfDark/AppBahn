@@ -1,5 +1,6 @@
 package eu.appbahn.platform.api;
 
+import eu.appbahn.shared.crd.ClusterConfig;
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import lombok.Data;
@@ -20,4 +21,9 @@ public class Cluster {
     @Valid
     @Nullable
     private OffsetDateTime createdAt;
+
+    /** Admin-managed cluster config (node-pool catalogue, …). */
+    @Valid
+    @Nullable
+    private ClusterConfig config;
 }

@@ -10,6 +10,7 @@ import { asOptionalInt, buildProbe } from '@/utils/resource'
 type CreateResourceRequest = components['schemas']['CreateResourceRequest']
 type HostingConfig = components['schemas']['HostingConfig']
 type ResourceConfig = components['schemas']['ResourceConfig']
+export type DeployStrategy = NonNullable<HostingConfig['deployStrategy']>
 
 export type SourceKind = 'docker' | 'git' | 'promote'
 export type Kind = 'resource' | 'cronjob'
@@ -51,6 +52,9 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
   const memory = ref(128)
   const minReplicas = ref(1)
   const maxReplicas = ref<number | undefined>(undefined)
+  const nodePool = ref<string | undefined>(undefined)
+  const deployStrategy = ref<DeployStrategy>('Rolling')
+  const pdbMinAvailable = ref<number | undefined>(undefined)
 
   let portRowSeq = 0
   const ports = ref<PortRow[]>([{ id: ++portRowSeq, port: 80, expose: 'Ingress' }])
@@ -83,6 +87,9 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     memory.value = 256
     minReplicas.value = 1
     maxReplicas.value = undefined
+    nodePool.value = undefined
+    deployStrategy.value = 'Rolling'
+    pdbMinAvailable.value = undefined
     ports.value = [{ id: ++portRowSeq, port: 80, expose: 'Ingress' }]
     envVars.value = []
     health.value = defaultHealth()
@@ -124,6 +131,10 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
         } else if (maxR < minReplicas.value) {
           result.push('Max replicas cannot be less than the minimum replicas')
         }
+      }
+      const pdbMin = asOptionalInt(pdbMinAvailable.value)
+      if (pdbMin !== undefined && (!Number.isInteger(pdbMin) || pdbMin < 0)) {
+        result.push('Pod disruption budget minAvailable, when set, must be a non-negative integer')
       }
       const seen = new Set<number>()
       for (const row of ports.value) {
@@ -203,6 +214,16 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
         if (maxR !== undefined) {
           hosting.maxReplicas = maxR
         }
+        if (nodePool.value && nodePool.value.trim()) {
+          hosting.nodePool = nodePool.value.trim()
+        }
+        if (deployStrategy.value && deployStrategy.value !== 'Rolling') {
+          hosting.deployStrategy = deployStrategy.value
+        }
+        const pdbMin = asOptionalInt(pdbMinAvailable.value)
+        if (pdbMin !== undefined) {
+          hosting.pdb = { minAvailable: pdbMin }
+        }
         const config: ResourceConfig = {
           hosting,
           networking: {
@@ -243,6 +264,9 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     memory,
     minReplicas,
     maxReplicas,
+    nodePool,
+    deployStrategy,
+    pdbMinAvailable,
     ports,
     envVars,
     health,
