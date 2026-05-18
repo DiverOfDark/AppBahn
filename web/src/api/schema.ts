@@ -1375,6 +1375,8 @@ export interface components {
       approvalGates?: components['schemas']['ApprovalGatesConfig']
       quota?: components['schemas']['Quota']
       registry?: components['schemas']['RegistryConfig']
+      /** @enum {string} */
+      aggregateStatus?: 'Failed' | 'Degraded' | 'Pending' | 'Healthy' | 'Unknown'
       /** Format: date-time */
       createdAt?: string
       /** Format: date-time */

@@ -3074,6 +3074,14 @@ components:
           $ref: "#/components/schemas/Quota"
         registry:
           $ref: "#/components/schemas/RegistryConfig"
+        aggregateStatus:
+          type: string
+          enum:
+          - Failed
+          - Degraded
+          - Pending
+          - Healthy
+          - Unknown
         createdAt:
           type: string
           format: date-time

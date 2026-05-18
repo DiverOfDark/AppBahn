@@ -4,6 +4,7 @@ import eu.appbahn.platform.api.ApprovalGatesConfig;
 import eu.appbahn.platform.api.AuditAction;
 import eu.appbahn.platform.api.AuditTargetType;
 import eu.appbahn.platform.api.Environment;
+import eu.appbahn.platform.api.EnvironmentAggregateStatus;
 import eu.appbahn.platform.api.Quota;
 import eu.appbahn.platform.api.RegistryConfig;
 import eu.appbahn.platform.api.UpdateMemberRequest;
@@ -19,12 +20,14 @@ import eu.appbahn.platform.common.util.PaginationUtil;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
 import eu.appbahn.platform.workspace.entity.EnvironmentMemberOverrideEntity;
 import eu.appbahn.platform.workspace.entity.ProjectEntity;
+import eu.appbahn.platform.workspace.repository.EnvironmentAggregateStatusRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentMemberOverrideRepository;
 import eu.appbahn.platform.workspace.repository.EnvironmentRepository;
 import eu.appbahn.platform.workspace.repository.ProjectRepository;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.SlugGenerator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -37,6 +40,7 @@ public class EnvironmentService {
     private final EnvironmentRepository environmentRepository;
     private final ProjectRepository projectRepository;
     private final EnvironmentMemberOverrideRepository environmentOverrideRepository;
+    private final EnvironmentAggregateStatusRepository aggregateStatusRepository;
     private final PermissionService permissionService;
     private final NamespaceService namespaceService;
     private final NamespaceCrdClient namespaceCrdClient;
@@ -47,6 +51,7 @@ public class EnvironmentService {
             EnvironmentRepository environmentRepository,
             ProjectRepository projectRepository,
             EnvironmentMemberOverrideRepository environmentOverrideRepository,
+            EnvironmentAggregateStatusRepository aggregateStatusRepository,
             PermissionService permissionService,
             NamespaceService namespaceService,
             NamespaceCrdClient namespaceCrdClient,
@@ -55,6 +60,7 @@ public class EnvironmentService {
         this.environmentRepository = environmentRepository;
         this.projectRepository = projectRepository;
         this.environmentOverrideRepository = environmentOverrideRepository;
+        this.aggregateStatusRepository = aggregateStatusRepository;
         this.permissionService = permissionService;
         this.namespaceService = namespaceService;
         this.namespaceCrdClient = namespaceCrdClient;
@@ -355,9 +361,14 @@ public class EnvironmentService {
     }
 
     private PagedEnvironmentResponse toPagedResponse(Page<EnvironmentEntity> page, String projectSlug) {
+        List<UUID> envIds =
+                page.getContent().stream().map(EnvironmentEntity::getId).collect(Collectors.toList());
+        Map<UUID, EnvironmentAggregateStatus> aggregates = aggregateStatusRepository.aggregateByEnvironmentIds(envIds);
+
         var response = new PagedEnvironmentResponse();
         response.setContent(page.getContent().stream()
-                .map(e -> EntityMapper.toApi(e, projectSlug))
+                .map(e -> EntityMapper.toApi(
+                        e, projectSlug, aggregates.getOrDefault(e.getId(), EnvironmentAggregateStatus.UNKNOWN)))
                 .collect(Collectors.toList()));
         response.setPage(page.getNumber());
         response.setSize(page.getSize());

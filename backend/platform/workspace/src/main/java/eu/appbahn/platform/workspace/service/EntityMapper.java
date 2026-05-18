@@ -1,6 +1,7 @@
 package eu.appbahn.platform.workspace.service;
 
 import eu.appbahn.platform.api.Environment;
+import eu.appbahn.platform.api.EnvironmentAggregateStatus;
 import eu.appbahn.platform.api.Project;
 import eu.appbahn.platform.api.Workspace;
 import eu.appbahn.platform.workspace.entity.EnvironmentEntity;
@@ -41,6 +42,11 @@ public final class EntityMapper {
     }
 
     public static Environment toApi(EnvironmentEntity entity, String projectSlug) {
+        return toApi(entity, projectSlug, null);
+    }
+
+    public static Environment toApi(
+            EnvironmentEntity entity, String projectSlug, EnvironmentAggregateStatus aggregateStatus) {
         var env = new Environment();
         env.setId(entity.getId());
         env.setName(entity.getName());
@@ -48,6 +54,7 @@ public final class EntityMapper {
         env.setProjectSlug(projectSlug);
         env.setDescription(entity.getDescription());
         env.setTargetCluster(entity.getTargetCluster());
+        env.setAggregateStatus(aggregateStatus);
         env.setCreatedAt(toOffset(entity.getCreatedAt()));
         env.setUpdatedAt(toOffset(entity.getUpdatedAt()));
         return env;

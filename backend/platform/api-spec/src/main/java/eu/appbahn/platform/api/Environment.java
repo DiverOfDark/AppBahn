@@ -40,6 +40,15 @@ public class Environment {
     @Nullable
     private RegistryConfig registry;
 
+    /**
+     * Server-side rollup of this environment's child resource statuses. Populated on the listing
+     * endpoint so the console can render a status dot per env tab without fetching every resource;
+     * left {@code null} on single-environment fetches where the caller already drills into the
+     * resources. See {@link EnvironmentAggregateStatus} for precedence rules.
+     */
+    @Nullable
+    private EnvironmentAggregateStatus aggregateStatus;
+
     @Valid
     @Nullable
     private OffsetDateTime createdAt;
