@@ -16,6 +16,12 @@ public class WorkspaceMember {
     @Nullable
     private String email;
 
+    @Nullable
+    private String name;
+
+    @Nullable
+    private String avatarUrl;
+
     @Valid
     @Nullable
     private MemberRole role;

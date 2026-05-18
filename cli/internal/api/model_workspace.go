@@ -28,6 +28,7 @@ type Workspace struct {
 	RuntimeClassName *string         `json:"runtimeClassName,omitempty"`
 	CreatedAt        *time.Time      `json:"createdAt,omitempty"`
 	UpdatedAt        *time.Time      `json:"updatedAt,omitempty"`
+	CallerRole       *string         `json:"callerRole,omitempty"`
 }
 
 // NewWorkspace instantiates a new Workspace object
@@ -303,6 +304,38 @@ func (o *Workspace) SetUpdatedAt(v time.Time) {
 	o.UpdatedAt = &v
 }
 
+// GetCallerRole returns the CallerRole field value if set, zero value otherwise.
+func (o *Workspace) GetCallerRole() string {
+	if o == nil || IsNil(o.CallerRole) {
+		var ret string
+		return ret
+	}
+	return *o.CallerRole
+}
+
+// GetCallerRoleOk returns a tuple with the CallerRole field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Workspace) GetCallerRoleOk() (*string, bool) {
+	if o == nil || IsNil(o.CallerRole) {
+		return nil, false
+	}
+	return o.CallerRole, true
+}
+
+// HasCallerRole returns a boolean if a field has been set.
+func (o *Workspace) HasCallerRole() bool {
+	if o != nil && !IsNil(o.CallerRole) {
+		return true
+	}
+
+	return false
+}
+
+// SetCallerRole gets a reference to the given string and assigns it to the CallerRole field.
+func (o *Workspace) SetCallerRole(v string) {
+	o.CallerRole = &v
+}
+
 func (o Workspace) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -336,6 +369,9 @@ func (o Workspace) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.UpdatedAt) {
 		toSerialize["updatedAt"] = o.UpdatedAt
+	}
+	if !IsNil(o.CallerRole) {
+		toSerialize["callerRole"] = o.CallerRole
 	}
 	return toSerialize, nil
 }

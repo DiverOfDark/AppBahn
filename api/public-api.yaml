@@ -2264,6 +2264,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PagedAuditLogResponse"
+  /workspaces/members:
+    get:
+      tags:
+      - Workspaces
+      operationId: sampleWorkspaceMembers
+      parameters:
+      - name: slugs
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkspaceMemberSample"
   /users/me:
     get:
       tags:
@@ -3863,6 +3891,10 @@ components:
           format: uuid
         email:
           type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
         role:
           type: string
           enum:
@@ -4319,6 +4351,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AuditLogEntry"
+    WorkspaceMemberSample:
+      type: object
+      properties:
+        slug:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceMember"
+        totalCount:
+          type: integer
+          format: int32
     CurrentUserResponse:
       type: object
       properties:
@@ -4720,6 +4764,10 @@ components:
         email:
           type: string
         oidcSubjectId:
+          type: string
+        name:
+          type: string
+        avatarUrl:
           type: string
     ErrorResponse:
       required:

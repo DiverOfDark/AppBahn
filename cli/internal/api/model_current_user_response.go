@@ -14,37 +14,36 @@ import (
 	"encoding/json"
 )
 
-// checks if the User type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &User{}
+// checks if the CurrentUserResponse type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &CurrentUserResponse{}
 
-// User struct for User
-type User struct {
-	Id            *string `json:"id,omitempty"`
-	Email         *string `json:"email,omitempty"`
-	OidcSubjectId *string `json:"oidcSubjectId,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	AvatarUrl     *string `json:"avatarUrl,omitempty"`
+// CurrentUserResponse struct for CurrentUserResponse
+type CurrentUserResponse struct {
+	Id        *string `json:"id,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	AvatarUrl *string `json:"avatarUrl,omitempty"`
 }
 
-// NewUser instantiates a new User object
+// NewCurrentUserResponse instantiates a new CurrentUserResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUser() *User {
-	this := User{}
+func NewCurrentUserResponse() *CurrentUserResponse {
+	this := CurrentUserResponse{}
 	return &this
 }
 
-// NewUserWithDefaults instantiates a new User object
+// NewCurrentUserResponseWithDefaults instantiates a new CurrentUserResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUserWithDefaults() *User {
-	this := User{}
+func NewCurrentUserResponseWithDefaults() *CurrentUserResponse {
+	this := CurrentUserResponse{}
 	return &this
 }
 
 // GetId returns the Id field value if set, zero value otherwise.
-func (o *User) GetId() string {
+func (o *CurrentUserResponse) GetId() string {
 	if o == nil || IsNil(o.Id) {
 		var ret string
 		return ret
@@ -54,7 +53,7 @@ func (o *User) GetId() string {
 
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *User) GetIdOk() (*string, bool) {
+func (o *CurrentUserResponse) GetIdOk() (*string, bool) {
 	if o == nil || IsNil(o.Id) {
 		return nil, false
 	}
@@ -62,7 +61,7 @@ func (o *User) GetIdOk() (*string, bool) {
 }
 
 // HasId returns a boolean if a field has been set.
-func (o *User) HasId() bool {
+func (o *CurrentUserResponse) HasId() bool {
 	if o != nil && !IsNil(o.Id) {
 		return true
 	}
@@ -71,12 +70,12 @@ func (o *User) HasId() bool {
 }
 
 // SetId gets a reference to the given string and assigns it to the Id field.
-func (o *User) SetId(v string) {
+func (o *CurrentUserResponse) SetId(v string) {
 	o.Id = &v
 }
 
 // GetEmail returns the Email field value if set, zero value otherwise.
-func (o *User) GetEmail() string {
+func (o *CurrentUserResponse) GetEmail() string {
 	if o == nil || IsNil(o.Email) {
 		var ret string
 		return ret
@@ -86,7 +85,7 @@ func (o *User) GetEmail() string {
 
 // GetEmailOk returns a tuple with the Email field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *User) GetEmailOk() (*string, bool) {
+func (o *CurrentUserResponse) GetEmailOk() (*string, bool) {
 	if o == nil || IsNil(o.Email) {
 		return nil, false
 	}
@@ -94,7 +93,7 @@ func (o *User) GetEmailOk() (*string, bool) {
 }
 
 // HasEmail returns a boolean if a field has been set.
-func (o *User) HasEmail() bool {
+func (o *CurrentUserResponse) HasEmail() bool {
 	if o != nil && !IsNil(o.Email) {
 		return true
 	}
@@ -103,44 +102,12 @@ func (o *User) HasEmail() bool {
 }
 
 // SetEmail gets a reference to the given string and assigns it to the Email field.
-func (o *User) SetEmail(v string) {
+func (o *CurrentUserResponse) SetEmail(v string) {
 	o.Email = &v
 }
 
-// GetOidcSubjectId returns the OidcSubjectId field value if set, zero value otherwise.
-func (o *User) GetOidcSubjectId() string {
-	if o == nil || IsNil(o.OidcSubjectId) {
-		var ret string
-		return ret
-	}
-	return *o.OidcSubjectId
-}
-
-// GetOidcSubjectIdOk returns a tuple with the OidcSubjectId field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *User) GetOidcSubjectIdOk() (*string, bool) {
-	if o == nil || IsNil(o.OidcSubjectId) {
-		return nil, false
-	}
-	return o.OidcSubjectId, true
-}
-
-// HasOidcSubjectId returns a boolean if a field has been set.
-func (o *User) HasOidcSubjectId() bool {
-	if o != nil && !IsNil(o.OidcSubjectId) {
-		return true
-	}
-
-	return false
-}
-
-// SetOidcSubjectId gets a reference to the given string and assigns it to the OidcSubjectId field.
-func (o *User) SetOidcSubjectId(v string) {
-	o.OidcSubjectId = &v
-}
-
 // GetName returns the Name field value if set, zero value otherwise.
-func (o *User) GetName() string {
+func (o *CurrentUserResponse) GetName() string {
 	if o == nil || IsNil(o.Name) {
 		var ret string
 		return ret
@@ -150,7 +117,7 @@ func (o *User) GetName() string {
 
 // GetNameOk returns a tuple with the Name field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *User) GetNameOk() (*string, bool) {
+func (o *CurrentUserResponse) GetNameOk() (*string, bool) {
 	if o == nil || IsNil(o.Name) {
 		return nil, false
 	}
@@ -158,7 +125,7 @@ func (o *User) GetNameOk() (*string, bool) {
 }
 
 // HasName returns a boolean if a field has been set.
-func (o *User) HasName() bool {
+func (o *CurrentUserResponse) HasName() bool {
 	if o != nil && !IsNil(o.Name) {
 		return true
 	}
@@ -167,12 +134,12 @@ func (o *User) HasName() bool {
 }
 
 // SetName gets a reference to the given string and assigns it to the Name field.
-func (o *User) SetName(v string) {
+func (o *CurrentUserResponse) SetName(v string) {
 	o.Name = &v
 }
 
 // GetAvatarUrl returns the AvatarUrl field value if set, zero value otherwise.
-func (o *User) GetAvatarUrl() string {
+func (o *CurrentUserResponse) GetAvatarUrl() string {
 	if o == nil || IsNil(o.AvatarUrl) {
 		var ret string
 		return ret
@@ -182,7 +149,7 @@ func (o *User) GetAvatarUrl() string {
 
 // GetAvatarUrlOk returns a tuple with the AvatarUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *User) GetAvatarUrlOk() (*string, bool) {
+func (o *CurrentUserResponse) GetAvatarUrlOk() (*string, bool) {
 	if o == nil || IsNil(o.AvatarUrl) {
 		return nil, false
 	}
@@ -190,7 +157,7 @@ func (o *User) GetAvatarUrlOk() (*string, bool) {
 }
 
 // HasAvatarUrl returns a boolean if a field has been set.
-func (o *User) HasAvatarUrl() bool {
+func (o *CurrentUserResponse) HasAvatarUrl() bool {
 	if o != nil && !IsNil(o.AvatarUrl) {
 		return true
 	}
@@ -199,11 +166,11 @@ func (o *User) HasAvatarUrl() bool {
 }
 
 // SetAvatarUrl gets a reference to the given string and assigns it to the AvatarUrl field.
-func (o *User) SetAvatarUrl(v string) {
+func (o *CurrentUserResponse) SetAvatarUrl(v string) {
 	o.AvatarUrl = &v
 }
 
-func (o User) MarshalJSON() ([]byte, error) {
+func (o CurrentUserResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -211,16 +178,13 @@ func (o User) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o User) ToMap() (map[string]interface{}, error) {
+func (o CurrentUserResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
 	if !IsNil(o.Email) {
 		toSerialize["email"] = o.Email
-	}
-	if !IsNil(o.OidcSubjectId) {
-		toSerialize["oidcSubjectId"] = o.OidcSubjectId
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
@@ -231,38 +195,38 @@ func (o User) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUser struct {
-	value *User
+type NullableCurrentUserResponse struct {
+	value *CurrentUserResponse
 	isSet bool
 }
 
-func (v NullableUser) Get() *User {
+func (v NullableCurrentUserResponse) Get() *CurrentUserResponse {
 	return v.value
 }
 
-func (v *NullableUser) Set(val *User) {
+func (v *NullableCurrentUserResponse) Set(val *CurrentUserResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUser) IsSet() bool {
+func (v NullableCurrentUserResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUser) Unset() {
+func (v *NullableCurrentUserResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUser(val *User) *NullableUser {
-	return &NullableUser{value: val, isSet: true}
+func NewNullableCurrentUserResponse(val *CurrentUserResponse) *NullableCurrentUserResponse {
+	return &NullableCurrentUserResponse{value: val, isSet: true}
 }
 
-func (v NullableUser) MarshalJSON() ([]byte, error) {
+func (v NullableCurrentUserResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUser) UnmarshalJSON(src []byte) error {
+func (v *NullableCurrentUserResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

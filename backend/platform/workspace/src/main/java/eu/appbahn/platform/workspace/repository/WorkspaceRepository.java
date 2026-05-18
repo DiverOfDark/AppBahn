@@ -2,6 +2,7 @@ package eu.appbahn.platform.workspace.repository;
 
 import eu.appbahn.platform.workspace.entity.WorkspaceEntity;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -13,4 +14,6 @@ public interface WorkspaceRepository extends JpaRepository<WorkspaceEntity, UUID
     Optional<WorkspaceEntity> findBySlug(String slug);
 
     Page<WorkspaceEntity> findAllByIdIn(Collection<UUID> ids, Pageable pageable);
+
+    List<WorkspaceEntity> findAllBySlugIn(Collection<String> slugs);
 }

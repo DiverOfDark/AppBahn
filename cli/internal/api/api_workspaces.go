@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -47,6 +48,19 @@ type WorkspacesAPI interface {
 	// CreateGroupMappingExecute executes the request
 	//  @return OidcGroupMapping
 	CreateGroupMappingExecute(r ApiCreateGroupMappingRequest) (*OidcGroupMapping, *http.Response, error)
+
+	/*
+		CreateInviteCode Method for CreateInviteCode
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiCreateInviteCodeRequest
+	*/
+	CreateInviteCode(ctx context.Context, slug string) ApiCreateInviteCodeRequest
+
+	// CreateInviteCodeExecute executes the request
+	//  @return WorkspaceInviteCode
+	CreateInviteCodeExecute(r ApiCreateInviteCodeRequest) (*WorkspaceInviteCode, *http.Response, error)
 
 	/*
 		CreateNotificationWebhook Method for CreateNotificationWebhook
@@ -177,6 +191,19 @@ type WorkspacesAPI interface {
 	ListGroupMappingsExecute(r ApiListGroupMappingsRequest) ([]OidcGroupMapping, *http.Response, error)
 
 	/*
+		ListInviteCodes Method for ListInviteCodes
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiListInviteCodesRequest
+	*/
+	ListInviteCodes(ctx context.Context, slug string) ApiListInviteCodesRequest
+
+	// ListInviteCodesExecute executes the request
+	//  @return []WorkspaceInviteCode
+	ListInviteCodesExecute(r ApiListInviteCodesRequest) ([]WorkspaceInviteCode, *http.Response, error)
+
+	/*
 		ListNotificationWebhooks Method for ListNotificationWebhooks
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -240,6 +267,31 @@ type WorkspacesAPI interface {
 
 	// RemoveWorkspaceMemberExecute executes the request
 	RemoveWorkspaceMemberExecute(r ApiRemoveWorkspaceMemberRequest) (*http.Response, error)
+
+	/*
+		RevokeInviteCode Method for RevokeInviteCode
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param codeId
+		@return ApiRevokeInviteCodeRequest
+	*/
+	RevokeInviteCode(ctx context.Context, slug string, codeId string) ApiRevokeInviteCodeRequest
+
+	// RevokeInviteCodeExecute executes the request
+	RevokeInviteCodeExecute(r ApiRevokeInviteCodeRequest) (*http.Response, error)
+
+	/*
+		SampleWorkspaceMembers Method for SampleWorkspaceMembers
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiSampleWorkspaceMembersRequest
+	*/
+	SampleWorkspaceMembers(ctx context.Context) ApiSampleWorkspaceMembersRequest
+
+	// SampleWorkspaceMembersExecute executes the request
+	//  @return []WorkspaceMemberSample
+	SampleWorkspaceMembersExecute(r ApiSampleWorkspaceMembersRequest) ([]WorkspaceMemberSample, *http.Response, error)
 
 	/*
 		SetWorkspaceQuota Method for SetWorkspaceQuota
@@ -542,6 +594,129 @@ func (a *WorkspacesAPIService) CreateGroupMappingExecute(r ApiCreateGroupMapping
 	}
 	// body params
 	localVarPostBody = r.createGroupMappingRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiCreateInviteCodeRequest struct {
+	ctx                     context.Context
+	ApiService              WorkspacesAPI
+	slug                    string
+	createInviteCodeRequest *CreateInviteCodeRequest
+	idempotencyKey          *string
+}
+
+func (r ApiCreateInviteCodeRequest) CreateInviteCodeRequest(createInviteCodeRequest CreateInviteCodeRequest) ApiCreateInviteCodeRequest {
+	r.createInviteCodeRequest = &createInviteCodeRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCreateInviteCodeRequest) IdempotencyKey(idempotencyKey string) ApiCreateInviteCodeRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiCreateInviteCodeRequest) Execute() (*WorkspaceInviteCode, *http.Response, error) {
+	return r.ApiService.CreateInviteCodeExecute(r)
+}
+
+/*
+CreateInviteCode Method for CreateInviteCode
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiCreateInviteCodeRequest
+*/
+func (a *WorkspacesAPIService) CreateInviteCode(ctx context.Context, slug string) ApiCreateInviteCodeRequest {
+	return ApiCreateInviteCodeRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+	}
+}
+
+// Execute executes the request
+//
+//	@return WorkspaceInviteCode
+func (a *WorkspacesAPIService) CreateInviteCodeExecute(r ApiCreateInviteCodeRequest) (*WorkspaceInviteCode, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WorkspaceInviteCode
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.CreateInviteCode")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/workspaces/{slug}/invites/codes"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.createInviteCodeRequest == nil {
+		return localVarReturnValue, nil, reportError("createInviteCodeRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
+	// body params
+	localVarPostBody = r.createInviteCodeRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -1699,6 +1874,108 @@ func (a *WorkspacesAPIService) ListGroupMappingsExecute(r ApiListGroupMappingsRe
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiListInviteCodesRequest struct {
+	ctx        context.Context
+	ApiService WorkspacesAPI
+	slug       string
+}
+
+func (r ApiListInviteCodesRequest) Execute() ([]WorkspaceInviteCode, *http.Response, error) {
+	return r.ApiService.ListInviteCodesExecute(r)
+}
+
+/*
+ListInviteCodes Method for ListInviteCodes
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiListInviteCodesRequest
+*/
+func (a *WorkspacesAPIService) ListInviteCodes(ctx context.Context, slug string) ApiListInviteCodesRequest {
+	return ApiListInviteCodesRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+	}
+}
+
+// Execute executes the request
+//
+//	@return []WorkspaceInviteCode
+func (a *WorkspacesAPIService) ListInviteCodesExecute(r ApiListInviteCodesRequest) ([]WorkspaceInviteCode, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []WorkspaceInviteCode
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.ListInviteCodes")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/workspaces/{slug}/invites/codes"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiListNotificationWebhooksRequest struct {
 	ctx        context.Context
 	ApiService WorkspacesAPI
@@ -2236,6 +2513,237 @@ func (a *WorkspacesAPIService) RemoveWorkspaceMemberExecute(r ApiRemoveWorkspace
 	}
 
 	return localVarHTTPResponse, nil
+}
+
+type ApiRevokeInviteCodeRequest struct {
+	ctx            context.Context
+	ApiService     WorkspacesAPI
+	slug           string
+	codeId         string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRevokeInviteCodeRequest) IdempotencyKey(idempotencyKey string) ApiRevokeInviteCodeRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiRevokeInviteCodeRequest) Execute() (*http.Response, error) {
+	return r.ApiService.RevokeInviteCodeExecute(r)
+}
+
+/*
+RevokeInviteCode Method for RevokeInviteCode
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param codeId
+	@return ApiRevokeInviteCodeRequest
+*/
+func (a *WorkspacesAPIService) RevokeInviteCode(ctx context.Context, slug string, codeId string) ApiRevokeInviteCodeRequest {
+	return ApiRevokeInviteCodeRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+		codeId:     codeId,
+	}
+}
+
+// Execute executes the request
+func (a *WorkspacesAPIService) RevokeInviteCodeExecute(r ApiRevokeInviteCodeRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.RevokeInviteCode")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/workspaces/{slug}/invites/codes/{code_id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"code_id"+"}", url.PathEscape(parameterValueToString(r.codeId, "codeId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
+type ApiSampleWorkspaceMembersRequest struct {
+	ctx        context.Context
+	ApiService WorkspacesAPI
+	slugs      *[]string
+	limit      *int32
+}
+
+func (r ApiSampleWorkspaceMembersRequest) Slugs(slugs []string) ApiSampleWorkspaceMembersRequest {
+	r.slugs = &slugs
+	return r
+}
+
+func (r ApiSampleWorkspaceMembersRequest) Limit(limit int32) ApiSampleWorkspaceMembersRequest {
+	r.limit = &limit
+	return r
+}
+
+func (r ApiSampleWorkspaceMembersRequest) Execute() ([]WorkspaceMemberSample, *http.Response, error) {
+	return r.ApiService.SampleWorkspaceMembersExecute(r)
+}
+
+/*
+SampleWorkspaceMembers Method for SampleWorkspaceMembers
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSampleWorkspaceMembersRequest
+*/
+func (a *WorkspacesAPIService) SampleWorkspaceMembers(ctx context.Context) ApiSampleWorkspaceMembersRequest {
+	return ApiSampleWorkspaceMembersRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return []WorkspaceMemberSample
+func (a *WorkspacesAPIService) SampleWorkspaceMembersExecute(r ApiSampleWorkspaceMembersRequest) ([]WorkspaceMemberSample, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []WorkspaceMemberSample
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WorkspacesAPIService.SampleWorkspaceMembers")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/workspaces/members"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.slugs == nil {
+		return localVarReturnValue, nil, reportError("slugs is required and must be specified")
+	}
+
+	{
+		t := *r.slugs
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "slugs", s.Index(i).Interface(), "form", "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "slugs", t, "form", "multi")
+		}
+	}
+	if r.limit != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "limit", r.limit, "form", "")
+	}
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
 type ApiSetWorkspaceQuotaRequest struct {

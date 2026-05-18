@@ -25,6 +25,7 @@ const (
 	AUDITTARGETTYPE_ENVIRONMENT AuditTargetType = "Environment"
 	AUDITTARGETTYPE_RESOURCE    AuditTargetType = "Resource"
 	AUDITTARGETTYPE_DEPLOYMENT  AuditTargetType = "Deployment"
+	AUDITTARGETTYPE_USER        AuditTargetType = "User"
 )
 
 // All allowed values of AuditTargetType enum
@@ -34,6 +35,7 @@ var AllowedAuditTargetTypeEnumValues = []AuditTargetType{
 	"Environment",
 	"Resource",
 	"Deployment",
+	"User",
 }
 
 func (v *AuditTargetType) UnmarshalJSON(src []byte) error {

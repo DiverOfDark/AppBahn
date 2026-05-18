@@ -7,6 +7,7 @@ import eu.appbahn.platform.api.UpdateMemberRequest;
 import eu.appbahn.platform.api.WorkspaceMember;
 import eu.appbahn.platform.api.workspace.AddMemberRequest;
 import eu.appbahn.platform.api.workspace.AddMemberResponse;
+import eu.appbahn.platform.api.workspace.WorkspaceMemberSample;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
 import eu.appbahn.platform.common.exception.NotFoundException;
@@ -21,6 +22,7 @@ import eu.appbahn.platform.workspace.repository.WorkspaceMemberRepository;
 import eu.appbahn.platform.workspace.repository.WorkspaceRepository;
 import eu.appbahn.shared.model.MemberRole;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,15 +65,7 @@ public class MemberService {
 
         var result = new ArrayList<WorkspaceMember>();
         for (var m : members) {
-            var dto = new WorkspaceMember();
-            dto.setUserId(m.getUserId());
-            dto.setRole(MemberRole.valueOf(m.getRole()));
-            dto.setStatus(MemberStatus.ACTIVE);
-            var user = usersById.get(m.getUserId());
-            if (user != null) {
-                dto.setEmail(user.getEmail());
-            }
-            result.add(dto);
+            result.add(toActiveMember(m, usersById.get(m.getUserId())));
         }
 
         var pending = pendingInvitationRepository.findByWorkspaceId(ws.getId());
@@ -84,6 +78,72 @@ public class MemberService {
         }
 
         return result;
+    }
+
+    public static final int SAMPLE_LIMIT_DEFAULT = 4;
+    public static final int SAMPLE_LIMIT_MAX = 10;
+
+    /**
+     * One DB hit per repository call (workspaces, members, users) regardless of input size — the
+     * console can render N workspace cards with N+2 queries instead of 2N+1.
+     *
+     * <p>Workspaces the caller has no role on are dropped from the result rather than 403-ing; the
+     * caller already proved access by listing them on the previous page, so missing entries are
+     * the right signal for "do not render avatars on this card".
+     */
+    public List<WorkspaceMemberSample> sampleMembers(List<String> slugs, int limit, AuthContext ctx) {
+        if (slugs == null || slugs.isEmpty()) {
+            return List.of();
+        }
+        int effectiveLimit = Math.min(Math.max(limit, 1), SAMPLE_LIMIT_MAX);
+
+        var workspaces = workspaceRepository.findAllBySlugIn(slugs);
+        var allowedWorkspaces = workspaces.stream()
+                .filter(ws -> ctx.platformAdmin() || permissionService.resolveWorkspaceRole(ctx, ws.getId()) != null)
+                .toList();
+        if (allowedWorkspaces.isEmpty()) {
+            return List.of();
+        }
+
+        var workspaceIds =
+                allowedWorkspaces.stream().map(WorkspaceEntity::getId).toList();
+        var membersByWorkspace = memberRepository.findByWorkspaceIdIn(workspaceIds).stream()
+                .collect(Collectors.groupingBy(WorkspaceMemberEntity::getWorkspaceId));
+        var allUserIds = membersByWorkspace.values().stream()
+                .flatMap(List::stream)
+                .map(WorkspaceMemberEntity::getUserId)
+                .collect(Collectors.toSet());
+        var usersById =
+                userRepository.findAllById(allUserIds).stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
+
+        var result = new ArrayList<WorkspaceMemberSample>();
+        for (var ws : allowedWorkspaces) {
+            var wsMembers = membersByWorkspace.getOrDefault(ws.getId(), List.of());
+            var sample = new WorkspaceMemberSample();
+            sample.setSlug(ws.getSlug());
+            sample.setTotalCount(wsMembers.size());
+            wsMembers.stream()
+                    .sorted(Comparator.comparing(
+                            WorkspaceMemberEntity::getUserId, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .limit(effectiveLimit)
+                    .map(m -> toActiveMember(m, usersById.get(m.getUserId())))
+                    .forEach(sample.getMembers()::add);
+            result.add(sample);
+        }
+        return result;
+    }
+
+    private WorkspaceMember toActiveMember(WorkspaceMemberEntity entity, UserEntity user) {
+        var dto = new WorkspaceMember();
+        dto.setUserId(entity.getUserId());
+        dto.setRole(MemberRole.valueOf(entity.getRole()));
+        dto.setStatus(MemberStatus.ACTIVE);
+        if (user != null) {
+            dto.setEmail(user.getEmail());
+            dto.setName(user.getName());
+            dto.setAvatarUrl(user.getAvatarUrl());
+        }
+        return dto;
     }
 
     /**
@@ -151,10 +211,8 @@ public class MemberService {
                 .change("role", oldRole, req.getRole().name())
                 .save();
 
-        var dto = new WorkspaceMember();
-        dto.setUserId(userId);
-        dto.setRole(MemberRole.valueOf(member.getRole()));
-        userRepository.findById(userId).ifPresent(u -> dto.setEmail(u.getEmail()));
+        var user = userRepository.findById(userId).orElse(null);
+        var dto = toActiveMember(member, user);
         return dto;
     }
 

@@ -17,4 +17,10 @@ public class User {
 
     @Nullable
     private String oidcSubjectId;
+
+    @Nullable
+    private String name;
+
+    @Nullable
+    private String avatarUrl;
 }

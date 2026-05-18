@@ -21,6 +21,7 @@ import eu.appbahn.platform.api.workspace.PagedWorkspaceResponse;
 import eu.appbahn.platform.api.workspace.UpdateGroupMappingRequest;
 import eu.appbahn.platform.api.workspace.UpdateNotificationWebhookRequest;
 import eu.appbahn.platform.api.workspace.UpdateWorkspaceRequest;
+import eu.appbahn.platform.api.workspace.WorkspaceMemberSample;
 import eu.appbahn.platform.api.workspace.WorkspacesApi;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.security.AuthContextHolder;
@@ -90,6 +91,12 @@ public class WorkspacesController implements WorkspacesApi {
     @Override
     public ResponseEntity<List<WorkspaceMember>> listWorkspaceMembers(String slug) {
         return ResponseEntity.ok(memberService.listMembers(slug, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<List<WorkspaceMemberSample>> sampleWorkspaceMembers(List<String> slugs, Integer limit) {
+        int effectiveLimit = limit != null ? limit : MemberService.SAMPLE_LIMIT_DEFAULT;
+        return ResponseEntity.ok(memberService.sampleMembers(slugs, effectiveLimit, AuthContextHolder.get()));
     }
 
     @Override

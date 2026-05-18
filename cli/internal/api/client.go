@@ -58,11 +58,15 @@ type APIClient struct {
 
 	ImageSourceWebhookAPI ImageSourceWebhookAPI
 
+	InvitesAPI InvitesAPI
+
 	ProjectsAPI ProjectsAPI
 
 	ResourceTypesAPI ResourceTypesAPI
 
 	ResourcesAPI ResourcesAPI
+
+	UsersAPI UsersAPI
 
 	WebhooksAPI WebhooksAPI
 
@@ -90,9 +94,11 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.EnvironmentsAPI = (*EnvironmentsAPIService)(&c.common)
 	c.GitAPI = (*GitAPIService)(&c.common)
 	c.ImageSourceWebhookAPI = (*ImageSourceWebhookAPIService)(&c.common)
+	c.InvitesAPI = (*InvitesAPIService)(&c.common)
 	c.ProjectsAPI = (*ProjectsAPIService)(&c.common)
 	c.ResourceTypesAPI = (*ResourceTypesAPIService)(&c.common)
 	c.ResourcesAPI = (*ResourcesAPIService)(&c.common)
+	c.UsersAPI = (*UsersAPIService)(&c.common)
 	c.WebhooksAPI = (*WebhooksAPIService)(&c.common)
 	c.WorkspacesAPI = (*WorkspacesAPIService)(&c.common)
 

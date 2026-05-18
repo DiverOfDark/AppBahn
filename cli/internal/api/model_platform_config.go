@@ -26,6 +26,7 @@ type PlatformConfig struct {
 	Auth            map[string]interface{}  `json:"auth,omitempty"`
 	DefaultQuota    *Quota                  `json:"defaultQuota,omitempty"`
 	BuildConfig     map[string]interface{}  `json:"buildConfig,omitempty"`
+	Version         *string                 `json:"version,omitempty"`
 }
 
 // NewPlatformConfig instantiates a new PlatformConfig object
@@ -269,6 +270,38 @@ func (o *PlatformConfig) SetBuildConfig(v map[string]interface{}) {
 	o.BuildConfig = v
 }
 
+// GetVersion returns the Version field value if set, zero value otherwise.
+func (o *PlatformConfig) GetVersion() string {
+	if o == nil || IsNil(o.Version) {
+		var ret string
+		return ret
+	}
+	return *o.Version
+}
+
+// GetVersionOk returns a tuple with the Version field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PlatformConfig) GetVersionOk() (*string, bool) {
+	if o == nil || IsNil(o.Version) {
+		return nil, false
+	}
+	return o.Version, true
+}
+
+// HasVersion returns a boolean if a field has been set.
+func (o *PlatformConfig) HasVersion() bool {
+	if o != nil && !IsNil(o.Version) {
+		return true
+	}
+
+	return false
+}
+
+// SetVersion gets a reference to the given string and assigns it to the Version field.
+func (o *PlatformConfig) SetVersion(v string) {
+	o.Version = &v
+}
+
 func (o PlatformConfig) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -299,6 +332,9 @@ func (o PlatformConfig) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.BuildConfig) {
 		toSerialize["buildConfig"] = o.BuildConfig
+	}
+	if !IsNil(o.Version) {
+		toSerialize["version"] = o.Version
 	}
 	return toSerialize, nil
 }

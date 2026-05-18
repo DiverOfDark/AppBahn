@@ -19,10 +19,12 @@ var _ MappedNullable = &WorkspaceMember{}
 
 // WorkspaceMember struct for WorkspaceMember
 type WorkspaceMember struct {
-	UserId *string `json:"userId,omitempty"`
-	Email  *string `json:"email,omitempty"`
-	Role   *string `json:"role,omitempty"`
-	Status *string `json:"status,omitempty"`
+	UserId    *string `json:"userId,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	AvatarUrl *string `json:"avatarUrl,omitempty"`
+	Role      *string `json:"role,omitempty"`
+	Status    *string `json:"status,omitempty"`
 }
 
 // NewWorkspaceMember instantiates a new WorkspaceMember object
@@ -106,6 +108,70 @@ func (o *WorkspaceMember) SetEmail(v string) {
 	o.Email = &v
 }
 
+// GetName returns the Name field value if set, zero value otherwise.
+func (o *WorkspaceMember) GetName() string {
+	if o == nil || IsNil(o.Name) {
+		var ret string
+		return ret
+	}
+	return *o.Name
+}
+
+// GetNameOk returns a tuple with the Name field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *WorkspaceMember) GetNameOk() (*string, bool) {
+	if o == nil || IsNil(o.Name) {
+		return nil, false
+	}
+	return o.Name, true
+}
+
+// HasName returns a boolean if a field has been set.
+func (o *WorkspaceMember) HasName() bool {
+	if o != nil && !IsNil(o.Name) {
+		return true
+	}
+
+	return false
+}
+
+// SetName gets a reference to the given string and assigns it to the Name field.
+func (o *WorkspaceMember) SetName(v string) {
+	o.Name = &v
+}
+
+// GetAvatarUrl returns the AvatarUrl field value if set, zero value otherwise.
+func (o *WorkspaceMember) GetAvatarUrl() string {
+	if o == nil || IsNil(o.AvatarUrl) {
+		var ret string
+		return ret
+	}
+	return *o.AvatarUrl
+}
+
+// GetAvatarUrlOk returns a tuple with the AvatarUrl field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *WorkspaceMember) GetAvatarUrlOk() (*string, bool) {
+	if o == nil || IsNil(o.AvatarUrl) {
+		return nil, false
+	}
+	return o.AvatarUrl, true
+}
+
+// HasAvatarUrl returns a boolean if a field has been set.
+func (o *WorkspaceMember) HasAvatarUrl() bool {
+	if o != nil && !IsNil(o.AvatarUrl) {
+		return true
+	}
+
+	return false
+}
+
+// SetAvatarUrl gets a reference to the given string and assigns it to the AvatarUrl field.
+func (o *WorkspaceMember) SetAvatarUrl(v string) {
+	o.AvatarUrl = &v
+}
+
 // GetRole returns the Role field value if set, zero value otherwise.
 func (o *WorkspaceMember) GetRole() string {
 	if o == nil || IsNil(o.Role) {
@@ -185,6 +251,12 @@ func (o WorkspaceMember) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Email) {
 		toSerialize["email"] = o.Email
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.AvatarUrl) {
+		toSerialize["avatarUrl"] = o.AvatarUrl
 	}
 	if !IsNil(o.Role) {
 		toSerialize["role"] = o.Role

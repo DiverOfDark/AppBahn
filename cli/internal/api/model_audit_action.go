@@ -35,6 +35,11 @@ const (
 	AUDITACTION_GROUP_MAPPING_CREATED              AuditAction = "GroupMappingCreated"
 	AUDITACTION_GROUP_MAPPING_DELETED              AuditAction = "GroupMappingDeleted"
 	AUDITACTION_GROUP_MAPPING_UPDATED              AuditAction = "GroupMappingUpdated"
+	AUDITACTION_INVITE_ACCEPTED                    AuditAction = "InviteAccepted"
+	AUDITACTION_INVITE_CODE_CREATED                AuditAction = "InviteCodeCreated"
+	AUDITACTION_INVITE_CODE_REVOKED                AuditAction = "InviteCodeRevoked"
+	AUDITACTION_INVITE_DECLINED                    AuditAction = "InviteDeclined"
+	AUDITACTION_INVITE_REDEEMED                    AuditAction = "InviteRedeemed"
 	AUDITACTION_MEMBER_ADDED                       AuditAction = "MemberAdded"
 	AUDITACTION_MEMBER_INVITED                     AuditAction = "MemberInvited"
 	AUDITACTION_MEMBER_REMOVED                     AuditAction = "MemberRemoved"
@@ -58,6 +63,7 @@ const (
 	AUDITACTION_WORKSPACE_REGISTRY_UPDATED         AuditAction = "WorkspaceRegistryUpdated"
 	AUDITACTION_WORKSPACE_SECURITY_UPDATED         AuditAction = "WorkspaceSecurityUpdated"
 	AUDITACTION_WORKSPACE_UPDATED                  AuditAction = "WorkspaceUpdated"
+	AUDITACTION_USER_PREFERENCES_UPDATED           AuditAction = "UserPreferencesUpdated"
 )
 
 // All allowed values of AuditAction enum
@@ -77,6 +83,11 @@ var AllowedAuditActionEnumValues = []AuditAction{
 	"GroupMappingCreated",
 	"GroupMappingDeleted",
 	"GroupMappingUpdated",
+	"InviteAccepted",
+	"InviteCodeCreated",
+	"InviteCodeRevoked",
+	"InviteDeclined",
+	"InviteRedeemed",
 	"MemberAdded",
 	"MemberInvited",
 	"MemberRemoved",
@@ -100,6 +111,7 @@ var AllowedAuditActionEnumValues = []AuditAction{
 	"WorkspaceRegistryUpdated",
 	"WorkspaceSecurityUpdated",
 	"WorkspaceUpdated",
+	"UserPreferencesUpdated",
 }
 
 func (v *AuditAction) UnmarshalJSON(src []byte) error {

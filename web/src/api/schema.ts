@@ -884,6 +884,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/workspaces/members': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['sampleWorkspaceMembers']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/users/me': {
     parameters: {
       query?: never
@@ -1799,6 +1815,8 @@ export interface components {
       /** Format: uuid */
       userId?: string
       email?: string
+      name?: string
+      avatarUrl?: string
       /** @enum {string} */
       role?: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
       /** @enum {string} */
@@ -2056,6 +2074,12 @@ export interface components {
       totalPages?: number
       content?: components['schemas']['AuditLogEntry'][]
     }
+    WorkspaceMemberSample: {
+      slug?: string
+      members?: components['schemas']['WorkspaceMember'][]
+      /** Format: int32 */
+      totalCount?: number
+    }
     CurrentUserResponse: {
       /** Format: uuid */
       id?: string
@@ -2281,6 +2305,8 @@ export interface components {
       id?: string
       email?: string
       oidcSubjectId?: string
+      name?: string
+      avatarUrl?: string
     }
     ErrorResponse: {
       /** Format: int32 */
@@ -4556,6 +4582,29 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PagedAuditLogResponse']
+        }
+      }
+    }
+  }
+  sampleWorkspaceMembers: {
+    parameters: {
+      query: {
+        slugs: string[]
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceMemberSample'][]
         }
       }
     }

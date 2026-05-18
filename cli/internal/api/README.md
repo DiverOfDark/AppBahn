@@ -109,6 +109,10 @@ Class | Method | HTTP request | Description
 *GitAPI* | [**ValidateGitRepo**](docs/GitAPI.md#validategitrepo) | **Post** /git/validate | 
 *ImageSourceWebhookAPI* | [**GetImageSourceWebhook**](docs/ImageSourceWebhookAPI.md#getimagesourcewebhook) | **Get** /image-sources/{slug}/webhook | 
 *ImageSourceWebhookAPI* | [**RotateImageSourceWebhook**](docs/ImageSourceWebhookAPI.md#rotateimagesourcewebhook) | **Post** /image-sources/{slug}/webhook/rotate | 
+*InvitesAPI* | [**AcceptInvite**](docs/InvitesAPI.md#acceptinvite) | **Post** /invites/{id}/accept | 
+*InvitesAPI* | [**DeclineInvite**](docs/InvitesAPI.md#declineinvite) | **Post** /invites/{id}/decline | 
+*InvitesAPI* | [**ListMyInvites**](docs/InvitesAPI.md#listmyinvites) | **Get** /users/me/invites | 
+*InvitesAPI* | [**RedeemInvite**](docs/InvitesAPI.md#redeeminvite) | **Post** /invites/redeem | 
 *ProjectsAPI* | [**CreateProject**](docs/ProjectsAPI.md#createproject) | **Post** /projects | 
 *ProjectsAPI* | [**DeleteProject**](docs/ProjectsAPI.md#deleteproject) | **Delete** /projects/{slug} | 
 *ProjectsAPI* | [**DeleteProjectMemberRole**](docs/ProjectsAPI.md#deleteprojectmemberrole) | **Delete** /projects/{slug}/members/{user_id}/role | 
@@ -150,9 +154,13 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**StopResource**](docs/ResourcesAPI.md#stopresource) | **Post** /resources/{slug}/stop | 
 *ResourcesAPI* | [**UnpinResource**](docs/ResourcesAPI.md#unpinresource) | **Post** /resources/{slug}/unpin | 
 *ResourcesAPI* | [**UpdateResource**](docs/ResourcesAPI.md#updateresource) | **Patch** /resources/{slug} | 
+*UsersAPI* | [**GetCurrentUser**](docs/UsersAPI.md#getcurrentuser) | **Get** /users/me | 
+*UsersAPI* | [**GetUserPreferences**](docs/UsersAPI.md#getuserpreferences) | **Get** /users/me/preferences | 
+*UsersAPI* | [**UpdateUserPreferences**](docs/UsersAPI.md#updateuserpreferences) | **Patch** /users/me/preferences | 
 *WebhooksAPI* | [**ReceiveWebhook**](docs/WebhooksAPI.md#receivewebhook) | **Post** /webhooks/{token} | 
 *WorkspacesAPI* | [**AddWorkspaceMember**](docs/WorkspacesAPI.md#addworkspacemember) | **Post** /workspaces/{slug}/members | 
 *WorkspacesAPI* | [**CreateGroupMapping**](docs/WorkspacesAPI.md#creategroupmapping) | **Post** /workspaces/{slug}/group-mappings | 
+*WorkspacesAPI* | [**CreateInviteCode**](docs/WorkspacesAPI.md#createinvitecode) | **Post** /workspaces/{slug}/invites/codes | 
 *WorkspacesAPI* | [**CreateNotificationWebhook**](docs/WorkspacesAPI.md#createnotificationwebhook) | **Post** /workspaces/{slug}/notification-webhooks | 
 *WorkspacesAPI* | [**CreateWorkspace**](docs/WorkspacesAPI.md#createworkspace) | **Post** /workspaces | 
 *WorkspacesAPI* | [**DeleteGroupMapping**](docs/WorkspacesAPI.md#deletegroupmapping) | **Delete** /workspaces/{slug}/group-mappings/{mapping_id} | 
@@ -163,11 +171,14 @@ Class | Method | HTTP request | Description
 *WorkspacesAPI* | [**GetWorkspaceQuota**](docs/WorkspacesAPI.md#getworkspacequota) | **Get** /workspaces/{slug}/quota | 
 *WorkspacesAPI* | [**GetWorkspaceSecurity**](docs/WorkspacesAPI.md#getworkspacesecurity) | **Get** /workspaces/{slug}/security | 
 *WorkspacesAPI* | [**ListGroupMappings**](docs/WorkspacesAPI.md#listgroupmappings) | **Get** /workspaces/{slug}/group-mappings | 
+*WorkspacesAPI* | [**ListInviteCodes**](docs/WorkspacesAPI.md#listinvitecodes) | **Get** /workspaces/{slug}/invites/codes | 
 *WorkspacesAPI* | [**ListNotificationWebhooks**](docs/WorkspacesAPI.md#listnotificationwebhooks) | **Get** /workspaces/{slug}/notification-webhooks | 
 *WorkspacesAPI* | [**ListWebhookDeliveries**](docs/WorkspacesAPI.md#listwebhookdeliveries) | **Get** /workspaces/{slug}/notification-webhooks/{hook_id}/deliveries | 
 *WorkspacesAPI* | [**ListWorkspaceMembers**](docs/WorkspacesAPI.md#listworkspacemembers) | **Get** /workspaces/{slug}/members | 
 *WorkspacesAPI* | [**ListWorkspaces**](docs/WorkspacesAPI.md#listworkspaces) | **Get** /workspaces | 
 *WorkspacesAPI* | [**RemoveWorkspaceMember**](docs/WorkspacesAPI.md#removeworkspacemember) | **Delete** /workspaces/{slug}/members/{user_id} | 
+*WorkspacesAPI* | [**RevokeInviteCode**](docs/WorkspacesAPI.md#revokeinvitecode) | **Delete** /workspaces/{slug}/invites/codes/{code_id} | 
+*WorkspacesAPI* | [**SampleWorkspaceMembers**](docs/WorkspacesAPI.md#sampleworkspacemembers) | **Get** /workspaces/members | 
 *WorkspacesAPI* | [**SetWorkspaceQuota**](docs/WorkspacesAPI.md#setworkspacequota) | **Patch** /workspaces/{slug}/quota | 
 *WorkspacesAPI* | [**SetWorkspaceRegistry**](docs/WorkspacesAPI.md#setworkspaceregistry) | **Put** /workspaces/{slug}/registry | 
 *WorkspacesAPI* | [**SetWorkspaceSecurity**](docs/WorkspacesAPI.md#setworkspacesecurity) | **Put** /workspaces/{slug}/security | 
@@ -206,12 +217,14 @@ Class | Method | HTTP request | Description
  - [CreateEnvironmentTokenResponse](docs/CreateEnvironmentTokenResponse.md)
  - [CreateExposureRequest](docs/CreateExposureRequest.md)
  - [CreateGroupMappingRequest](docs/CreateGroupMappingRequest.md)
+ - [CreateInviteCodeRequest](docs/CreateInviteCodeRequest.md)
  - [CreateNetworkPolicyRequest](docs/CreateNetworkPolicyRequest.md)
  - [CreateNotificationWebhookRequest](docs/CreateNotificationWebhookRequest.md)
  - [CreateProjectRequest](docs/CreateProjectRequest.md)
  - [CreateResourceRequest](docs/CreateResourceRequest.md)
  - [CreateWorkspaceRequest](docs/CreateWorkspaceRequest.md)
  - [CredentialRef](docs/CredentialRef.md)
+ - [CurrentUserResponse](docs/CurrentUserResponse.md)
  - [CustomDomainStatus](docs/CustomDomainStatus.md)
  - [Deployment](docs/Deployment.md)
  - [DeploymentApproval](docs/DeploymentApproval.md)
@@ -240,6 +253,7 @@ Class | Method | HTTP request | Description
  - [ImageSourceWebhookSecret](docs/ImageSourceWebhookSecret.md)
  - [ImageSourceWebhookView](docs/ImageSourceWebhookView.md)
  - [ImageSpec](docs/ImageSpec.md)
+ - [InvitedBy](docs/InvitedBy.md)
  - [LinkConfig](docs/LinkConfig.md)
  - [LinkStatus](docs/LinkStatus.md)
  - [LogLine](docs/LogLine.md)
@@ -266,6 +280,7 @@ Class | Method | HTTP request | Description
  - [Project](docs/Project.md)
  - [PromoteRequest](docs/PromoteRequest.md)
  - [Quota](docs/Quota.md)
+ - [RedeemInviteRequest](docs/RedeemInviteRequest.md)
  - [RegistryConfig](docs/RegistryConfig.md)
  - [ReplicaStatus](docs/ReplicaStatus.md)
  - [Resource](docs/Resource.md)
@@ -290,13 +305,18 @@ Class | Method | HTTP request | Description
  - [UpdateProjectRequest](docs/UpdateProjectRequest.md)
  - [UpdateResourceRequest](docs/UpdateResourceRequest.md)
  - [UpdateResourceTypeAdminConfigRequest](docs/UpdateResourceTypeAdminConfigRequest.md)
+ - [UpdateUserPreferencesRequest](docs/UpdateUserPreferencesRequest.md)
  - [UpdateWorkspaceRequest](docs/UpdateWorkspaceRequest.md)
  - [User](docs/User.md)
+ - [UserPreferences](docs/UserPreferences.md)
  - [ValidateGitRepoRequest](docs/ValidateGitRepoRequest.md)
  - [WebhookConfig](docs/WebhookConfig.md)
  - [WebhookDelivery](docs/WebhookDelivery.md)
  - [Workspace](docs/Workspace.md)
+ - [WorkspaceInvite](docs/WorkspaceInvite.md)
+ - [WorkspaceInviteCode](docs/WorkspaceInviteCode.md)
  - [WorkspaceMember](docs/WorkspaceMember.md)
+ - [WorkspaceMemberSample](docs/WorkspaceMemberSample.md)
 
 
 ## Documentation For Authorization

@@ -288,6 +288,27 @@ public interface WorkspacesApi {
             produces = {"application/json"})
     ResponseEntity<List<WorkspaceMember>> listWorkspaceMembers(@PathVariable("slug") String slug);
     /**
+     * GET /workspaces/members : Bulk sample workspace members across multiple workspaces
+     *
+     * Returns up to {@code limit} active members per workspace plus the total active count, so
+     * the console can render the avatar-stack + "+N more" badge on a list of workspace cards
+     * without one request per card. Workspaces the caller has no role in are omitted from the
+     * response.
+     *
+     * @param slugs comma-separated workspace slugs (required)
+     * @param limit per-workspace cap on returned members (optional; default 4, max 10)
+     * @return Success (status code 200)
+     *         or Bad request (status code 400)
+     *         or Unauthorized (status code 401)
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/workspaces/members",
+            produces = {"application/json"})
+    ResponseEntity<List<WorkspaceMemberSample>> sampleWorkspaceMembers(
+            @RequestParam(value = "slugs") List<String> slugs,
+            @Valid @RequestParam(value = "limit", required = false) @Nullable Integer limit);
+    /**
      * GET /workspaces : List workspaces
      *
      * @param page  (optional)
