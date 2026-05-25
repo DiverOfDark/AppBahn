@@ -40,3 +40,6 @@ junit.xml
 *.timestamp-*-*.mjs
 test-results/
 playwright-report/
+
+# PR screenshot capture (CI workflow uploads to Bunny CDN; never committed)
+.pr-screenshots/
