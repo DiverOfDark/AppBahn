@@ -19,4 +19,10 @@ public final class K8sStatusReasons {
 
     /** Deployment.status.conditions[].reason when ProgressDeadlineSeconds elapses without progress. */
     public static final String PROGRESS_DEADLINE_EXCEEDED = "ProgressDeadlineExceeded";
+
+    /**
+     * Event.reason emitted by the kubelet when a liveness/readiness/startup probe fails. The
+     * message format is {@code "<Liveness|Readiness|Startup> probe failed: <details>"}.
+     */
+    public static final String UNHEALTHY = "Unhealthy";
 }

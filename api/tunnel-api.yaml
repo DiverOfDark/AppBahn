@@ -876,6 +876,26 @@ components:
         failureThreshold:
           type: integer
           format: int32
+    ProbeOutcome:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        lastLatencyMs:
+          type: integer
+          format: int64
+        lastCheckedAt:
+          type: string
+          format: date-time
+    ProbeStatusBlock:
+      type: object
+      properties:
+        liveness:
+          $ref: "#/components/schemas/ProbeOutcome"
+        readiness:
+          $ref: "#/components/schemas/ProbeOutcome"
+        startup:
+          $ref: "#/components/schemas/ProbeOutcome"
     PushEventsRequest:
       required:
       - clusterName
@@ -1049,6 +1069,8 @@ components:
           type: boolean
         lastError:
           type: string
+        probeStatus:
+          $ref: "#/components/schemas/ProbeStatusBlock"
     ResourceSyncBatch:
       type: object
       allOf:

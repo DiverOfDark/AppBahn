@@ -320,6 +320,36 @@ spec:
                 - Restarting
                 - Stopped
                 type: string
+              probeStatus:
+                properties:
+                  liveness:
+                    properties:
+                      lastCheckedAt:
+                        type: string
+                      lastLatencyMs:
+                        type: integer
+                      ok:
+                        type: boolean
+                    type: object
+                  readiness:
+                    properties:
+                      lastCheckedAt:
+                        type: string
+                      lastLatencyMs:
+                        type: integer
+                      ok:
+                        type: boolean
+                    type: object
+                  startup:
+                    properties:
+                      lastCheckedAt:
+                        type: string
+                      lastLatencyMs:
+                        type: integer
+                      ok:
+                        type: boolean
+                    type: object
+                type: object
               replicas:
                 properties:
                   available:

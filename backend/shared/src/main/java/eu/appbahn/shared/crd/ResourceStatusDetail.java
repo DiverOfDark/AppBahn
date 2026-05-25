@@ -71,6 +71,14 @@ public class ResourceStatusDetail {
      */
     private String lastError;
 
+    /**
+     * Latest outcome of each configured probe (liveness/readiness/startup). Populated by the
+     * operator: failures are observed from kubelet {@code Unhealthy} events; successes and
+     * measured latency come from a periodic operator-side probe run against the pod IP using
+     * the same {@code spec.config.healthCheck} configuration.
+     */
+    private ProbeStatusBlock probeStatus;
+
     @Data
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ReplicaStatus {
@@ -107,5 +115,30 @@ public class ResourceStatusDetail {
         private String resource;
         private String status;
         private Instant lastSyncTime;
+    }
+
+    @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ProbeStatusBlock {
+        private ProbeOutcome liveness;
+        private ProbeOutcome readiness;
+        private ProbeOutcome startup;
+    }
+
+    @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ProbeOutcome {
+        /** True if the most recent observation succeeded; false if it failed. */
+        private Boolean ok;
+
+        /**
+         * Measured latency of the last operator-side probe run. {@code null} for kubelet-event-driven
+         * failures (the event payload doesn't carry duration) and for exec probes when exec RBAC is
+         * unavailable.
+         */
+        private Long lastLatencyMs;
+
+        /** Wall-clock time the outcome was recorded. */
+        private Instant lastCheckedAt;
     }
 }

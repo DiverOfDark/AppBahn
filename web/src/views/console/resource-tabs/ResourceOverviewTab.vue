@@ -13,11 +13,30 @@ import { probeText } from '@/utils/resource'
 
 type Resource = components['schemas']['Resource']
 type Deployment = components['schemas']['Deployment']
+type ProbeOutcome = NonNullable<
+  NonNullable<components['schemas']['ResourceStatusDetail']['probeStatus']>['liveness']
+>
 
 const props = defineProps<{
   resource: Resource
   deployments: Deployment[]
 }>()
+
+function probeOutcome(slot: 'liveness' | 'readiness' | 'startup'): ProbeOutcome | undefined {
+  return props.resource.statusDetail?.probeStatus?.[slot]
+}
+
+function probeDotClass(o?: ProbeOutcome): string {
+  if (!o) return 'probe-dot probe-dot-idle'
+  if (o.ok === true) return 'probe-dot probe-dot-ok'
+  if (o.ok === false) return 'probe-dot probe-dot-fail'
+  return 'probe-dot probe-dot-idle'
+}
+
+function probeLatencyText(o?: ProbeOutcome): string {
+  if (!o || o.lastLatencyMs == null) return ''
+  return `${o.lastLatencyMs}ms`
+}
 
 const emit = defineEmits<{
   (e: 'navigate-deploys'): void
@@ -140,22 +159,73 @@ const activeImageShort = computed(() => {
           <span class="panel-h-r mono">paths</span>
         </div>
         <div class="panel-body hc">
-          <div v-if="resource.config.healthCheck.liveness" class="hc-row">
-            <span class="hc-name">Liveness</span>
+          <div
+            v-if="resource.config.healthCheck.liveness"
+            class="hc-row"
+            data-testid="hc-row-liveness"
+          >
+            <span class="hc-name">
+              <span
+                :class="probeDotClass(probeOutcome('liveness'))"
+                data-testid="probe-dot-liveness"
+              />
+              Liveness
+            </span>
             <span class="hc-path mono">
               {{ probeText(resource.config.healthCheck.liveness) }}
+              <span
+                v-if="probeLatencyText(probeOutcome('liveness'))"
+                class="hc-lat mono"
+                data-testid="probe-lat-liveness"
+              >
+                · {{ probeLatencyText(probeOutcome('liveness')) }}
+              </span>
             </span>
           </div>
-          <div v-if="resource.config.healthCheck.readiness" class="hc-row">
-            <span class="hc-name">Readiness</span>
+          <div
+            v-if="resource.config.healthCheck.readiness"
+            class="hc-row"
+            data-testid="hc-row-readiness"
+          >
+            <span class="hc-name">
+              <span
+                :class="probeDotClass(probeOutcome('readiness'))"
+                data-testid="probe-dot-readiness"
+              />
+              Readiness
+            </span>
             <span class="hc-path mono">
               {{ probeText(resource.config.healthCheck.readiness) }}
+              <span
+                v-if="probeLatencyText(probeOutcome('readiness'))"
+                class="hc-lat mono"
+                data-testid="probe-lat-readiness"
+              >
+                · {{ probeLatencyText(probeOutcome('readiness')) }}
+              </span>
             </span>
           </div>
-          <div v-if="resource.config.healthCheck.startup" class="hc-row">
-            <span class="hc-name">Startup</span>
+          <div
+            v-if="resource.config.healthCheck.startup"
+            class="hc-row"
+            data-testid="hc-row-startup"
+          >
+            <span class="hc-name">
+              <span
+                :class="probeDotClass(probeOutcome('startup'))"
+                data-testid="probe-dot-startup"
+              />
+              Startup
+            </span>
             <span class="hc-path mono">
               {{ probeText(resource.config.healthCheck.startup) }}
+              <span
+                v-if="probeLatencyText(probeOutcome('startup'))"
+                class="hc-lat mono"
+                data-testid="probe-lat-startup"
+              >
+                · {{ probeLatencyText(probeOutcome('startup')) }}
+              </span>
             </span>
           </div>
         </div>
@@ -301,10 +371,34 @@ const activeImageShort = computed(() => {
 .hc-name {
   color: var(--color-text-primary);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .hc-path {
   color: var(--color-text-tertiary);
   font-size: 11px;
+}
+.hc-lat {
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  margin-left: 2px;
+}
+.probe-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.probe-dot-ok {
+  background: var(--color-status-ready, #16a34a);
+}
+.probe-dot-fail {
+  background: var(--color-status-error, #dc2626);
+}
+.probe-dot-idle {
+  background: var(--color-border, #d4d4d8);
 }
 
 /* Metric strip */

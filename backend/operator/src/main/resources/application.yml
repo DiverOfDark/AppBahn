@@ -27,6 +27,8 @@ operator:
   resource-request-fraction: 0.25
   full-sync-interval-ms: 300000
   full-sync-initial-delay-ms: 60000
+  probe-runner-interval-ms: 60000
+  probe-runner-initial-delay-ms: 30000
   security:
     run-as-non-root: true
     read-only-root-filesystem: true

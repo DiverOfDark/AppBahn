@@ -1,6 +1,7 @@
 package eu.appbahn.operator.reconciler;
 
 import eu.appbahn.operator.reconciler.imagesource.ResourceReleaseResolver;
+import eu.appbahn.operator.reconciler.probe.ProbeStatusTracker;
 import eu.appbahn.operator.tunnel.OperatorEventPublisher;
 import eu.appbahn.shared.K8sStatusReasons;
 import eu.appbahn.shared.Labels;
@@ -86,14 +87,17 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
 
     private final OperatorEventPublisher eventPublisher;
     private final ReleaseLifecycleEmitter releaseLifecycleEmitter;
+    private final ProbeStatusTracker probeStatusTracker;
     private final Counter syncFailureCounter;
 
     public ResourceReconciler(
             OperatorEventPublisher eventPublisher,
             ReleaseLifecycleEmitter releaseLifecycleEmitter,
+            ProbeStatusTracker probeStatusTracker,
             MeterRegistry meterRegistry) {
         this.eventPublisher = eventPublisher;
         this.releaseLifecycleEmitter = releaseLifecycleEmitter;
+        this.probeStatusTracker = probeStatusTracker;
         this.syncFailureCounter = Counter.builder("appbahn.operator.sync.failures")
                 .description("Number of failed platform sync attempts")
                 .register(meterRegistry);
@@ -158,6 +162,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
             ResourceStatusDetail previous = resource.getStatus();
             var status = deriveStatus(resource, k8sDeployment, context);
             enrichWithReleaseStatus(resource, status, context);
+            enrichWithProbeStatus(resource, status, previous);
             releaseLifecycleEmitter.reconcile(resource, previous, status);
 
             if (statusEquals(previous, status)) {
@@ -181,7 +186,10 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
     @Override
     public DeleteControl cleanup(ResourceCrd resource, Context<ResourceCrd> context) {
         String name = resource.getMetadata().getName();
+        String namespace = resource.getMetadata().getNamespace();
         log.info("Cleaning up resource: {}", name);
+
+        probeStatusTracker.forget(ProbeStatusTracker.ResourceKey.of(namespace, name));
 
         try {
             eventPublisher.emitDeleted(name);
@@ -342,6 +350,25 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
         }
 
         return status;
+    }
+
+    /**
+     * Preserve the {@code status.probeStatus} block across reconciles. The block is owned by
+     * {@code OperatorProbeRunner} + {@link ProbeStatusTracker} (kubelet event watcher); the main
+     * reconciler must not blow it away when it rewrites the rest of the status. If the tracker
+     * has a fresher snapshot than {@code previous} (typical after a probe tick between
+     * reconciles), use the tracker's; otherwise carry forward what was already on the CR.
+     */
+    private void enrichWithProbeStatus(
+            ResourceCrd resource, ResourceStatusDetail status, ResourceStatusDetail previous) {
+        var key = ProbeStatusTracker.ResourceKey.of(
+                resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+        var fromTracker = probeStatusTracker.snapshot(key);
+        if (fromTracker != null) {
+            status.setProbeStatus(fromTracker);
+        } else if (previous != null && previous.getProbeStatus() != null) {
+            status.setProbeStatus(previous.getProbeStatus());
+        }
     }
 
     /**
@@ -531,6 +558,7 @@ public class ResourceReconciler implements Reconciler<ResourceCrd>, Cleaner<Reso
                 && Objects.equals(a.getRolloutStatus(), b.getRolloutStatus())
                 && a.getReplicasReady() == b.getReplicasReady()
                 && Objects.equals(a.getSyncFailed(), b.getSyncFailed())
+                && Objects.equals(a.getProbeStatus(), b.getProbeStatus())
                 && replicasEqual(a.getReplicas(), b.getReplicas());
     }
 

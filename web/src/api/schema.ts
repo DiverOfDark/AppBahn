@@ -2091,6 +2091,18 @@ export interface components {
       /** Format: date-time */
       lastSyncTime?: string
     }
+    ProbeOutcome: {
+      ok?: boolean
+      /** Format: int64 */
+      lastLatencyMs?: number
+      /** Format: date-time */
+      lastCheckedAt?: string
+    }
+    ProbeStatusBlock: {
+      liveness?: components['schemas']['ProbeOutcome']
+      readiness?: components['schemas']['ProbeOutcome']
+      startup?: components['schemas']['ProbeOutcome']
+    }
     ReplicaStatus: {
       /** Format: int32 */
       desired?: number
@@ -2152,6 +2164,7 @@ export interface components {
       replicasReady?: number
       syncFailed?: boolean
       lastError?: string
+      probeStatus?: components['schemas']['ProbeStatusBlock']
     }
     UpdateProjectRequest: {
       name?: string

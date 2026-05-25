@@ -109,6 +109,21 @@ Example with health checks:
 }
 ```
 
+#### Live probe status
+
+The console's resource overview shows the latest outcome for each configured probe — a green
+dot for success, red for failure, and the most recently measured latency in milliseconds. The
+data lives under `statusDetail.probeStatus` and is refreshed continuously by the operator:
+
+| Field           | Source                                                                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ok`            | Failures are picked up from kubelet `Unhealthy` events the moment they fire; successes are observed by an operator-side probe that runs against the pod IP every 60 seconds. |
+| `lastLatencyMs` | Measured by the operator's own probe run. Kubelet failure events do not carry latency, so this field can be `null` for a probe that has only ever failed.                    |
+| `lastCheckedAt` | Wall-clock time the most recent observation was recorded.                                                                                                                    |
+
+Exec probes (`exec.command`) record only `lastCheckedAt`; their latency is not measured. HTTP
+and TCP probes record latency in full.
+
 ### Error Responses
 
 Resource creation and updates may return these additional error codes:

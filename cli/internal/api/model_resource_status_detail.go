@@ -37,6 +37,7 @@ type ResourceStatusDetail struct {
 	ReplicasReady             *int32               `json:"replicasReady,omitempty"`
 	SyncFailed                *bool                `json:"syncFailed,omitempty"`
 	LastError                 *string              `json:"lastError,omitempty"`
+	ProbeStatus               *ProbeStatusBlock    `json:"probeStatus,omitempty"`
 }
 
 // NewResourceStatusDetail instantiates a new ResourceStatusDetail object
@@ -600,6 +601,38 @@ func (o *ResourceStatusDetail) SetLastError(v string) {
 	o.LastError = &v
 }
 
+// GetProbeStatus returns the ProbeStatus field value if set, zero value otherwise.
+func (o *ResourceStatusDetail) GetProbeStatus() ProbeStatusBlock {
+	if o == nil || IsNil(o.ProbeStatus) {
+		var ret ProbeStatusBlock
+		return ret
+	}
+	return *o.ProbeStatus
+}
+
+// GetProbeStatusOk returns a tuple with the ProbeStatus field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ResourceStatusDetail) GetProbeStatusOk() (*ProbeStatusBlock, bool) {
+	if o == nil || IsNil(o.ProbeStatus) {
+		return nil, false
+	}
+	return o.ProbeStatus, true
+}
+
+// HasProbeStatus returns a boolean if a field has been set.
+func (o *ResourceStatusDetail) HasProbeStatus() bool {
+	if o != nil && !IsNil(o.ProbeStatus) {
+		return true
+	}
+
+	return false
+}
+
+// SetProbeStatus gets a reference to the given ProbeStatusBlock and assigns it to the ProbeStatus field.
+func (o *ResourceStatusDetail) SetProbeStatus(v ProbeStatusBlock) {
+	o.ProbeStatus = &v
+}
+
 func (o ResourceStatusDetail) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -660,6 +693,9 @@ func (o ResourceStatusDetail) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.LastError) {
 		toSerialize["lastError"] = o.LastError
+	}
+	if !IsNil(o.ProbeStatus) {
+		toSerialize["probeStatus"] = o.ProbeStatus
 	}
 	return toSerialize, nil
 }

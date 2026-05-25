@@ -4368,6 +4368,26 @@ components:
         lastSyncTime:
           type: string
           format: date-time
+    ProbeOutcome:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        lastLatencyMs:
+          type: integer
+          format: int64
+        lastCheckedAt:
+          type: string
+          format: date-time
+    ProbeStatusBlock:
+      type: object
+      properties:
+        liveness:
+          $ref: "#/components/schemas/ProbeOutcome"
+        readiness:
+          $ref: "#/components/schemas/ProbeOutcome"
+        startup:
+          $ref: "#/components/schemas/ProbeOutcome"
     ReplicaStatus:
       type: object
       properties:
@@ -4497,6 +4517,8 @@ components:
           type: boolean
         lastError:
           type: string
+        probeStatus:
+          $ref: "#/components/schemas/ProbeStatusBlock"
     UpdateProjectRequest:
       type: object
       properties:

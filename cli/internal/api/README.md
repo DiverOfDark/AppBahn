@@ -294,6 +294,8 @@ Class | Method | HTTP request | Description
  - [PlatformConfigBranding](docs/PlatformConfigBranding.md)
  - [PortConfig](docs/PortConfig.md)
  - [ProbeConfig](docs/ProbeConfig.md)
+ - [ProbeOutcome](docs/ProbeOutcome.md)
+ - [ProbeStatusBlock](docs/ProbeStatusBlock.md)
  - [Project](docs/Project.md)
  - [ProjectStats](docs/ProjectStats.md)
  - [PromoteRequest](docs/PromoteRequest.md)
