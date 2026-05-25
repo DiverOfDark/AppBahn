@@ -308,6 +308,18 @@ type ResourcesAPI interface {
 	ListResourcesExecute(r ApiListResourcesRequest) (*PagedResourceResponse, *http.Response, error)
 
 	/*
+		PreviewResource Method for PreviewResource
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@return ApiPreviewResourceRequest
+	*/
+	PreviewResource(ctx context.Context) ApiPreviewResourceRequest
+
+	// PreviewResourceExecute executes the request
+	//  @return ResourcePreviewResponse
+	PreviewResourceExecute(r ApiPreviewResourceRequest) (*ResourcePreviewResponse, *http.Response, error)
+
+	/*
 		PromoteResource Method for PromoteResource
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -2994,6 +3006,125 @@ func (a *ResourcesAPIService) ListResourcesExecute(r ApiListResourcesRequest) (*
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiPreviewResourceRequest struct {
+	ctx                   context.Context
+	ApiService            ResourcesAPI
+	createResourceRequest *CreateResourceRequest
+	idempotencyKey        *string
+}
+
+func (r ApiPreviewResourceRequest) CreateResourceRequest(createResourceRequest CreateResourceRequest) ApiPreviewResourceRequest {
+	r.createResourceRequest = &createResourceRequest
+	return r
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiPreviewResourceRequest) IdempotencyKey(idempotencyKey string) ApiPreviewResourceRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiPreviewResourceRequest) Execute() (*ResourcePreviewResponse, *http.Response, error) {
+	return r.ApiService.PreviewResourceExecute(r)
+}
+
+/*
+PreviewResource Method for PreviewResource
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiPreviewResourceRequest
+*/
+func (a *ResourcesAPIService) PreviewResource(ctx context.Context) ApiPreviewResourceRequest {
+	return ApiPreviewResourceRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ResourcePreviewResponse
+func (a *ResourcesAPIService) PreviewResourceExecute(r ApiPreviewResourceRequest) (*ResourcePreviewResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ResourcePreviewResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.PreviewResource")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/resources/preview"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.createResourceRequest == nil {
+		return localVarReturnValue, nil, reportError("createResourceRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
+	// body params
+	localVarPostBody = r.createResourceRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

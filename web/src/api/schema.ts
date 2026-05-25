@@ -468,6 +468,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/preview': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['previewResource']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/projects': {
     parameters: {
       query?: never
@@ -1844,6 +1860,10 @@ export interface components {
       limit?: number
       dimension?: string
       level?: string
+    }
+    ResourcePreviewResponse: {
+      slug?: string
+      domain?: string
     }
     CreateProjectRequest: {
       name: string
@@ -3567,6 +3587,33 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
+      }
+    }
+  }
+  previewResource: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateResourceRequest']
+      }
+    }
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResourcePreviewResponse']
+        }
       }
     }
   }

@@ -18,6 +18,7 @@ import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
 import eu.appbahn.platform.api.resource.PagedResourceResponse;
 import eu.appbahn.platform.api.resource.PromoteRequest;
 import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
+import eu.appbahn.platform.api.resource.ResourcePreviewResponse;
 import eu.appbahn.platform.api.resource.ResourcesApi;
 import eu.appbahn.platform.api.resource.RollbackRequest;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
@@ -57,6 +58,11 @@ public class ResourcesController implements ResourcesApi {
     @Override
     public ResponseEntity<ResourceCreatedResponse> createResource(CreateResourceRequest createResourceRequest) {
         return ResponseEntity.status(202).body(resourceService.create(createResourceRequest, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<ResourcePreviewResponse> previewResource(CreateResourceRequest createResourceRequest) {
+        return ResponseEntity.ok(resourceService.preview(createResourceRequest, AuthContextHolder.get()));
     }
 
     @Override

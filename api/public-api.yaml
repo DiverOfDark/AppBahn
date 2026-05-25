@@ -1046,6 +1046,32 @@ paths:
       responses:
         "200":
           description: OK
+  /resources/preview:
+    post:
+      tags:
+      - Resources
+      operationId: previewResource
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateResourceRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourcePreviewResponse"
   /projects:
     get:
       tags:
@@ -3891,6 +3917,13 @@ components:
         dimension:
           type: string
         level:
+          type: string
+    ResourcePreviewResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        domain:
           type: string
     CreateProjectRequest:
       required:

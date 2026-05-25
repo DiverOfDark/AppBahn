@@ -9,6 +9,7 @@ import eu.appbahn.platform.api.Resource;
 import eu.appbahn.platform.api.resource.CreateResourceRequest;
 import eu.appbahn.platform.api.resource.PagedResourceResponse;
 import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
+import eu.appbahn.platform.api.resource.ResourcePreviewResponse;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.audit.AuditLogService;
 import eu.appbahn.platform.common.exception.ConflictException;
@@ -163,6 +164,34 @@ public class ResourceService {
         var response = new ResourceCreatedResponse();
         response.setSlug(slug);
         response.setEnvironmentSlug(env.getSlug());
+        return response;
+    }
+
+    /**
+     * Computes the slug + primary domain the create flow would mint for {@code req}, without
+     * persisting. Validates auth (EDITOR on the environment) and request shape, but skips
+     * quota, license, and cluster-reachability checks — the caller is exploring, not committing.
+     * Each call generates a fresh random suffix.
+     */
+    @Transactional(readOnly = true)
+    public ResourcePreviewResponse preview(CreateResourceRequest req, AuthContext ctx) {
+        if (!Labels.RESOURCE_TYPE_DEPLOYMENT.equals(req.getType())) {
+            throw new ValidationException("Unknown resource type: " + req.getType());
+        }
+        if (req.getImageSource() == null || req.getImageSource().getType() == null) {
+            throw new ValidationException("imageSource is required (type, plus type-specific sub-block)");
+        }
+
+        var env = environmentLookupService.findBySlug(req.getEnvironmentSlug());
+        permissionService.requireEnvironmentRole(ctx, env.getId(), MemberRole.EDITOR);
+
+        ResourceConfig resourceConfig = objectMapper.convertValue(req.getConfig(), ResourceConfig.class);
+
+        String slug = SlugGenerator.generate(req.getName());
+
+        var response = new ResourcePreviewResponse();
+        response.setSlug(slug);
+        response.setDomain(primaryDomain(resourceConfig, slug));
         return response;
     }
 
@@ -460,6 +489,21 @@ public class ResourceService {
                 port.setDomain(slug + "-" + port.getPort() + "." + baseDomain);
             }
         }
+    }
+
+    /**
+     * Returns the primary ingress domain the create flow would assign for {@code slug}: the
+     * lowest-numbered ingress port's effective domain — either a user-supplied value or the
+     * minted {@code {slug}.{baseDomain}}. Returns {@code null} when there are no ingress ports.
+     */
+    private String primaryDomain(ResourceConfig config, String slug) {
+        if (config == null) {
+            return null;
+        }
+        return config.getIngressPorts().stream()
+                .min(java.util.Comparator.comparingInt(ResourceConfig.PortConfig::getPort))
+                .map(p -> p.getDomain() != null ? p.getDomain() : slug + "." + baseDomain)
+                .orElse(null);
     }
 
     private void validateNodePool(ResourceConfig resourceConfig, String targetCluster) {

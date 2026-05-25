@@ -147,6 +147,7 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**ListDomains**](docs/ResourcesAPI.md#listdomains) | **Get** /resources/{slug}/domains | 
 *ResourcesAPI* | [**ListExposures**](docs/ResourcesAPI.md#listexposures) | **Get** /resources/{slug}/exposures | 
 *ResourcesAPI* | [**ListResources**](docs/ResourcesAPI.md#listresources) | **Get** /resources | 
+*ResourcesAPI* | [**PreviewResource**](docs/ResourcesAPI.md#previewresource) | **Post** /resources/preview | 
 *ResourcesAPI* | [**PromoteResource**](docs/ResourcesAPI.md#promoteresource) | **Post** /resources/{slug}/promote | 
 *ResourcesAPI* | [**RejectDeployment**](docs/ResourcesAPI.md#rejectdeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/reject | 
 *ResourcesAPI* | [**RemoveDomain**](docs/ResourcesAPI.md#removedomain) | **Delete** /resources/{slug}/domains/{domain} | 
@@ -304,6 +305,7 @@ Class | Method | HTTP request | Description
  - [ResourceConfig](docs/ResourceConfig.md)
  - [ResourceCreatedResponse](docs/ResourceCreatedResponse.md)
  - [ResourceExposure](docs/ResourceExposure.md)
+ - [ResourcePreviewResponse](docs/ResourcePreviewResponse.md)
  - [ResourceStatusDetail](docs/ResourceStatusDetail.md)
  - [ResourceTypeDefinition](docs/ResourceTypeDefinition.md)
  - [ResourceTypeInfo](docs/ResourceTypeInfo.md)

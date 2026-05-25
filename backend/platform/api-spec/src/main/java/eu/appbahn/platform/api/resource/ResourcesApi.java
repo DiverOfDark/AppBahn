@@ -102,6 +102,27 @@ public interface ResourcesApi {
     ResponseEntity<ResourceCreatedResponse> createResource(
             @Valid @RequestBody CreateResourceRequest createResourceRequest);
     /**
+     * POST /resources/preview : PreviewResource — compute the slug + primary ingress domain
+     * that {@code POST /resources} would mint for the same payload, without persisting anything.
+     * Each call generates a fresh random suffix; the SPA uses the result for the create-form
+     * Summary rail. Validates auth (EDITOR on the target environment) and the request shape,
+     * but skips quota, license, and cluster-reachability checks.
+     *
+     * @param createResourceRequest  (required)
+     * @return Preview computed (status code 200)
+     *         or Bad request (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found — environment does not exist (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/preview",
+            produces = {"application/json"},
+            consumes = {"application/json"})
+    ResponseEntity<ResourcePreviewResponse> previewResource(
+            @Valid @RequestBody CreateResourceRequest createResourceRequest);
+    /**
      * DELETE /resources/{slug}/exposures/{port} : DeleteExposure
      *
      * @param slug  (required)
