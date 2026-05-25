@@ -19,10 +19,13 @@ var _ MappedNullable = &HostingConfig{}
 
 // HostingConfig struct for HostingConfig
 type HostingConfig struct {
-	Cpu         *string `json:"cpu,omitempty"`
-	Memory      *string `json:"memory,omitempty"`
-	MinReplicas *int32  `json:"minReplicas,omitempty"`
-	MaxReplicas *int32  `json:"maxReplicas,omitempty"`
+	Cpu            *string    `json:"cpu,omitempty"`
+	Memory         *string    `json:"memory,omitempty"`
+	MinReplicas    *int32     `json:"minReplicas,omitempty"`
+	MaxReplicas    *int32     `json:"maxReplicas,omitempty"`
+	NodePool       *string    `json:"nodePool,omitempty"`
+	DeployStrategy *string    `json:"deployStrategy,omitempty"`
+	Pdb            *PdbConfig `json:"pdb,omitempty"`
 }
 
 // NewHostingConfig instantiates a new HostingConfig object
@@ -170,6 +173,102 @@ func (o *HostingConfig) SetMaxReplicas(v int32) {
 	o.MaxReplicas = &v
 }
 
+// GetNodePool returns the NodePool field value if set, zero value otherwise.
+func (o *HostingConfig) GetNodePool() string {
+	if o == nil || IsNil(o.NodePool) {
+		var ret string
+		return ret
+	}
+	return *o.NodePool
+}
+
+// GetNodePoolOk returns a tuple with the NodePool field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *HostingConfig) GetNodePoolOk() (*string, bool) {
+	if o == nil || IsNil(o.NodePool) {
+		return nil, false
+	}
+	return o.NodePool, true
+}
+
+// HasNodePool returns a boolean if a field has been set.
+func (o *HostingConfig) HasNodePool() bool {
+	if o != nil && !IsNil(o.NodePool) {
+		return true
+	}
+
+	return false
+}
+
+// SetNodePool gets a reference to the given string and assigns it to the NodePool field.
+func (o *HostingConfig) SetNodePool(v string) {
+	o.NodePool = &v
+}
+
+// GetDeployStrategy returns the DeployStrategy field value if set, zero value otherwise.
+func (o *HostingConfig) GetDeployStrategy() string {
+	if o == nil || IsNil(o.DeployStrategy) {
+		var ret string
+		return ret
+	}
+	return *o.DeployStrategy
+}
+
+// GetDeployStrategyOk returns a tuple with the DeployStrategy field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *HostingConfig) GetDeployStrategyOk() (*string, bool) {
+	if o == nil || IsNil(o.DeployStrategy) {
+		return nil, false
+	}
+	return o.DeployStrategy, true
+}
+
+// HasDeployStrategy returns a boolean if a field has been set.
+func (o *HostingConfig) HasDeployStrategy() bool {
+	if o != nil && !IsNil(o.DeployStrategy) {
+		return true
+	}
+
+	return false
+}
+
+// SetDeployStrategy gets a reference to the given string and assigns it to the DeployStrategy field.
+func (o *HostingConfig) SetDeployStrategy(v string) {
+	o.DeployStrategy = &v
+}
+
+// GetPdb returns the Pdb field value if set, zero value otherwise.
+func (o *HostingConfig) GetPdb() PdbConfig {
+	if o == nil || IsNil(o.Pdb) {
+		var ret PdbConfig
+		return ret
+	}
+	return *o.Pdb
+}
+
+// GetPdbOk returns a tuple with the Pdb field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *HostingConfig) GetPdbOk() (*PdbConfig, bool) {
+	if o == nil || IsNil(o.Pdb) {
+		return nil, false
+	}
+	return o.Pdb, true
+}
+
+// HasPdb returns a boolean if a field has been set.
+func (o *HostingConfig) HasPdb() bool {
+	if o != nil && !IsNil(o.Pdb) {
+		return true
+	}
+
+	return false
+}
+
+// SetPdb gets a reference to the given PdbConfig and assigns it to the Pdb field.
+func (o *HostingConfig) SetPdb(v PdbConfig) {
+	o.Pdb = &v
+}
+
 func (o HostingConfig) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -191,6 +290,15 @@ func (o HostingConfig) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.MaxReplicas) {
 		toSerialize["maxReplicas"] = o.MaxReplicas
+	}
+	if !IsNil(o.NodePool) {
+		toSerialize["nodePool"] = o.NodePool
+	}
+	if !IsNil(o.DeployStrategy) {
+		toSerialize["deployStrategy"] = o.DeployStrategy
+	}
+	if !IsNil(o.Pdb) {
+		toSerialize["pdb"] = o.Pdb
 	}
 	return toSerialize, nil
 }

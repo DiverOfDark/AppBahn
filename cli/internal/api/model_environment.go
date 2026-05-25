@@ -20,17 +20,18 @@ var _ MappedNullable = &Environment{}
 
 // Environment struct for Environment
 type Environment struct {
-	Id            *string              `json:"id,omitempty"`
-	Name          *string              `json:"name,omitempty"`
-	Slug          *string              `json:"slug,omitempty"`
-	Description   *string              `json:"description,omitempty"`
-	ProjectSlug   *string              `json:"projectSlug,omitempty"`
-	TargetCluster *string              `json:"targetCluster,omitempty"`
-	ApprovalGates *ApprovalGatesConfig `json:"approvalGates,omitempty"`
-	Quota         *Quota               `json:"quota,omitempty"`
-	Registry      *RegistryConfig      `json:"registry,omitempty"`
-	CreatedAt     *time.Time           `json:"createdAt,omitempty"`
-	UpdatedAt     *time.Time           `json:"updatedAt,omitempty"`
+	Id              *string              `json:"id,omitempty"`
+	Name            *string              `json:"name,omitempty"`
+	Slug            *string              `json:"slug,omitempty"`
+	Description     *string              `json:"description,omitempty"`
+	ProjectSlug     *string              `json:"projectSlug,omitempty"`
+	TargetCluster   *string              `json:"targetCluster,omitempty"`
+	ApprovalGates   *ApprovalGatesConfig `json:"approvalGates,omitempty"`
+	Quota           *Quota               `json:"quota,omitempty"`
+	Registry        *RegistryConfig      `json:"registry,omitempty"`
+	AggregateStatus *string              `json:"aggregateStatus,omitempty"`
+	CreatedAt       *time.Time           `json:"createdAt,omitempty"`
+	UpdatedAt       *time.Time           `json:"updatedAt,omitempty"`
 }
 
 // NewEnvironment instantiates a new Environment object
@@ -338,6 +339,38 @@ func (o *Environment) SetRegistry(v RegistryConfig) {
 	o.Registry = &v
 }
 
+// GetAggregateStatus returns the AggregateStatus field value if set, zero value otherwise.
+func (o *Environment) GetAggregateStatus() string {
+	if o == nil || IsNil(o.AggregateStatus) {
+		var ret string
+		return ret
+	}
+	return *o.AggregateStatus
+}
+
+// GetAggregateStatusOk returns a tuple with the AggregateStatus field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Environment) GetAggregateStatusOk() (*string, bool) {
+	if o == nil || IsNil(o.AggregateStatus) {
+		return nil, false
+	}
+	return o.AggregateStatus, true
+}
+
+// HasAggregateStatus returns a boolean if a field has been set.
+func (o *Environment) HasAggregateStatus() bool {
+	if o != nil && !IsNil(o.AggregateStatus) {
+		return true
+	}
+
+	return false
+}
+
+// SetAggregateStatus gets a reference to the given string and assigns it to the AggregateStatus field.
+func (o *Environment) SetAggregateStatus(v string) {
+	o.AggregateStatus = &v
+}
+
 // GetCreatedAt returns the CreatedAt field value if set, zero value otherwise.
 func (o *Environment) GetCreatedAt() time.Time {
 	if o == nil || IsNil(o.CreatedAt) {
@@ -438,6 +471,9 @@ func (o Environment) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Registry) {
 		toSerialize["registry"] = o.Registry
+	}
+	if !IsNil(o.AggregateStatus) {
+		toSerialize["aggregateStatus"] = o.AggregateStatus
 	}
 	if !IsNil(o.CreatedAt) {
 		toSerialize["createdAt"] = o.CreatedAt

@@ -19,7 +19,8 @@ var _ MappedNullable = &UpdateClusterRequest{}
 
 // UpdateClusterRequest struct for UpdateClusterRequest
 type UpdateClusterRequest struct {
-	Description *string `json:"description,omitempty"`
+	Description *string        `json:"description,omitempty"`
+	Config      *ClusterConfig `json:"config,omitempty"`
 }
 
 // NewUpdateClusterRequest instantiates a new UpdateClusterRequest object
@@ -71,6 +72,38 @@ func (o *UpdateClusterRequest) SetDescription(v string) {
 	o.Description = &v
 }
 
+// GetConfig returns the Config field value if set, zero value otherwise.
+func (o *UpdateClusterRequest) GetConfig() ClusterConfig {
+	if o == nil || IsNil(o.Config) {
+		var ret ClusterConfig
+		return ret
+	}
+	return *o.Config
+}
+
+// GetConfigOk returns a tuple with the Config field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateClusterRequest) GetConfigOk() (*ClusterConfig, bool) {
+	if o == nil || IsNil(o.Config) {
+		return nil, false
+	}
+	return o.Config, true
+}
+
+// HasConfig returns a boolean if a field has been set.
+func (o *UpdateClusterRequest) HasConfig() bool {
+	if o != nil && !IsNil(o.Config) {
+		return true
+	}
+
+	return false
+}
+
+// SetConfig gets a reference to the given ClusterConfig and assigns it to the Config field.
+func (o *UpdateClusterRequest) SetConfig(v ClusterConfig) {
+	o.Config = &v
+}
+
 func (o UpdateClusterRequest) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -83,6 +116,9 @@ func (o UpdateClusterRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
 	}
 	return toSerialize, nil
 }

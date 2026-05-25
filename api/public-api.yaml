@@ -2264,6 +2264,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PagedAuditLogResponse"
+  /workspaces/stats:
+    get:
+      tags:
+      - Stats
+      operationId: getWorkspaceStats
+      parameters:
+      - name: slugs
+        in: query
+        required: true
+        schema:
+          maxItems: 100
+          minItems: 0
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkspaceStats"
   /workspaces/members:
     get:
       tags:
@@ -2671,6 +2695,27 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResourceTypeInfo"
+  /projects/stats:
+    get:
+      tags:
+      - Stats
+      operationId: getProjectStats
+      parameters:
+      - name: workspaceSlug
+        in: query
+        required: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectStats"
   /image-sources/{slug}/webhook:
     get:
       tags:
@@ -2728,6 +2773,27 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/NodePool"
+  /environments/stats:
+    get:
+      tags:
+      - Stats
+      operationId: getEnvironmentStats
+      parameters:
+      - name: projectSlug
+        in: query
+        required: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnvironmentStats"
   /auth/login:
     get:
       tags:
@@ -4426,6 +4492,26 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AuditLogEntry"
+    WorkspaceStats:
+      type: object
+      properties:
+        slug:
+          type: string
+        projectCount:
+          type: integer
+          format: int64
+        resourceCount:
+          type: integer
+          format: int64
+        clusterCount:
+          type: integer
+          format: int64
+        memberCount:
+          type: integer
+          format: int64
+        lastEventAt:
+          type: string
+          format: date-time
     WorkspaceMemberSample:
       type: object
       properties:
@@ -4660,6 +4746,41 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Project"
+    EnvironmentRollup:
+      type: object
+      properties:
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - Pending
+          - Ready
+          - Restarting
+          - Degraded
+          - Error
+          - Stopped
+    ProjectStats:
+      type: object
+      properties:
+        slug:
+          type: string
+        services:
+          type: integer
+          format: int64
+        deploys7d:
+          type: integer
+          format: int64
+        uptimePct:
+          type: number
+          format: double
+        lastDeployAt:
+          type: string
+          format: date-time
+        envs:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnvironmentRollup"
     ImageSourceWebhookView:
       type: object
       properties:
@@ -4811,6 +4932,24 @@ components:
         createdAt:
           type: string
           format: date-time
+    EnvironmentStats:
+      type: object
+      properties:
+        slug:
+          type: string
+        aggregateStatus:
+          type: string
+          enum:
+          - Pending
+          - Ready
+          - Restarting
+          - Degraded
+          - Error
+          - Stopped
+        configuredCpu:
+          type: string
+        configuredMemory:
+          type: string
     PagedUserResponse:
       type: object
       properties:

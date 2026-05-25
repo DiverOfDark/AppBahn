@@ -884,6 +884,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/workspaces/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getWorkspaceStats']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/workspaces/members': {
     parameters: {
       query?: never
@@ -1124,6 +1140,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/projects/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getProjectStats']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/image-sources/{slug}/webhook': {
     parameters: {
       query?: never
@@ -1164,6 +1196,22 @@ export interface paths {
       cookie?: never
     }
     get: operations['listEnvironmentNodePools']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/environments/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getEnvironmentStats']
     put?: never
     post?: never
     delete?: never
@@ -2119,6 +2167,19 @@ export interface components {
       totalPages?: number
       content?: components['schemas']['AuditLogEntry'][]
     }
+    WorkspaceStats: {
+      slug?: string
+      /** Format: int64 */
+      projectCount?: number
+      /** Format: int64 */
+      resourceCount?: number
+      /** Format: int64 */
+      clusterCount?: number
+      /** Format: int64 */
+      memberCount?: number
+      /** Format: date-time */
+      lastEventAt?: string
+    }
     WorkspaceMemberSample: {
       slug?: string
       members?: components['schemas']['WorkspaceMember'][]
@@ -2257,6 +2318,23 @@ export interface components {
       totalPages?: number
       content?: components['schemas']['Project'][]
     }
+    EnvironmentRollup: {
+      slug?: string
+      /** @enum {string} */
+      status?: 'Pending' | 'Ready' | 'Restarting' | 'Degraded' | 'Error' | 'Stopped'
+    }
+    ProjectStats: {
+      slug?: string
+      /** Format: int64 */
+      services?: number
+      /** Format: int64 */
+      deploys7d?: number
+      /** Format: double */
+      uptimePct?: number
+      /** Format: date-time */
+      lastDeployAt?: string
+      envs?: components['schemas']['EnvironmentRollup'][]
+    }
     ImageSourceWebhookView: {
       url?: string
       maskedSecret?: string
@@ -2333,6 +2411,13 @@ export interface components {
       createdBy?: string
       /** Format: date-time */
       createdAt?: string
+    }
+    EnvironmentStats: {
+      slug?: string
+      /** @enum {string} */
+      aggregateStatus?: 'Pending' | 'Ready' | 'Restarting' | 'Degraded' | 'Error' | 'Stopped'
+      configuredCpu?: string
+      configuredMemory?: string
     }
     PagedUserResponse: {
       /** Format: int32 */
@@ -4631,6 +4716,28 @@ export interface operations {
       }
     }
   }
+  getWorkspaceStats: {
+    parameters: {
+      query: {
+        slugs: string[]
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['WorkspaceStats'][]
+        }
+      }
+    }
+  }
   sampleWorkspaceMembers: {
     parameters: {
       query: {
@@ -4988,6 +5095,28 @@ export interface operations {
       }
     }
   }
+  getProjectStats: {
+    parameters: {
+      query: {
+        workspaceSlug: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProjectStats'][]
+        }
+      }
+    }
+  }
   getImageSourceWebhook: {
     parameters: {
       query?: never
@@ -5050,6 +5179,28 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['NodePool'][]
+        }
+      }
+    }
+  }
+  getEnvironmentStats: {
+    parameters: {
+      query: {
+        projectSlug: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['EnvironmentStats'][]
         }
       }
     }

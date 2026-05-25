@@ -20,10 +20,11 @@ var _ MappedNullable = &Cluster{}
 
 // Cluster struct for Cluster
 type Cluster struct {
-	Name             *string    `json:"name,omitempty"`
-	Description      *string    `json:"description,omitempty"`
-	KubeconfigSecret *string    `json:"kubeconfigSecret,omitempty"`
-	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	Name             *string        `json:"name,omitempty"`
+	Description      *string        `json:"description,omitempty"`
+	KubeconfigSecret *string        `json:"kubeconfigSecret,omitempty"`
+	CreatedAt        *time.Time     `json:"createdAt,omitempty"`
+	Config           *ClusterConfig `json:"config,omitempty"`
 }
 
 // NewCluster instantiates a new Cluster object
@@ -171,6 +172,38 @@ func (o *Cluster) SetCreatedAt(v time.Time) {
 	o.CreatedAt = &v
 }
 
+// GetConfig returns the Config field value if set, zero value otherwise.
+func (o *Cluster) GetConfig() ClusterConfig {
+	if o == nil || IsNil(o.Config) {
+		var ret ClusterConfig
+		return ret
+	}
+	return *o.Config
+}
+
+// GetConfigOk returns a tuple with the Config field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Cluster) GetConfigOk() (*ClusterConfig, bool) {
+	if o == nil || IsNil(o.Config) {
+		return nil, false
+	}
+	return o.Config, true
+}
+
+// HasConfig returns a boolean if a field has been set.
+func (o *Cluster) HasConfig() bool {
+	if o != nil && !IsNil(o.Config) {
+		return true
+	}
+
+	return false
+}
+
+// SetConfig gets a reference to the given ClusterConfig and assigns it to the Config field.
+func (o *Cluster) SetConfig(v ClusterConfig) {
+	o.Config = &v
+}
+
 func (o Cluster) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -192,6 +225,9 @@ func (o Cluster) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.CreatedAt) {
 		toSerialize["createdAt"] = o.CreatedAt
+	}
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
 	}
 	return toSerialize, nil
 }

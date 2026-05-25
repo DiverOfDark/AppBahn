@@ -95,6 +95,7 @@ Class | Method | HTTP request | Description
 *EnvironmentsAPI* | [**DeleteEnvironmentToken**](docs/EnvironmentsAPI.md#deleteenvironmenttoken) | **Delete** /environments/{slug}/tokens/{token_id} | 
 *EnvironmentsAPI* | [**GetEnvironment**](docs/EnvironmentsAPI.md#getenvironment) | **Get** /environments/{slug} | 
 *EnvironmentsAPI* | [**GetEnvironmentQuota**](docs/EnvironmentsAPI.md#getenvironmentquota) | **Get** /environments/{slug}/quota | 
+*EnvironmentsAPI* | [**ListEnvironmentNodePools**](docs/EnvironmentsAPI.md#listenvironmentnodepools) | **Get** /environments/{slug}/node-pools | 
 *EnvironmentsAPI* | [**ListEnvironmentTokens**](docs/EnvironmentsAPI.md#listenvironmenttokens) | **Get** /environments/{slug}/tokens | 
 *EnvironmentsAPI* | [**ListEnvironments**](docs/EnvironmentsAPI.md#listenvironments) | **Get** /environments | 
 *EnvironmentsAPI* | [**SetApprovalGates**](docs/EnvironmentsAPI.md#setapprovalgates) | **Put** /environments/{slug}/approval-gates | 
@@ -154,6 +155,9 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**StopResource**](docs/ResourcesAPI.md#stopresource) | **Post** /resources/{slug}/stop | 
 *ResourcesAPI* | [**UnpinResource**](docs/ResourcesAPI.md#unpinresource) | **Post** /resources/{slug}/unpin | 
 *ResourcesAPI* | [**UpdateResource**](docs/ResourcesAPI.md#updateresource) | **Patch** /resources/{slug} | 
+*StatsAPI* | [**GetEnvironmentStats**](docs/StatsAPI.md#getenvironmentstats) | **Get** /environments/stats | 
+*StatsAPI* | [**GetProjectStats**](docs/StatsAPI.md#getprojectstats) | **Get** /projects/stats | 
+*StatsAPI* | [**GetWorkspaceStats**](docs/StatsAPI.md#getworkspacestats) | **Get** /workspaces/stats | 
 *UsersAPI* | [**GetCurrentUser**](docs/UsersAPI.md#getcurrentuser) | **Get** /users/me | 
 *UsersAPI* | [**GetUserPreferences**](docs/UsersAPI.md#getuserpreferences) | **Get** /users/me/preferences | 
 *UsersAPI* | [**UpdateUserPreferences**](docs/UsersAPI.md#updateuserpreferences) | **Patch** /users/me/preferences | 
@@ -207,6 +211,7 @@ Class | Method | HTTP request | Description
  - [BuildStage](docs/BuildStage.md)
  - [BuildpackBuildOptions](docs/BuildpackBuildOptions.md)
  - [Cluster](docs/Cluster.md)
+ - [ClusterConfig](docs/ClusterConfig.md)
  - [CommandOverride](docs/CommandOverride.md)
  - [ConnectionEntry](docs/ConnectionEntry.md)
  - [ConnectionResponse](docs/ConnectionResponse.md)
@@ -232,6 +237,8 @@ Class | Method | HTTP request | Description
  - [DockerfileBuildOptions](docs/DockerfileBuildOptions.md)
  - [DomainEntry](docs/DomainEntry.md)
  - [Environment](docs/Environment.md)
+ - [EnvironmentRollup](docs/EnvironmentRollup.md)
+ - [EnvironmentStats](docs/EnvironmentStats.md)
  - [EnvironmentToken](docs/EnvironmentToken.md)
  - [ErrorResponse](docs/ErrorResponse.md)
  - [ExecAction](docs/ExecAction.md)
@@ -263,6 +270,7 @@ Class | Method | HTTP request | Description
  - [MetricsSeries](docs/MetricsSeries.md)
  - [NetworkPolicy](docs/NetworkPolicy.md)
  - [NetworkingConfig](docs/NetworkingConfig.md)
+ - [NodePool](docs/NodePool.md)
  - [NotificationWebhook](docs/NotificationWebhook.md)
  - [OidcGroupMapping](docs/OidcGroupMapping.md)
  - [PagedAuditLogResponse](docs/PagedAuditLogResponse.md)
@@ -272,12 +280,14 @@ Class | Method | HTTP request | Description
  - [PagedResourceResponse](docs/PagedResourceResponse.md)
  - [PagedUserResponse](docs/PagedUserResponse.md)
  - [PagedWorkspaceResponse](docs/PagedWorkspaceResponse.md)
+ - [PdbConfig](docs/PdbConfig.md)
  - [PeelboxBuildOptions](docs/PeelboxBuildOptions.md)
  - [PlatformConfig](docs/PlatformConfig.md)
  - [PlatformConfigBranding](docs/PlatformConfigBranding.md)
  - [PortConfig](docs/PortConfig.md)
  - [ProbeConfig](docs/ProbeConfig.md)
  - [Project](docs/Project.md)
+ - [ProjectStats](docs/ProjectStats.md)
  - [PromoteRequest](docs/PromoteRequest.md)
  - [Quota](docs/Quota.md)
  - [RedeemInviteRequest](docs/RedeemInviteRequest.md)
@@ -296,6 +306,7 @@ Class | Method | HTTP request | Description
  - [SecuritySettings](docs/SecuritySettings.md)
  - [SetTargetClusterRequest](docs/SetTargetClusterRequest.md)
  - [TcpSocketAction](docs/TcpSocketAction.md)
+ - [Toleration](docs/Toleration.md)
  - [UpdateClusterRequest](docs/UpdateClusterRequest.md)
  - [UpdateEnvironmentRequest](docs/UpdateEnvironmentRequest.md)
  - [UpdateGroupMappingRequest](docs/UpdateGroupMappingRequest.md)
@@ -317,6 +328,7 @@ Class | Method | HTTP request | Description
  - [WorkspaceInviteCode](docs/WorkspaceInviteCode.md)
  - [WorkspaceMember](docs/WorkspaceMember.md)
  - [WorkspaceMemberSample](docs/WorkspaceMemberSample.md)
+ - [WorkspaceStats](docs/WorkspaceStats.md)
 
 
 ## Documentation For Authorization

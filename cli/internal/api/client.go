@@ -66,6 +66,8 @@ type APIClient struct {
 
 	ResourcesAPI ResourcesAPI
 
+	StatsAPI StatsAPI
+
 	UsersAPI UsersAPI
 
 	WebhooksAPI WebhooksAPI
@@ -98,6 +100,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.ProjectsAPI = (*ProjectsAPIService)(&c.common)
 	c.ResourceTypesAPI = (*ResourceTypesAPIService)(&c.common)
 	c.ResourcesAPI = (*ResourcesAPIService)(&c.common)
+	c.StatsAPI = (*StatsAPIService)(&c.common)
 	c.UsersAPI = (*UsersAPIService)(&c.common)
 	c.WebhooksAPI = (*WebhooksAPIService)(&c.common)
 	c.WorkspacesAPI = (*WorkspacesAPIService)(&c.common)
