@@ -7,7 +7,10 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 
-/** Condition for the ClusterIP Service — true when any non-TCP port is defined. */
+/**
+ * Condition for the ClusterIP Service — true when any non-TCP port is defined
+ * (i.e. {@code expose=INGRESS}, {@code expose=NONE}, or unspecified).
+ */
 public class PortDefinedCondition implements Condition<HasMetadata, ResourceCrd> {
 
     @Override

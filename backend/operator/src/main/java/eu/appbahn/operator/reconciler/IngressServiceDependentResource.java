@@ -12,7 +12,11 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import java.util.Map;
 
 /**
- * ClusterIP Service for ports with expose=INGRESS or expose=NONE.
+ * ClusterIP Service for ports with {@code expose=INGRESS} or {@code expose=NONE}.
+ * {@code Ingress} ports are reachable both publicly (via the Ingress) and in-cluster;
+ * {@code None} ports are only reachable in-cluster (no Ingress is created).
+ * Only {@code expose=TCP} ports are excluded — those land on a LoadBalancer via
+ * {@link TcpServiceDependentResource}.
  */
 @KubernetesDependent
 public class IngressServiceDependentResource extends CRUDKubernetesDependentResource<Service, ResourceCrd> {

@@ -237,7 +237,7 @@ watch([cpu, memory], ([newCpu, newMem]) => {
             <PortRowsEditor v-model="ports" />
             <span class="hint">
               Public → HTTP Ingress with auto-domain · TCP → load-balancer for raw TCP · Private →
-              in-cluster only.
+              in-cluster ClusterIP service, no Ingress.
             </span>
           </div>
         </div>

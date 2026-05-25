@@ -21,6 +21,17 @@ const props = defineProps<{
 }>()
 
 const envVarCount = computed(() => props.envVars.filter((r) => r.key.trim()).length)
+
+function exposeLabel(expose: PortRow['expose']): string {
+  switch (expose) {
+    case 'Ingress':
+      return 'pub'
+    case 'Tcp':
+      return 'tcp'
+    default:
+      return 'priv'
+  }
+}
 </script>
 
 <template>
@@ -55,9 +66,7 @@ const envVarCount = computed(() => props.envVars.filter((r) => r.key.trim()).len
           <span class="sv mono trunc">
             <template v-if="ports.length">
               <span v-for="(row, i) in ports" :key="row.id">
-                <template v-if="i > 0">, </template>{{ row.port }}/{{
-                  row.expose === 'Ingress' ? 'pub' : row.expose === 'Tcp' ? 'tcp' : 'priv'
-                }}
+                <template v-if="i > 0">, </template>{{ row.port }}/{{ exposeLabel(row.expose) }}
               </span>
             </template>
             <template v-else>—</template>
