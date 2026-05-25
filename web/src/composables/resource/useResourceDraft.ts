@@ -24,6 +24,9 @@ export interface SettingsDraft {
   maxReplicas: number | undefined
   ports: PortRow[]
   health: HealthCheckState
+  startup: HealthCheckState
+  command: string
+  args: string
 }
 
 /**
@@ -47,6 +50,23 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
   const error = ref('')
   const savedAt = ref<number | null>(null)
 
+  function probeToState(
+    probe: components['schemas']['ProbeConfig'] | undefined,
+    defaults: { path: string; initialDelay: number; period: number; failureThreshold: number },
+  ): HealthCheckState {
+    const mode: ProbeMode = probe?.exec ? 'exec' : probe?.tcpSocket ? 'tcp' : 'http'
+    return {
+      enabled: probe != null,
+      mode,
+      path: probe?.httpGet?.path ?? defaults.path,
+      port: probe?.httpGet?.port ?? probe?.tcpSocket?.port,
+      command: (probe?.exec?.command ?? []).join(' '),
+      initialDelay: probe?.initialDelaySeconds ?? defaults.initialDelay,
+      period: probe?.periodSeconds ?? defaults.period,
+      failureThreshold: probe?.failureThreshold ?? defaults.failureThreshold,
+    }
+  }
+
   function buildDraft(r: Resource): SettingsDraft {
     const config = r.config ?? {}
     const hosting = config.hosting ?? {}
@@ -56,9 +76,7 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
       expose: (p.expose ?? 'None') as PortRow['expose'],
     }))
     if (ports.length === 0) ports.push({ id: ++portRowSeq, port: 80, expose: 'Ingress' })
-    const probe =
-      config.healthCheck?.liveness ?? config.healthCheck?.readiness ?? config.healthCheck?.startup
-    const mode: ProbeMode = probe?.exec ? 'exec' : probe?.tcpSocket ? 'tcp' : 'http'
+    const liveness = config.healthCheck?.liveness ?? config.healthCheck?.readiness
     const [imagePart, tagPart] = splitImageRef(r.statusDetail?.activeRelease?.imageRef ?? '')
     return {
       name: r.name ?? r.slug ?? '',
@@ -69,16 +87,20 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
       minReplicas: hosting.minReplicas ?? 1,
       maxReplicas: hosting.maxReplicas,
       ports,
-      health: {
-        enabled: probe != null,
-        mode,
-        path: probe?.httpGet?.path ?? '/health',
-        port: probe?.httpGet?.port ?? probe?.tcpSocket?.port,
-        command: (probe?.exec?.command ?? []).join(' '),
-        initialDelay: probe?.initialDelaySeconds ?? 10,
-        period: probe?.periodSeconds ?? 10,
-        failureThreshold: probe?.failureThreshold ?? 3,
-      },
+      health: probeToState(liveness, {
+        path: '/health',
+        initialDelay: 10,
+        period: 10,
+        failureThreshold: 3,
+      }),
+      startup: probeToState(config.healthCheck?.startup, {
+        path: '/health',
+        initialDelay: 0,
+        period: 5,
+        failureThreshold: 30,
+      }),
+      command: '',
+      args: '',
     }
   }
 
@@ -100,6 +122,9 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
     if (JSON.stringify(a.ports) !== JSON.stringify(b.ports)) n++
     if (a.health.enabled !== b.health.enabled) n++
     if (a.health.enabled && JSON.stringify(a.health) !== JSON.stringify(b.health)) n++
+    if (a.startup.enabled !== b.startup.enabled) n++
+    if (a.startup.enabled && JSON.stringify(a.startup) !== JSON.stringify(b.startup)) n++
+    if (a.command !== b.command || a.args !== b.args) n++
     return n
   })
 
@@ -154,14 +179,21 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
         networking: {
           ports: snapshot.ports.map((row) => ({ port: row.port, expose: row.expose })),
         },
-        runMode: resource.value.config?.runMode ?? 'Continuous',
         env: resource.value.config?.env ?? {},
       }
       const maxR = asOptionalInt(snapshot.maxReplicas)
       if (maxR !== undefined) config.hosting!.maxReplicas = maxR
+      const healthCheck: components['schemas']['HealthCheckConfig'] = {}
       if (snapshot.health.enabled) {
         const probe = buildProbe(snapshot.health, snapshot.ports[0]?.port)
-        config.healthCheck = { liveness: probe, readiness: probe }
+        healthCheck.liveness = probe
+        healthCheck.readiness = probe
+      }
+      if (snapshot.startup.enabled) {
+        healthCheck.startup = buildProbe(snapshot.startup, snapshot.ports[0]?.port)
+      }
+      if (Object.keys(healthCheck).length > 0) {
+        config.healthCheck = healthCheck
       }
       const snapImage = snapshot.image.trim()
       const snapTag = snapshot.tag.trim()
@@ -172,6 +204,14 @@ export function useResourceDraft(resource: Ref<Resource>, onSaved: () => void) {
       }
       if (snapshotFullImage) {
         body.imageSource = { type: 'Image', image: { ref: snapshotFullImage } }
+      }
+      const commandTokens = snapshot.command.trim().split(/\s+/).filter(Boolean)
+      const argsTokens = snapshot.args.trim().split(/\s+/).filter(Boolean)
+      if (commandTokens.length > 0 || argsTokens.length > 0) {
+        const override: components['schemas']['CommandOverride'] = {}
+        if (commandTokens.length > 0) override.command = commandTokens
+        if (argsTokens.length > 0) override.args = argsTokens
+        body.commandOverride = override
       }
       const { error: apiError } = await api.PATCH('/resources/{slug}', {
         params: { path: { slug: resource.value.slug ?? '' } },

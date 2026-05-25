@@ -155,7 +155,7 @@ const { draft, isDirty, dirtyCount, fullImage, saving, error, savedAt, discard, 
       <div v-show="settingsActive === 'runtime'" class="panel">
         <div class="panel-h">
           <h3>Runtime</h3>
-          <p>Per-pod resources. Total = replicas × per-pod.</p>
+          <p>Per-pod resources and command override.</p>
         </div>
         <div class="panel-body">
           <div class="field">
@@ -192,6 +192,32 @@ const { draft, isDirty, dirtyCount, fullImage, saving, error, savedAt, discard, 
                 />
                 <span class="hint mono">Mi</span>
               </div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-l">
+              <span class="lbl">Command</span>
+              <span class="desc">override entrypoint</span>
+            </div>
+            <div class="field-c">
+              <input
+                v-model="draft.command"
+                class="form-input"
+                placeholder="(leave blank to keep image default)"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-l">
+              <span class="lbl">Args</span>
+              <span class="desc">space-separated</span>
+            </div>
+            <div class="field-c">
+              <input
+                v-model="draft.args"
+                class="form-input"
+                placeholder="(leave blank to keep image default)"
+              />
             </div>
           </div>
         </div>
@@ -239,6 +265,16 @@ const { draft, isDirty, dirtyCount, fullImage, saving, error, savedAt, discard, 
         </div>
         <div class="panel-body">
           <HealthCheckEditor v-model="draft.health" :default-port="draft.ports[0]?.port" />
+        </div>
+      </div>
+
+      <div v-show="settingsActive === 'health'" class="panel">
+        <div class="panel-h">
+          <h3>Startup probe</h3>
+          <p>Optional. Runs before liveness/readiness — give slow boots more time.</p>
+        </div>
+        <div class="panel-body">
+          <HealthCheckEditor v-model="draft.startup" :default-port="draft.ports[0]?.port" />
         </div>
       </div>
 
