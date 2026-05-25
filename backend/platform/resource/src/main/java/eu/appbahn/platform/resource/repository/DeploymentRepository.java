@@ -1,6 +1,9 @@
 package eu.appbahn.platform.resource.repository;
 
 import eu.appbahn.platform.resource.entity.DeploymentEntity;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -13,6 +16,25 @@ import org.springframework.data.repository.query.Param;
 public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UUID> {
 
     Page<DeploymentEntity> findByResourceSlug(String resourceSlug, Pageable pageable);
+
+    /**
+     * Server-side lifecycle-tab filter for the Deploys tab. Either {@code lifecycles} matches
+     * (Succeeded / Failed tabs) or {@code triggerRollback=true} narrows to {@code triggered_by =
+     * ROLLBACK} (Rollback tab) — exactly one branch fires per call. {@code lifecycles} must be
+     * non-empty even on the rollback branch (any non-empty placeholder works) because JPQL's
+     * {@code IN :param} chokes on an empty collection.
+     */
+    @Query("""
+            SELECT d FROM DeploymentEntity d
+            WHERE d.resourceSlug = :slug
+              AND ((:triggerRollback = TRUE AND d.triggeredBy = eu.appbahn.platform.api.TriggerType.ROLLBACK)
+                   OR (:triggerRollback = FALSE AND d.lifecycle IN :lifecycles))
+            """)
+    Page<DeploymentEntity> findByResourceSlugFiltered(
+            @Param("slug") String resourceSlug,
+            @Param("lifecycles") Collection<eu.appbahn.shared.crd.imagesource.BuildLifecycle> lifecycles,
+            @Param("triggerRollback") boolean triggerRollback,
+            Pageable pageable);
 
     Optional<DeploymentEntity> findByIdAndResourceSlug(UUID id, String resourceSlug);
 
@@ -81,6 +103,65 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UU
     int supersedeInFlight(@Param("slug") String resourceSlug, @Param("exceptId") UUID exceptId);
 
     long countByResourceSlug(String resourceSlug);
+
+    /**
+     * One row per UTC calendar day inside the sliding window {@code [since, +∞)} with non-zero
+     * deployment counts. Days with no deployments are omitted; the service-layer pads the
+     * result so the histogram has a stable bar count.
+     *
+     * <p>Aggregation runs entirely in Postgres via
+     * {@code date_trunc('day', created_at AT TIME ZONE 'UTC')} — Java never iterates over the
+     * {@code deployment} table for stats.
+     */
+    @Query(nativeQuery = true, value = """
+                    SELECT
+                        date_trunc('day', created_at AT TIME ZONE 'UTC')::date AS day,
+                        COUNT(*) AS deploys,
+                        COUNT(*) FILTER (WHERE lifecycle IN ('ACTIVE', 'BUILT')) AS success,
+                        COUNT(*) FILTER (WHERE lifecycle IN ('FAILED', 'CANCELED')) AS failure
+                    FROM deployment
+                    WHERE resource_slug = :slug
+                      AND created_at >= :since
+                    GROUP BY day
+                    ORDER BY day ASC
+                    """)
+    List<DeploymentStatsBucketRow> aggregateDailyBuckets(
+            @Param("slug") String resourceSlug, @Param("since") Instant since);
+
+    /** Window-wide aggregate matching {@link #aggregateDailyBuckets}'s filter. */
+    @Query(nativeQuery = true, value = """
+                    SELECT
+                        COUNT(*) AS deploys,
+                        COUNT(*) FILTER (WHERE lifecycle IN ('ACTIVE', 'BUILT')) AS success,
+                        COUNT(*) FILTER (WHERE lifecycle IN ('FAILED', 'CANCELED')) AS failure,
+                        COUNT(*) FILTER (WHERE triggered_by = 'ROLLBACK') AS rollback
+                    FROM deployment
+                    WHERE resource_slug = :slug
+                      AND created_at >= :since
+                    """)
+    DeploymentStatsTotalsRow aggregateTotals(@Param("slug") String resourceSlug, @Param("since") Instant since);
+
+    /** Per-day projection for {@link #aggregateDailyBuckets}. */
+    interface DeploymentStatsBucketRow {
+        java.sql.Date getDay();
+
+        long getDeploys();
+
+        long getSuccess();
+
+        long getFailure();
+    }
+
+    /** Window-wide projection for {@link #aggregateTotals}. */
+    interface DeploymentStatsTotalsRow {
+        long getDeploys();
+
+        long getSuccess();
+
+        long getFailure();
+
+        long getRollback();
+    }
 
     /**
      * Delete deployment audit rows that are eligible for retention pruning. A row is eligible iff

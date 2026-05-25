@@ -1,10 +1,12 @@
 package eu.appbahn.operator.tunnel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.appbahn.operator.reconciler.imagesource.buildjob.BuildOrchestrator;
 import eu.appbahn.operator.tunnel.client.model.AckCommandRequest;
 import eu.appbahn.operator.tunnel.client.model.AdminConfigPush;
 import eu.appbahn.operator.tunnel.client.model.ApplyNamespace;
 import eu.appbahn.operator.tunnel.client.model.ApplyResourceBundle;
+import eu.appbahn.operator.tunnel.client.model.CancelBuild;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
 import eu.appbahn.operator.tunnel.client.model.DeleteNamespace;
@@ -13,10 +15,13 @@ import eu.appbahn.operator.tunnel.client.model.HelloAck;
 import eu.appbahn.operator.tunnel.client.model.NudgeImageSource;
 import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
+import eu.appbahn.operator.tunnel.client.model.RetryBuild;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
+import eu.appbahn.shared.crd.imagesource.ImageSourceSpec;
 import eu.appbahn.shared.crd.imagesource.ImageSourceStatus;
+import eu.appbahn.shared.crd.imagesource.ImageSourceType;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -42,6 +47,7 @@ public class PlatformCommandHandler {
     private final AdmissionSnapshotCache admissionCache;
     private final AdminConfigCache adminConfigCache;
     private final OperatorEventPublisher eventPublisher;
+    private final BuildOrchestrator buildOrchestrator;
     private final ObjectMapper mapper;
 
     public PlatformCommandHandler(
@@ -50,12 +56,14 @@ public class PlatformCommandHandler {
             AdmissionSnapshotCache admissionCache,
             AdminConfigCache adminConfigCache,
             OperatorEventPublisher eventPublisher,
+            BuildOrchestrator buildOrchestrator,
             ObjectMapper mapper) {
         this.kubernetesClient = kubernetesClient;
         this.tunnelApiClient = tunnelApiClient;
         this.admissionCache = admissionCache;
         this.adminConfigCache = adminConfigCache;
         this.eventPublisher = eventPublisher;
+        this.buildOrchestrator = buildOrchestrator;
         this.mapper = mapper;
     }
 
@@ -72,6 +80,8 @@ public class PlatformCommandHandler {
                     handleDeleteNamespace(mapper.readValue(data, DeleteNamespace.class));
                 case TunnelEventNames.NUDGE_IMAGE_SOURCE ->
                     handleNudgeImageSource(mapper.readValue(data, NudgeImageSource.class));
+                case TunnelEventNames.CANCEL_BUILD -> handleCancelBuild(mapper.readValue(data, CancelBuild.class));
+                case TunnelEventNames.RETRY_BUILD -> handleRetryBuild(mapper.readValue(data, RetryBuild.class));
                 case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
                 case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
                     var push = mapper.readValue(data, QuotaRbacCachePush.class);
@@ -296,6 +306,138 @@ public class PlatformCommandHandler {
         } catch (Exception e) {
             log.warn("NudgeImageSource {}/{} failed: {}", cmd.getNamespace(), cmd.getName(), e.getMessage());
             ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Patch the named ImageSource's status: mark the matching {@code pendingBuild} (or
+     * {@code queuedBuild}) as {@code CANCELED}, emit the lifecycle event, and delete the
+     * in-flight build {@code Job}. The platform side has already verified the deployment was
+     * in a cancellable phase ({@code Queued} / {@code Building}) and marked the audit row;
+     * we trust that check and don't re-validate here.
+     */
+    private void handleCancelBuild(CancelBuild cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var existing = kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getImageSourceName())
+                    .get();
+            if (existing == null) {
+                ack(correlationId, StatusEnum.NOT_FOUND, "ImageSource not found");
+                return;
+            }
+            ImageSourceStatus status = existing.getStatus() != null ? existing.getStatus() : new ImageSourceStatus();
+            boolean cancelled = buildOrchestrator.cancelBuild(existing, status, cmd.getDeploymentId());
+            if (!cancelled) {
+                // The build already terminated between the platform-side API call and the
+                // command landing here. Treat as success: the platform's audit row already
+                // reflects CANCELED, and there's nothing left to cancel on this side.
+                log.info(
+                        "CancelBuild {}/{} deploymentId={} found no in-flight build; treating as ok",
+                        cmd.getNamespace(),
+                        cmd.getImageSourceName(),
+                        cmd.getDeploymentId());
+                ack(correlationId, StatusEnum.OK, "");
+                return;
+            }
+            existing.setStatus(status);
+            kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getImageSourceName())
+                    .patchStatus(existing);
+            log.info(
+                    "Cancelled build on ImageSource {}/{} for deploymentId {}",
+                    cmd.getNamespace(),
+                    cmd.getImageSourceName(),
+                    cmd.getDeploymentId());
+            ack(correlationId, StatusEnum.OK, "");
+        } catch (Exception e) {
+            log.warn("CancelBuild {}/{} failed: {}", cmd.getNamespace(), cmd.getImageSourceName(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Stage a retry. For git ImageSources, write a fresh {@code pendingBuild} (or
+     * {@code queuedBuild}) entry carrying the platform-supplied {@code deploymentId} — the next
+     * reconcile arms the Job. For image ImageSources, bump the sibling Resource's
+     * {@code spec.restartGeneration} so the rollout half re-fires and {@code
+     * ReleaseLifecycleEmitter} emits {@code ACTIVATING} for the new deployment id.
+     */
+    private void handleRetryBuild(RetryBuild cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var existing = kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getImageSourceName())
+                    .get();
+            if (existing == null) {
+                ack(correlationId, StatusEnum.NOT_FOUND, "ImageSource not found");
+                return;
+            }
+            ImageSourceSpec spec = existing.getSpec();
+            ImageSourceType type = spec != null ? spec.getType() : null;
+            if (type == ImageSourceType.IMAGE) {
+                bumpResourceRestartGeneration(cmd.getNamespace(), cmd.getImageSourceName());
+                log.info(
+                        "Retry on image-type ImageSource {}/{}: bumped Resource restartGeneration",
+                        cmd.getNamespace(),
+                        cmd.getImageSourceName());
+                ack(correlationId, StatusEnum.OK, "");
+                return;
+            }
+            // Git + imageSource (promotion) retries go through the build-orchestrator path.
+            // imageSource-type retries are unusual — promotion is normally just a digest pin and
+            // doesn't run a build — but if the platform asked for one we honour the request.
+            ImageSourceStatus status = existing.getStatus() != null ? existing.getStatus() : new ImageSourceStatus();
+            boolean staged =
+                    buildOrchestrator.requestRetry(existing, status, cmd.getDeploymentId(), cmd.getSourceCommit());
+            if (!staged) {
+                ack(correlationId, StatusEnum.INVALID_ARGUMENT, "retry requires a sourceCommit on git ImageSources");
+                return;
+            }
+            existing.setStatus(status);
+            kubernetesClient
+                    .resources(ImageSourceCrd.class)
+                    .inNamespace(cmd.getNamespace())
+                    .withName(cmd.getImageSourceName())
+                    .patchStatus(existing);
+            log.info(
+                    "Staged retry on ImageSource {}/{} for deploymentId {} commit {}",
+                    cmd.getNamespace(),
+                    cmd.getImageSourceName(),
+                    cmd.getDeploymentId(),
+                    cmd.getSourceCommit());
+            ack(correlationId, StatusEnum.OK, "");
+        } catch (Exception e) {
+            log.warn("RetryBuild {}/{} failed: {}", cmd.getNamespace(), cmd.getImageSourceName(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Bump {@code Resource.spec.restartGeneration} on the sibling Resource (same name + namespace
+     * as the ImageSource). Mirrors what {@code ResourceLifecycleService.restart} does on the
+     * platform side: any new value forces the Resource reconciler's re-roll path, which mints
+     * an {@code ACTIVATING} BuildLifecycleEvent stamped with the next deployment id.
+     */
+    private void bumpResourceRestartGeneration(String namespace, String name) {
+        try {
+            kubernetesClient
+                    .resources(ResourceCrd.class)
+                    .inNamespace(namespace)
+                    .withName(name)
+                    .edit(existing -> {
+                        existing.getSpec().setRestartGeneration(System.currentTimeMillis());
+                        return existing;
+                    });
+        } catch (Exception e) {
+            log.warn("Failed to bump restartGeneration on Resource {}/{}: {}", namespace, name, e.getMessage());
+            throw e instanceof RuntimeException re ? re : new RuntimeException(e);
         }
     }
 

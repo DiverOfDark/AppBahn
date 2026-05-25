@@ -7,6 +7,7 @@ import eu.appbahn.platform.api.ErrorResponse;
 import eu.appbahn.platform.api.Resource;
 import eu.appbahn.platform.api.ResourceExposure;
 import eu.appbahn.platform.api.WebhookConfig;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -336,6 +337,8 @@ public interface ResourcesApi {
      * GET /resources/{slug}/deployments : ListDeployments
      *
      * @param slug  (required)
+     * @param lifecycle Lifecycle-bucket filter for the Deploys-tab tabs. Defaults to {@code All}
+     *                  when omitted. (optional)
      * @param page  (optional)
      * @param size  (optional)
      * @param sort Sort field and direction (e.g. createdAt,desc). Defaults to createdAt,desc. (optional)
@@ -350,9 +353,89 @@ public interface ResourcesApi {
             produces = {"application/json"})
     ResponseEntity<PagedDeploymentResponse> listDeployments(
             @PathVariable("slug") String slug,
+            @Valid @RequestParam(value = "lifecycle", required = false) @Nullable DeploymentLifecycleFilter lifecycle,
             @Valid @RequestParam(value = "page", required = false) @Nullable Integer page,
             @Valid @RequestParam(value = "size", required = false) @Nullable Integer size,
             @Valid @RequestParam(value = "sort", required = false) @Nullable String sort);
+
+    /**
+     * GET /resources/{slug}/deployments/stats : GetDeploymentStats — daily histogram + aggregate
+     * counters for the Deploys tab. Aggregation runs server-side via SQL; window defaults to 30
+     * days when omitted and is clamped to {@code [1, 90]}.
+     *
+     * @param slug  (required)
+     * @param windowDays Window length in days. (optional)
+     * @return Success (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/resources/{slug}/deployments/stats",
+            produces = {"application/json"})
+    ResponseEntity<DeploymentStats> getDeploymentStats(
+            @PathVariable("slug") String slug,
+            @Parameter(description = "Window length in days. Defaults to 30. Clamped to [1, 90].")
+                    @Valid
+                    @RequestParam(value = "windowDays", required = false)
+                    @Nullable
+                    Integer windowDays);
+
+    /**
+     * POST /resources/{slug}/deployments/{deployment_id}/cancel : CancelDeployment — abort an
+     * in-flight deployment. Allowed only while the deployment lifecycle is {@code Queued} or
+     * {@code Building}; from {@code Built} onward the rollout owns the row and cancellation is
+     * rejected with HTTP 409.
+     *
+     * <p>Marks the audit row {@code Canceled} in-transaction and enqueues a tunnel command for
+     * the operator to delete the in-flight build {@code Job}.
+     *
+     * @param slug  (required)
+     * @param deploymentId  (required)
+     * @return Deployment cancelled (status code 204)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     *         or Conflict — the deployment is past the cancellable phase (Built / Activating /
+     *         Active / Failed / Superseded / Canceled). Body is an
+     *         {@link ErrorResponse}. (status code 409)
+     */
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Deployment cancelled"),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Cannot cancel: deployment is past the cancellable phase",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/{slug}/deployments/{deployment_id}/cancel",
+            produces = {"application/json"})
+    ResponseEntity<Void> cancelDeployment(
+            @PathVariable("slug") String slug, @PathVariable("deployment_id") UUID deploymentId);
+
+    /**
+     * POST /resources/{slug}/deployments/{deployment_id}/retry : RetryDeployment — re-deploy
+     * the same source (image / git commit) as the named deployment. Always creates a new
+     * deployment audit row even when the source deployment is still active, so the audit trail
+     * has one row per user-initiated action.
+     *
+     * @param slug  (required)
+     * @param deploymentId  (required)
+     * @return The new deployment row (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     *         or Unprocessable entity — the source deployment carries no imageRef or sourceRef
+     *         to re-deploy. (status code 422)
+     */
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/resources/{slug}/deployments/{deployment_id}/retry",
+            produces = {"application/json"})
+    ResponseEntity<Deployment> retryDeployment(
+            @PathVariable("slug") String slug, @PathVariable("deployment_id") UUID deploymentId);
     /**
      * GET /resources/{slug}/domains : ListDomains
      *

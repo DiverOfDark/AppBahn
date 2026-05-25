@@ -280,6 +280,8 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.ApplyNamespace.class,
             eu.appbahn.platform.api.tunnel.DeleteNamespace.class,
             eu.appbahn.platform.api.tunnel.NudgeImageSource.class,
+            eu.appbahn.platform.api.tunnel.CancelBuild.class,
+            eu.appbahn.platform.api.tunnel.RetryBuild.class,
             eu.appbahn.platform.api.tunnel.SubscribeCommandsRequest.class,
             // Audit enums are inlined inside AuditLogEvent by default; promote them to
             // top-level components so the operator's generated client gets them as plain

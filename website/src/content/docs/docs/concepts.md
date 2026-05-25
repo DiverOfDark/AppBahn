@@ -80,6 +80,10 @@ Every resource keeps a deployment history. To roll back to a previous deployment
 
 The deployment history is bounded by a retention policy. By default, AppBahn keeps the most recent 10 terminal-state deployment rows per resource (those in `superseded`, `failed`, or `canceled` lifecycles) and prunes older rows daily at 03:00. Rows that are referenced by an active `pinnedRelease` are always preserved regardless of age, so rollback never loses its target. In-flight and current rollouts are also never pruned. Retention is configurable via `platform.deployment.retention.maxBuildsPerResource` (default: 10), `platform.deployment.retention.enabled` (default: true), and `platform.deployment.retention.scheduleCron` (default: `0 0 3 * * *`). If you request rollback to a deployment id that has been pruned, the API returns a 404.
 
+### Cancelling and retrying a deployment
+
+A deployment in flight can be aborted from the **Deploys** tab on a resource: each row carries a **Cancel** button while it is still queued or building. Once the build finishes and the rollout starts, the row owns the rollout and cancel is no longer offered — use **Rollback** instead to revert. Failed or superseded deployment rows expose a **Retry** button that re-runs the same source (commit or image digest) as a new deployment. See [Deployment history](/docs/console/deployment-history/) for the full UI walk-through.
+
 ## Environment tokens
 
 **Environment tokens** provide API access scoped to a single environment, intended for CI/CD pipelines. Tokens have the format `abp_` followed by 40 random alphanumeric characters.

@@ -11,6 +11,8 @@ public final class CommandTypes {
     public static final String APPLY_NAMESPACE = "APPLY_NAMESPACE";
     public static final String DELETE_NAMESPACE = "DELETE_NAMESPACE";
     public static final String NUDGE_IMAGE_SOURCE = "NUDGE_IMAGE_SOURCE";
+    public static final String CANCEL_BUILD = "CANCEL_BUILD";
+    public static final String RETRY_BUILD = "RETRY_BUILD";
 
     private CommandTypes() {}
 }

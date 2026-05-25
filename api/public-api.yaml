@@ -928,6 +928,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DomainEntry"
+  /resources/{slug}/deployments/{deployment_id}/retry:
+    post:
+      tags:
+      - Resources
+      operationId: retryDeployment
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deployment"
   /resources/{slug}/deployments/{deployment_id}/reject:
     post:
       tags:
@@ -955,6 +986,39 @@ paths:
       responses:
         "200":
           description: OK
+  /resources/{slug}/deployments/{deployment_id}/cancel:
+    post:
+      tags:
+      - Resources
+      operationId: cancelDeployment
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        description: Optional dedup key. Same key + same body within 24h returns the
+          cached response.
+        required: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Deployment cancelled
+        "409":
+          description: "Cannot cancel: deployment is past the cancellable phase"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /resources/{slug}/deployments/{deployment_id}/approve:
     post:
       tags:
@@ -2583,6 +2647,16 @@ paths:
         required: true
         schema:
           type: string
+      - name: lifecycle
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - All
+          - Succeeded
+          - Failed
+          - Rollback
       - name: page
         in: query
         required: false
@@ -2657,6 +2731,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/DeploymentApproval"
+  /resources/{slug}/deployments/stats:
+    get:
+      tags:
+      - Resources
+      operationId: getDeploymentStats
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: windowDays
+        in: query
+        description: "Window length in days. Defaults to 30. Clamped to [1, 90]."
+        required: false
+        schema:
+          type: string
+          default: ""
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeploymentStats"
   /resources/{slug}/connection:
     get:
       tags:
@@ -3718,6 +3817,81 @@ components:
           format: int32
         status:
           type: string
+    Deployment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        resourceSlug:
+          type: string
+        environmentSlug:
+          type: string
+        sourceRef:
+          type: string
+        imageRef:
+          type: string
+        triggeredBy:
+          type: string
+          enum:
+          - Manual
+          - Polling
+          - Webhook
+          - AutoPromotion
+          - Rollback
+          - ManualRestart
+          - EnvChange
+          - Unpin
+        lifecycle:
+          type: string
+          enum:
+          - Queued
+          - Building
+          - Built
+          - Failed
+          - Activating
+          - Active
+          - Superseded
+          - Canceled
+        isPrimary:
+          type: boolean
+        sourceDeploymentId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      required:
+      - error
+      - message
+      - status
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+        current:
+          type: integer
+          format: int32
+        limit:
+          type: integer
+          format: int32
+        dimension:
+          type: string
+        level:
+          type: string
     CreateProjectRequest:
       required:
       - name
@@ -4351,6 +4525,8 @@ components:
     AuditAction:
       type: string
       enum:
+      - DeploymentCanceled
+      - DeploymentRetried
       - DeploymentTriggered
       - EnvironmentApprovalGatesUpdated
       - EnvironmentCreated
@@ -4608,53 +4784,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LogLine"
-    Deployment:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        resourceSlug:
-          type: string
-        environmentSlug:
-          type: string
-        sourceRef:
-          type: string
-        imageRef:
-          type: string
-        triggeredBy:
-          type: string
-          enum:
-          - Manual
-          - Polling
-          - Webhook
-          - AutoPromotion
-          - Rollback
-          - ManualRestart
-          - EnvChange
-          - Unpin
-        lifecycle:
-          type: string
-          enum:
-          - Queued
-          - Building
-          - Built
-          - Failed
-          - Activating
-          - Active
-          - Superseded
-          - Canceled
-        isPrimary:
-          type: boolean
-        sourceDeploymentId:
-          type: string
-          format: uuid
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     PagedDeploymentResponse:
       type: object
       properties:
@@ -4691,6 +4820,51 @@ components:
         updatedAt:
           type: string
           format: date-time
+    DeploymentStats:
+      type: object
+      properties:
+        windowDays:
+          type: integer
+          format: int32
+        buckets:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeploymentStatsBucket"
+        totals:
+          $ref: "#/components/schemas/DeploymentStatsTotals"
+    DeploymentStatsBucket:
+      type: object
+      properties:
+        day:
+          type: string
+          format: date
+        count:
+          type: integer
+          format: int32
+        success:
+          type: integer
+          format: int32
+        failure:
+          type: integer
+          format: int32
+    DeploymentStatsTotals:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        success:
+          type: integer
+          format: int32
+        failure:
+          type: integer
+          format: int32
+        rollback:
+          type: integer
+          format: int32
+        successRate:
+          type: number
+          format: double
     ConnectionEntry:
       type: object
       properties:
@@ -4982,34 +5156,6 @@ components:
         name:
           type: string
         avatarUrl:
-          type: string
-    ErrorResponse:
-      required:
-      - error
-      - message
-      - status
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        error:
-          type: string
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            type: string
-        current:
-          type: integer
-          format: int32
-        limit:
-          type: integer
-          format: int32
-        dimension:
-          type: string
-        level:
           type: string
   securitySchemes:
     bearerAuth:

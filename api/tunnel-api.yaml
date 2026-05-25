@@ -219,6 +219,8 @@ components:
     AuditAction:
       type: string
       enum:
+      - DeploymentCanceled
+      - DeploymentRetried
       - DeploymentTriggered
       - EnvironmentApprovalGatesUpdated
       - EnvironmentCreated
@@ -1312,6 +1314,32 @@ components:
         namespace:
           type: string
         name:
+          type: string
+    CancelBuild:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        imageSourceName:
+          type: string
+        deploymentId:
+          type: string
+    RetryBuild:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        imageSourceName:
+          type: string
+        deploymentId:
+          type: string
+        sourceCommit:
+          type: string
+        imageRef:
           type: string
     SubscribeCommandsRequest:
       required:

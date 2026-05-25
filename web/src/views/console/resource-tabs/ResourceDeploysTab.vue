@@ -3,6 +3,12 @@
  * Full Deploys tab — table of every deployment row for the resource. Status
  * column carries the "Current" / "Replaced" / lifecycle pill; rows are dimmed
  * when not the current primary so the live release reads as the hero.
+ *
+ * Per-row Cancel / Retry actions: Cancel is shown while the deployment is in
+ * `Queued` or `Building` (the platform's cancellable window); past `Built` the
+ * rollout owns the row and the API returns 409. Retry is offered on terminal
+ * lifecycles (`Failed`, `Canceled`, `Superseded`) — it mints a fresh row that
+ * reuses the original commit / image digest.
  */
 import type { components } from '@/api/schema'
 import EmptyState from '@/components/EmptyState.vue'
@@ -10,10 +16,27 @@ import { statusClass } from '@/composables/resource/useResourceHelpers'
 import { formatDate } from '@/utils/format'
 
 type Deployment = components['schemas']['Deployment']
+type Lifecycle = NonNullable<Deployment['lifecycle']>
 
 defineProps<{
   deployments: Deployment[]
+  pendingDeploymentId?: string | null
 }>()
+
+const emit = defineEmits<{
+  cancel: [deploymentId: string]
+  retry: [deploymentId: string]
+}>()
+
+const CANCELLABLE: ReadonlySet<Lifecycle> = new Set(['Queued', 'Building'])
+const TERMINAL: ReadonlySet<Lifecycle> = new Set(['Failed', 'Canceled', 'Superseded'])
+
+function canCancel(dep: Deployment): boolean {
+  return !!dep.lifecycle && CANCELLABLE.has(dep.lifecycle)
+}
+function canRetry(dep: Deployment): boolean {
+  return !!dep.lifecycle && TERMINAL.has(dep.lifecycle)
+}
 
 interface DepBadge {
   label: string
@@ -26,6 +49,15 @@ function depBadge(dep: Deployment): DepBadge {
 }
 function depRowClass(dep: Deployment): string {
   return dep.isPrimary ? 'dep-row-current' : 'dep-row-past'
+}
+
+function onCancel(dep: Deployment) {
+  if (!dep.id) return
+  emit('cancel', dep.id)
+}
+function onRetry(dep: Deployment) {
+  if (!dep.id) return
+  emit('retry', dep.id)
 }
 </script>
 
@@ -45,6 +77,7 @@ function depRowClass(dep: Deployment): string {
               <th>Image</th>
               <th>Trigger</th>
               <th>Created</th>
+              <th class="th-actions">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -57,6 +90,35 @@ function depRowClass(dep: Deployment): string {
               <td class="cell-mono">{{ dep.imageRef ?? '—' }}</td>
               <td>{{ dep.triggeredBy }}</td>
               <td class="cell-mono">{{ formatDate(dep.createdAt) }}</td>
+              <td class="cell-actions">
+                <button
+                  v-if="canCancel(dep)"
+                  type="button"
+                  class="btn-secondary btn-sm dep-cancel-btn"
+                  :disabled="pendingDeploymentId === dep.id"
+                  @click="onCancel(dep)"
+                >
+                  {{ pendingDeploymentId === dep.id ? 'Cancelling…' : 'Cancel' }}
+                </button>
+                <button
+                  v-else-if="dep.lifecycle === 'Built' || dep.lifecycle === 'Activating'"
+                  type="button"
+                  class="btn-secondary btn-sm dep-cancel-btn"
+                  disabled
+                  title="Cancel is only available while the deployment is Queued or Building. Past Built, use rollback to revert."
+                >
+                  Cancel
+                </button>
+                <button
+                  v-if="canRetry(dep)"
+                  type="button"
+                  class="btn-secondary btn-sm dep-retry-btn"
+                  :disabled="pendingDeploymentId === dep.id"
+                  @click="onRetry(dep)"
+                >
+                  {{ pendingDeploymentId === dep.id ? 'Retrying…' : 'Retry' }}
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -111,6 +173,9 @@ function depRowClass(dep: Deployment): string {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-surface);
 }
+.th-actions {
+  text-align: right;
+}
 .data-table td {
   padding: 11px 16px;
   border-bottom: 1px solid var(--color-border);
@@ -126,6 +191,18 @@ function depRowClass(dep: Deployment): string {
   font-size: 12px;
   color: var(--color-text-primary);
   font-weight: 400;
+}
+.cell-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+.cell-actions .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+.cell-actions .btn-sm:first-child {
+  margin-left: 0;
 }
 
 .status-badge {

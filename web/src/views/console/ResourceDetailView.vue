@@ -47,6 +47,7 @@ const deployments = ref<Deployment[]>([])
 const loading = ref(true)
 const error = ref('')
 const tab = ref<Tab>(readInitialTab())
+const pendingDeploymentId = ref<string | null>(null)
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 // Cross-tab pending-action lifecycle (Pause / Resume / Restart). Spans from
@@ -203,6 +204,48 @@ async function resumeResource() {
     clearPending()
   }
 }
+// ── Deployment-row actions ──────────────────────────────────────────────
+async function cancelDeployment(deploymentId: string): Promise<void> {
+  pendingDeploymentId.value = deploymentId
+  try {
+    const { error: apiError } = await api.POST(
+      '/resources/{slug}/deployments/{deployment_id}/cancel',
+      {
+        params: { path: { slug: resSlug.value, deployment_id: deploymentId } },
+      },
+    )
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to cancel deployment')
+      return
+    }
+    await fetchDeployments()
+  } catch {
+    error.value = 'Failed to cancel deployment'
+  } finally {
+    pendingDeploymentId.value = null
+  }
+}
+async function retryDeployment(deploymentId: string): Promise<void> {
+  pendingDeploymentId.value = deploymentId
+  try {
+    const { error: apiError } = await api.POST(
+      '/resources/{slug}/deployments/{deployment_id}/retry',
+      {
+        params: { path: { slug: resSlug.value, deployment_id: deploymentId } },
+      },
+    )
+    if (apiError) {
+      error.value = extractApiErrorMessage(apiError, 'Failed to retry deployment')
+      return
+    }
+    await fetchDeployments()
+  } catch {
+    error.value = 'Failed to retry deployment'
+  } finally {
+    pendingDeploymentId.value = null
+  }
+}
+
 // Throws on failure so the ConfirmButton that triggered it can re-arm.
 // Two ConfirmButtons (header + danger-zone) share this single handler;
 // rejecting lets each instance reset itself.
@@ -357,7 +400,13 @@ onUnmounted(() => {
         @navigate-environment="tab = 'environment'"
       />
 
-      <ResourceDeploysTab v-else-if="tab === 'deploys'" :deployments="deployments" />
+      <ResourceDeploysTab
+        v-else-if="tab === 'deploys'"
+        :deployments="deployments"
+        :pending-deployment-id="pendingDeploymentId"
+        @cancel="cancelDeployment"
+        @retry="retryDeployment"
+      />
 
       <ResourceEnvTab
         v-else-if="tab === 'environment'"

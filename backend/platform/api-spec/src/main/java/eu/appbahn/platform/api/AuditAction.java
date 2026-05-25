@@ -6,6 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /** Discrete platform mutation recorded in the audit log. */
 @Schema(name = "AuditAction", enumAsRef = true)
 public enum AuditAction {
+    @JsonProperty("DeploymentCanceled")
+    DEPLOYMENT_CANCELED,
+
+    @JsonProperty("DeploymentRetried")
+    DEPLOYMENT_RETRIED,
+
     @JsonProperty("DeploymentTriggered")
     DEPLOYMENT_TRIGGERED,
 

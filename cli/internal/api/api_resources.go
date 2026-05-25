@@ -49,6 +49,19 @@ type ResourcesAPI interface {
 	ApproveDeploymentExecute(r ApiApproveDeploymentRequest) (*http.Response, error)
 
 	/*
+		CancelDeployment Method for CancelDeployment
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiCancelDeploymentRequest
+	*/
+	CancelDeployment(ctx context.Context, slug string, deploymentId string) ApiCancelDeploymentRequest
+
+	// CancelDeploymentExecute executes the request
+	CancelDeploymentExecute(r ApiCancelDeploymentRequest) (*http.Response, error)
+
+	/*
 		CreateExposure Method for CreateExposure
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -125,6 +138,19 @@ type ResourcesAPI interface {
 	// GetDeploymentApprovalsExecute executes the request
 	//  @return []DeploymentApproval
 	GetDeploymentApprovalsExecute(r ApiGetDeploymentApprovalsRequest) ([]DeploymentApproval, *http.Response, error)
+
+	/*
+		GetDeploymentStats Method for GetDeploymentStats
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetDeploymentStatsRequest
+	*/
+	GetDeploymentStats(ctx context.Context, slug string) ApiGetDeploymentStatsRequest
+
+	// GetDeploymentStatsExecute executes the request
+	//  @return DeploymentStats
+	GetDeploymentStatsExecute(r ApiGetDeploymentStatsRequest) (*DeploymentStats, *http.Response, error)
 
 	/*
 		GetResource Method for GetResource
@@ -330,6 +356,20 @@ type ResourcesAPI interface {
 
 	// RestartResourceExecute executes the request
 	RestartResourceExecute(r ApiRestartResourceRequest) (*http.Response, error)
+
+	/*
+		RetryDeployment Method for RetryDeployment
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@param deploymentId
+		@return ApiRetryDeploymentRequest
+	*/
+	RetryDeployment(ctx context.Context, slug string, deploymentId string) ApiRetryDeploymentRequest
+
+	// RetryDeploymentExecute executes the request
+	//  @return Deployment
+	RetryDeploymentExecute(r ApiRetryDeploymentRequest) (*Deployment, *http.Response, error)
 
 	/*
 		RollbackResource Method for RollbackResource
@@ -626,6 +666,120 @@ func (a *ResourcesAPIService) ApproveDeploymentExecute(r ApiApproveDeploymentReq
 		newErr := &GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
+type ApiCancelDeploymentRequest struct {
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	deploymentId   string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiCancelDeploymentRequest) IdempotencyKey(idempotencyKey string) ApiCancelDeploymentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiCancelDeploymentRequest) Execute() (*http.Response, error) {
+	return r.ApiService.CancelDeploymentExecute(r)
+}
+
+/*
+CancelDeployment Method for CancelDeployment
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiCancelDeploymentRequest
+*/
+func (a *ResourcesAPIService) CancelDeployment(ctx context.Context, slug string, deploymentId string) ApiCancelDeploymentRequest {
+	return ApiCancelDeploymentRequest{
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
+		deploymentId: deploymentId,
+	}
+}
+
+// Execute executes the request
+func (a *ResourcesAPIService) CancelDeploymentExecute(r ApiCancelDeploymentRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod = http.MethodPost
+		localVarPostBody   interface{}
+		formFiles          []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.CancelDeployment")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/resources/{slug}/deployments/{deployment_id}/cancel"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"deployment_id"+"}", url.PathEscape(parameterValueToString(r.deploymentId, "deploymentId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 409 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarHTTPResponse, newErr
 	}
@@ -1244,6 +1398,122 @@ func (a *ResourcesAPIService) GetDeploymentApprovalsExecute(r ApiGetDeploymentAp
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiGetDeploymentStatsRequest struct {
+	ctx        context.Context
+	ApiService ResourcesAPI
+	slug       string
+	windowDays *string
+}
+
+// Window length in days. Defaults to 30. Clamped to [1, 90].
+func (r ApiGetDeploymentStatsRequest) WindowDays(windowDays string) ApiGetDeploymentStatsRequest {
+	r.windowDays = &windowDays
+	return r
+}
+
+func (r ApiGetDeploymentStatsRequest) Execute() (*DeploymentStats, *http.Response, error) {
+	return r.ApiService.GetDeploymentStatsExecute(r)
+}
+
+/*
+GetDeploymentStats Method for GetDeploymentStats
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetDeploymentStatsRequest
+*/
+func (a *ResourcesAPIService) GetDeploymentStats(ctx context.Context, slug string) ApiGetDeploymentStatsRequest {
+	return ApiGetDeploymentStatsRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+	}
+}
+
+// Execute executes the request
+//
+//	@return DeploymentStats
+func (a *ResourcesAPIService) GetDeploymentStatsExecute(r ApiGetDeploymentStatsRequest) (*DeploymentStats, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DeploymentStats
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetDeploymentStats")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/resources/{slug}/deployments/stats"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if r.windowDays != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "windowDays", r.windowDays, "form", "")
+	} else {
+		var defaultValue string = ""
+		parameterAddToHeaderOrQuery(localVarQueryParams, "windowDays", defaultValue, "form", "")
+		r.windowDays = &defaultValue
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -2289,9 +2559,15 @@ type ApiListDeploymentsRequest struct {
 	ctx        context.Context
 	ApiService ResourcesAPI
 	slug       string
+	lifecycle  *string
 	page       *int32
 	size       *int32
 	sort       *string
+}
+
+func (r ApiListDeploymentsRequest) Lifecycle(lifecycle string) ApiListDeploymentsRequest {
+	r.lifecycle = &lifecycle
+	return r
 }
 
 func (r ApiListDeploymentsRequest) Page(page int32) ApiListDeploymentsRequest {
@@ -2351,6 +2627,9 @@ func (a *ResourcesAPIService) ListDeploymentsExecute(r ApiListDeploymentsRequest
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.lifecycle != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "lifecycle", r.lifecycle, "form", "")
+	}
 	if r.page != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "page", r.page, "form", "")
 	}
@@ -3166,6 +3445,122 @@ func (a *ResourcesAPIService) RestartResourceExecute(r ApiRestartResourceRequest
 	}
 
 	return localVarHTTPResponse, nil
+}
+
+type ApiRetryDeploymentRequest struct {
+	ctx            context.Context
+	ApiService     ResourcesAPI
+	slug           string
+	deploymentId   string
+	idempotencyKey *string
+}
+
+// Optional dedup key. Same key + same body within 24h returns the cached response.
+func (r ApiRetryDeploymentRequest) IdempotencyKey(idempotencyKey string) ApiRetryDeploymentRequest {
+	r.idempotencyKey = &idempotencyKey
+	return r
+}
+
+func (r ApiRetryDeploymentRequest) Execute() (*Deployment, *http.Response, error) {
+	return r.ApiService.RetryDeploymentExecute(r)
+}
+
+/*
+RetryDeployment Method for RetryDeployment
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@param deploymentId
+	@return ApiRetryDeploymentRequest
+*/
+func (a *ResourcesAPIService) RetryDeployment(ctx context.Context, slug string, deploymentId string) ApiRetryDeploymentRequest {
+	return ApiRetryDeploymentRequest{
+		ApiService:   a,
+		ctx:          ctx,
+		slug:         slug,
+		deploymentId: deploymentId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return Deployment
+func (a *ResourcesAPIService) RetryDeploymentExecute(r ApiRetryDeploymentRequest) (*Deployment, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Deployment
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.RetryDeployment")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/resources/{slug}/deployments/{deployment_id}/retry"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"deployment_id"+"}", url.PathEscape(parameterValueToString(r.deploymentId, "deploymentId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.idempotencyKey != nil {
+		parameterAddToHeaderOrQuery(localVarHeaderParams, "Idempotency-Key", r.idempotencyKey, "simple", "")
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
 type ApiRollbackResourceRequest struct {

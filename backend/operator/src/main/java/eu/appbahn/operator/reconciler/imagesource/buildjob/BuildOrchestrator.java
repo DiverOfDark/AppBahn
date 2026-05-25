@@ -374,6 +374,123 @@ public class BuildOrchestrator {
         return p;
     }
 
+    /**
+     * Cancel an in-flight build (lifecycle {@code QUEUED} or {@code BUILDING}) identified by
+     * {@code deploymentId}. Matches both the active {@code pendingBuild} slot and the next-in-line
+     * {@code queuedBuild} slot. Mutates {@code next} in place: the matched entry's lifecycle is
+     * flipped to {@code CANCELED} and emitted; the K8s build {@code Job} for that entry is
+     * deleted via the kube client.
+     *
+     * @return {@code true} when a matching in-flight build was found and cancelled (caller patches
+     *         status); {@code false} when no in-flight build matched — usually because the build
+     *         already finished between the platform-side cancel API call and this handler firing.
+     */
+    public boolean cancelBuild(ImageSourceCrd source, ImageSourceStatus next, String deploymentId) {
+        if (deploymentId == null || deploymentId.isBlank()) {
+            return false;
+        }
+        boolean cancelled = false;
+        PendingBuild pending = next.getPendingBuild();
+        if (pending != null
+                && deploymentId.equals(pending.getDeploymentId())
+                && !terminalBuildLifecycle(pending.getLifecycle())) {
+            deleteBuildJob(source, pending);
+            pending.setLifecycle(BuildLifecycle.CANCELED);
+            emit(source, pending, BuildLifecycle.CANCELED, null, "Cancelled by user");
+            next.setPendingBuild(null);
+            cancelled = true;
+        }
+        PendingBuild queued = next.getQueuedBuild();
+        if (queued != null
+                && deploymentId.equals(queued.getDeploymentId())
+                && !terminalBuildLifecycle(queued.getLifecycle())) {
+            queued.setLifecycle(BuildLifecycle.CANCELED);
+            emit(source, queued, BuildLifecycle.CANCELED, null, "Cancelled by user");
+            next.setQueuedBuild(null);
+            cancelled = true;
+        }
+        return cancelled;
+    }
+
+    /**
+     * Stage a retry: write a fresh {@code pendingBuild} entry (or {@code queuedBuild} if pending
+     * is occupied) carrying the platform-supplied {@code deploymentId} and {@code sourceCommit}.
+     * The next reconcile pass observes the QUEUED slot, arms a Job for it, and emits the
+     * lifecycle events using this {@code deploymentId} as the correlator.
+     *
+     * <p>Bypasses {@link #considerNewCommit}'s "alreadyBuilt / alreadyFailed" dedupe because we
+     * write the slot before the next reconcile — when {@code considerNewCommit} runs, the slot is
+     * already in lifecycle {@code QUEUED} and matches {@code alreadyInFlight}, short-circuiting
+     * the duplicate-prevention checks for the same commit.
+     *
+     * @return {@code true} on success (status patched); {@code false} when the retry was a no-op
+     *         (no commit supplied and the active slot is already occupied with a different build).
+     */
+    public boolean requestRetry(
+            ImageSourceCrd source, ImageSourceStatus next, String deploymentId, String sourceCommit) {
+        if (deploymentId == null || deploymentId.isBlank()) {
+            return false;
+        }
+        if (sourceCommit == null || sourceCommit.isBlank()) {
+            // Without a sourceCommit we can't address a build slot. Image-type retries take a
+            // different path (Resource restartGeneration bump) and never reach this method.
+            return false;
+        }
+        PendingBuild retry = new PendingBuild();
+        retry.setSourceCommit(sourceCommit);
+        retry.setLifecycle(BuildLifecycle.QUEUED);
+        retry.setDeploymentId(deploymentId);
+        retry.setStartedAt(Instant.now());
+        if (next.getPendingBuild() == null) {
+            next.setPendingBuild(retry);
+            emit(source, retry, BuildLifecycle.QUEUED, null, null);
+            return true;
+        }
+        // Active build already running. Replace whatever is queued (superseding it) — the retry
+        // takes precedence over any auto-detected new commit waiting behind the active build.
+        PendingBuild prior = next.getQueuedBuild();
+        if (prior != null && !terminalBuildLifecycle(prior.getLifecycle())) {
+            prior.setLifecycle(BuildLifecycle.SUPERSEDED);
+            emit(source, prior, BuildLifecycle.SUPERSEDED, null, null);
+        }
+        next.setQueuedBuild(retry);
+        emit(source, retry, BuildLifecycle.QUEUED, null, null);
+        return true;
+    }
+
+    /**
+     * Delete the in-flight build {@code Job} for the given pending entry. Best-effort: a missing
+     * Job is treated as success (the orchestrator may be running ahead of the workflow that
+     * materializes the Job), and any K8s-side error is logged and swallowed — the audit row
+     * already reflects {@code CANCELED}, so the user-visible state is correct even when the
+     * cluster-side cleanup needs to be retried.
+     */
+    private void deleteBuildJob(ImageSourceCrd source, PendingBuild pending) {
+        if (pending.getJobName() == null || pending.getJobName().isBlank()) {
+            return;
+        }
+        try {
+            kubeClient
+                    .batch()
+                    .v1()
+                    .jobs()
+                    .inNamespace(source.getMetadata().getNamespace())
+                    .withName(pending.getJobName())
+                    .delete();
+            log.info(
+                    "Deleted in-flight build Job {}/{} for cancelled deploymentId {}",
+                    source.getMetadata().getNamespace(),
+                    pending.getJobName(),
+                    pending.getDeploymentId());
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to delete in-flight build Job {}/{} on cancel: {}",
+                    source.getMetadata().getNamespace(),
+                    pending.getJobName(),
+                    e.getMessage());
+        }
+    }
+
     /** Job names: {@code build-<imageSource>-<short-commit>-<8-hex>}. K8s name length cap is 63. */
     private static String newJobName(ImageSourceCrd source, PendingBuild pending) {
         String base = "build-" + source.getMetadata().getName() + "-"

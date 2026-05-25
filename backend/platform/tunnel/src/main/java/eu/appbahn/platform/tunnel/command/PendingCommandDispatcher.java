@@ -3,9 +3,11 @@ package eu.appbahn.platform.tunnel.command;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.appbahn.platform.api.tunnel.ApplyNamespace;
 import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
+import eu.appbahn.platform.api.tunnel.CancelBuild;
 import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
 import eu.appbahn.platform.api.tunnel.NudgeImageSource;
+import eu.appbahn.platform.api.tunnel.RetryBuild;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -97,6 +99,16 @@ public class PendingCommandDispatcher {
                     NudgeImageSource body = mapper.readValue(row.getPayload(), NudgeImageSource.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
                     yield new Claimed(row.getId(), row.getCorrelationId(), NudgeImageSource.EVENT_NAME, body);
+                }
+                case CommandTypes.CANCEL_BUILD -> {
+                    CancelBuild body = mapper.readValue(row.getPayload(), CancelBuild.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), CancelBuild.EVENT_NAME, body);
+                }
+                case CommandTypes.RETRY_BUILD -> {
+                    RetryBuild body = mapper.readValue(row.getPayload(), RetryBuild.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), RetryBuild.EVENT_NAME, body);
                 }
                 default -> {
                     log.warn("Unknown pending_command.command_type: {}", row.getCommandType());

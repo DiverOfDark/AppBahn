@@ -20,6 +20,8 @@ type AuditAction string
 
 // List of AuditAction
 const (
+	AUDITACTION_DEPLOYMENT_CANCELED                AuditAction = "DeploymentCanceled"
+	AUDITACTION_DEPLOYMENT_RETRIED                 AuditAction = "DeploymentRetried"
 	AUDITACTION_DEPLOYMENT_TRIGGERED               AuditAction = "DeploymentTriggered"
 	AUDITACTION_ENVIRONMENT_APPROVAL_GATES_UPDATED AuditAction = "EnvironmentApprovalGatesUpdated"
 	AUDITACTION_ENVIRONMENT_CREATED                AuditAction = "EnvironmentCreated"
@@ -68,6 +70,8 @@ const (
 
 // All allowed values of AuditAction enum
 var AllowedAuditActionEnumValues = []AuditAction{
+	"DeploymentCanceled",
+	"DeploymentRetried",
 	"DeploymentTriggered",
 	"EnvironmentApprovalGatesUpdated",
 	"EnvironmentCreated",

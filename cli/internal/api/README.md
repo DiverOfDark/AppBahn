@@ -127,12 +127,14 @@ Class | Method | HTTP request | Description
 *ResourceTypesAPI* | [**ListResourceTypes**](docs/ResourceTypesAPI.md#listresourcetypes) | **Get** /resource-types | 
 *ResourcesAPI* | [**AddDomain**](docs/ResourcesAPI.md#adddomain) | **Post** /resources/{slug}/domains | 
 *ResourcesAPI* | [**ApproveDeployment**](docs/ResourcesAPI.md#approvedeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/approve | 
+*ResourcesAPI* | [**CancelDeployment**](docs/ResourcesAPI.md#canceldeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/cancel | 
 *ResourcesAPI* | [**CreateExposure**](docs/ResourcesAPI.md#createexposure) | **Post** /resources/{slug}/expose | 
 *ResourcesAPI* | [**CreateResource**](docs/ResourcesAPI.md#createresource) | **Post** /resources | 
 *ResourcesAPI* | [**DeleteExposure**](docs/ResourcesAPI.md#deleteexposure) | **Delete** /resources/{slug}/exposures/{port} | 
 *ResourcesAPI* | [**DeleteResource**](docs/ResourcesAPI.md#deleteresource) | **Delete** /resources/{slug} | 
 *ResourcesAPI* | [**GetDeployment**](docs/ResourcesAPI.md#getdeployment) | **Get** /resources/{slug}/deployments/{deployment_id} | 
 *ResourcesAPI* | [**GetDeploymentApprovals**](docs/ResourcesAPI.md#getdeploymentapprovals) | **Get** /resources/{slug}/deployments/{deployment_id}/approvals | 
+*ResourcesAPI* | [**GetDeploymentStats**](docs/ResourcesAPI.md#getdeploymentstats) | **Get** /resources/{slug}/deployments/stats | 
 *ResourcesAPI* | [**GetResource**](docs/ResourcesAPI.md#getresource) | **Get** /resources/{slug} | 
 *ResourcesAPI* | [**GetResourceConnection**](docs/ResourcesAPI.md#getresourceconnection) | **Get** /resources/{slug}/connection | 
 *ResourcesAPI* | [**GetResourceCpuMetrics**](docs/ResourcesAPI.md#getresourcecpumetrics) | **Get** /resources/{slug}/metrics/cpu | 
@@ -149,6 +151,7 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**RejectDeployment**](docs/ResourcesAPI.md#rejectdeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/reject | 
 *ResourcesAPI* | [**RemoveDomain**](docs/ResourcesAPI.md#removedomain) | **Delete** /resources/{slug}/domains/{domain} | 
 *ResourcesAPI* | [**RestartResource**](docs/ResourcesAPI.md#restartresource) | **Post** /resources/{slug}/restart | 
+*ResourcesAPI* | [**RetryDeployment**](docs/ResourcesAPI.md#retrydeployment) | **Post** /resources/{slug}/deployments/{deployment_id}/retry | 
 *ResourcesAPI* | [**RollbackResource**](docs/ResourcesAPI.md#rollbackresource) | **Post** /resources/{slug}/rollback | 
 *ResourcesAPI* | [**RotateWebhookSecret**](docs/ResourcesAPI.md#rotatewebhooksecret) | **Post** /resources/{slug}/webhook/rotate | 
 *ResourcesAPI* | [**StartResource**](docs/ResourcesAPI.md#startresource) | **Post** /resources/{slug}/start | 
@@ -233,6 +236,9 @@ Class | Method | HTTP request | Description
  - [CustomDomainStatus](docs/CustomDomainStatus.md)
  - [Deployment](docs/Deployment.md)
  - [DeploymentApproval](docs/DeploymentApproval.md)
+ - [DeploymentStats](docs/DeploymentStats.md)
+ - [DeploymentStatsBucket](docs/DeploymentStatsBucket.md)
+ - [DeploymentStatsTotals](docs/DeploymentStatsTotals.md)
  - [DetectBuildRequest](docs/DetectBuildRequest.md)
  - [DockerfileBuildOptions](docs/DockerfileBuildOptions.md)
  - [DomainEntry](docs/DomainEntry.md)

@@ -19,5 +19,7 @@ final class TunnelEventNames {
     static final String APPLY_NAMESPACE = "apply-namespace";
     static final String DELETE_NAMESPACE = "delete-namespace";
     static final String NUDGE_IMAGE_SOURCE = "nudge-image-source";
+    static final String CANCEL_BUILD = "cancel-build";
+    static final String RETRY_BUILD = "retry-build";
     static final String KEEPALIVE = "keepalive";
 }

@@ -10,6 +10,8 @@ import eu.appbahn.platform.api.resource.AddDomainRequest;
 import eu.appbahn.platform.api.resource.ConnectionResponse;
 import eu.appbahn.platform.api.resource.CreateExposureRequest;
 import eu.appbahn.platform.api.resource.CreateResourceRequest;
+import eu.appbahn.platform.api.resource.DeploymentLifecycleFilter;
+import eu.appbahn.platform.api.resource.DeploymentStats;
 import eu.appbahn.platform.api.resource.LogResponse;
 import eu.appbahn.platform.api.resource.MetricsResponse;
 import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
@@ -124,8 +126,24 @@ public class ResourcesController implements ResourcesApi {
 
     @Override
     public ResponseEntity<PagedDeploymentResponse> listDeployments(
-            String slug, Integer page, Integer size, String sort) {
-        return ResponseEntity.ok(deploymentService.list(slug, page, size, sort, AuthContextHolder.get()));
+            String slug, DeploymentLifecycleFilter lifecycle, Integer page, Integer size, String sort) {
+        return ResponseEntity.ok(deploymentService.list(slug, lifecycle, page, size, sort, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<DeploymentStats> getDeploymentStats(String slug, Integer windowDays) {
+        return ResponseEntity.ok(deploymentService.stats(slug, windowDays, AuthContextHolder.get()));
+    }
+
+    @Override
+    public ResponseEntity<Void> cancelDeployment(String slug, UUID deploymentId) {
+        deploymentService.cancel(slug, deploymentId, AuthContextHolder.get());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Deployment> retryDeployment(String slug, UUID deploymentId) {
+        return ResponseEntity.ok(deploymentService.retry(slug, deploymentId, AuthContextHolder.get()));
     }
 
     @Override

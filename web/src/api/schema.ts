@@ -404,6 +404,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/deployments/{deployment_id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['retryDeployment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/deployments/{deployment_id}/reject': {
     parameters: {
       query?: never
@@ -414,6 +430,22 @@ export interface paths {
     get?: never
     put?: never
     post: operations['rejectDeployment']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/resources/{slug}/deployments/{deployment_id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations['cancelDeployment']
     delete?: never
     options?: never
     head?: never
@@ -1108,6 +1140,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/deployments/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getDeploymentStats']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/connection': {
     parameters: {
       query?: never
@@ -1749,6 +1797,54 @@ export interface components {
       port?: number
       status?: string
     }
+    Deployment: {
+      /** Format: uuid */
+      id?: string
+      resourceSlug?: string
+      environmentSlug?: string
+      sourceRef?: string
+      imageRef?: string
+      /** @enum {string} */
+      triggeredBy?:
+        | 'Manual'
+        | 'Polling'
+        | 'Webhook'
+        | 'AutoPromotion'
+        | 'Rollback'
+        | 'ManualRestart'
+        | 'EnvChange'
+        | 'Unpin'
+      /** @enum {string} */
+      lifecycle?:
+        | 'Queued'
+        | 'Building'
+        | 'Built'
+        | 'Failed'
+        | 'Activating'
+        | 'Active'
+        | 'Superseded'
+        | 'Canceled'
+      isPrimary?: boolean
+      /** Format: uuid */
+      sourceDeploymentId?: string
+      /** Format: date-time */
+      createdAt?: string
+      /** Format: date-time */
+      updatedAt?: string
+    }
+    ErrorResponse: {
+      /** Format: int32 */
+      status: number
+      error: string
+      message: string
+      details?: string[]
+      /** Format: int32 */
+      current?: number
+      /** Format: int32 */
+      limit?: number
+      dimension?: string
+      level?: string
+    }
     CreateProjectRequest: {
       name: string
       workspaceSlug: string
@@ -2073,6 +2169,8 @@ export interface components {
     }
     /** @enum {string} */
     AuditAction:
+      | 'DeploymentCanceled'
+      | 'DeploymentRetried'
       | 'DeploymentTriggered'
       | 'EnvironmentApprovalGatesUpdated'
       | 'EnvironmentCreated'
@@ -2233,41 +2331,6 @@ export interface components {
     LogResponse: {
       lines?: components['schemas']['LogLine'][]
     }
-    Deployment: {
-      /** Format: uuid */
-      id?: string
-      resourceSlug?: string
-      environmentSlug?: string
-      sourceRef?: string
-      imageRef?: string
-      /** @enum {string} */
-      triggeredBy?:
-        | 'Manual'
-        | 'Polling'
-        | 'Webhook'
-        | 'AutoPromotion'
-        | 'Rollback'
-        | 'ManualRestart'
-        | 'EnvChange'
-        | 'Unpin'
-      /** @enum {string} */
-      lifecycle?:
-        | 'Queued'
-        | 'Building'
-        | 'Built'
-        | 'Failed'
-        | 'Activating'
-        | 'Active'
-        | 'Superseded'
-        | 'Canceled'
-      isPrimary?: boolean
-      /** Format: uuid */
-      sourceDeploymentId?: string
-      /** Format: date-time */
-      createdAt?: string
-      /** Format: date-time */
-      updatedAt?: string
-    }
     PagedDeploymentResponse: {
       /** Format: int32 */
       page?: number
@@ -2289,6 +2352,34 @@ export interface components {
       decision?: string
       /** Format: date-time */
       updatedAt?: string
+    }
+    DeploymentStats: {
+      /** Format: int32 */
+      windowDays?: number
+      buckets?: components['schemas']['DeploymentStatsBucket'][]
+      totals?: components['schemas']['DeploymentStatsTotals']
+    }
+    DeploymentStatsBucket: {
+      /** Format: date */
+      day?: string
+      /** Format: int32 */
+      count?: number
+      /** Format: int32 */
+      success?: number
+      /** Format: int32 */
+      failure?: number
+    }
+    DeploymentStatsTotals: {
+      /** Format: int32 */
+      total?: number
+      /** Format: int32 */
+      success?: number
+      /** Format: int32 */
+      failure?: number
+      /** Format: int32 */
+      rollback?: number
+      /** Format: double */
+      successRate?: number
     }
     ConnectionEntry: {
       key?: string
@@ -2437,19 +2528,6 @@ export interface components {
       oidcSubjectId?: string
       name?: string
       avatarUrl?: string
-    }
-    ErrorResponse: {
-      /** Format: int32 */
-      status: number
-      error: string
-      message: string
-      details?: string[]
-      /** Format: int32 */
-      current?: number
-      /** Format: int32 */
-      limit?: number
-      dimension?: string
-      level?: string
     }
   }
   responses: never
@@ -3385,6 +3463,32 @@ export interface operations {
       }
     }
   }
+  retryDeployment: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Deployment']
+        }
+      }
+    }
+  }
   rejectDeployment: {
     parameters: {
       query?: never
@@ -3406,6 +3510,39 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
+      }
+    }
+  }
+  cancelDeployment: {
+    parameters: {
+      query?: never
+      header?: {
+        /** @description Optional dedup key. Same key + same body within 24h returns the cached response. */
+        'Idempotency-Key'?: string
+      }
+      path: {
+        slug: string
+        deployment_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Deployment cancelled */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Cannot cancel: deployment is past the cancellable phase */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
       }
     }
   }
@@ -4982,6 +5119,7 @@ export interface operations {
   listDeployments: {
     parameters: {
       query?: {
+        lifecycle?: 'All' | 'Succeeded' | 'Failed' | 'Rollback'
         page?: number
         size?: number
         sort?: string
@@ -5047,6 +5185,31 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['DeploymentApproval'][]
+        }
+      }
+    }
+  }
+  getDeploymentStats: {
+    parameters: {
+      query?: {
+        /** @description Window length in days. Defaults to 30. Clamped to [1, 90]. */
+        windowDays?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeploymentStats']
         }
       }
     }

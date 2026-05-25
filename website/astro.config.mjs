@@ -40,6 +40,10 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Console',
+          items: [{ label: 'Deployment history', slug: 'docs/console/deployment-history' }],
+        },
+        {
           label: 'API Reference',
           items: [{ label: 'API Reference', slug: 'docs/api-reference' }],
         },
