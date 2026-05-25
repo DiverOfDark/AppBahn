@@ -22,6 +22,11 @@ public final class ResourceEntityMapper {
     private ResourceEntityMapper() {}
 
     public static Resource toApi(ResourceCacheEntity entity, String environmentSlug, ObjectMapper objectMapper) {
+        return toApi(entity, environmentSlug, objectMapper, null);
+    }
+
+    public static Resource toApi(
+            ResourceCacheEntity entity, String environmentSlug, ObjectMapper objectMapper, Instant lastDeploymentAt) {
         var resource = new Resource();
         resource.setSlug(entity.getSlug());
         resource.setName(entity.getName());
@@ -34,6 +39,7 @@ public final class ResourceEntityMapper {
         resource.setStatus(entity.getStatus());
         resource.setStatusDetail(entity.getStatusDetail());
         resource.setLastSyncedAt(toOffset(entity.getLastSyncedAt()));
+        resource.setLastDeploymentAt(toOffset(lastDeploymentAt));
         resource.setCreatedAt(toOffset(entity.getCreatedAt()));
         resource.setUpdatedAt(toOffset(entity.getUpdatedAt()));
         return resource;

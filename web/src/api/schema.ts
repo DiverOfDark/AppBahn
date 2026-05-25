@@ -1268,6 +1268,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/environments/{slug}/deployments': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['listEnvironmentDeployments']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/environments/stats': {
     parameters: {
       query?: never
@@ -2097,6 +2113,8 @@ export interface components {
       statusDetail?: components['schemas']['ResourceStatusDetail']
       /** Format: date-time */
       lastSyncedAt?: string
+      /** Format: date-time */
+      lastDeploymentAt?: string
       /** Format: date-time */
       createdAt?: string
       /** Format: date-time */
@@ -5389,6 +5407,30 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['NodePool'][]
+        }
+      }
+    }
+  }
+  listEnvironmentDeployments: {
+    parameters: {
+      query?: {
+        limit?: number
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PagedDeploymentResponse']
         }
       }
     }

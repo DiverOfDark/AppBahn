@@ -95,6 +95,7 @@ Class | Method | HTTP request | Description
 *EnvironmentsAPI* | [**DeleteEnvironmentToken**](docs/EnvironmentsAPI.md#deleteenvironmenttoken) | **Delete** /environments/{slug}/tokens/{token_id} | 
 *EnvironmentsAPI* | [**GetEnvironment**](docs/EnvironmentsAPI.md#getenvironment) | **Get** /environments/{slug} | 
 *EnvironmentsAPI* | [**GetEnvironmentQuota**](docs/EnvironmentsAPI.md#getenvironmentquota) | **Get** /environments/{slug}/quota | 
+*EnvironmentsAPI* | [**ListEnvironmentDeployments**](docs/EnvironmentsAPI.md#listenvironmentdeployments) | **Get** /environments/{slug}/deployments | 
 *EnvironmentsAPI* | [**ListEnvironmentNodePools**](docs/EnvironmentsAPI.md#listenvironmentnodepools) | **Get** /environments/{slug}/node-pools | 
 *EnvironmentsAPI* | [**ListEnvironmentTokens**](docs/EnvironmentsAPI.md#listenvironmenttokens) | **Get** /environments/{slug}/tokens | 
 *EnvironmentsAPI* | [**ListEnvironments**](docs/EnvironmentsAPI.md#listenvironments) | **Get** /environments | 

@@ -198,7 +198,10 @@ public class ResourceService {
     @Transactional(readOnly = true)
     public Resource getBySlug(String slug, AuthContext ctx) {
         var resolved = resourcePermissionHelper.resolve(slug, ctx, MemberRole.VIEWER);
-        return ResourceEntityMapper.toApi(resolved.entity(), resolved.env().getSlug(), objectMapper);
+        var latest = deploymentRepository
+                .findLatestDeploymentAtBySlugsAsMap(List.of(slug))
+                .get(slug);
+        return ResourceEntityMapper.toApi(resolved.entity(), resolved.env().getSlug(), objectMapper, latest);
     }
 
     @Transactional(readOnly = true)
@@ -211,9 +214,13 @@ public class ResourceService {
         var pageable = PaginationUtil.toPageable(page, size, sort);
         Page<ResourceCacheEntity> result = resourceCacheRepository.findByEnvironmentId(env.getId(), pageable);
 
+        var slugs =
+                result.getContent().stream().map(ResourceCacheEntity::getSlug).toList();
+        var latestBySlug = deploymentRepository.findLatestDeploymentAtBySlugsAsMap(slugs);
+
         return PagedResponseUtil.build(
                 result,
-                e -> ResourceEntityMapper.toApi(e, environmentSlug, objectMapper),
+                e -> ResourceEntityMapper.toApi(e, environmentSlug, objectMapper, latestBySlug.get(e.getSlug())),
                 new PagedResourceResponse(),
                 PagedResourceResponse::setContent,
                 PagedResourceResponse::setPage,

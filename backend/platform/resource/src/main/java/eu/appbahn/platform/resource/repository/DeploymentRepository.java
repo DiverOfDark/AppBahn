@@ -4,8 +4,10 @@ import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,6 +37,34 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, UU
             @Param("lifecycles") Collection<eu.appbahn.shared.crd.imagesource.BuildLifecycle> lifecycles,
             @Param("triggerRollback") boolean triggerRollback,
             Pageable pageable);
+
+    List<DeploymentEntity> findByEnvironmentId(UUID environmentId, Pageable pageable);
+
+    /**
+     * Server-side fold of {@code MAX(deployment.created_at)} grouped by {@code resource_slug},
+     * scoped to a single environment. Powers {@code Resource.lastDeploymentAt} on the resource
+     * listing payload without per-row N+1 queries. Resources with no deployments are absent
+     * from the returned map — the caller treats absent as {@code null}.
+     */
+    @Query("SELECT d.resourceSlug AS slug, MAX(d.createdAt) AS latest "
+            + "FROM DeploymentEntity d "
+            + "WHERE d.resourceSlug IN :slugs "
+            + "GROUP BY d.resourceSlug")
+    List<SlugLatestProjection> findLatestDeploymentAtBySlugs(@Param("slugs") Collection<String> slugs);
+
+    default Map<String, Instant> findLatestDeploymentAtBySlugsAsMap(Collection<String> slugs) {
+        if (slugs == null || slugs.isEmpty()) {
+            return Map.of();
+        }
+        return findLatestDeploymentAtBySlugs(slugs).stream()
+                .collect(Collectors.toMap(SlugLatestProjection::getSlug, SlugLatestProjection::getLatest));
+    }
+
+    interface SlugLatestProjection {
+        String getSlug();
+
+        Instant getLatest();
+    }
 
     Optional<DeploymentEntity> findByIdAndResourceSlug(UUID id, String resourceSlug);
 

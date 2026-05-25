@@ -2898,6 +2898,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/NodePool"
+  /environments/{slug}/deployments:
+    get:
+      tags:
+      - Environments
+      operationId: listEnvironmentDeployments
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedDeploymentResponse"
   /environments/stats:
     get:
       tags:
@@ -4386,6 +4412,9 @@ components:
         statusDetail:
           $ref: "#/components/schemas/ResourceStatusDetail"
         lastSyncedAt:
+          type: string
+          format: date-time
+        lastDeploymentAt:
           type: string
           format: date-time
         createdAt:

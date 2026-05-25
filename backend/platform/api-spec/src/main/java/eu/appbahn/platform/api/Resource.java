@@ -41,6 +41,15 @@ public class Resource {
     @Nullable
     private OffsetDateTime lastSyncedAt;
 
+    /**
+     * Timestamp of the most recent {@link Deployment} row for this resource, derived from
+     * {@code MAX(deployment.created_at)} server-side. Null when no deployments have been
+     * recorded yet — the resource has been created but its first build hasn't landed.
+     */
+    @Valid
+    @Nullable
+    private OffsetDateTime lastDeploymentAt;
+
     @Valid
     @Nullable
     private OffsetDateTime createdAt;

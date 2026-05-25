@@ -20,17 +20,18 @@ var _ MappedNullable = &Resource{}
 
 // Resource struct for Resource
 type Resource struct {
-	Slug            *string               `json:"slug,omitempty"`
-	Name            *string               `json:"name,omitempty"`
-	Type            *string               `json:"type,omitempty"`
-	EnvironmentSlug *string               `json:"environmentSlug,omitempty"`
-	Config          *ResourceConfig       `json:"config,omitempty"`
-	Links           []LinkConfig          `json:"links,omitempty"`
-	Status          *string               `json:"status,omitempty"`
-	StatusDetail    *ResourceStatusDetail `json:"statusDetail,omitempty"`
-	LastSyncedAt    *time.Time            `json:"lastSyncedAt,omitempty"`
-	CreatedAt       *time.Time            `json:"createdAt,omitempty"`
-	UpdatedAt       *time.Time            `json:"updatedAt,omitempty"`
+	Slug             *string               `json:"slug,omitempty"`
+	Name             *string               `json:"name,omitempty"`
+	Type             *string               `json:"type,omitempty"`
+	EnvironmentSlug  *string               `json:"environmentSlug,omitempty"`
+	Config           *ResourceConfig       `json:"config,omitempty"`
+	Links            []LinkConfig          `json:"links,omitempty"`
+	Status           *string               `json:"status,omitempty"`
+	StatusDetail     *ResourceStatusDetail `json:"statusDetail,omitempty"`
+	LastSyncedAt     *time.Time            `json:"lastSyncedAt,omitempty"`
+	LastDeploymentAt *time.Time            `json:"lastDeploymentAt,omitempty"`
+	CreatedAt        *time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt        *time.Time            `json:"updatedAt,omitempty"`
 }
 
 // NewResource instantiates a new Resource object
@@ -338,6 +339,38 @@ func (o *Resource) SetLastSyncedAt(v time.Time) {
 	o.LastSyncedAt = &v
 }
 
+// GetLastDeploymentAt returns the LastDeploymentAt field value if set, zero value otherwise.
+func (o *Resource) GetLastDeploymentAt() time.Time {
+	if o == nil || IsNil(o.LastDeploymentAt) {
+		var ret time.Time
+		return ret
+	}
+	return *o.LastDeploymentAt
+}
+
+// GetLastDeploymentAtOk returns a tuple with the LastDeploymentAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Resource) GetLastDeploymentAtOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.LastDeploymentAt) {
+		return nil, false
+	}
+	return o.LastDeploymentAt, true
+}
+
+// HasLastDeploymentAt returns a boolean if a field has been set.
+func (o *Resource) HasLastDeploymentAt() bool {
+	if o != nil && !IsNil(o.LastDeploymentAt) {
+		return true
+	}
+
+	return false
+}
+
+// SetLastDeploymentAt gets a reference to the given time.Time and assigns it to the LastDeploymentAt field.
+func (o *Resource) SetLastDeploymentAt(v time.Time) {
+	o.LastDeploymentAt = &v
+}
+
 // GetCreatedAt returns the CreatedAt field value if set, zero value otherwise.
 func (o *Resource) GetCreatedAt() time.Time {
 	if o == nil || IsNil(o.CreatedAt) {
@@ -438,6 +471,9 @@ func (o Resource) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.LastSyncedAt) {
 		toSerialize["lastSyncedAt"] = o.LastSyncedAt
+	}
+	if !IsNil(o.LastDeploymentAt) {
+		toSerialize["lastDeploymentAt"] = o.LastDeploymentAt
 	}
 	if !IsNil(o.CreatedAt) {
 		toSerialize["createdAt"] = o.CreatedAt

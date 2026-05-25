@@ -20,6 +20,8 @@ import eu.appbahn.platform.resource.entity.DeploymentEntity;
 import eu.appbahn.platform.resource.entity.ImageSourceCacheEntity;
 import eu.appbahn.platform.resource.repository.DeploymentRepository;
 import eu.appbahn.platform.resource.repository.ImageSourceCacheRepository;
+import eu.appbahn.platform.workspace.service.EnvironmentLookupService;
+import eu.appbahn.platform.workspace.service.PermissionService;
 import eu.appbahn.shared.crd.imagesource.BuildLifecycle;
 import eu.appbahn.shared.model.MemberRole;
 import eu.appbahn.shared.util.UuidV7;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,23 +65,32 @@ public class DeploymentService {
     private static final int MAX_STATS_WINDOW_DAYS = 90;
     private static final int DEFAULT_STATS_WINDOW_DAYS = 30;
 
+    /** Default for {@code GET /environments/{slug}/deployments?limit=…} when caller omits the param. */
+    private static final int DEFAULT_ENV_DEPLOYMENT_LIMIT = 20;
+
     private final DeploymentRepository deploymentRepository;
     private final ImageSourceCacheRepository imageSourceCacheRepository;
     private final ResourcePermissionHelper resourcePermissionHelper;
     private final AuditLogService auditLogService;
     private final DeploymentNudger deploymentNudger;
+    private final EnvironmentLookupService environmentLookupService;
+    private final PermissionService permissionService;
 
     public DeploymentService(
             DeploymentRepository deploymentRepository,
             ImageSourceCacheRepository imageSourceCacheRepository,
             ResourcePermissionHelper resourcePermissionHelper,
             AuditLogService auditLogService,
-            DeploymentNudger deploymentNudger) {
+            DeploymentNudger deploymentNudger,
+            EnvironmentLookupService environmentLookupService,
+            PermissionService permissionService) {
         this.deploymentRepository = deploymentRepository;
         this.imageSourceCacheRepository = imageSourceCacheRepository;
         this.resourcePermissionHelper = resourcePermissionHelper;
         this.auditLogService = auditLogService;
         this.deploymentNudger = deploymentNudger;
+        this.environmentLookupService = environmentLookupService;
+        this.permissionService = permissionService;
     }
 
     @Transactional(readOnly = true)
@@ -122,6 +134,33 @@ public class DeploymentService {
                 PagedDeploymentResponse::setSize,
                 PagedDeploymentResponse::setTotalElements,
                 PagedDeploymentResponse::setTotalPages);
+    }
+
+    /**
+     * Most recent deployments across every resource in {@code environmentSlug}, ordered by
+     * {@code createdAt DESC}, capped at {@code limit} (default {@link #DEFAULT_ENV_DEPLOYMENT_LIMIT}).
+     * Caller-facing use: the {@code limit=1} pipeline panel and short activity feeds. Returns a
+     * single-page response with the page metadata pinned to the slice — the env feed isn't
+     * paginated, so {@code totalElements} mirrors {@code content.size}.
+     */
+    @Transactional(readOnly = true)
+    public PagedDeploymentResponse listByEnvironment(String environmentSlug, Integer limit, AuthContext ctx) {
+        var env = environmentLookupService.findBySlug(environmentSlug);
+        permissionService.requireEnvironmentRole(ctx, env.getId(), MemberRole.VIEWER);
+
+        int capped = limit != null ? limit : DEFAULT_ENV_DEPLOYMENT_LIMIT;
+        var pageable = PageRequest.of(0, capped, Sort.by(Sort.Direction.DESC, "createdAt"));
+        var rows = deploymentRepository.findByEnvironmentId(env.getId(), pageable);
+
+        var response = new PagedDeploymentResponse();
+        response.setContent(rows.stream()
+                .map(e -> ResourceEntityMapper.toApi(e, env.getSlug()))
+                .toList());
+        response.setPage(0);
+        response.setSize(capped);
+        response.setTotalElements((long) rows.size());
+        response.setTotalPages(1);
+        return response;
     }
 
     @Transactional(readOnly = true)
