@@ -10,13 +10,16 @@ import { asOptionalInt, buildProbe } from '@/utils/resource'
 type CreateResourceRequest = components['schemas']['CreateResourceRequest']
 type HostingConfig = components['schemas']['HostingConfig']
 type ResourceConfig = components['schemas']['ResourceConfig']
+type ImageSourceSpec = components['schemas']['ImageSourceSpec']
 export type DeployStrategy = NonNullable<HostingConfig['deployStrategy']>
 
 export type SourceKind = 'docker' | 'git' | 'promote'
 export type Kind = 'resource' | 'cronjob'
+export type PromotionBinding = 'track' | 'pin'
 
 const DEPLOYMENT_TYPE = 'deployment'
 const DNS_NAME_REGEX = /^[a-z][a-z0-9-]*$/
+const DIGEST_REGEX = /^sha256:[0-9a-f]{64}$/i
 
 function defaultHealth(): HealthCheckState {
   return {
@@ -41,7 +44,18 @@ function defaultHealth(): HealthCheckState {
  * Resets when the user navigates between environments (envSlug change), so
  * an in-progress draft from `staging` doesn't leak into `production`.
  */
-export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => void) {
+export interface PromotionResolver {
+  /** Cluster name of the *source* environment whose resource is being promoted. */
+  sourceClusterName: () => string
+  /** Active platform namespace prefix (e.g. `abp`). */
+  namespacePrefix: () => string
+}
+
+export function useResourceCreateForm(
+  envSlug: Ref<string>,
+  onCreated: () => void,
+  promotionResolver?: PromotionResolver,
+) {
   const source = ref<SourceKind>('docker')
   const kind = ref<Kind>('resource')
   const name = ref('')
@@ -55,6 +69,12 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
   const nodePool = ref<string | undefined>(undefined)
   const deployStrategy = ref<DeployStrategy>('Rolling')
   const pdbMinAvailable = ref<number | undefined>(undefined)
+
+  // Promote-from-environment fields. Bound to the form's source-card panel.
+  const promoteEnvSlug = ref<string>('')
+  const promoteResourceSlug = ref<string>('')
+  const promotionBinding = ref<PromotionBinding>('track')
+  const pinnedDigest = ref<string>('')
 
   let portRowSeq = 0
   const ports = ref<PortRow[]>([{ id: ++portRowSeq, port: 80, expose: 'Ingress' }])
@@ -93,10 +113,21 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     ports.value = [{ id: ++portRowSeq, port: 80, expose: 'Ingress' }]
     envVars.value = []
     health.value = defaultHealth()
+    promoteEnvSlug.value = ''
+    promoteResourceSlug.value = ''
+    promotionBinding.value = 'track'
+    pinnedDigest.value = ''
     error.value = ''
     errors.value = []
     loading.value = false
   }
+
+  // When the user re-picks the source environment, the previously-selected
+  // source resource no longer belongs to it. Clear it so the form doesn't
+  // ship a cross-environment slug on submit.
+  watch(promoteEnvSlug, () => {
+    promoteResourceSlug.value = ''
+  })
 
   function validate(): boolean {
     const result: string[] = []
@@ -112,8 +143,25 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     if (type.value !== DEPLOYMENT_TYPE) {
       result.push('Only deployment resources can be created from the console at this time')
     } else {
-      if (!image.value.trim()) {
-        result.push('Image URL is required')
+      if (source.value === 'docker') {
+        if (!image.value.trim()) {
+          result.push('Image URL is required')
+        }
+      } else if (source.value === 'promote') {
+        if (!promoteEnvSlug.value.trim()) {
+          result.push('Source environment is required')
+        }
+        if (!promoteResourceSlug.value.trim()) {
+          result.push('Source resource is required')
+        }
+        if (promotionBinding.value === 'pin') {
+          const d = pinnedDigest.value.trim()
+          if (!d) {
+            result.push('Pinned digest is required when binding is "Pin to digest"')
+          } else if (!DIGEST_REGEX.test(d)) {
+            result.push('Pinned digest must look like sha256:<64-hex>')
+          }
+        }
       }
       if (cpu.value < 1 || !Number.isInteger(cpu.value)) {
         result.push('CPU must be a positive integer')
@@ -177,6 +225,24 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     resetForm()
   })
 
+  function buildPromotionImageSource(): ImageSourceSpec {
+    const cluster = promotionResolver?.sourceClusterName() ?? ''
+    const prefix = promotionResolver?.namespacePrefix() ?? 'abp'
+    const upstream: components['schemas']['ImageSourcePromotionSpec'] = {
+      upstream: {
+        cluster,
+        namespace: `${prefix}-${promoteEnvSlug.value}`,
+        name: promoteResourceSlug.value,
+      },
+    }
+    if (promotionBinding.value === 'pin') {
+      upstream.pinnedDigest = pinnedDigest.value.trim()
+    } else {
+      upstream.autoPromote = true
+    }
+    return { type: 'ImageSource', imageSource: upstream }
+  }
+
   async function submit() {
     if (!validate()) {
       error.value = errors.value[0] ?? ''
@@ -187,15 +253,17 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     error.value = ''
 
     try {
+      const imageSourceSpec: ImageSourceSpec =
+        source.value === 'promote'
+          ? buildPromotionImageSource()
+          : { type: 'Image', image: { ref: fullImage.value } }
+
       const body: CreateResourceRequest = {
         name: name.value.trim(),
         type: type.value,
         environmentSlug: envSlug.value,
         config: {},
-        imageSource: {
-          type: 'Image',
-          image: { ref: fullImage.value },
-        },
+        imageSource: imageSourceSpec,
       }
       if (type.value === DEPLOYMENT_TYPE) {
         // Drop empty rows; later occurrences of the same key win (matches what
@@ -270,6 +338,10 @@ export function useResourceCreateForm(envSlug: Ref<string>, onCreated: () => voi
     ports,
     envVars,
     health,
+    promoteEnvSlug,
+    promoteResourceSlug,
+    promotionBinding,
+    pinnedDigest,
     loading,
     error,
     errors,

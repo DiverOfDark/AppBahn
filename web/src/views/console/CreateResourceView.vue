@@ -12,6 +12,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
 import { useResourceCreateForm } from '@/composables/resource/useResourceCreateForm'
+import { usePlatformConfigStore } from '@/stores/platformConfig'
 import { api } from '@/api/client'
 import type { components } from '@/api/schema'
 import SourcePicker from './create-resource/SourcePicker.vue'
@@ -20,6 +21,12 @@ import ResourceForm from './create-resource/ResourceForm.vue'
 import CreateSummary from './create-resource/CreateSummary.vue'
 
 type NodePool = components['schemas']['NodePool']
+type Environment = components['schemas']['Environment']
+type Resource = components['schemas']['Resource']
+
+// Kinds whose successful build produces an OCI image that downstream
+// environments can promote. Today only `deployment` qualifies.
+const IMAGE_PRODUCING_KINDS = new Set(['deployment'])
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +36,13 @@ const projSlug = computed(() => route.params.projSlug as string)
 const envSlug = computed(() => route.params.envSlug as string)
 
 const nodePools = ref<NodePool[]>([])
+const promoteEnvironments = ref<Environment[]>([])
+const promoteResources = ref<Resource[]>([])
+const promoteEnvsLoading = ref(false)
+const promoteResourcesLoading = ref(false)
+
+const platformConfigStore = usePlatformConfigStore()
+void platformConfigStore.load()
 
 async function fetchNodePools() {
   if (!envSlug.value) {
@@ -49,6 +63,46 @@ async function fetchNodePools() {
 
 watch(envSlug, fetchNodePools, { immediate: true })
 
+async function fetchPromoteEnvironments() {
+  if (!projSlug.value) {
+    promoteEnvironments.value = []
+    return
+  }
+  promoteEnvsLoading.value = true
+  try {
+    const { data } = await api.GET('/environments', {
+      params: { query: { projectSlug: projSlug.value } },
+    })
+    // Don't list the current environment as a promotion *source* — promoting
+    // into the same environment is a no-op and would confuse the picker.
+    promoteEnvironments.value = (data?.content ?? []).filter((e) => e.slug !== envSlug.value)
+  } catch {
+    promoteEnvironments.value = []
+  } finally {
+    promoteEnvsLoading.value = false
+  }
+}
+
+async function fetchPromoteResources(sourceEnvSlug: string) {
+  if (!sourceEnvSlug) {
+    promoteResources.value = []
+    return
+  }
+  promoteResourcesLoading.value = true
+  try {
+    const { data } = await api.GET('/resources', {
+      params: { query: { environmentSlug: sourceEnvSlug } },
+    })
+    promoteResources.value = (data?.content ?? []).filter((r) =>
+      IMAGE_PRODUCING_KINDS.has(r.type ?? ''),
+    )
+  } catch {
+    promoteResources.value = []
+  } finally {
+    promoteResourcesLoading.value = false
+  }
+}
+
 const {
   source,
   kind,
@@ -65,16 +119,45 @@ const {
   ports,
   envVars,
   health,
+  promoteEnvSlug,
+  promoteResourceSlug,
+  promotionBinding,
+  pinnedDigest,
   loading,
   error,
   errors,
   fullImage,
   submit,
-} = useResourceCreateForm(envSlug, () => {
-  void router.push({
-    name: 'environment',
-    params: { wsSlug: wsSlug.value, projSlug: projSlug.value, envSlug: envSlug.value },
-  })
+} = useResourceCreateForm(
+  envSlug,
+  () => {
+    void router.push({
+      name: 'environment',
+      params: { wsSlug: wsSlug.value, projSlug: projSlug.value, envSlug: envSlug.value },
+    })
+  },
+  {
+    sourceClusterName: () =>
+      promoteEnvironments.value.find((e) => e.slug === promoteEnvSlug.value)?.targetCluster ?? '',
+    namespacePrefix: () => platformConfigStore.config?.namespacePrefix ?? 'abp',
+  },
+)
+
+// Lazy-load the env list the first time the user opens the Promote source
+// card. Refresh on env change so navigating between environments doesn't
+// show stale candidates.
+watch(
+  [source, projSlug, envSlug],
+  ([newSource]) => {
+    if (newSource === 'promote') {
+      void fetchPromoteEnvironments()
+    }
+  },
+  { immediate: true },
+)
+
+watch(promoteEnvSlug, (slug) => {
+  void fetchPromoteResources(slug)
 })
 </script>
 
@@ -118,11 +201,19 @@ const {
             v-model:ports="ports"
             v-model:env-vars="envVars"
             v-model:health="health"
+            v-model:promote-env-slug="promoteEnvSlug"
+            v-model:promote-resource-slug="promoteResourceSlug"
+            v-model:promotion-binding="promotionBinding"
+            v-model:pinned-digest="pinnedDigest"
             :source="source"
             :proj-slug="projSlug"
             :env-slug="envSlug"
             :full-image="fullImage"
             :node-pools="nodePools"
+            :promote-environments="promoteEnvironments"
+            :promote-resources="promoteResources"
+            :promote-envs-loading="promoteEnvsLoading"
+            :promote-resources-loading="promoteResourcesLoading"
           />
         </div>
 
@@ -139,6 +230,9 @@ const {
           :health="health"
           :env-vars="envVars"
           :env-slug="envSlug"
+          :promote-env-slug="promoteEnvSlug"
+          :promote-resource-slug="promoteResourceSlug"
+          :promotion-binding="promotionBinding"
         />
       </div>
 

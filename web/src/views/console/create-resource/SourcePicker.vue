@@ -10,8 +10,8 @@ const source = defineModel<SourceKind>({ required: true })
       <div>
         <h2>01 · Source</h2>
         <p class="slabel-desc">
-          Where the artifact comes from. Today only prebuilt Docker images are supported from the
-          console — Git source and environment promotion ship in a follow-up.
+          Where the artifact comes from. Pull a Docker image, or promote a build already running in
+          another environment of this project.
         </p>
       </div>
     </header>
@@ -32,17 +32,21 @@ const source = defineModel<SourceKind>({ required: true })
         <div class="src-meta"><span>oci</span><span>private</span><span>tag/digest</span></div>
       </button>
 
-      <div class="src-card disabled">
+      <button
+        type="button"
+        class="src-card"
+        :class="{ on: source === 'promote' }"
+        @click="source = 'promote'"
+      >
         <div class="src-h">
           <div class="src-ic env">↥</div>
-          <span class="src-soon">Coming soon</span>
         </div>
         <div class="src-name">Promote from environment</div>
         <div class="src-sub">
           Reuse a build already running in another environment. Same image, new env config.
         </div>
-        <div class="src-meta"><span>same image</span><span>fast</span></div>
-      </div>
+        <div class="src-meta"><span>same image</span><span>fast</span><span>pin / track</span></div>
+      </button>
 
       <div class="src-card disabled">
         <div class="src-h">

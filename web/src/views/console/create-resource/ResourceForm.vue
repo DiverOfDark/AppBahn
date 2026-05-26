@@ -5,11 +5,17 @@ import EnvVarsEditor, { type EnvVarRow } from '@/components/resource/EnvVarsEdit
 import HealthCheckEditor, {
   type HealthCheckState,
 } from '@/components/resource/HealthCheckEditor.vue'
-import type { SourceKind, DeployStrategy } from '@/composables/resource/useResourceCreateForm'
+import type {
+  SourceKind,
+  DeployStrategy,
+  PromotionBinding,
+} from '@/composables/resource/useResourceCreateForm'
 import type { components } from '@/api/schema'
 import { INSTANCE_SIZE_PRESETS, detectPreset, type PresetId } from '@/utils/instanceSizePresets'
 
 type NodePoolOption = components['schemas']['NodePool']
+type EnvironmentOption = components['schemas']['Environment']
+type ResourceOption = components['schemas']['Resource']
 
 const props = withDefaults(
   defineProps<{
@@ -18,8 +24,18 @@ const props = withDefaults(
     envSlug: string
     fullImage: string
     nodePools?: NodePoolOption[]
+    promoteEnvironments?: EnvironmentOption[]
+    promoteResources?: ResourceOption[]
+    promoteEnvsLoading?: boolean
+    promoteResourcesLoading?: boolean
   }>(),
-  { nodePools: () => [] },
+  {
+    nodePools: () => [],
+    promoteEnvironments: () => [],
+    promoteResources: () => [],
+    promoteEnvsLoading: false,
+    promoteResourcesLoading: false,
+  },
 )
 
 const name = defineModel<string>('name', { required: true })
@@ -35,9 +51,21 @@ const pdbMinAvailable = defineModel<number | undefined>('pdbMinAvailable', { req
 const ports = defineModel<PortRow[]>('ports', { required: true })
 const envVars = defineModel<EnvVarRow[]>('envVars', { required: true })
 const health = defineModel<HealthCheckState>('health', { required: true })
+const promoteEnvSlug = defineModel<string>('promoteEnvSlug', { required: true })
+const promoteResourceSlug = defineModel<string>('promoteResourceSlug', { required: true })
+const promotionBinding = defineModel<PromotionBinding>('promotionBinding', { required: true })
+const pinnedDigest = defineModel<string>('pinnedDigest', { required: true })
 
 const firstPort = computed(() => ports.value[0]?.port)
 const isDocker = computed(() => props.source === 'docker')
+const isPromote = computed(() => props.source === 'promote')
+
+const selectedSourceResource = computed(() =>
+  props.promoteResources.find((r) => r.slug === promoteResourceSlug.value),
+)
+const selectedSourceEnv = computed(() =>
+  props.promoteEnvironments.find((e) => e.slug === promoteEnvSlug.value),
+)
 
 const activePreset = ref<PresetId>(detectPreset(cpu.value, memory.value))
 
@@ -119,6 +147,139 @@ watch([cpu, memory], ([newCpu, newMem]) => {
             <span v-if="fullImage" class="hint mono">
               ▸ pulling <b class="accent">{{ fullImage }}</b>
             </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isPromote" class="panel">
+      <div class="panel-h">
+        <h3>Promote</h3>
+        <p>Pick a source environment + resource. Choose pin or track.</p>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Source environment <span class="req">REQUIRED</span></span>
+            <span class="desc">in this project</span>
+          </div>
+          <div class="field-c">
+            <select
+              v-model="promoteEnvSlug"
+              class="form-input"
+              :disabled="promoteEnvsLoading"
+              aria-label="Source environment"
+            >
+              <option value="" disabled>
+                {{ promoteEnvsLoading ? 'Loading…' : 'Pick environment…' }}
+              </option>
+              <option v-for="env in promoteEnvironments" :key="env.slug" :value="env.slug">
+                {{ env.name ?? env.slug }} ({{ env.slug }})
+              </option>
+            </select>
+            <span v-if="!promoteEnvsLoading && promoteEnvironments.length === 0" class="hint">
+              No other environment in this project. Create one first, then promote.
+            </span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Source resource <span class="req">REQUIRED</span></span>
+            <span class="desc">image-producing</span>
+          </div>
+          <div class="field-c">
+            <select
+              v-model="promoteResourceSlug"
+              class="form-input"
+              :disabled="!promoteEnvSlug || promoteResourcesLoading"
+              aria-label="Source resource"
+            >
+              <option value="" disabled>
+                {{ promoteResourcesLoading ? 'Loading…' : 'Pick resource…' }}
+              </option>
+              <option v-for="r in promoteResources" :key="r.slug" :value="r.slug">
+                {{ r.name ?? r.slug }} ({{ r.slug }})
+              </option>
+            </select>
+            <span
+              v-if="promoteEnvSlug && !promoteResourcesLoading && promoteResources.length === 0"
+              class="hint"
+            >
+              No image-producing resources in this environment.
+            </span>
+          </div>
+        </div>
+
+        <div v-if="promoteResourceSlug" class="field">
+          <div class="field-l">
+            <span class="lbl">Flow</span>
+            <span class="desc">from → to</span>
+          </div>
+          <div class="field-c">
+            <div class="promote-strip" data-test="promote-strip">
+              <div class="promote-node">
+                <span class="promote-node-label">from</span>
+                <span class="promote-node-name mono">
+                  {{ selectedSourceEnv?.name ?? promoteEnvSlug }} /
+                  {{ selectedSourceResource?.name ?? promoteResourceSlug }}
+                </span>
+              </div>
+              <span class="promote-arrow mono">→</span>
+              <div class="promote-node">
+                <span class="promote-node-label">to</span>
+                <span class="promote-node-name mono">
+                  {{ envSlug }} / <b class="accent">{{ name || 'new' }}</b>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-l">
+            <span class="lbl">Binding</span>
+            <span class="desc">pin or track</span>
+          </div>
+          <div class="field-c">
+            <div class="preset-row">
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: promotionBinding === 'track' }"
+                @click="promotionBinding = 'track'"
+              >
+                track latest
+              </button>
+              <button
+                type="button"
+                class="preset-chip"
+                :class="{ on: promotionBinding === 'pin' }"
+                @click="promotionBinding = 'pin'"
+              >
+                pin to digest
+              </button>
+            </div>
+            <span class="hint">
+              Track follows the source's latest build (auto-promote). Pin locks this resource to a
+              specific image digest you supply.
+            </span>
+          </div>
+        </div>
+
+        <div v-if="promotionBinding === 'pin'" class="field">
+          <div class="field-l">
+            <span class="lbl">Pinned digest <span class="req">REQUIRED</span></span>
+            <span class="desc">sha256:…</span>
+          </div>
+          <div class="field-c">
+            <input
+              v-model="pinnedDigest"
+              class="form-input"
+              placeholder="sha256:abc123…"
+              aria-label="Pinned digest"
+            />
+            <span class="hint">Lower-case sha256 digest, 64 hex chars after the prefix.</span>
           </div>
         </div>
       </div>
@@ -425,5 +586,45 @@ watch([cpu, memory], ([newCpu, newMem]) => {
 }
 .section .panel + .panel {
   margin-top: 14px;
+}
+
+.promote-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.promote-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+  flex: 1;
+}
+.promote-node-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+.promote-node-name {
+  font-size: 12px;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.promote-node-name .accent {
+  color: var(--color-accent);
+}
+.promote-arrow {
+  align-self: center;
+  color: var(--color-accent);
+  font-size: 16px;
 }
 </style>

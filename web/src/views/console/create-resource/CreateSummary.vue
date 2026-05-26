@@ -18,9 +18,21 @@ const props = defineProps<{
   health: HealthCheckState
   envVars: EnvVarRow[]
   envSlug: string
+  promoteEnvSlug?: string
+  promoteResourceSlug?: string
+  promotionBinding?: 'track' | 'pin'
 }>()
 
 const envVarCount = computed(() => props.envVars.filter((r) => r.key.trim()).length)
+
+const promoteSummary = computed(() => {
+  if (props.source !== 'promote') return ''
+  const env = props.promoteEnvSlug?.trim() ?? ''
+  const res = props.promoteResourceSlug?.trim() ?? ''
+  if (!env || !res) return '—'
+  const binding = props.promotionBinding === 'pin' ? 'pin' : 'track'
+  return `${env}/${res} (${binding})`
+})
 
 function exposeLabel(expose: PortRow['expose']): string {
   switch (expose) {
@@ -57,9 +69,13 @@ function exposeLabel(expose: PortRow['expose']): string {
           <span class="sk">source</span>
           <span class="sv mono">{{ source }}</span>
         </div>
-        <div class="srow">
+        <div v-if="source !== 'promote'" class="srow">
           <span class="sk">image</span>
           <span class="sv mono trunc" :title="fullImage">{{ fullImage || '—' }}</span>
+        </div>
+        <div v-else class="srow">
+          <span class="sk">promote</span>
+          <span class="sv mono trunc" :title="promoteSummary">{{ promoteSummary }}</span>
         </div>
         <div class="srow">
           <span class="sk">ports</span>
