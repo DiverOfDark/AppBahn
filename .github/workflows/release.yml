@@ -17,6 +17,9 @@ jobs:
         working-directory: web
     steps:
       - uses: actions/checkout@v6
+      - name: Export SOURCE_DATE_EPOCH (reproducible builds)
+        working-directory: ${{ github.workspace }}
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
@@ -39,8 +42,20 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      # Enable BuildKit so the bmuschko docker plugin path picks up
+      # SOURCE_DATE_EPOCH for layer mtime rewrites. helm package also reads
+      # SOURCE_DATE_EPOCH natively for chart tarball timestamps.
+      DOCKER_BUILDKIT: '1'
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Need real commit history so `git log -1 --format=%ct` resolves the
+          # commit timestamp, not a shallow checkout's NOW().
+          fetch-depth: 0
+      - name: Export SOURCE_DATE_EPOCH (reproducible builds)
+        working-directory: ${{ github.workspace }}
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -89,10 +104,18 @@ jobs:
     defaults:
       run:
         working-directory: cli
+    env:
+      # BuildKit honours SOURCE_DATE_EPOCH on the `docker build` invoked by
+      # GoReleaser's dockers stanza. GoReleaser itself reads .CommitTimestamp
+      # directly, but the docker layer mtimes still need BuildKit to rewrite.
+      DOCKER_BUILDKIT: '1'
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Export SOURCE_DATE_EPOCH (reproducible builds)
+        working-directory: ${{ github.workspace }}
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v6
         with:
           go-version-file: cli/go.mod
@@ -143,6 +166,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Export SOURCE_DATE_EPOCH (reproducible builds)
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@v8
         with:
           name: cli-binaries

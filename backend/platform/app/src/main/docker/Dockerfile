@@ -48,6 +48,14 @@ RUN java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh \
 # requires a numeric USER, and Wolfi base has no preallocated unprivileged
 # user, so we use the bare UID without an /etc/passwd entry.
 FROM jre AS runtime
+# SOURCE_DATE_EPOCH (reproducible-builds.org convention; CI exports it as
+# `git log -1 --format=%ct`) is consumed by BuildKit, which rewrites every
+# layer's tar mtime to this value before producing the image manifest. The
+# ARG declaration here is what lets the value flow in as a build-arg without
+# triggering BuildKit's "unused" warning. The label mirrors the value in
+# OCI image metadata so registries / scanners read a deterministic created-at.
+ARG SOURCE_DATE_EPOCH
+LABEL org.opencontainers.image.created=$SOURCE_DATE_EPOCH
 WORKDIR /app
 USER 65532:65532
 COPY --from=aot --chown=65532:65532 /workspace/application/ ./

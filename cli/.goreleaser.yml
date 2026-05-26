@@ -12,8 +12,25 @@ builds:
     binary: appbahn
     env:
       - CGO_ENABLED=0
+    # Reproducible Go binaries:
+    #   -trimpath        : strips host paths from the binary (GOPATH, build dir).
+    #   -buildvcs=false  : drops the .git stamp the Go toolchain auto-injects,
+    #                      which otherwise embeds the workspace status (clean/dirty,
+    #                      working-dir SHA) — non-deterministic across machines.
+    #   -mod=readonly    : refuses to mutate go.mod/go.sum mid-build, so the binary
+    #                      can't drift between an apparently-clean source tree.
+    flags:
+      - -trimpath
+      - -buildvcs=false
+      - -mod=readonly
+    # `-s -w` strips DWARF + symbol tables. The version/commit -X flags are deterministic
+    # for a given tag+SHA so they keep reproducibility.
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+    # SOURCE_DATE_EPOCH (set by CI) seeds Go's `-buildid` and the resulting binary
+    # timestamps. {{.CommitTimestamp}} is GoReleaser's per-build resolution of the
+    # commit time — identical SHA → identical epoch → identical binary.
+    mod_timestamp: '{{ .CommitTimestamp }}'
     goos:
       - linux
       - darwin
@@ -29,6 +46,9 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    # Pin archive entry timestamps to the commit time — same SHA → same tarball bytes.
+    builds_info:
+      mtime: '{{ .CommitDate }}'
 
 checksum:
   name_template: "checksums.txt"
@@ -48,10 +68,17 @@ dockers:
       - "ghcr.io/diverofdark/appbahn/cli:{{ .Version }}"
       - "ghcr.io/diverofdark/appbahn/cli:latest"
     dockerfile: Dockerfile
+    # BuildKit honours SOURCE_DATE_EPOCH on the build environment — it rewrites
+    # every layer's tar header mtime to that value before producing the image
+    # manifest. Combined with `org.opencontainers.image.created` (label), this
+    # gives a fully deterministic OCI digest for a given commit.
+    use: buildx
     build_flag_templates:
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.created={{ .CommitDate }}"
+      - "--build-arg=SOURCE_DATE_EPOCH={{ .CommitTimestamp }}"
 
 release:
   github:

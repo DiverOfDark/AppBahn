@@ -88,6 +88,27 @@ subprojects {
         useJUnitPlatform()
     }
 
+    // Reproducible archives: identical sources → byte-identical Jar/Zip outputs across machines
+    // and rebuilds. `preserveFileTimestamps=false` zeroes per-entry mtime to the constant epoch
+    // Gradle uses (1980-02-01, the zip-spec minimum); `reproducibleFileOrder=true` sorts entries
+    // alphabetically so the central directory layout is deterministic; pinned 0644/0755 permissions
+    // strip filesystem-specific bits. SOURCE_DATE_EPOCH (reproducible-builds.org convention) is
+    // exported by CI from the commit timestamp; when present we also retouch the archive's own
+    // mtime so registry-level metadata matches.
+    val sourceDateEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH").orNull?.toLongOrNull()
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+        filePermissions { unix("rw-r--r--") }
+        dirPermissions { unix("rwxr-xr-x") }
+        sourceDateEpoch?.let { epoch ->
+            val archive = archiveFile
+            doLast {
+                archive.get().asFile.takeIf { it.exists() }?.setLastModified(epoch * 1000L)
+            }
+        }
+    }
+
     dependencies {
         "compileOnly"(rootProject.libs.lombok)
         "annotationProcessor"(rootProject.libs.lombok)
@@ -132,6 +153,12 @@ subprojects {
             group = "docker"
             inputDir.set(dockerStageDir)
             images.set(defaultImages)
+            // Propagate SOURCE_DATE_EPOCH to BuildKit so it rewrites every layer's tar mtime to
+            // the commit timestamp, producing a deterministic image digest for a given source SHA.
+            // Requires DOCKER_BUILDKIT=1 (or `docker buildx build`) on the build host — CI exports
+            // both. Without BuildKit the build still succeeds; the env-var becomes a no-op build-arg.
+            val sourceDateEpoch = providers.environmentVariable("SOURCE_DATE_EPOCH")
+            buildArgs.putAll(sourceDateEpoch.map { mapOf("SOURCE_DATE_EPOCH" to it) }.orElse(emptyMap()))
             dependsOn(stageDockerContext)
         }
 

@@ -47,6 +47,10 @@ export default defineConfig({
           label: 'API Reference',
           items: [{ label: 'API Reference', slug: 'docs/api-reference' }],
         },
+        {
+          label: 'Operations',
+          items: [{ label: 'Reproducible Builds', slug: 'docs/reproducible-builds' }],
+        },
       ],
       customCss: ['./src/styles/custom.css'],
     }),
