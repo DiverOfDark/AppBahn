@@ -7,15 +7,21 @@ import eu.appbahn.operator.tunnel.client.model.AdminConfigPush;
 import eu.appbahn.operator.tunnel.client.model.ApplyNamespace;
 import eu.appbahn.operator.tunnel.client.model.ApplyResourceBundle;
 import eu.appbahn.operator.tunnel.client.model.CancelBuild;
+import eu.appbahn.operator.tunnel.client.model.ClusterCapacityResult;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse;
 import eu.appbahn.operator.tunnel.client.model.CommandResponse.StatusEnum;
 import eu.appbahn.operator.tunnel.client.model.DeleteNamespace;
 import eu.appbahn.operator.tunnel.client.model.DeleteResource;
 import eu.appbahn.operator.tunnel.client.model.HelloAck;
+import eu.appbahn.operator.tunnel.client.model.ListPods;
+import eu.appbahn.operator.tunnel.client.model.ListPodsResult;
 import eu.appbahn.operator.tunnel.client.model.NudgeImageSource;
+import eu.appbahn.operator.tunnel.client.model.QueryClusterCapacity;
 import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.operator.tunnel.client.model.RetryBuild;
+import eu.appbahn.operator.tunnel.query.ClusterCapacityQuery;
+import eu.appbahn.operator.tunnel.query.PodInfoQuery;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
@@ -49,6 +55,8 @@ public class PlatformCommandHandler {
     private final OperatorEventPublisher eventPublisher;
     private final BuildOrchestrator buildOrchestrator;
     private final ObjectMapper mapper;
+    private final PodInfoQuery podInfoQuery;
+    private final ClusterCapacityQuery clusterCapacityQuery;
 
     public PlatformCommandHandler(
             KubernetesClient kubernetesClient,
@@ -57,7 +65,9 @@ public class PlatformCommandHandler {
             AdminConfigCache adminConfigCache,
             OperatorEventPublisher eventPublisher,
             BuildOrchestrator buildOrchestrator,
-            ObjectMapper mapper) {
+            ObjectMapper mapper,
+            PodInfoQuery podInfoQuery,
+            ClusterCapacityQuery clusterCapacityQuery) {
         this.kubernetesClient = kubernetesClient;
         this.tunnelApiClient = tunnelApiClient;
         this.admissionCache = admissionCache;
@@ -65,6 +75,8 @@ public class PlatformCommandHandler {
         this.eventPublisher = eventPublisher;
         this.buildOrchestrator = buildOrchestrator;
         this.mapper = mapper;
+        this.podInfoQuery = podInfoQuery;
+        this.clusterCapacityQuery = clusterCapacityQuery;
     }
 
     /** Called from the SSE reader — one frame at a time. {@code event} is the wire SSE event name. */
@@ -82,6 +94,9 @@ public class PlatformCommandHandler {
                     handleNudgeImageSource(mapper.readValue(data, NudgeImageSource.class));
                 case TunnelEventNames.CANCEL_BUILD -> handleCancelBuild(mapper.readValue(data, CancelBuild.class));
                 case TunnelEventNames.RETRY_BUILD -> handleRetryBuild(mapper.readValue(data, RetryBuild.class));
+                case TunnelEventNames.LIST_PODS -> handleListPods(mapper.readValue(data, ListPods.class));
+                case TunnelEventNames.QUERY_CLUSTER_CAPACITY ->
+                    handleQueryClusterCapacity(mapper.readValue(data, QueryClusterCapacity.class));
                 case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
                 case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
                     var push = mapper.readValue(data, QuotaRbacCachePush.class);
@@ -467,11 +482,53 @@ public class PlatformCommandHandler {
         labels.putIfAbsent(Labels.ENVIRONMENT_SLUG_KEY, fallbackEnvSlug);
     }
 
+    private void handleListPods(ListPods cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var entries = podInfoQuery.listPods(cmd.getNamespace(), cmd.getResourceSlug());
+            var result = new ListPodsResult();
+            result.setPods(entries);
+            ackWithPayload(correlationId, result);
+        } catch (Exception e) {
+            log.warn("ListPods {}/{} failed: {}", cmd.getNamespace(), cmd.getResourceSlug(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
+    private void handleQueryClusterCapacity(QueryClusterCapacity cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var result = clusterCapacityQuery.compute();
+            ackWithPayload(correlationId, result);
+        } catch (Exception e) {
+            log.warn("QueryClusterCapacity failed: {}", e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
     private void ack(String correlationId, StatusEnum status, String message) {
         var req = new AckCommandRequest();
         var response = new CommandResponse();
         response.setStatus(status);
         response.setMessage(message != null ? message : "");
+        req.setResponse(response);
+        tunnelApiClient.ackCommand(correlationId, req);
+    }
+
+    /** Action commands ack with status + message only; read commands tack a typed payload on. */
+    private void ackWithPayload(String correlationId, Object payload) {
+        var req = new AckCommandRequest();
+        var response = new CommandResponse();
+        response.setStatus(StatusEnum.OK);
+        response.setMessage("");
+        if (payload instanceof ListPodsResult listPodsResult) {
+            response.setPayload(listPodsResult);
+        } else if (payload instanceof ClusterCapacityResult capacityResult) {
+            response.setPayload(capacityResult);
+        } else {
+            throw new IllegalArgumentException(
+                    "Unsupported response payload type: " + payload.getClass().getName());
+        }
         req.setResponse(response);
         tunnelApiClient.ackCommand(correlationId, req);
     }

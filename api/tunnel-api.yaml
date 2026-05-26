@@ -1127,6 +1127,27 @@ components:
       properties:
         response:
           $ref: "#/components/schemas/CommandResponse"
+    ClusterCapacityResult:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/CommandResponsePayload"
+      - type: object
+        properties:
+          cpuAvailableMillicores:
+            type: integer
+            format: int64
+          cpuTotalMillicores:
+            type: integer
+            format: int64
+          memoryAvailableBytes:
+            type: integer
+            format: int64
+          memoryTotalBytes:
+            type: integer
+            format: int64
+          schedulableNodes:
+            type: integer
+            format: int32
     CommandResponse:
       type: object
       properties:
@@ -1141,6 +1162,52 @@ components:
           - Timeout
         message:
           type: string
+        payload:
+          $ref: "#/components/schemas/CommandResponsePayload"
+    CommandResponsePayload:
+      type: object
+      properties:
+        type:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          list-pods-result: "#/components/schemas/ListPodsResult"
+          cluster-capacity-result: "#/components/schemas/ClusterCapacityResult"
+    ListPodsResult:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/CommandResponsePayload"
+      - type: object
+        properties:
+          pods:
+            type: array
+            items:
+              $ref: "#/components/schemas/ListPodsResultEntry"
+    ListPodsResultEntry:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        node:
+          type: string
+        cpuUsedMillicores:
+          type: integer
+          format: int64
+        cpuLimitMillicores:
+          type: integer
+          format: int64
+        memoryUsedBytes:
+          type: integer
+          format: int64
+        memoryLimitBytes:
+          type: integer
+          format: int64
+        ageSeconds:
+          type: integer
+          format: int64
     SseEmitter:
       type: object
       properties:
@@ -1362,6 +1429,20 @@ components:
         sourceCommit:
           type: string
         imageRef:
+          type: string
+    ListPods:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resourceSlug:
+          type: string
+    QueryClusterCapacity:
+      type: object
+      properties:
+        correlationId:
           type: string
     SubscribeCommandsRequest:
       required:

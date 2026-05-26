@@ -13,6 +13,8 @@ public final class CommandTypes {
     public static final String NUDGE_IMAGE_SOURCE = "NUDGE_IMAGE_SOURCE";
     public static final String CANCEL_BUILD = "CANCEL_BUILD";
     public static final String RETRY_BUILD = "RETRY_BUILD";
+    public static final String LIST_PODS = "LIST_PODS";
+    public static final String QUERY_CLUSTER_CAPACITY = "QUERY_CLUSTER_CAPACITY";
 
     private CommandTypes() {}
 }

@@ -16,6 +16,7 @@ import eu.appbahn.platform.api.resource.LogResponse;
 import eu.appbahn.platform.api.resource.MetricsResponse;
 import eu.appbahn.platform.api.resource.PagedDeploymentResponse;
 import eu.appbahn.platform.api.resource.PagedResourceResponse;
+import eu.appbahn.platform.api.resource.PodsResponse;
 import eu.appbahn.platform.api.resource.PromoteRequest;
 import eu.appbahn.platform.api.resource.ResourceCreatedResponse;
 import eu.appbahn.platform.api.resource.ResourcePreviewResponse;
@@ -25,6 +26,7 @@ import eu.appbahn.platform.api.resource.UpdateResourceRequest;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.PodService;
 import eu.appbahn.platform.resource.service.PromotionService;
 import eu.appbahn.platform.resource.service.ResourceLifecycleService;
 import eu.appbahn.platform.resource.service.ResourceService;
@@ -43,16 +45,19 @@ public class ResourcesController implements ResourcesApi {
     private final ResourceLifecycleService lifecycleService;
     private final DeploymentService deploymentService;
     private final PromotionService promotionService;
+    private final PodService podService;
 
     public ResourcesController(
             ResourceService resourceService,
             ResourceLifecycleService lifecycleService,
             DeploymentService deploymentService,
-            PromotionService promotionService) {
+            PromotionService promotionService,
+            PodService podService) {
         this.resourceService = resourceService;
         this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
         this.promotionService = promotionService;
+        this.podService = podService;
     }
 
     @Override
@@ -210,6 +215,11 @@ public class ResourcesController implements ResourcesApi {
     public ResponseEntity<MetricsResponse> getResourceRamMetrics(
             String slug, String start, String end, Integer step, String pod) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public ResponseEntity<PodsResponse> getResourcePods(String slug) {
+        return ResponseEntity.ok(podService.listPods(slug, AuthContextHolder.get()));
     }
 
     @Override

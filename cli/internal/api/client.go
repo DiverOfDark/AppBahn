@@ -52,6 +52,8 @@ type APIClient struct {
 
 	AuthAPI AuthAPI
 
+	ClustersAPI ClustersAPI
+
 	EnvironmentsAPI EnvironmentsAPI
 
 	GitAPI GitAPI
@@ -93,6 +95,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	// API Services
 	c.AdminAPI = (*AdminAPIService)(&c.common)
 	c.AuthAPI = (*AuthAPIService)(&c.common)
+	c.ClustersAPI = (*ClustersAPIService)(&c.common)
 	c.EnvironmentsAPI = (*EnvironmentsAPIService)(&c.common)
 	c.GitAPI = (*GitAPIService)(&c.common)
 	c.ImageSourceWebhookAPI = (*ImageSourceWebhookAPIService)(&c.common)

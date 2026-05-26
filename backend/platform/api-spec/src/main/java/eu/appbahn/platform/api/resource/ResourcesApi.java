@@ -341,6 +341,24 @@ public interface ResourcesApi {
             @Valid @RequestParam(value = "step", required = false) @Nullable Integer step,
             @Valid @RequestParam(value = "pod", required = false) @Nullable String pod);
     /**
+     * GET /resources/{slug}/pods : GetResourcePods — per-pod table data for the Resource
+     * Detail Overview's pod panel and the Scale modal's baseline. The operator queries
+     * fabric8 live for the pod list and best-effort queries metrics-server for current
+     * CPU/memory usage; usage fields are null when metrics-server isn't installed.
+     *
+     * @param slug  (required)
+     * @return Success (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     *         or Gateway timeout (status code 504) — operator did not answer within the budget
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/resources/{slug}/pods",
+            produces = {"application/json"})
+    ResponseEntity<PodsResponse> getResourcePods(@PathVariable("slug") String slug);
+    /**
      * GET /resources/{slug}/webhook : GetResourceWebhook
      *
      * @param slug  (required)

@@ -88,6 +88,7 @@ Class | Method | HTTP request | Description
 *AdminAPI* | [**UpdateResourceTypeAdminConfig**](docs/AdminAPI.md#updateresourcetypeadminconfig) | **Patch** /admin/resource-types/{type}/admin | 
 *AuthAPI* | [**AuthCallback**](docs/AuthAPI.md#authcallback) | **Get** /auth/callback | 
 *AuthAPI* | [**AuthLogin**](docs/AuthAPI.md#authlogin) | **Get** /auth/login | 
+*ClustersAPI* | [**GetClusterCapacity**](docs/ClustersAPI.md#getclustercapacity) | **Get** /clusters/{slug}/capacity | 
 *EnvironmentsAPI* | [**CreateEnvironment**](docs/EnvironmentsAPI.md#createenvironment) | **Post** /environments | 
 *EnvironmentsAPI* | [**CreateEnvironmentToken**](docs/EnvironmentsAPI.md#createenvironmenttoken) | **Post** /environments/{slug}/tokens | 
 *EnvironmentsAPI* | [**DeleteEnvironment**](docs/EnvironmentsAPI.md#deleteenvironment) | **Delete** /environments/{slug} | 
@@ -142,6 +143,7 @@ Class | Method | HTTP request | Description
 *ResourcesAPI* | [**GetResourceLogs**](docs/ResourcesAPI.md#getresourcelogs) | **Get** /resources/{slug}/logs | 
 *ResourcesAPI* | [**GetResourceNetworkInbound**](docs/ResourcesAPI.md#getresourcenetworkinbound) | **Get** /resources/{slug}/metrics/network/inbound | 
 *ResourcesAPI* | [**GetResourceNetworkOutbound**](docs/ResourcesAPI.md#getresourcenetworkoutbound) | **Get** /resources/{slug}/metrics/network/outbound | 
+*ResourcesAPI* | [**GetResourcePods**](docs/ResourcesAPI.md#getresourcepods) | **Get** /resources/{slug}/pods | 
 *ResourcesAPI* | [**GetResourceRamMetrics**](docs/ResourcesAPI.md#getresourcerammetrics) | **Get** /resources/{slug}/metrics/ram | 
 *ResourcesAPI* | [**GetResourceWebhook**](docs/ResourcesAPI.md#getresourcewebhook) | **Get** /resources/{slug}/webhook | 
 *ResourcesAPI* | [**ListDeployments**](docs/ResourcesAPI.md#listdeployments) | **Get** /resources/{slug}/deployments | 
@@ -216,6 +218,7 @@ Class | Method | HTTP request | Description
  - [BuildStage](docs/BuildStage.md)
  - [BuildpackBuildOptions](docs/BuildpackBuildOptions.md)
  - [Cluster](docs/Cluster.md)
+ - [ClusterCapacity](docs/ClusterCapacity.md)
  - [ClusterConfig](docs/ClusterConfig.md)
  - [CommandOverride](docs/CommandOverride.md)
  - [ConnectionEntry](docs/ConnectionEntry.md)
@@ -292,6 +295,10 @@ Class | Method | HTTP request | Description
  - [PeelboxBuildOptions](docs/PeelboxBuildOptions.md)
  - [PlatformConfig](docs/PlatformConfig.md)
  - [PlatformConfigBranding](docs/PlatformConfigBranding.md)
+ - [PodCpuUsage](docs/PodCpuUsage.md)
+ - [PodInfo](docs/PodInfo.md)
+ - [PodMemoryUsage](docs/PodMemoryUsage.md)
+ - [PodsResponse](docs/PodsResponse.md)
  - [PortConfig](docs/PortConfig.md)
  - [ProbeConfig](docs/ProbeConfig.md)
  - [ProbeOutcome](docs/ProbeOutcome.md)

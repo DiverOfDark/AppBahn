@@ -51,6 +51,9 @@ public class PendingCommandEntity {
     @Column(name = "response_message")
     private String responseMessage;
 
+    @Column(name = "response_payload", columnDefinition = "TEXT")
+    private String responsePayload;
+
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 }

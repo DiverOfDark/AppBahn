@@ -217,7 +217,9 @@ class OpenApiConfig {
      */
     private OpenApiCustomizer referenceOperatorEventCustomizer() {
         record Replacement(String parentSchema, String fieldName, String refTarget, boolean inArrayItems) {}
-        var replacements = List.of(new Replacement("PushEventsRequest", "events", "OperatorEvent", true));
+        var replacements = List.of(
+                new Replacement("PushEventsRequest", "events", "OperatorEvent", true),
+                new Replacement("CommandResponse", "payload", "CommandResponsePayload", false));
         return openApi -> {
             if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) return;
             for (var r : replacements) {
@@ -282,6 +284,8 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.NudgeImageSource.class,
             eu.appbahn.platform.api.tunnel.CancelBuild.class,
             eu.appbahn.platform.api.tunnel.RetryBuild.class,
+            eu.appbahn.platform.api.tunnel.ListPods.class,
+            eu.appbahn.platform.api.tunnel.QueryClusterCapacity.class,
             eu.appbahn.platform.api.tunnel.SubscribeCommandsRequest.class,
             // Audit enums are inlined inside AuditLogEvent by default; promote them to
             // top-level components so the operator's generated client gets them as plain

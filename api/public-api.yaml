@@ -2450,6 +2450,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebhookConfig"
+  /resources/{slug}/pods:
+    get:
+      tags:
+      - Resources
+      operationId: getResourcePods
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodsResponse"
   /resources/{slug}/metrics/ram:
     get:
       tags:
@@ -2945,6 +2963,24 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EnvironmentStats"
+  /clusters/{slug}/capacity:
+    get:
+      tags:
+      - Clusters
+      operationId: getClusterCapacity
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterCapacity"
   /auth/login:
     get:
       tags:
@@ -4815,6 +4851,47 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Resource"
+    PodCpuUsage:
+      type: object
+      properties:
+        usedMillicores:
+          type: integer
+          format: int64
+        limitMillicores:
+          type: integer
+          format: int64
+    PodInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        node:
+          type: string
+        cpu:
+          $ref: "#/components/schemas/PodCpuUsage"
+        memory:
+          $ref: "#/components/schemas/PodMemoryUsage"
+        ageSeconds:
+          type: integer
+          format: int64
+    PodMemoryUsage:
+      type: object
+      properties:
+        usedBytes:
+          type: integer
+          format: int64
+        limitBytes:
+          type: integer
+          format: int64
+    PodsResponse:
+      type: object
+      properties:
+        pods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PodInfo"
     MetricsDataPoint:
       type: object
       properties:
@@ -5208,6 +5285,26 @@ components:
           type: string
         configuredMemory:
           type: string
+    ClusterCapacity:
+      type: object
+      properties:
+        clusterName:
+          type: string
+        cpuAvailableMillicores:
+          type: integer
+          format: int64
+        cpuTotalMillicores:
+          type: integer
+          format: int64
+        memoryAvailableBytes:
+          type: integer
+          format: int64
+        memoryTotalBytes:
+          type: integer
+          format: int64
+        schedulableNodes:
+          type: integer
+          format: int32
     PagedUserResponse:
       type: object
       properties:

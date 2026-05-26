@@ -1012,6 +1012,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/pods': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourcePods']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/metrics/ram': {
     parameters: {
       query?: never
@@ -1292,6 +1308,22 @@ export interface paths {
       cookie?: never
     }
     get: operations['getEnvironmentStats']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/clusters/{slug}/capacity': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getClusterCapacity']
     put?: never
     post?: never
     delete?: never
@@ -2353,6 +2385,30 @@ export interface components {
       totalPages?: number
       content?: components['schemas']['Resource'][]
     }
+    PodCpuUsage: {
+      /** Format: int64 */
+      usedMillicores?: number
+      /** Format: int64 */
+      limitMillicores?: number
+    }
+    PodInfo: {
+      name?: string
+      status?: string
+      node?: string
+      cpu?: components['schemas']['PodCpuUsage']
+      memory?: components['schemas']['PodMemoryUsage']
+      /** Format: int64 */
+      ageSeconds?: number
+    }
+    PodMemoryUsage: {
+      /** Format: int64 */
+      usedBytes?: number
+      /** Format: int64 */
+      limitBytes?: number
+    }
+    PodsResponse: {
+      pods?: components['schemas']['PodInfo'][]
+    }
     MetricsDataPoint: {
       /** Format: double */
       timestamp?: number
@@ -2560,6 +2616,19 @@ export interface components {
       aggregateStatus?: 'Pending' | 'Ready' | 'Restarting' | 'Degraded' | 'Error' | 'Stopped'
       configuredCpu?: string
       configuredMemory?: string
+    }
+    ClusterCapacity: {
+      clusterName?: string
+      /** Format: int64 */
+      cpuAvailableMillicores?: number
+      /** Format: int64 */
+      cpuTotalMillicores?: number
+      /** Format: int64 */
+      memoryAvailableBytes?: number
+      /** Format: int64 */
+      memoryTotalBytes?: number
+      /** Format: int32 */
+      schedulableNodes?: number
     }
     PagedUserResponse: {
       /** Format: int32 */
@@ -5038,6 +5107,28 @@ export interface operations {
       }
     }
   }
+  getResourcePods: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PodsResponse']
+        }
+      }
+    }
+  }
   getResourceRamMetrics: {
     parameters: {
       query?: {
@@ -5466,6 +5557,28 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['EnvironmentStats'][]
+        }
+      }
+    }
+  }
+  getClusterCapacity: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ClusterCapacity']
         }
       }
     }

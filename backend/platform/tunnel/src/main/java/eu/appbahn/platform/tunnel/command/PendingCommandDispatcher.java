@@ -6,7 +6,9 @@ import eu.appbahn.platform.api.tunnel.ApplyResourceBundle;
 import eu.appbahn.platform.api.tunnel.CancelBuild;
 import eu.appbahn.platform.api.tunnel.DeleteNamespace;
 import eu.appbahn.platform.api.tunnel.DeleteResource;
+import eu.appbahn.platform.api.tunnel.ListPods;
 import eu.appbahn.platform.api.tunnel.NudgeImageSource;
+import eu.appbahn.platform.api.tunnel.QueryClusterCapacity;
 import eu.appbahn.platform.api.tunnel.RetryBuild;
 import java.time.Duration;
 import java.time.Instant;
@@ -109,6 +111,16 @@ public class PendingCommandDispatcher {
                     RetryBuild body = mapper.readValue(row.getPayload(), RetryBuild.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
                     yield new Claimed(row.getId(), row.getCorrelationId(), RetryBuild.EVENT_NAME, body);
+                }
+                case CommandTypes.LIST_PODS -> {
+                    ListPods body = mapper.readValue(row.getPayload(), ListPods.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), ListPods.EVENT_NAME, body);
+                }
+                case CommandTypes.QUERY_CLUSTER_CAPACITY -> {
+                    QueryClusterCapacity body = mapper.readValue(row.getPayload(), QueryClusterCapacity.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), QueryClusterCapacity.EVENT_NAME, body);
                 }
                 default -> {
                     log.warn("Unknown pending_command.command_type: {}", row.getCommandType());

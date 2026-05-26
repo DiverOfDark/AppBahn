@@ -1,5 +1,7 @@
 package eu.appbahn.platform.tunnel.rpc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.f4b6a3.uuid.UuidCreator;
 import eu.appbahn.platform.api.tunnel.AckCommandRequest;
 import eu.appbahn.platform.api.tunnel.AdminConfigPush;
@@ -84,6 +86,7 @@ public class OperatorTunnelController implements TunnelApi {
     private final AdminConfigSnapshotBuilder adminConfigBuilder;
     private final ClusterRegistrationService registrationService;
     private final DataSource dataSource;
+    private final ObjectMapper objectMapper;
     private final String replicaId;
 
     // Active SSE streams, tracked so we can complete them on @PreDestroy. Without
@@ -104,6 +107,7 @@ public class OperatorTunnelController implements TunnelApi {
             AdminConfigSnapshotBuilder adminConfigBuilder,
             ClusterRegistrationService registrationService,
             DataSource dataSource,
+            ObjectMapper objectMapper,
             // Pod name in Kubernetes (always set by the Downward API). Falls back to a random
             // UUID so a misconfigured deployment still produces a unique ID per replica instead
             // of collapsing every replica's session-ownership check to the same key.
@@ -119,6 +123,7 @@ public class OperatorTunnelController implements TunnelApi {
         this.adminConfigBuilder = adminConfigBuilder;
         this.registrationService = registrationService;
         this.dataSource = dataSource;
+        this.objectMapper = objectMapper;
         this.replicaId = replicaId;
     }
 
@@ -172,6 +177,14 @@ public class OperatorTunnelController implements TunnelApi {
                             ? null
                             : request.getResponse().getStatus().name());
             cmd.setResponseMessage(request.getResponse().getMessage());
+            if (request.getResponse().getPayload() != null) {
+                try {
+                    cmd.setResponsePayload(objectMapper.writeValueAsString(
+                            request.getResponse().getPayload()));
+                } catch (JsonProcessingException e) {
+                    throw TunnelApiException.invalidArgument("payload could not be serialised: " + e.getMessage());
+                }
+            }
         }
         pendingCommands.save(cmd);
         return ResponseEntity.noContent().build();
