@@ -22,6 +22,19 @@ export function statusClass(status?: string | null): string {
   return STATUS_CLASS_MAP[status] ?? ''
 }
 
+const AGGREGATE_STATUS_CLASS_MAP: Record<string, string> = {
+  Healthy: 'status-ready',
+  Degraded: 'status-degraded',
+  Pending: 'status-pending',
+  Failed: 'status-error',
+  Unknown: 'status-stopped',
+}
+
+export function aggregateStatusClass(status?: string | null): string {
+  if (!status) return ''
+  return AGGREGATE_STATUS_CLASS_MAP[status] ?? ''
+}
+
 export function getDomain(res: Resource | null): string {
   return (
     res?.statusDetail?.customDomains?.[0]?.domain ??

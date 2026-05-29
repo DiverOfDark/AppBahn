@@ -10,7 +10,11 @@ import CreateDialog from '@/components/CreateDialog.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import ConfirmButton from '@/components/ConfirmButton.vue'
 import { buildBreadcrumbChain } from '@/utils/breadcrumbs'
-import { statusClass, getDomain } from '@/composables/resource/useResourceHelpers'
+import {
+  statusClass,
+  aggregateStatusClass,
+  getDomain,
+} from '@/composables/resource/useResourceHelpers'
 import { initials } from '@/utils/resource'
 import { formatDate } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
@@ -323,7 +327,11 @@ onUnmounted(() => {
           class="env-tab"
           :class="{ on: env.slug === envSlug }"
         >
-          <span class="env-tab-dot"></span>
+          <span
+            class="env-tab-dot"
+            :class="aggregateStatusClass(env.aggregateStatus)"
+            :title="env.aggregateStatus ?? 'Unknown'"
+          ></span>
           <span>{{ env.name }}</span>
         </router-link>
       </nav>
@@ -620,7 +628,23 @@ onUnmounted(() => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  background: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+.env-tab-dot.status-ready {
   background: var(--color-status-ready);
+}
+.env-tab-dot.status-pending {
+  background: var(--color-status-pending);
+}
+.env-tab-dot.status-degraded {
+  background: var(--color-status-degraded);
+}
+.env-tab-dot.status-error {
+  background: var(--color-status-error);
+}
+.env-tab-dot.status-stopped {
+  background: var(--color-status-stopped);
 }
 
 /* Panels */
