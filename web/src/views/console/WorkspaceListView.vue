@@ -9,13 +9,14 @@ import PaginationControls from '@/components/PaginationControls.vue'
 import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 import { useCurrentUser } from '@/composables/useCurrentUser'
 import { useUserPreferences } from '@/composables/useUserPreferences'
-import { formatDateShort } from '@/utils/format'
+import { formatDateShort, formatRelativeTime } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { initials } from '@/utils/resource'
 import { useRouter } from 'vue-router'
 
 type Workspace = components['schemas']['Workspace']
 type WorkspaceInvite = components['schemas']['WorkspaceInvite']
+type WorkspaceStats = components['schemas']['WorkspaceStats']
 type ViewMode = 'cards' | 'list'
 type RoleFilter = 'all' | 'owned' | 'member'
 
@@ -58,6 +59,13 @@ const defaultWorkspace = computed<Workspace | undefined>(() => {
 // --- Pending invites ---
 const pendingInvites = ref<WorkspaceInvite[]>([])
 const inviteActionLoading = ref<string | null>(null)
+
+// --- Per-card stats (bulk-stats endpoint) ---
+const workspaceStats = ref<Record<string, WorkspaceStats>>({})
+function statsFor(slug?: string): WorkspaceStats | undefined {
+  if (!slug) return undefined
+  return workspaceStats.value[slug]
+}
 
 // --- Join with code ---
 const showJoinCode = ref(false)
@@ -137,6 +145,28 @@ async function fetchWorkspaces() {
     error.value = 'Failed to load workspaces'
   } finally {
     loading.value = false
+  }
+  // Fire-and-forget: stats are decorative; failure leaves cards rendering
+  // without the grid rather than blocking the whole page.
+  fetchStats()
+}
+
+async function fetchStats() {
+  const slugs = workspaces.value.map((w) => w.slug).filter((s): s is string => !!s)
+  if (slugs.length === 0) {
+    workspaceStats.value = {}
+    return
+  }
+  try {
+    const { data } = await api.GET('/workspaces/stats', { params: { query: { slugs } } })
+    if (!data) return
+    const next: Record<string, WorkspaceStats> = {}
+    for (const s of data) {
+      if (s.slug) next[s.slug] = s
+    }
+    workspaceStats.value = next
+  } catch {
+    // graceful degradation — cards keep rendering without the stats grid
   }
 }
 
@@ -440,8 +470,30 @@ onMounted(() => {
               {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
             </span>
           </div>
+          <div class="ws-stats" data-testid="ws-stats" aria-label="Workspace statistics">
+            <div class="ws-stat">
+              <div class="ws-stat-value">{{ statsFor(ws.slug)?.projectCount ?? '–' }}</div>
+              <div class="ws-stat-label">Projects</div>
+            </div>
+            <div class="ws-stat">
+              <div class="ws-stat-value">{{ statsFor(ws.slug)?.resourceCount ?? '–' }}</div>
+              <div class="ws-stat-label">Resources</div>
+            </div>
+            <div class="ws-stat">
+              <div class="ws-stat-value">{{ statsFor(ws.slug)?.clusterCount ?? '–' }}</div>
+              <div class="ws-stat-label">Clusters</div>
+            </div>
+            <div class="ws-stat">
+              <div class="ws-stat-value">{{ statsFor(ws.slug)?.memberCount ?? '–' }}</div>
+              <div class="ws-stat-label">Members</div>
+            </div>
+          </div>
           <div class="ws-foot">
-            <span class="ws-foot-l">workspace</span>
+            <span v-if="statsFor(ws.slug)?.lastEventAt" class="ws-foot-l ws-activity">
+              <span class="ws-activity-dot" aria-hidden="true"></span>
+              last activity {{ formatRelativeTime(statsFor(ws.slug)?.lastEventAt) }}
+            </span>
+            <span v-else class="ws-foot-l">workspace</span>
             <span v-if="ws.createdAt" class="ws-foot-r">
               created {{ formatDateShort(ws.createdAt) }}
             </span>
@@ -471,8 +523,31 @@ onMounted(() => {
             <span v-if="ws.callerRole" class="role-chip" :data-role="roleChipTone(ws.callerRole)">
               {{ ROLE_LABEL[ws.callerRole] ?? ws.callerRole }}
             </span>
+            <span class="ws-row-counts" data-testid="ws-row-counts" aria-label="Counts">
+              <span class="ws-row-count" title="Projects">
+                <span class="ws-row-count-v">{{ statsFor(ws.slug)?.projectCount ?? '–' }}</span>
+                <span class="ws-row-count-l">P</span>
+              </span>
+              <span class="ws-row-count" title="Resources">
+                <span class="ws-row-count-v">{{ statsFor(ws.slug)?.resourceCount ?? '–' }}</span>
+                <span class="ws-row-count-l">R</span>
+              </span>
+              <span class="ws-row-count" title="Clusters">
+                <span class="ws-row-count-v">{{ statsFor(ws.slug)?.clusterCount ?? '–' }}</span>
+                <span class="ws-row-count-l">C</span>
+              </span>
+              <span class="ws-row-count" title="Members">
+                <span class="ws-row-count-v">{{ statsFor(ws.slug)?.memberCount ?? '–' }}</span>
+                <span class="ws-row-count-l">M</span>
+              </span>
+            </span>
             <span class="ws-row-date">
-              {{ ws.createdAt ? `created ${formatDateShort(ws.createdAt)}` : '' }}
+              <template v-if="statsFor(ws.slug)?.lastEventAt">
+                {{ formatRelativeTime(statsFor(ws.slug)?.lastEventAt) }}
+              </template>
+              <template v-else-if="ws.createdAt">
+                created {{ formatDateShort(ws.createdAt) }}
+              </template>
             </span>
             <span class="ws-row-arrow" aria-hidden="true">→</span>
           </router-link>
@@ -743,9 +818,14 @@ onMounted(() => {
   font-size: 11px;
   color: var(--color-text-tertiary);
   letter-spacing: 0.04em;
-  border-top: 1px solid var(--color-border);
-  padding-top: 11px;
+  padding-top: 8px;
   margin-top: auto;
+  border-top: 1px solid var(--color-border);
+}
+/* stats grid sits between ws-h and ws-foot; suppress the duplicate border-top */
+.ws-stats + .ws-foot {
+  border-top: none;
+  padding-top: 0;
 }
 .ws-foot-l {
   font-size: 9px;
@@ -817,7 +897,7 @@ onMounted(() => {
 }
 .ws-row {
   display: grid;
-  grid-template-columns: 32px 1fr auto auto 24px;
+  grid-template-columns: 32px 1fr auto auto auto 24px;
   gap: 14px;
   align-items: center;
   padding: 12px 16px;
@@ -844,6 +924,79 @@ onMounted(() => {
   font-family: var(--font-mono);
   color: var(--color-text-tertiary);
   text-align: right;
+}
+
+/* per-card stats grid */
+.ws-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+.ws-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.ws-stat-value {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+.ws-stat-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+/* last-activity decoration */
+.ws-activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+.ws-activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* compact stats in list view */
+.ws-row-counts {
+  display: inline-flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+.ws-row-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-mono);
+}
+.ws-row-count-v {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.ws-row-count-l {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
 }
 
 /* role chip */
