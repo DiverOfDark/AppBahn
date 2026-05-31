@@ -68,12 +68,13 @@ jobs:
       - name: Determine version
         id: version
         run: |
+          sha="sha-${GITHUB_SHA::7}"
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo "semver=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-            echo "extra=latest" >> $GITHUB_OUTPUT
+            echo "extra=latest,${sha}" >> $GITHUB_OUTPUT
           else
             echo "semver=0.0.0-sha.${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-            echo "extra=latest,master" >> $GITHUB_OUTPUT
+            echo "extra=latest,master,${sha}" >> $GITHUB_OUTPUT
           fi
       - name: Build and push Docker images
         run: |
