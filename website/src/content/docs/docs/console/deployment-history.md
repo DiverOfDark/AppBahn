@@ -5,6 +5,13 @@ description: Cancel, retry, and inspect deployments from the AppBahn console.
 
 Every resource keeps an append-only history of its deployments. Open a resource in the console and pick the **Deploys** tab to see one row per deployment, newest first. The current primary release is highlighted; replaced rows are dimmed.
 
+## Environment overview
+
+The environment page summarises deployment activity across all of its resources:
+
+- The **Pipeline** panel shows the most recent deployment in the environment — its status, the resource it targeted, the image reference, and the timestamp. It refreshes automatically.
+- The resources table carries a **Last Deploy** column, so you can see at a glance when each workload last shipped.
+
 ## Status pills
 
 Each row carries one of these badges:

@@ -24,6 +24,7 @@ import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 type Environment = components['schemas']['Environment']
 type Resource = components['schemas']['Resource']
 type EnvironmentToken = components['schemas']['EnvironmentToken']
+type Deployment = components['schemas']['Deployment']
 
 const namespacePrefix = ref('abp')
 
@@ -37,6 +38,7 @@ const activeEnvStore = useActiveEnvironmentStore()
 const environment = ref<Environment | null>(null)
 const projectEnvs = ref<Environment[]>([])
 const resources = ref<Resource[]>([])
+const latestDeployment = ref<Deployment | null>(null)
 const loading = ref(true)
 const error = ref('')
 let pollInterval: ReturnType<typeof setInterval> | null = null
@@ -67,6 +69,21 @@ function openCreateToken() {
 const namespace = computed(() =>
   environment.value?.slug ? `${namespacePrefix.value}-${environment.value.slug}` : '',
 )
+
+const DEPLOYMENT_STATUS_CLASS: Record<string, string> = {
+  Queued: 'status-pending',
+  Building: 'status-pending',
+  Built: 'status-pending',
+  Activating: 'status-pending',
+  Active: 'status-ready',
+  Failed: 'status-error',
+  Superseded: 'status-stopped',
+  Canceled: 'status-stopped',
+}
+
+function deploymentStatusClass(lifecycle?: string): string {
+  return lifecycle ? (DEPLOYMENT_STATUS_CLASS[lifecycle] ?? '') : ''
+}
 
 async function fetchEnvironment() {
   try {
@@ -105,6 +122,17 @@ async function fetchResources({ isPolling = false } = {}) {
   }
 }
 
+async function fetchLatestDeployment({ isPolling = false } = {}) {
+  try {
+    const { data } = await api.GET('/environments/{slug}/deployments', {
+      params: { path: { slug: envSlug.value }, query: { limit: 1 } },
+    })
+    latestDeployment.value = data?.content?.[0] ?? null
+  } catch {
+    if (!isPolling) latestDeployment.value = null
+  }
+}
+
 async function fetchTokens() {
   try {
     const { data } = await api.GET('/environments/{slug}/tokens', {
@@ -132,15 +160,21 @@ async function fetchData() {
     fetchEnvironment(),
     fetchProjectEnvs(),
     fetchResources(),
+    fetchLatestDeployment(),
     fetchTokens(),
     fetchNamespacePrefix(),
   ])
   loading.value = false
 }
 
+function pollEnvironmentState() {
+  void fetchResources({ isPolling: true })
+  void fetchLatestDeployment({ isPolling: true })
+}
+
 function startPolling() {
   stopPolling()
-  pollInterval = setInterval(() => fetchResources({ isPolling: true }), 30000)
+  pollInterval = setInterval(pollEnvironmentState, 30000)
 }
 
 function stopPolling() {
@@ -251,7 +285,7 @@ function handleVisibilityChange() {
   if (document.hidden) {
     stopPolling()
   } else {
-    fetchResources({ isPolling: true })
+    pollEnvironmentState()
     startPolling()
   }
 }
@@ -336,6 +370,37 @@ onUnmounted(() => {
         </router-link>
       </nav>
 
+      <!-- Latest-deployment pipeline panel -->
+      <section class="panel pipeline-panel">
+        <div class="panel-h">
+          <div>
+            <h3>Pipeline</h3>
+            <p class="panel-h-sub">Most recent deployment in this environment.</p>
+          </div>
+        </div>
+
+        <EmptyState v-if="!latestDeployment" message="No deployments yet in this environment." />
+
+        <div v-else class="pipeline-body">
+          <span class="status-badge" :class="deploymentStatusClass(latestDeployment.lifecycle)">
+            {{ latestDeployment.lifecycle ?? 'UNKNOWN' }}
+          </span>
+          <div class="pipeline-meta">
+            <span v-if="latestDeployment.resourceSlug" class="pipeline-res mono">
+              {{ latestDeployment.resourceSlug }}
+            </span>
+            <span
+              v-if="latestDeployment.imageRef"
+              class="pipeline-image mono"
+              :title="latestDeployment.imageRef"
+            >
+              {{ latestDeployment.imageRef }}
+            </span>
+          </div>
+          <span class="pipeline-time mono">{{ formatDate(latestDeployment.createdAt) }}</span>
+        </div>
+      </section>
+
       <!-- Resources panel -->
       <section class="panel">
         <div class="panel-h">
@@ -365,6 +430,7 @@ onUnmounted(() => {
                 <th class="col-name">Name</th>
                 <th>Type</th>
                 <th>Status</th>
+                <th>Last Deploy</th>
                 <th>Domain</th>
                 <th>Slug</th>
               </tr>
@@ -388,6 +454,7 @@ onUnmounted(() => {
                     {{ res.status ?? 'UNKNOWN' }}
                   </span>
                 </td>
+                <td class="cell-date">{{ formatDate(res.lastDeploymentAt) }}</td>
                 <td class="cell-mono">{{ getDomain(res) }}</td>
                 <td class="cell-slug">{{ res.slug }}</td>
               </tr>
@@ -689,6 +756,41 @@ onUnmounted(() => {
 }
 .tokens-panel {
   margin-top: 24px;
+}
+
+/* Pipeline panel */
+.pipeline-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+}
+.pipeline-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.pipeline-res {
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+.pipeline-image {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pipeline-time {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  margin-left: auto;
 }
 
 /* Tables */
