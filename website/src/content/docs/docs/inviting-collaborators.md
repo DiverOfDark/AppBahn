@@ -5,6 +5,10 @@ description: How to invite users to a workspace using email invitations or invit
 
 AppBahn provides two ways to add collaborators to a workspace: direct email invitations and reusable invite codes.
 
+## Viewing members
+
+The workspace dashboard shows a **Members** panel listing everyone in the workspace at a glance — each with their avatar, name, and role. Use **Manage** to open **Settings → Members**, where you can invite, change roles, or remove members.
+
 ## Email invitations
 
 Workspace Admins can invite a user by email from **Settings → Members**. If the user already has an account, they become an Active member immediately. If the user does not yet have an account, a pending invitation is created; it is automatically converted to an Active membership when they sign up.

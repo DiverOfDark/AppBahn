@@ -20,6 +20,7 @@ type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
 type ProjectStats = components['schemas']['ProjectStats']
 type EnvironmentRollup = components['schemas']['EnvironmentRollup']
+type WorkspaceMember = components['schemas']['WorkspaceMember']
 type ViewMode = 'grid' | 'table'
 
 const VIEW_PREF_KEY = 'appbahn.projectsView'
@@ -30,6 +31,8 @@ const router = useRouter()
 const workspace = ref<Workspace | null>(null)
 const projects = ref<Project[]>([])
 const statsBySlug = ref<Record<string, ProjectStats>>({})
+const members = ref<WorkspaceMember[]>([])
+const membersLoading = ref(true)
 const loading = ref(true)
 const page = ref(0)
 const totalPages = ref(0)
@@ -127,6 +130,20 @@ function formatUptime(pct?: number): string {
   return `${pct.toFixed(pct >= 99.95 ? 0 : 1)}%`
 }
 
+async function fetchMembers() {
+  membersLoading.value = true
+  try {
+    const { data } = await api.GET('/workspaces/{slug}/members', {
+      params: { path: { slug: wsSlug.value } },
+    })
+    members.value = data ?? []
+  } catch {
+    members.value = []
+  } finally {
+    membersLoading.value = false
+  }
+}
+
 async function createProject() {
   if (!newName.value.trim()) return
   createLoading.value = true
@@ -166,11 +183,15 @@ watch(
       wsSlug.value = slug
       page.value = 0
       fetchData()
+      fetchMembers()
     }
   },
 )
 
-onMounted(fetchData)
+onMounted(() => {
+  fetchData()
+  fetchMembers()
+})
 </script>
 
 <template>
@@ -384,6 +405,39 @@ onMounted(fetchData)
 
       <PaginationControls :page="page" :total-pages="totalPages" @update:page="onPageChange" />
     </template>
+
+    <!-- Members panel -->
+    <section v-if="!loading && !error" class="members-panel">
+      <div class="members-head">
+        <h2 class="members-title">Members</h2>
+        <router-link :to="`/console/${wsSlug}/settings`" class="members-manage">Manage</router-link>
+      </div>
+
+      <div v-if="membersLoading" class="members-loading">Loading members…</div>
+
+      <div v-else-if="members.length === 0" class="members-empty">No members yet.</div>
+
+      <ul v-else class="members-list">
+        <li v-for="m in members" :key="m.userId ?? m.email" class="member-row">
+          <img
+            v-if="m.avatarUrl"
+            :src="m.avatarUrl"
+            :alt="m.name ?? m.email ?? 'member'"
+            class="member-avatar"
+          />
+          <div v-else class="member-avatar member-avatar-fallback">
+            {{ initials(m.name ?? m.email) }}
+          </div>
+          <div class="member-info">
+            <div class="member-name">{{ m.name ?? m.email }}</div>
+            <div v-if="m.name && m.email" class="member-email">{{ m.email }}</div>
+          </div>
+          <span class="member-role" :class="`role-${(m.role ?? '').toLowerCase()}`">
+            {{ m.role }}
+          </span>
+        </li>
+      </ul>
+    </section>
 
     <!-- Create dialog -->
     <CreateDialog
@@ -755,5 +809,112 @@ onMounted(fetchData)
 }
 .col-envs {
   width: 280px;
+}
+
+/* members panel */
+.members-panel {
+  margin-top: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  overflow: hidden;
+}
+.members-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-base);
+}
+.members-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+.members-manage {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.members-manage:hover {
+  color: var(--color-accent-hover);
+}
+.members-loading,
+.members-empty {
+  padding: 20px;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+.members-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.member-row:last-child {
+  border-bottom: none;
+}
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.member-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+.member-info {
+  min-width: 0;
+  flex: 1;
+}
+.member-name {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.member-email {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.02em;
+}
+.member-role {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+.member-role.role-owner {
+  color: var(--color-accent);
+  border-color: var(--color-accent-muted);
 }
 </style>
