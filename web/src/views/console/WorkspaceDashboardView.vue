@@ -14,9 +14,12 @@ import { useSidebarRefresh } from '@/composables/useSidebarRefresh'
 import { formatDateShort } from '@/utils/format'
 import { extractApiErrorMessage } from '@/utils/apiError'
 import { initials } from '@/utils/resource'
+import { statusClass } from '@/composables/resource/useResourceHelpers'
 
 type Workspace = components['schemas']['Workspace']
 type Project = components['schemas']['Project']
+type ProjectStats = components['schemas']['ProjectStats']
+type EnvironmentRollup = components['schemas']['EnvironmentRollup']
 type ViewMode = 'grid' | 'table'
 
 const VIEW_PREF_KEY = 'appbahn.projectsView'
@@ -26,6 +29,7 @@ const router = useRouter()
 
 const workspace = ref<Workspace | null>(null)
 const projects = ref<Project[]>([])
+const statsBySlug = ref<Record<string, ProjectStats>>({})
 const loading = ref(true)
 const page = ref(0)
 const totalPages = ref(0)
@@ -91,6 +95,36 @@ async function fetchData() {
   } finally {
     loading.value = false
   }
+  // Stats are best-effort enrichment — a failure must not blank the project list.
+  fetchStats()
+}
+
+async function fetchStats() {
+  try {
+    const { data } = await api.GET('/projects/stats', {
+      params: { query: { workspaceSlug: wsSlug.value } },
+    })
+    const map: Record<string, ProjectStats> = {}
+    for (const s of data ?? []) {
+      if (s.slug) map[s.slug] = s
+    }
+    statsBySlug.value = map
+  } catch {
+    statsBySlug.value = {}
+  }
+}
+
+function projectStats(slug?: string): ProjectStats | undefined {
+  return slug ? statsBySlug.value[slug] : undefined
+}
+
+function projectEnvs(slug?: string): EnvironmentRollup[] {
+  return projectStats(slug)?.envs ?? []
+}
+
+function formatUptime(pct?: number): string {
+  if (pct == null) return '—'
+  return `${pct.toFixed(pct >= 99.95 ? 0 : 1)}%`
 }
 
 async function createProject() {
@@ -240,9 +274,40 @@ onMounted(fetchData)
               <div class="card-slug">{{ proj.slug }}</div>
             </div>
           </div>
+
+          <div class="card-stats">
+            <div class="stat">
+              <span class="stat-val">{{ projectStats(proj.slug)?.services ?? 0 }}</span>
+              <span class="stat-lbl">services</span>
+            </div>
+            <div class="stat">
+              <span class="stat-val">{{ projectStats(proj.slug)?.deploys7d ?? 0 }}</span>
+              <span class="stat-lbl">deploys 7d</span>
+            </div>
+            <div class="stat">
+              <span class="stat-val">{{ formatUptime(projectStats(proj.slug)?.uptimePct) }}</span>
+              <span class="stat-lbl">uptime</span>
+            </div>
+          </div>
+
+          <div v-if="projectEnvs(proj.slug).length" class="env-pills">
+            <span
+              v-for="env in projectEnvs(proj.slug)"
+              :key="env.slug"
+              class="env-pill"
+              :class="statusClass(env.status)"
+              :title="`${env.slug}: ${env.status ?? 'Unknown'}`"
+            >
+              <span class="env-dot"></span>{{ env.slug }}
+            </span>
+          </div>
+
           <div class="card-foot">
             <span class="card-foot-l">project</span>
-            <span v-if="proj.createdAt" class="card-date">
+            <span v-if="projectStats(proj.slug)?.lastDeployAt" class="card-date">
+              deployed {{ formatDateShort(projectStats(proj.slug)!.lastDeployAt!) }}
+            </span>
+            <span v-else-if="proj.createdAt" class="card-date">
               created {{ formatDateShort(proj.createdAt) }}
             </span>
           </div>
@@ -255,8 +320,10 @@ onMounted(fetchData)
           <thead>
             <tr>
               <th class="col-name">Project</th>
-              <th class="col-slug">Slug</th>
-              <th class="col-date">Created</th>
+              <th class="col-services">Services</th>
+              <th class="col-uptime">Uptime</th>
+              <th class="col-envs">Environments</th>
+              <th class="col-date">Last deploy</th>
             </tr>
           </thead>
           <tbody>
@@ -271,15 +338,43 @@ onMounted(fetchData)
               <td>
                 <div class="proj-cell">
                   <div class="proj-ic">{{ initials(proj.name) }}</div>
-                  <div class="card-name">{{ proj.name }}</div>
+                  <div>
+                    <div class="card-name">{{ proj.name }}</div>
+                    <div class="card-slug">{{ proj.slug }}</div>
+                  </div>
                 </div>
               </td>
               <td>
-                <span class="card-slug">{{ proj.slug }}</span>
+                <span class="card-date">{{ projectStats(proj.slug)?.services ?? 0 }}</span>
+              </td>
+              <td>
+                <span class="card-date">{{
+                  formatUptime(projectStats(proj.slug)?.uptimePct)
+                }}</span>
+              </td>
+              <td>
+                <div v-if="projectEnvs(proj.slug).length" class="env-pills">
+                  <span
+                    v-for="env in projectEnvs(proj.slug)"
+                    :key="env.slug"
+                    class="env-pill"
+                    :class="statusClass(env.status)"
+                    :title="`${env.slug}: ${env.status ?? 'Unknown'}`"
+                  >
+                    <span class="env-dot"></span>{{ env.slug }}
+                  </span>
+                </div>
+                <span v-else class="card-date">—</span>
               </td>
               <td>
                 <span class="card-date">
-                  {{ proj.createdAt ? formatDateShort(proj.createdAt) : '—' }}
+                  {{
+                    projectStats(proj.slug)?.lastDeployAt
+                      ? formatDateShort(projectStats(proj.slug)!.lastDeployAt!)
+                      : proj.createdAt
+                        ? formatDateShort(proj.createdAt)
+                        : '—'
+                  }}
                 </span>
               </td>
             </tr>
@@ -503,6 +598,65 @@ onMounted(fetchData)
   color: var(--color-text-tertiary);
   letter-spacing: 0.04em;
 }
+.card-stats {
+  display: flex;
+  gap: 6px;
+  padding: 0 20px 14px;
+}
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.stat-val {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+.stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.env-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 20px 14px;
+}
+.env-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.env-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
 .card-foot {
   padding: 10px 20px;
   border-top: 1px solid var(--color-border);
@@ -595,7 +749,11 @@ onMounted(fetchData)
 .col-date {
   width: 160px;
 }
-.col-slug {
+.col-services,
+.col-uptime {
+  width: 100px;
+}
+.col-envs {
   width: 280px;
 }
 </style>
