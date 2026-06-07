@@ -19,15 +19,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ListPodsResult.class, name = "list-pods-result"),
-    @JsonSubTypes.Type(value = ClusterCapacityResult.class, name = "cluster-capacity-result")
+    @JsonSubTypes.Type(value = ClusterCapacityResult.class, name = "cluster-capacity-result"),
+    @JsonSubTypes.Type(value = MetricsResult.class, name = "metrics-result")
 })
 @Schema(
         discriminatorProperty = "type",
         discriminatorMapping = {
             @DiscriminatorMapping(value = "list-pods-result", schema = ListPodsResult.class),
-            @DiscriminatorMapping(value = "cluster-capacity-result", schema = ClusterCapacityResult.class)
+            @DiscriminatorMapping(value = "cluster-capacity-result", schema = ClusterCapacityResult.class),
+            @DiscriminatorMapping(value = "metrics-result", schema = MetricsResult.class)
         },
-        subTypes = {ListPodsResult.class, ClusterCapacityResult.class})
+        subTypes = {ListPodsResult.class, ClusterCapacityResult.class, MetricsResult.class})
 public abstract class CommandResponsePayload {
 
     protected String type;

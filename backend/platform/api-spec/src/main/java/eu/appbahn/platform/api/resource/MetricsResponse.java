@@ -24,6 +24,14 @@ public class MetricsResponse {
     @Nullable
     private Integer step;
 
+    /**
+     * Set only on graceful degradation — e.g. {@code "Metrics not available — no metrics
+     * provider configured"}. Null when a provider answered (series may still be empty if the
+     * Resource has no running pods).
+     */
+    @Nullable
+    private String message;
+
     @Data
     public static class MetricsSeries {
 

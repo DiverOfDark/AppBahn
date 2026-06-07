@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableRetry
-@EnableConfigurationProperties(DeploymentRetentionProperties.class)
+@EnableConfigurationProperties({DeploymentRetentionProperties.class})
 public class AppBahnApplication {
 
     public static void main(String[] args) {

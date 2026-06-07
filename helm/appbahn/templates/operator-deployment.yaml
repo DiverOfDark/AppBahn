@@ -80,6 +80,11 @@ spec:
               value: {{ .Values.operator.fullSyncIntervalMs | quote }}
             - name: OPERATOR_FULLSYNCINITIALDELAYMS
               value: {{ .Values.operator.fullSyncInitialDelayMs | quote }}
+            # Metrics provider — Prometheus endpoint for in-cluster PromQL (empty = disabled)
+            - name: OPERATOR_PROVIDERS_METRICS_TYPE
+              value: {{ .Values.operator.providers.metrics.type | quote }}
+            - name: OPERATOR_PROVIDERS_METRICS_ENDPOINT
+              value: {{ .Values.operator.providers.metrics.endpoint | quote }}
             - name: OPERATOR_BUILD_REGISTRY
               value: {{ .Values.operator.build.registry | quote }}
             - name: OPERATOR_BUILD_REGISTRYINSECURE

@@ -4917,6 +4917,8 @@ components:
         step:
           type: integer
           format: int32
+        message:
+          type: string
     MetricsSeries:
       type: object
       properties:

@@ -15,13 +15,16 @@ import eu.appbahn.operator.tunnel.client.model.DeleteResource;
 import eu.appbahn.operator.tunnel.client.model.HelloAck;
 import eu.appbahn.operator.tunnel.client.model.ListPods;
 import eu.appbahn.operator.tunnel.client.model.ListPodsResult;
+import eu.appbahn.operator.tunnel.client.model.MetricsResult;
 import eu.appbahn.operator.tunnel.client.model.NudgeImageSource;
 import eu.appbahn.operator.tunnel.client.model.QueryClusterCapacity;
+import eu.appbahn.operator.tunnel.client.model.QueryMetrics;
 import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
 import eu.appbahn.operator.tunnel.client.model.RetryBuild;
 import eu.appbahn.operator.tunnel.query.ClusterCapacityQuery;
 import eu.appbahn.operator.tunnel.query.PodInfoQuery;
+import eu.appbahn.operator.tunnel.query.PrometheusQueryService;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
@@ -57,6 +60,7 @@ public class PlatformCommandHandler {
     private final ObjectMapper mapper;
     private final PodInfoQuery podInfoQuery;
     private final ClusterCapacityQuery clusterCapacityQuery;
+    private final PrometheusQueryService prometheusQueryService;
 
     public PlatformCommandHandler(
             KubernetesClient kubernetesClient,
@@ -67,7 +71,8 @@ public class PlatformCommandHandler {
             BuildOrchestrator buildOrchestrator,
             ObjectMapper mapper,
             PodInfoQuery podInfoQuery,
-            ClusterCapacityQuery clusterCapacityQuery) {
+            ClusterCapacityQuery clusterCapacityQuery,
+            PrometheusQueryService prometheusQueryService) {
         this.kubernetesClient = kubernetesClient;
         this.tunnelApiClient = tunnelApiClient;
         this.admissionCache = admissionCache;
@@ -77,6 +82,7 @@ public class PlatformCommandHandler {
         this.mapper = mapper;
         this.podInfoQuery = podInfoQuery;
         this.clusterCapacityQuery = clusterCapacityQuery;
+        this.prometheusQueryService = prometheusQueryService;
     }
 
     /** Called from the SSE reader — one frame at a time. {@code event} is the wire SSE event name. */
@@ -97,6 +103,7 @@ public class PlatformCommandHandler {
                 case TunnelEventNames.LIST_PODS -> handleListPods(mapper.readValue(data, ListPods.class));
                 case TunnelEventNames.QUERY_CLUSTER_CAPACITY ->
                     handleQueryClusterCapacity(mapper.readValue(data, QueryClusterCapacity.class));
+                case TunnelEventNames.QUERY_METRICS -> handleQueryMetrics(mapper.readValue(data, QueryMetrics.class));
                 case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
                 case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
                     var push = mapper.readValue(data, QuotaRbacCachePush.class);
@@ -506,6 +513,24 @@ public class PlatformCommandHandler {
         }
     }
 
+    private void handleQueryMetrics(QueryMetrics cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var result = prometheusQueryService.query(
+                    cmd.getNamespace(),
+                    cmd.getResourceSlug(),
+                    cmd.getKind(),
+                    cmd.getStartEpochSeconds(),
+                    cmd.getEndEpochSeconds(),
+                    cmd.getStepSeconds(),
+                    cmd.getPod());
+            ackWithPayload(correlationId, result);
+        } catch (Exception e) {
+            log.warn("QueryMetrics {}/{} failed: {}", cmd.getNamespace(), cmd.getResourceSlug(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
     private void ack(String correlationId, StatusEnum status, String message) {
         var req = new AckCommandRequest();
         var response = new CommandResponse();
@@ -525,6 +550,8 @@ public class PlatformCommandHandler {
             response.setPayload(listPodsResult);
         } else if (payload instanceof ClusterCapacityResult capacityResult) {
             response.setPayload(capacityResult);
+        } else if (payload instanceof MetricsResult metricsResult) {
+            response.setPayload(metricsResult);
         } else {
             throw new IllegalArgumentException(
                     "Unsupported response payload type: " + payload.getClass().getName());

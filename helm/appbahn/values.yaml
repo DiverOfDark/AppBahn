@@ -115,6 +115,13 @@ operator:
   resourceRequestFraction: 0.25
   fullSyncIntervalMs: 300000
   fullSyncInitialDelayMs: 60000
+  # Metrics provider. The operator runs PromQL in-cluster, so it holds the Prometheus endpoint.
+  # Default NONE disables metrics (the console shows a graceful "not available" message). Set
+  # type to PROMETHEUS and endpoint to the in-cluster Prometheus URL to enable metrics.
+  providers:
+    metrics:
+      type: "NONE"
+      endpoint: ""
   security:
     runAsNonRoot: true
     allowPrivilegeEscalation: false

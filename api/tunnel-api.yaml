@@ -1174,6 +1174,7 @@ components:
         mapping:
           list-pods-result: "#/components/schemas/ListPodsResult"
           cluster-capacity-result: "#/components/schemas/ClusterCapacityResult"
+          metrics-result: "#/components/schemas/MetricsResult"
     ListPodsResult:
       type: object
       allOf:
@@ -1208,6 +1209,38 @@ components:
         ageSeconds:
           type: integer
           format: int64
+    MetricsResult:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/CommandResponsePayload"
+      - type: object
+        properties:
+          available:
+            type: boolean
+          message:
+            type: string
+          series:
+            type: array
+            items:
+              $ref: "#/components/schemas/MetricsResultSeries"
+    MetricsResultSample:
+      type: object
+      properties:
+        timestamp:
+          type: number
+          format: double
+        value:
+          type: number
+          format: double
+    MetricsResultSeries:
+      type: object
+      properties:
+        pod:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/MetricsResultSample"
     SseEmitter:
       type: object
       properties:
@@ -1443,6 +1476,33 @@ components:
       type: object
       properties:
         correlationId:
+          type: string
+    QueryMetrics:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resourceSlug:
+          type: string
+        kind:
+          type: string
+          enum:
+          - Cpu
+          - Ram
+          - NetworkInbound
+          - NetworkOutbound
+        startEpochSeconds:
+          type: integer
+          format: int64
+        endEpochSeconds:
+          type: integer
+          format: int64
+        stepSeconds:
+          type: integer
+          format: int32
+        pod:
           type: string
     SubscribeCommandsRequest:
       required:

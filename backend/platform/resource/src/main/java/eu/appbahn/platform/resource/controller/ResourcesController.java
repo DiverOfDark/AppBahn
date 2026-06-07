@@ -23,9 +23,11 @@ import eu.appbahn.platform.api.resource.ResourcePreviewResponse;
 import eu.appbahn.platform.api.resource.ResourcesApi;
 import eu.appbahn.platform.api.resource.RollbackRequest;
 import eu.appbahn.platform.api.resource.UpdateResourceRequest;
+import eu.appbahn.platform.api.tunnel.MetricKind;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.MetricsService;
 import eu.appbahn.platform.resource.service.PodService;
 import eu.appbahn.platform.resource.service.PromotionService;
 import eu.appbahn.platform.resource.service.ResourceLifecycleService;
@@ -46,18 +48,21 @@ public class ResourcesController implements ResourcesApi {
     private final DeploymentService deploymentService;
     private final PromotionService promotionService;
     private final PodService podService;
+    private final MetricsService metricsService;
 
     public ResourcesController(
             ResourceService resourceService,
             ResourceLifecycleService lifecycleService,
             DeploymentService deploymentService,
             PromotionService promotionService,
-            PodService podService) {
+            PodService podService,
+            MetricsService metricsService) {
         this.resourceService = resourceService;
         this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
         this.promotionService = promotionService;
         this.podService = podService;
+        this.metricsService = metricsService;
     }
 
     @Override
@@ -190,7 +195,8 @@ public class ResourcesController implements ResourcesApi {
     @Override
     public ResponseEntity<MetricsResponse> getResourceCpuMetrics(
             String slug, String start, String end, Integer step, String pod) {
-        throw new NotImplementedException();
+        return ResponseEntity.ok(
+                metricsService.query(slug, MetricKind.CPU, start, end, step, pod, AuthContextHolder.get()));
     }
 
     @Override
@@ -202,19 +208,22 @@ public class ResourcesController implements ResourcesApi {
     @Override
     public ResponseEntity<MetricsResponse> getResourceNetworkInbound(
             String slug, String start, String end, Integer step, String pod) {
-        throw new NotImplementedException();
+        return ResponseEntity.ok(
+                metricsService.query(slug, MetricKind.NETWORK_INBOUND, start, end, step, pod, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<MetricsResponse> getResourceNetworkOutbound(
             String slug, String start, String end, Integer step, String pod) {
-        throw new NotImplementedException();
+        return ResponseEntity.ok(metricsService.query(
+                slug, MetricKind.NETWORK_OUTBOUND, start, end, step, pod, AuthContextHolder.get()));
     }
 
     @Override
     public ResponseEntity<MetricsResponse> getResourceRamMetrics(
             String slug, String start, String end, Integer step, String pod) {
-        throw new NotImplementedException();
+        return ResponseEntity.ok(
+                metricsService.query(slug, MetricKind.RAM, start, end, step, pod, AuthContextHolder.get()));
     }
 
     @Override

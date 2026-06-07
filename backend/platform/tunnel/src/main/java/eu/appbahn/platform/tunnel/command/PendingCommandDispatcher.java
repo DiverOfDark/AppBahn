@@ -9,6 +9,7 @@ import eu.appbahn.platform.api.tunnel.DeleteResource;
 import eu.appbahn.platform.api.tunnel.ListPods;
 import eu.appbahn.platform.api.tunnel.NudgeImageSource;
 import eu.appbahn.platform.api.tunnel.QueryClusterCapacity;
+import eu.appbahn.platform.api.tunnel.QueryMetrics;
 import eu.appbahn.platform.api.tunnel.RetryBuild;
 import java.time.Duration;
 import java.time.Instant;
@@ -121,6 +122,11 @@ public class PendingCommandDispatcher {
                     QueryClusterCapacity body = mapper.readValue(row.getPayload(), QueryClusterCapacity.class);
                     body.setCorrelationId(row.getCorrelationId().toString());
                     yield new Claimed(row.getId(), row.getCorrelationId(), QueryClusterCapacity.EVENT_NAME, body);
+                }
+                case CommandTypes.QUERY_METRICS -> {
+                    QueryMetrics body = mapper.readValue(row.getPayload(), QueryMetrics.class);
+                    body.setCorrelationId(row.getCorrelationId().toString());
+                    yield new Claimed(row.getId(), row.getCorrelationId(), QueryMetrics.EVENT_NAME, body);
                 }
                 default -> {
                     log.warn("Unknown pending_command.command_type: {}", row.getCommandType());
