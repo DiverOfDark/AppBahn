@@ -36,6 +36,12 @@ operator:
     metrics:
       type: NONE
       endpoint:
+    # Log provider. type=NONE = no provider wired; VICTORIA_LOGS with a blank endpoint = provider
+    # selected but no URL. Either way log queries report "not available" and the console degrades
+    # gracefully. Point at the in-cluster Victoria Logs, e.g. http://victoria-logs.observability.svc:9428.
+    logs:
+      type: NONE
+      endpoint:
   security:
     run-as-non-root: true
     read-only-root-filesystem: true

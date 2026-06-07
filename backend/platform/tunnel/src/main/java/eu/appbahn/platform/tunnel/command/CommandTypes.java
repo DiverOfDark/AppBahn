@@ -16,6 +16,7 @@ public final class CommandTypes {
     public static final String LIST_PODS = "LIST_PODS";
     public static final String QUERY_CLUSTER_CAPACITY = "QUERY_CLUSTER_CAPACITY";
     public static final String QUERY_METRICS = "QUERY_METRICS";
+    public static final String QUERY_LOGS = "QUERY_LOGS";
 
     private CommandTypes() {}
 }

@@ -250,6 +250,8 @@ public interface ResourcesApi {
      * GET /resources/{slug}/logs : GetResourceLogs
      *
      * @param slug  (required)
+     * @param container Filter by container name (optional)
+     * @param pod Filter by pod name (optional)
      * @param deploymentId  (optional)
      * @param lines  (optional)
      * @param since  (optional)
@@ -264,6 +266,8 @@ public interface ResourcesApi {
             produces = {"application/json"})
     ResponseEntity<LogResponse> getResourceLogs(
             @PathVariable("slug") String slug,
+            @Valid @RequestParam(value = "container", required = false) @Nullable String container,
+            @Valid @RequestParam(value = "pod", required = false) @Nullable String pod,
             @Valid @RequestParam(value = "deploymentId", required = false) @Nullable UUID deploymentId,
             @Valid @RequestParam(value = "lines", required = false) @Nullable Integer lines,
             @Valid

@@ -39,6 +39,7 @@ export default defineConfig({
             { label: 'Scaling and Placement', slug: 'docs/scaling-and-placement' },
             { label: 'Environment Promotion', slug: 'docs/promotion' },
             { label: 'Metrics', slug: 'docs/metrics' },
+            { label: 'Logs', slug: 'docs/logs' },
           ],
         },
         {

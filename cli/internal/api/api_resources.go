@@ -1939,9 +1939,21 @@ type ApiGetResourceLogsRequest struct {
 	ctx          context.Context
 	ApiService   ResourcesAPI
 	slug         string
+	container    *string
+	pod          *string
 	deploymentId *string
 	lines        *int32
 	since        *time.Time
+}
+
+func (r ApiGetResourceLogsRequest) Container(container string) ApiGetResourceLogsRequest {
+	r.container = &container
+	return r
+}
+
+func (r ApiGetResourceLogsRequest) Pod(pod string) ApiGetResourceLogsRequest {
+	r.pod = &pod
+	return r
 }
 
 func (r ApiGetResourceLogsRequest) DeploymentId(deploymentId string) ApiGetResourceLogsRequest {
@@ -2001,6 +2013,12 @@ func (a *ResourcesAPIService) GetResourceLogsExecute(r ApiGetResourceLogsRequest
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.container != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "container", r.container, "form", "")
+	}
+	if r.pod != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "pod", r.pod, "form", "")
+	}
 	if r.deploymentId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "deploymentId", r.deploymentId, "form", "")
 	}

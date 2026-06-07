@@ -115,11 +115,14 @@ operator:
   resourceRequestFraction: 0.25
   fullSyncIntervalMs: 300000
   fullSyncInitialDelayMs: 60000
-  # Metrics provider. The operator runs PromQL in-cluster, so it holds the Prometheus endpoint.
-  # Default NONE disables metrics (the console shows a graceful "not available" message). Set
-  # type to PROMETHEUS and endpoint to the in-cluster Prometheus URL to enable metrics.
+  # Observability providers. The operator runs the queries in-cluster, so it holds the endpoints.
+  # Default NONE disables a provider (the console shows a graceful "not available" message). Set
+  # metrics.type=PROMETHEUS / logs.type=VICTORIA_LOGS and the endpoint to the in-cluster URL to enable.
   providers:
     metrics:
+      type: "NONE"
+      endpoint: ""
+    logs:
       type: "NONE"
       endpoint: ""
   security:

@@ -24,5 +24,6 @@ final class TunnelEventNames {
     static final String LIST_PODS = "list-pods";
     static final String QUERY_CLUSTER_CAPACITY = "query-cluster-capacity";
     static final String QUERY_METRICS = "query-metrics";
+    static final String QUERY_LOGS = "query-logs";
     static final String KEEPALIVE = "keepalive";
 }

@@ -287,6 +287,7 @@ class OpenApiConfig {
             eu.appbahn.platform.api.tunnel.ListPods.class,
             eu.appbahn.platform.api.tunnel.QueryClusterCapacity.class,
             eu.appbahn.platform.api.tunnel.QueryMetrics.class,
+            eu.appbahn.platform.api.tunnel.QueryLogs.class,
             eu.appbahn.platform.api.tunnel.SubscribeCommandsRequest.class,
             // Audit enums are inlined inside AuditLogEvent by default; promote them to
             // top-level components so the operator's generated client gets them as plain

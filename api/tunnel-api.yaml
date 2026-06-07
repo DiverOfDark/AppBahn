@@ -1175,6 +1175,7 @@ components:
           list-pods-result: "#/components/schemas/ListPodsResult"
           cluster-capacity-result: "#/components/schemas/ClusterCapacityResult"
           metrics-result: "#/components/schemas/MetricsResult"
+          logs-result: "#/components/schemas/LogsResult"
     ListPodsResult:
       type: object
       allOf:
@@ -1209,6 +1210,32 @@ components:
         ageSeconds:
           type: integer
           format: int64
+    LogsResult:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/CommandResponsePayload"
+      - type: object
+        properties:
+          available:
+            type: boolean
+          message:
+            type: string
+          lines:
+            type: array
+            items:
+              $ref: "#/components/schemas/LogsResultLine"
+    LogsResultLine:
+      type: object
+      properties:
+        timestamp:
+          type: number
+          format: double
+        message:
+          type: string
+        pod:
+          type: string
+        container:
+          type: string
     MetricsResult:
       type: object
       allOf:
@@ -1504,6 +1531,27 @@ components:
           format: int32
         pod:
           type: string
+    QueryLogs:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        namespace:
+          type: string
+        resourceSlug:
+          type: string
+        pod:
+          type: string
+        container:
+          type: string
+        deploymentId:
+          type: string
+        sinceEpochSeconds:
+          type: integer
+          format: int64
+        limit:
+          type: integer
+          format: int32
     SubscribeCommandsRequest:
       required:
       - clusterName

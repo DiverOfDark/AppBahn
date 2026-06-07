@@ -27,6 +27,7 @@ import eu.appbahn.platform.api.tunnel.MetricKind;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.LogsService;
 import eu.appbahn.platform.resource.service.MetricsService;
 import eu.appbahn.platform.resource.service.PodService;
 import eu.appbahn.platform.resource.service.PromotionService;
@@ -49,6 +50,7 @@ public class ResourcesController implements ResourcesApi {
     private final PromotionService promotionService;
     private final PodService podService;
     private final MetricsService metricsService;
+    private final LogsService logsService;
 
     public ResourcesController(
             ResourceService resourceService,
@@ -56,13 +58,15 @@ public class ResourcesController implements ResourcesApi {
             DeploymentService deploymentService,
             PromotionService promotionService,
             PodService podService,
-            MetricsService metricsService) {
+            MetricsService metricsService,
+            LogsService logsService) {
         this.resourceService = resourceService;
         this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
         this.promotionService = promotionService;
         this.podService = podService;
         this.metricsService = metricsService;
+        this.logsService = logsService;
     }
 
     @Override
@@ -201,8 +205,9 @@ public class ResourcesController implements ResourcesApi {
 
     @Override
     public ResponseEntity<LogResponse> getResourceLogs(
-            String slug, UUID deploymentId, Integer lines, OffsetDateTime since) {
-        throw new NotImplementedException();
+            String slug, String container, String pod, UUID deploymentId, Integer lines, OffsetDateTime since) {
+        return ResponseEntity.ok(
+                logsService.query(slug, container, pod, deploymentId, lines, since, AuthContextHolder.get()));
     }
 
     @Override

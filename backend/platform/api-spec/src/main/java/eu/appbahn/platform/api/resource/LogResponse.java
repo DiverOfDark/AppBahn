@@ -13,6 +13,13 @@ public class LogResponse {
     @Valid
     private List<LogLine> lines = new ArrayList<>();
 
+    /**
+     * Set only on graceful degradation — e.g. {@code "Logs not available — no log provider
+     * configured"}. Null when a provider answered (lines may still be empty).
+     */
+    @Nullable
+    private String message;
+
     @Data
     public static class LogLine {
 

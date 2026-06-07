@@ -2423,6 +2423,7 @@ export interface components {
       end?: string
       /** Format: int32 */
       step?: number
+      message?: string
     }
     MetricsSeries: {
       pod?: string
@@ -2437,6 +2438,7 @@ export interface components {
     }
     LogResponse: {
       lines?: components['schemas']['LogLine'][]
+      message?: string
     }
     PagedDeploymentResponse: {
       /** Format: int32 */
@@ -5240,6 +5242,8 @@ export interface operations {
   getResourceLogs: {
     parameters: {
       query?: {
+        container?: string
+        pod?: string
         deploymentId?: string
         lines?: number
         since?: string

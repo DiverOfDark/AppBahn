@@ -15,9 +15,11 @@ import eu.appbahn.operator.tunnel.client.model.DeleteResource;
 import eu.appbahn.operator.tunnel.client.model.HelloAck;
 import eu.appbahn.operator.tunnel.client.model.ListPods;
 import eu.appbahn.operator.tunnel.client.model.ListPodsResult;
+import eu.appbahn.operator.tunnel.client.model.LogsResult;
 import eu.appbahn.operator.tunnel.client.model.MetricsResult;
 import eu.appbahn.operator.tunnel.client.model.NudgeImageSource;
 import eu.appbahn.operator.tunnel.client.model.QueryClusterCapacity;
+import eu.appbahn.operator.tunnel.client.model.QueryLogs;
 import eu.appbahn.operator.tunnel.client.model.QueryMetrics;
 import eu.appbahn.operator.tunnel.client.model.QuotaRbacCachePush;
 import eu.appbahn.operator.tunnel.client.model.ResourceDeletedBatch;
@@ -25,6 +27,7 @@ import eu.appbahn.operator.tunnel.client.model.RetryBuild;
 import eu.appbahn.operator.tunnel.query.ClusterCapacityQuery;
 import eu.appbahn.operator.tunnel.query.PodInfoQuery;
 import eu.appbahn.operator.tunnel.query.PrometheusQueryService;
+import eu.appbahn.operator.tunnel.query.VictoriaLogsQueryService;
 import eu.appbahn.shared.Labels;
 import eu.appbahn.shared.crd.ResourceCrd;
 import eu.appbahn.shared.crd.imagesource.ImageSourceCrd;
@@ -61,6 +64,7 @@ public class PlatformCommandHandler {
     private final PodInfoQuery podInfoQuery;
     private final ClusterCapacityQuery clusterCapacityQuery;
     private final PrometheusQueryService prometheusQueryService;
+    private final VictoriaLogsQueryService victoriaLogsQueryService;
 
     public PlatformCommandHandler(
             KubernetesClient kubernetesClient,
@@ -72,7 +76,8 @@ public class PlatformCommandHandler {
             ObjectMapper mapper,
             PodInfoQuery podInfoQuery,
             ClusterCapacityQuery clusterCapacityQuery,
-            PrometheusQueryService prometheusQueryService) {
+            PrometheusQueryService prometheusQueryService,
+            VictoriaLogsQueryService victoriaLogsQueryService) {
         this.kubernetesClient = kubernetesClient;
         this.tunnelApiClient = tunnelApiClient;
         this.admissionCache = admissionCache;
@@ -83,6 +88,7 @@ public class PlatformCommandHandler {
         this.podInfoQuery = podInfoQuery;
         this.clusterCapacityQuery = clusterCapacityQuery;
         this.prometheusQueryService = prometheusQueryService;
+        this.victoriaLogsQueryService = victoriaLogsQueryService;
     }
 
     /** Called from the SSE reader — one frame at a time. {@code event} is the wire SSE event name. */
@@ -104,6 +110,7 @@ public class PlatformCommandHandler {
                 case TunnelEventNames.QUERY_CLUSTER_CAPACITY ->
                     handleQueryClusterCapacity(mapper.readValue(data, QueryClusterCapacity.class));
                 case TunnelEventNames.QUERY_METRICS -> handleQueryMetrics(mapper.readValue(data, QueryMetrics.class));
+                case TunnelEventNames.QUERY_LOGS -> handleQueryLogs(mapper.readValue(data, QueryLogs.class));
                 case TunnelEventNames.HELLO_ACK -> handleHelloAck(mapper.readValue(data, HelloAck.class));
                 case TunnelEventNames.QUOTA_RBAC_CACHE_PUSH -> {
                     var push = mapper.readValue(data, QuotaRbacCachePush.class);
@@ -531,6 +538,23 @@ public class PlatformCommandHandler {
         }
     }
 
+    private void handleQueryLogs(QueryLogs cmd) {
+        String correlationId = cmd.getCorrelationId();
+        try {
+            var result = victoriaLogsQueryService.query(
+                    cmd.getNamespace(),
+                    cmd.getResourceSlug(),
+                    cmd.getPod(),
+                    cmd.getContainer(),
+                    cmd.getSinceEpochSeconds(),
+                    cmd.getLimit());
+            ackWithPayload(correlationId, result);
+        } catch (Exception e) {
+            log.warn("QueryLogs {}/{} failed: {}", cmd.getNamespace(), cmd.getResourceSlug(), e.getMessage());
+            ack(correlationId, StatusEnum.INTERNAL_ERROR, e.getMessage());
+        }
+    }
+
     private void ack(String correlationId, StatusEnum status, String message) {
         var req = new AckCommandRequest();
         var response = new CommandResponse();
@@ -552,6 +576,8 @@ public class PlatformCommandHandler {
             response.setPayload(capacityResult);
         } else if (payload instanceof MetricsResult metricsResult) {
             response.setPayload(metricsResult);
+        } else if (payload instanceof LogsResult logsResult) {
+            response.setPayload(logsResult);
         } else {
             throw new IllegalArgumentException(
                     "Unsupported response payload type: " + payload.getClass().getName());

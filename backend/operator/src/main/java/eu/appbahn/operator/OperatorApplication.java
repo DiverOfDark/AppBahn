@@ -3,6 +3,7 @@ package eu.appbahn.operator;
 import eu.appbahn.operator.reconciler.OperatorConfig;
 import eu.appbahn.operator.reconciler.imagesource.buildjob.BuilderConfig;
 import eu.appbahn.operator.tunnel.OperatorTunnelConfig;
+import eu.appbahn.operator.tunnel.query.LogsProviderConfig;
 import eu.appbahn.operator.tunnel.query.MetricsProviderConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +16,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     OperatorConfig.class,
     OperatorTunnelConfig.class,
     BuilderConfig.class,
-    MetricsProviderConfig.class
+    MetricsProviderConfig.class,
+    LogsProviderConfig.class
 })
 public class OperatorApplication {
 

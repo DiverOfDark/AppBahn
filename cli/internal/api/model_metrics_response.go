@@ -20,10 +20,11 @@ var _ MappedNullable = &MetricsResponse{}
 
 // MetricsResponse struct for MetricsResponse
 type MetricsResponse struct {
-	Series []MetricsSeries `json:"series,omitempty"`
-	Start  *time.Time      `json:"start,omitempty"`
-	End    *time.Time      `json:"end,omitempty"`
-	Step   *int32          `json:"step,omitempty"`
+	Series  []MetricsSeries `json:"series,omitempty"`
+	Start   *time.Time      `json:"start,omitempty"`
+	End     *time.Time      `json:"end,omitempty"`
+	Step    *int32          `json:"step,omitempty"`
+	Message *string         `json:"message,omitempty"`
 }
 
 // NewMetricsResponse instantiates a new MetricsResponse object
@@ -171,6 +172,38 @@ func (o *MetricsResponse) SetStep(v int32) {
 	o.Step = &v
 }
 
+// GetMessage returns the Message field value if set, zero value otherwise.
+func (o *MetricsResponse) GetMessage() string {
+	if o == nil || IsNil(o.Message) {
+		var ret string
+		return ret
+	}
+	return *o.Message
+}
+
+// GetMessageOk returns a tuple with the Message field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MetricsResponse) GetMessageOk() (*string, bool) {
+	if o == nil || IsNil(o.Message) {
+		return nil, false
+	}
+	return o.Message, true
+}
+
+// HasMessage returns a boolean if a field has been set.
+func (o *MetricsResponse) HasMessage() bool {
+	if o != nil && !IsNil(o.Message) {
+		return true
+	}
+
+	return false
+}
+
+// SetMessage gets a reference to the given string and assigns it to the Message field.
+func (o *MetricsResponse) SetMessage(v string) {
+	o.Message = &v
+}
+
 func (o MetricsResponse) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -192,6 +225,9 @@ func (o MetricsResponse) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Step) {
 		toSerialize["step"] = o.Step
+	}
+	if !IsNil(o.Message) {
+		toSerialize["message"] = o.Message
 	}
 	return toSerialize, nil
 }

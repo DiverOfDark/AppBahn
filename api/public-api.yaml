@@ -2635,6 +2635,16 @@ paths:
         required: true
         schema:
           type: string
+      - name: container
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pod
+        in: query
+        required: false
+        schema:
+          type: string
       - name: deploymentId
         in: query
         required: false
@@ -4947,6 +4957,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LogLine"
+        message:
+          type: string
     PagedDeploymentResponse:
       type: object
       properties:
