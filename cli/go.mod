@@ -7,7 +7,6 @@ require (
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/oauth2 v0.36.0
-	gopkg.in/validator.v2 v2.0.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -26,4 +25,5 @@ require (
 	github.com/olekukonko/ll v0.1.6 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	golang.org/x/sys v0.30.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
