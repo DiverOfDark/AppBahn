@@ -3,6 +3,7 @@ spring-boot = "4.0.6"
 spring-dependency-management = "1.1.7"
 openapi-generator = "7.22.0"
 spotless = "8.4.0"
+test-retry = "1.6.2"
 springdoc = "3.0.3"
 fabric8 = "7.6.1"
 josdk-spring-boot = "6.4.1"
@@ -147,5 +148,6 @@ spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+test-retry = { id = "org.gradle.test-retry", version.ref = "test-retry" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
 bmuschko-docker = { id = "com.bmuschko.docker-remote-api", version.ref = "bmuschko-docker" }

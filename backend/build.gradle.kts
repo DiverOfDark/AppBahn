@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.spotless)
     alias(libs.plugins.bmuschko.docker) apply false
+    alias(libs.plugins.test.retry) apply false
 }
 
 allprojects {
@@ -43,6 +44,7 @@ subprojects {
     apply(plugin = "com.diffplug.spotless")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "jacoco")
+    apply(plugin = "org.gradle.test-retry")
 
     configure<JacocoPluginExtension> {
         toolVersion = rootProject.libs.versions.jacoco.get()
@@ -62,6 +64,16 @@ subprojects {
 
     tasks.withType<Test>().configureEach {
         finalizedBy(tasks.withType<JacocoReport>())
+        // Retry only the tests that failed (not the whole suite), so transient flakes —
+        // embedded-apiserver blips, slow rollouts under load — don't red a build, while a
+        // real failure still fails (it fails every attempt). maxFailures bails fast on a
+        // systemic breakage instead of retrying everything. The budget-bound :e2e:e2eTest
+        // tightens maxRetries to 1 in its own build script to protect the wall-clock budget.
+        extensions.configure<org.gradle.testretry.TestRetryTaskExtension>("retry") {
+            maxRetries.set(2)
+            maxFailures.set(10)
+            failOnPassedAfterRetry.set(false)
+        }
     }
 
     spotless {
