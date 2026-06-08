@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Validated
 @Tag(name = "Resources")
@@ -275,6 +276,41 @@ public interface ResourcesApi {
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     @Nullable
                     OffsetDateTime since);
+    /**
+     * GET /resources/{slug}/logs/stream : GetResourceLogStream — open a Server-Sent Events
+     * stream of live container logs and Kubernetes events for the Resource. Two event types are
+     * emitted: {@code log} ({@link LogStreamLogFrame} — container output tailed from the log
+     * provider) and {@code k8s_event} ({@link LogStreamEventFrame} — events from objects owned by
+     * the Resource). The connection stays open indefinitely with periodic {@code keepalive}
+     * frames. Filters: {@code container}, {@code pod}, {@code since} (lower bound for the initial
+     * backfill), and {@code types} (comma-separated subset of {@code log,k8s_event}; default both).
+     * When no log provider is configured the {@code log} channel is silently inactive and only
+     * {@code k8s_event} frames flow.
+     *
+     * @param slug  (required)
+     * @param container Filter by container name (optional)
+     * @param pod Filter by pod name (optional)
+     * @param since Lower time bound for the initial backfill (optional)
+     * @param types Comma-separated event types to receive: log, k8s_event (optional, default both)
+     * @return SSE stream (status code 200)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Not found (status code 404)
+     */
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/resources/{slug}/logs/stream",
+            produces = {"text/event-stream"})
+    SseEmitter getResourceLogStream(
+            @PathVariable("slug") String slug,
+            @Valid @RequestParam(value = "container", required = false) @Nullable String container,
+            @Valid @RequestParam(value = "pod", required = false) @Nullable String pod,
+            @Valid
+                    @RequestParam(value = "since", required = false)
+                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    @Nullable
+                    OffsetDateTime since,
+            @Valid @RequestParam(value = "types", required = false) @Nullable String types);
     /**
      * GET /resources/{slug}/metrics/network/inbound : GetResourceNetworkInbound
      *

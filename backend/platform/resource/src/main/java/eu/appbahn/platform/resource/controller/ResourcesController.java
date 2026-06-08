@@ -27,6 +27,7 @@ import eu.appbahn.platform.api.tunnel.MetricKind;
 import eu.appbahn.platform.common.exception.NotImplementedException;
 import eu.appbahn.platform.common.security.AuthContextHolder;
 import eu.appbahn.platform.resource.service.DeploymentService;
+import eu.appbahn.platform.resource.service.LogStreamService;
 import eu.appbahn.platform.resource.service.LogsService;
 import eu.appbahn.platform.resource.service.MetricsService;
 import eu.appbahn.platform.resource.service.PodService;
@@ -39,6 +40,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -51,6 +53,7 @@ public class ResourcesController implements ResourcesApi {
     private final PodService podService;
     private final MetricsService metricsService;
     private final LogsService logsService;
+    private final LogStreamService logStreamService;
 
     public ResourcesController(
             ResourceService resourceService,
@@ -59,7 +62,8 @@ public class ResourcesController implements ResourcesApi {
             PromotionService promotionService,
             PodService podService,
             MetricsService metricsService,
-            LogsService logsService) {
+            LogsService logsService,
+            LogStreamService logStreamService) {
         this.resourceService = resourceService;
         this.lifecycleService = lifecycleService;
         this.deploymentService = deploymentService;
@@ -67,6 +71,7 @@ public class ResourcesController implements ResourcesApi {
         this.podService = podService;
         this.metricsService = metricsService;
         this.logsService = logsService;
+        this.logStreamService = logStreamService;
     }
 
     @Override
@@ -208,6 +213,12 @@ public class ResourcesController implements ResourcesApi {
             String slug, String container, String pod, UUID deploymentId, Integer lines, OffsetDateTime since) {
         return ResponseEntity.ok(
                 logsService.query(slug, container, pod, deploymentId, lines, since, AuthContextHolder.get()));
+    }
+
+    @Override
+    public SseEmitter getResourceLogStream(
+            String slug, String container, String pod, OffsetDateTime since, String types) {
+        return logStreamService.stream(slug, container, pod, since, types, AuthContextHolder.get());
     }
 
     @Override

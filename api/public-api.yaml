@@ -2670,6 +2670,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LogResponse"
+  /resources/{slug}/logs/stream:
+    get:
+      tags:
+      - Resources
+      operationId: getResourceLogStream
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: container
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pod
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: since
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: types
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/SseEmitter"
   /resources/{slug}/exposures:
     get:
       tags:
@@ -4959,6 +4998,12 @@ components:
             $ref: "#/components/schemas/LogLine"
         message:
           type: string
+    SseEmitter:
+      type: object
+      properties:
+        timeout:
+          type: integer
+          format: int64
     PagedDeploymentResponse:
       type: object
       properties:

@@ -28,6 +28,36 @@ Returns the most recent log lines for the pods backing the resource, newest firs
 
 Each returned line carries its `timestamp`, `message`, and the `pod` and `container` it came from.
 
+## Live stream
+
+For a live tail of logs together with Kubernetes events, open the Server-Sent Events stream:
+
+```
+GET /api/v1/resources/{slug}/logs/stream
+```
+
+The connection stays open and pushes two kinds of frames:
+
+- `log` — a single container log line, tailed from the log provider as new lines arrive.
+- `k8s_event` — a Kubernetes event for an object owned by the resource (its pods and ReplicaSets).
+  Surfaced reasons: Scheduled, Pulling/Pulled, Created/Started, Killing, BackOff, Failed,
+  OOMKilled, Evicted, Unhealthy, FailedScheduling, ScalingReplicaSet, SuccessfulRescale.
+
+A periodic `keepalive` frame keeps the connection from idling out.
+
+### Query parameters
+
+| Parameter   | Default         | Meaning                                                  |
+| ----------- | --------------- | -------------------------------------------------------- |
+| `container` | all containers  | Restrict the `log` channel to a single container.        |
+| `pod`       | all pods        | Restrict the `log` channel to a single pod.              |
+| `since`     | now             | Lower time bound for the initial log backfill. ISO 8601. |
+| `types`     | `log,k8s_event` | Comma-separated subset of frame types to receive.        |
+
+When no log provider is configured the `log` channel is silently inactive and only `k8s_event`
+frames flow — the stream still connects, so the console's event timeline keeps working without
+Victoria Logs.
+
 ## Configuring the provider
 
 Logs are read from a Victoria Logs endpoint configured on the operator only — the operator runs the

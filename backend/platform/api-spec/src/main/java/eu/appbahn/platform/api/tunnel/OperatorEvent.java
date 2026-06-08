@@ -27,7 +27,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
     @JsonSubTypes.Type(value = AuditLogEvent.class, name = "audit-log"),
     @JsonSubTypes.Type(value = ImageSourceSyncBatch.class, name = "image-source-sync-batch"),
     @JsonSubTypes.Type(value = ImageSourceDeletedBatch.class, name = "image-source-deleted-batch"),
-    @JsonSubTypes.Type(value = BuildLifecycleEvent.class, name = "build-lifecycle-event")
+    @JsonSubTypes.Type(value = BuildLifecycleEvent.class, name = "build-lifecycle-event"),
+    @JsonSubTypes.Type(value = ResourceK8sEvent.class, name = "resource-k8s-event")
 })
 @Schema(
         discriminatorProperty = "type",
@@ -42,7 +43,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
             @DiscriminatorMapping(value = "audit-log", schema = AuditLogEvent.class),
             @DiscriminatorMapping(value = "image-source-sync-batch", schema = ImageSourceSyncBatch.class),
             @DiscriminatorMapping(value = "image-source-deleted-batch", schema = ImageSourceDeletedBatch.class),
-            @DiscriminatorMapping(value = "build-lifecycle-event", schema = BuildLifecycleEvent.class)
+            @DiscriminatorMapping(value = "build-lifecycle-event", schema = BuildLifecycleEvent.class),
+            @DiscriminatorMapping(value = "resource-k8s-event", schema = ResourceK8sEvent.class)
         },
         subTypes = {
             ResourceSyncBatch.class,
@@ -55,7 +57,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
             AuditLogEvent.class,
             ImageSourceSyncBatch.class,
             ImageSourceDeletedBatch.class,
-            BuildLifecycleEvent.class
+            BuildLifecycleEvent.class,
+            ResourceK8sEvent.class
         })
 public abstract class OperatorEvent {
 

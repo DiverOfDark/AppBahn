@@ -12,6 +12,7 @@ import eu.appbahn.platform.api.tunnel.ImageSourceSyncBatch;
 import eu.appbahn.platform.api.tunnel.OperatorEvent;
 import eu.appbahn.platform.api.tunnel.PushEventsRequest;
 import eu.appbahn.platform.api.tunnel.ResourceDeletedBatch;
+import eu.appbahn.platform.api.tunnel.ResourceK8sEvent;
 import eu.appbahn.platform.api.tunnel.ResourceSyncBatch;
 import eu.appbahn.platform.resource.service.BuildLifecycleHandler;
 import eu.appbahn.platform.resource.service.ImageSourceSyncService;
@@ -53,6 +54,7 @@ public class PushEventsHandler {
     private final ClusterRepository clusterRepository;
     private final AuditLogWriterService auditLogWriter;
     private final ObjectMapper jsonMapper;
+    private final K8sEventBuffer k8sEventBuffer;
 
     public PushEventsHandler(
             ResourceSyncService resourceSyncService,
@@ -64,7 +66,8 @@ public class PushEventsHandler {
             FullSyncChunkBufferRepository chunkBuffer,
             ClusterRepository clusterRepository,
             AuditLogWriterService auditLogWriter,
-            ObjectMapper jsonMapper) {
+            ObjectMapper jsonMapper,
+            K8sEventBuffer k8sEventBuffer) {
         this.resourceSyncService = resourceSyncService;
         this.imageSourceSyncService = imageSourceSyncService;
         this.buildLifecycleHandler = buildLifecycleHandler;
@@ -75,6 +78,7 @@ public class PushEventsHandler {
         this.clusterRepository = clusterRepository;
         this.auditLogWriter = auditLogWriter;
         this.jsonMapper = jsonMapper;
+        this.k8sEventBuffer = k8sEventBuffer;
     }
 
     @Transactional
@@ -107,6 +111,7 @@ public class PushEventsHandler {
             case ImageSourceSyncBatch b -> handleImageSourceSyncBatch(clusterName, b);
             case ImageSourceDeletedBatch b -> handleImageSourceDeletedBatch(clusterName, b);
             case BuildLifecycleEvent e -> handleBuildLifecycleEvent(e);
+            case ResourceK8sEvent e -> k8sEventBuffer.record(clusterName, e);
             default -> log.debug("Unhandled OperatorEvent type: {}", event.getType());
         }
     }

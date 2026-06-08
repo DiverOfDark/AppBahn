@@ -785,6 +785,7 @@ components:
           image-source-sync-batch: "#/components/schemas/ImageSourceSyncBatch"
           image-source-deleted-batch: "#/components/schemas/ImageSourceDeletedBatch"
           build-lifecycle-event: "#/components/schemas/BuildLifecycleEvent"
+          resource-k8s-event: "#/components/schemas/ResourceK8sEvent"
     OwnerReference:
       type: object
       properties:
@@ -981,6 +982,34 @@ components:
             items:
               pattern: "^[a-z][a-z0-9-]{0,28}[a-z0-9]$"
               type: string
+    ResourceK8sEvent:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/OperatorEvent"
+      - type: object
+        properties:
+          namespace:
+            type: string
+          resourceSlug:
+            type: string
+          eventType:
+            type: string
+          reason:
+            type: string
+          message:
+            type: string
+          involvedKind:
+            type: string
+          involvedName:
+            type: string
+          pod:
+            type: string
+          count:
+            type: integer
+            format: int32
+          eventTime:
+            type: string
+            format: date-time
     ResourceSpec:
       type: object
       properties:

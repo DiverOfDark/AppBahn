@@ -1108,6 +1108,22 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/resources/{slug}/logs/stream': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations['getResourceLogStream']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/resources/{slug}/exposures': {
     parameters: {
       query?: never
@@ -2439,6 +2455,10 @@ export interface components {
     LogResponse: {
       lines?: components['schemas']['LogLine'][]
       message?: string
+    }
+    SseEmitter: {
+      /** Format: int64 */
+      timeout?: number
     }
     PagedDeploymentResponse: {
       /** Format: int32 */
@@ -5263,6 +5283,33 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['LogResponse']
+        }
+      }
+    }
+  }
+  getResourceLogStream: {
+    parameters: {
+      query?: {
+        container?: string
+        pod?: string
+        since?: string
+        types?: string
+      }
+      header?: never
+      path: {
+        slug: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'text/event-stream': components['schemas']['SseEmitter']
         }
       }
     }

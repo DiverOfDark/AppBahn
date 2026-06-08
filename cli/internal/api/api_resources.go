@@ -192,6 +192,19 @@ type ResourcesAPI interface {
 	GetResourceCpuMetricsExecute(r ApiGetResourceCpuMetricsRequest) (*MetricsResponse, *http.Response, error)
 
 	/*
+		GetResourceLogStream Method for GetResourceLogStream
+
+		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+		@param slug
+		@return ApiGetResourceLogStreamRequest
+	*/
+	GetResourceLogStream(ctx context.Context, slug string) ApiGetResourceLogStreamRequest
+
+	// GetResourceLogStreamExecute executes the request
+	//  @return SseEmitter
+	GetResourceLogStreamExecute(r ApiGetResourceLogStreamRequest) (*SseEmitter, *http.Response, error)
+
+	/*
 		GetResourceLogs Method for GetResourceLogs
 
 		@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -1892,6 +1905,144 @@ func (a *ResourcesAPIService) GetResourceCpuMetricsExecute(r ApiGetResourceCpuMe
 
 	// to determine the Accept header
 	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiGetResourceLogStreamRequest struct {
+	ctx        context.Context
+	ApiService ResourcesAPI
+	slug       string
+	container  *string
+	pod        *string
+	since      *time.Time
+	types      *string
+}
+
+func (r ApiGetResourceLogStreamRequest) Container(container string) ApiGetResourceLogStreamRequest {
+	r.container = &container
+	return r
+}
+
+func (r ApiGetResourceLogStreamRequest) Pod(pod string) ApiGetResourceLogStreamRequest {
+	r.pod = &pod
+	return r
+}
+
+func (r ApiGetResourceLogStreamRequest) Since(since time.Time) ApiGetResourceLogStreamRequest {
+	r.since = &since
+	return r
+}
+
+func (r ApiGetResourceLogStreamRequest) Types(types string) ApiGetResourceLogStreamRequest {
+	r.types = &types
+	return r
+}
+
+func (r ApiGetResourceLogStreamRequest) Execute() (*SseEmitter, *http.Response, error) {
+	return r.ApiService.GetResourceLogStreamExecute(r)
+}
+
+/*
+GetResourceLogStream Method for GetResourceLogStream
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param slug
+	@return ApiGetResourceLogStreamRequest
+*/
+func (a *ResourcesAPIService) GetResourceLogStream(ctx context.Context, slug string) ApiGetResourceLogStreamRequest {
+	return ApiGetResourceLogStreamRequest{
+		ApiService: a,
+		ctx:        ctx,
+		slug:       slug,
+	}
+}
+
+// Execute executes the request
+//
+//	@return SseEmitter
+func (a *ResourcesAPIService) GetResourceLogStreamExecute(r ApiGetResourceLogStreamRequest) (*SseEmitter, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *SseEmitter
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ResourcesAPIService.GetResourceLogStream")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/resources/{slug}/logs/stream"
+	localVarPath = strings.Replace(localVarPath, "{"+"slug"+"}", url.PathEscape(parameterValueToString(r.slug, "slug")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if r.container != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "container", r.container, "form", "")
+	}
+	if r.pod != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "pod", r.pod, "form", "")
+	}
+	if r.since != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "since", r.since, "form", "")
+	}
+	if r.types != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "types", r.types, "form", "")
+	}
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"text/event-stream"}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
