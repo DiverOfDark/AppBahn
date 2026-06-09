@@ -97,6 +97,7 @@ lombok = { module = "org.projectlombok:lombok" }
 # Testing
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-platform-testkit = { module = "org.junit.platform:junit-platform-testkit" }
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
 testcontainers-k3s = { module = "org.testcontainers:testcontainers-k3s" }

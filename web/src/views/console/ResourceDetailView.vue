@@ -18,11 +18,12 @@ import ResourceOverviewTab from './resource-tabs/ResourceOverviewTab.vue'
 import ResourceDeploysTab from './resource-tabs/ResourceDeploysTab.vue'
 import ResourceEnvTab from './resource-tabs/ResourceEnvTab.vue'
 import ResourceDomainsTab from './resource-tabs/ResourceDomainsTab.vue'
+import ResourceMetricsTab from './resource-tabs/ResourceMetricsTab.vue'
 import ResourceSettingsTab from './resource-tabs/ResourceSettingsTab.vue'
 
 type Resource = components['schemas']['Resource']
 type Deployment = components['schemas']['Deployment']
-type Tab = 'overview' | 'deploys' | 'environment' | 'domains' | 'settings'
+type Tab = 'overview' | 'deploys' | 'environment' | 'domains' | 'metrics' | 'settings'
 type PendingActionKind = 'pause' | 'resume' | 'restart'
 
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
@@ -30,6 +31,7 @@ const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'deploys', label: 'Deploys' },
   { id: 'environment', label: 'Environment' },
   { id: 'domains', label: 'Domains' },
+  { id: 'metrics', label: 'Metrics' },
   { id: 'settings', label: 'Settings' },
 ]
 
@@ -415,6 +417,8 @@ onUnmounted(() => {
       />
 
       <ResourceDomainsTab v-else-if="tab === 'domains'" :resource="resource" />
+
+      <ResourceMetricsTab v-else-if="tab === 'metrics'" :resource="resource" />
 
       <ResourceSettingsTab
         v-else-if="tab === 'settings'"

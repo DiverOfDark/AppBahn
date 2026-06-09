@@ -43,6 +43,21 @@ Each endpoint returns one series per pod backing the resource.
 
 The response echoes the resolved `start`, `end`, and `step` alongside the per-pod `series`.
 
+## Viewing metrics in the console
+
+Open a resource and select the **Metrics** tab. The tab renders four line charts — CPU, memory,
+network in, and network out — with one line per pod so you can spot a single misbehaving replica.
+
+- **Time range.** A selector across the top switches the window between 15 minutes, 1 hour, 6 hours,
+  and 24 hours. Each range picks a step that keeps the chart readable, and the charts re-query when
+  you change it.
+- **Pod filter.** When more than one pod backs the resource, a pod selector narrows every chart to a
+  single pod.
+- **Limit thresholds.** Where the resource declares a CPU or memory limit, a dashed amber line marks
+  that limit on the corresponding chart, so it is obvious when usage approaches the ceiling.
+
+The charts refresh on their own every 30 seconds while the tab is open.
+
 ## Configuring the provider
 
 The operator runs the PromQL, so the Prometheus endpoint is set on the operator. Point it at
