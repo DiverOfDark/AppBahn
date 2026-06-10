@@ -58,6 +58,21 @@ When no log provider is configured the `log` channel is silently inactive and on
 frames flow — the stream still connects, so the console's event timeline keeps working without
 Victoria Logs.
 
+## Viewing logs in the console
+
+Open a resource and select the **Logs** tab. It has two modes:
+
+- **Live.** Opens the Server-Sent Events stream and tails output as it arrives. Container log lines
+  render in monospace on a dark console; Kubernetes events appear inline as amber-bordered system
+  messages carrying the event reason and a `Normal`/`Warning` type badge, so a `BackOff` or
+  `OOMKilled` stands out from ordinary output. A status indicator shows whether the stream is
+  connected, and the console auto-scrolls as new lines come in.
+- **Build.** Select a deployment to read the build output captured for it. This is the place to look
+  when a deploy fails during the image build rather than at runtime.
+
+When no log provider is configured, the tab shows the `Logs not available — no log provider
+configured` message instead of an empty console.
+
 ## Configuring the provider
 
 Logs are read from a Victoria Logs endpoint configured on the operator only — the operator runs the
