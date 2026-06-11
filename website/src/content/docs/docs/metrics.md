@@ -58,6 +58,27 @@ network in, and network out — with one line per pod so you can spot a single m
 
 The charts refresh on their own every 30 seconds while the tab is open.
 
+## Viewing metrics from the CLI
+
+The CLI fetches a single series at a time under the `resource` command, selected with `--metric-type`:
+
+```bash
+# CPU usage over the last hour (default range)
+appbahn resource metrics my-app-abc1234 --metric-type cpu
+
+# Memory over an explicit window with a fixed step
+appbahn resource metrics my-app-abc1234 --metric-type ram \
+  --start 2026-06-07T00:00:00Z --step 60
+
+# Inbound network for a single pod
+appbahn resource metrics my-app-abc1234 --metric-type network-inbound \
+  --pod my-app-abc1234-7d9
+```
+
+`--metric-type` is one of `cpu`, `ram`, `network-inbound`, `network-outbound`. `--start`, `--end`,
+`--step`, and `--pod` map directly onto the endpoint query parameters. Output respects
+`-o table|json|yaml`; the table prints one row per data point, grouped by pod.
+
 ## Configuring the provider
 
 The operator runs the PromQL, so the Prometheus endpoint is set on the operator. Point it at

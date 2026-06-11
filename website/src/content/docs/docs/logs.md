@@ -73,6 +73,29 @@ Open a resource and select the **Logs** tab. It has two modes:
 When no log provider is configured, the tab shows the `Logs not available — no log provider
 configured` message instead of an empty console.
 
+## Viewing logs from the CLI
+
+The CLI exposes the same data under the `resource` command:
+
+```bash
+# Snapshot of the most recent lines
+appbahn resource logs my-app-abc1234
+
+# Narrow the window and the line count
+appbahn resource logs my-app-abc1234 --since 1h --lines 200
+
+# Logs for a specific deployment
+appbahn resource logs my-app-abc1234 --deployment-id 0190f2c1-...
+
+# Live tail (Ctrl-C to stop)
+appbahn resource logs my-app-abc1234 --follow
+```
+
+`--since` accepts either an ISO 8601 timestamp or a relative duration (`1h`, `30m`, `2h45m`).
+`--pod` and `--container` restrict the output, mirroring the endpoint query parameters. The snapshot
+respects `-o table|json|yaml`; `--follow` streams the live `log` channel and is incompatible with
+`--deployment-id` and `--lines`.
+
 ## Configuring the provider
 
 Logs are read from a Victoria Logs endpoint configured on the operator only — the operator runs the
