@@ -38,6 +38,12 @@ export default defineConfig({
             { label: 'Resource Types', slug: 'docs/resource-types' },
             { label: 'Scaling and Placement', slug: 'docs/scaling-and-placement' },
             { label: 'Environment Promotion', slug: 'docs/promotion' },
+          ],
+        },
+        {
+          label: 'Observability',
+          items: [
+            { label: 'Overview', slug: 'docs/observability' },
             { label: 'Metrics', slug: 'docs/metrics' },
             { label: 'Logs', slug: 'docs/logs' },
           ],
