@@ -18,6 +18,11 @@ const valueProps = [
     title: 'Workspaces → Resources',
     body: 'A four-level hierarchy with RBAC at every tier. Give each team a workspace. Each product a project. Each branch an environment. Each service a resource.',
   },
+  {
+    idx: '04 · OBSERVABILITY',
+    title: 'Metrics, logs, events',
+    body: 'CPU and memory charts per pod, a live log stream over SSE, and the Kubernetes event feed for each resource — read straight from your cluster. The backing stack (Prometheus, Victoria Logs) is opt-in and runs on your infrastructure.',
+  },
 ]
 
 const stops = [
@@ -549,7 +554,7 @@ const hierarchy = [
       /* ---------- value props ---------- */
       .props {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 1px;
         background: var(--border);
         border: 1px solid var(--border);
